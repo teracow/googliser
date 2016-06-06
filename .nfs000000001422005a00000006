@@ -19,7 +19,7 @@
 #	= 5 - image download aborted as failure limit was reached.
 #	= 6 - thumbnail gallery build failed.
 
-# The latest copy can be found here [https://github.com/teracow/googliser]
+# The latest copy can be found here [https://github.com/teracow/googlier]
 
 function Init
 	{
