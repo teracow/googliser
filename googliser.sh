@@ -24,15 +24,15 @@
 function Init
 	{
 
-	script_version="1.12"
-	script_date="2016-06-05"
+	script_version="1.13"
+	script_date="2016-06-07"
 	script_name="$( basename -- "$( readlink -f -- "$0" )" )"
 	script_details="${script_name} - v${script_version} (${script_date})"
 
 	current_dir="$PWD"
-	gallery_name="bulk-google-image-gallery"
+	gallery_name="googliser-gallery"
 	imagelinkslist_file="image-links.list"
-	debug_file="bulk-download-debug.log"
+	debug_file="googliser.debug.log"
 	image_file="google-image"
 	results_file="google-results-page.html"
 	server="www.google.com.au"
