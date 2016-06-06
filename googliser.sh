@@ -219,7 +219,7 @@ function DownloadSpecificPageSegment
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_quarter}${search_start}' --user-agent '$useragent' --output-document -"
 	[ "$debug" == true ] && AddToDebugFile "? \$wget_list_cmd" "$wget_list_cmd"
 
-	eval $wget_list_cmd >> "${results_pathfile}"
+	eval $wget_list_cmd >> "${results_pathfile}.$1"
 
 	}
 
@@ -229,7 +229,7 @@ function DownloadAllPageSegments
 	local total=4
 	local pointer=0
 	local percent=""
-	local strlength=0
+	local pids=""
 
 	for ((quarter=1; quarter<=$total; quarter++)) ; do
 		pointer=$((($quarter-1)*100))
@@ -237,14 +237,16 @@ function DownloadAllPageSegments
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
 		percent="$((200*($quarter-1)/$total % 2 + 100*($quarter-1)/$total))% "
 
-		printf %${strlength}s | tr ' ' '\b'
-		echo -n "$percent"
-		strlength=${#percent}
-
-		DownloadSpecificPageSegment $(($quarter-1)) "$pointer"
+		DownloadSpecificPageSegment $(($quarter-1)) "$pointer" &
+		pids[${quarter}]=$!
 	done
 
-	printf %${strlength}s | tr ' ' '\b'	# clear last message
+	for pid in ${pids[*]}; do
+		wait $pid
+	done
+
+	cat "${results_pathfile}".* > "${results_pathfile}"
+	rm -f "${results_pathfile}".*
 
 	}
 
