@@ -31,10 +31,10 @@ function Init
 
 	current_dir="$PWD"
 	gallery_name="googliser-gallery"
-	imagelinkslist_file="image-links.list"
-	debug_file="googliser.debug.log"
+	imagelinkslist_file="googliser-links.list"
+	debug_file="googliser-debug.log"
 	image_file="google-image"
-	results_file="google-results-page.html"
+	results_file="google-results.html"
 	server="www.google.com.au"
 
 	download_timeout=20

@@ -37,7 +37,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Work-in-Progress**
 
-- (2016-06-07) - Working on concurrent downloads. Maybe remove curl and only use wget?
+- (2016-06-07) - Working on concurrent downloads.
 
 ---
 **To-Do List**
