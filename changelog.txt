@@ -1,0 +1,14 @@
+changelog:
+v1.12 (2016-06-05) Download 400 image search results! Added return code for image download failed. Shifted return code for thumbnail gallery creation failed from 5 to 6 (sorry!). In-place progress display. Thumbnail gallery creation can be disabled. Added timers for debug log.
+v1.11 (2016-05-29) Now provides the option for writing a debug file (good for examining commands with parameters!). Will only thumbnail first image in multi-image files. Wget error codes are translated into text. Added option to change failure limit from command line. Performs exact search query now.
+v1.10 (2016-05-27) Minor code reformatting (to match my other scripts). Help now mentions limit of 100 image results.
+v1.09 (2016-04-25) Fixed user parameters not being seen if script was called via symlink.
+v1.08 (2016-04-24) Minor code optimisations, now supports reporting actual script name if called via symlink.
+v1.07 (2016-04-21) On GitHub now, released under GNU General Public License v3.
+v1.06 (2016-04-17) Created validation for user inputs, checks now for external programs: wget, perl and montage.
+v1.05 (2016-04-17) More consistent vars, corrected some comments, now excludes youtube & vimeo matches.
+v1.04 (2016-04-11) Explained regexes.
+v1.03 (2016-04-11) Faster file_index calc, moved some more regex into perl, expanded on help.
+v1.02 (2016-04-10) Small code cleanups, fixed failure_count not being incremented, improved execution display.
+v1.01 (2016-04-10) Slightly shorter regexs for identifying image links on search page.
+v1.00 (2016-04-10) Initial release!
