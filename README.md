@@ -21,6 +21,34 @@ The latest copy of this script can be found [here](https://github.com/teracow/go
 Suggestions / comments / advice (are|is) most welcome. :)
 
 ---
+**Usage:**
+
+> $ ./$script_name [PARAMETERS] ..."
+
+> -n --number=INTEGER Number of images to download. Maximum of $results_max.
+	
+-p --phrase=STRING (required)   Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
+
+-l --limit=INTEGER  How many download failures before exiting? 0 for unlimited ($results_max)."
+
+-c --concurrency=INTEGER    How many concurrent image downloads? Maximum of $spawn_max. Use wisely!
+
+-t --timeout=INTEGER    Number of seconds before retrying download. Maximum of $timeout_max.
+
+-r --retries=INTEGER    Try to download each image this many times. Maximum of $retries_max.
+
+-g --no-gallery Don't create thumbnail gallery.
+
+-h --help   Display this help then exit.
+
+-v --version    Show script version then exit.
+
+-q --quiet      Supress display output. (non-functional in this version)
+
+-d --debug  Output debug info to file.
+
+
+---
 **Return Values ($?):**  
 
 0 : successful download(s).  

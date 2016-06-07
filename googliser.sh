@@ -51,11 +51,11 @@ function Init
 
 	# user parameters
 	user_query=""
-	images_required=10
+	images_required=25
 	spawn_limit=8
 	failures_limit=10
-	timeout=20
-	retries=3
+	timeout=15
+	retries=2
 	create_gallery=true
 	verbose=true
 	debug=false
