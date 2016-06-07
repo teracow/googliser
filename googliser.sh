@@ -41,13 +41,13 @@ function Init
 	exitcode=0
 	results_max=400
 	result_index=0
-	bad_count=0
+	failures_count=0
 	spawn_max=40
 	timeout_max=600
 	retries_max=100
 	process_tracker_pathfile="${temp_path}/child-process.count"
-	good_downloads_count_pathfile="${temp_path}/successful-downloads.count"
-	bad_downloads_count_pathfile="${temp_path}/failed-downloads.count"
+	download_success_count_pathfile="${temp_path}/successful-downloads.count"
+	download_failures_count_pathfile="${temp_path}/failed-downloads.count"
 
 	# user parameters
 	user_query=""
@@ -90,8 +90,8 @@ function Init
 		IsProgramAvailable "montage" || exitcode=1
 	fi
 
-	[ -e "${good_downloads_count_pathfile}" ] && rm -f "${good_downloads_count_pathfile}"
-	[ -e "${bad_downloads_count_pathfile}" ] && rm -f "${bad_downloads_count_pathfile}"
+	[ -e "${download_success_count_pathfile}" ] && rm -f "${download_success_count_pathfile}"
+	[ -e "${download_failures_count_pathfile}" ] && rm -f "${download_failures_count_pathfile}"
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -373,7 +373,7 @@ function SingleImageDownloader
 
 	IncrementFile "${process_tracker_pathfile}"
 
-	echo "- starting download of link# [$2] ..."
+	[ "$debug" == true ] && AddToDebugFile "- download link # '$2'" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$( echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/" )
@@ -389,12 +389,12 @@ function SingleImageDownloader
 	result=$?
 
 	if [ $result -eq 0 ] ; then
-		echo "= finished download of link# [$2]: success!"
-		IncrementFile "${good_downloads_count_pathfile}"
+		[ "$debug" == true ] && AddToDebugFile "= download link # '$2'" "success!"
+		IncrementFile "${download_success_count_pathfile}"
 	else
 		# increment failures_count but keep trying to download images
-		echo "= finished download of link# [$2]: failed!"
-		IncrementFile "${bad_downloads_count_pathfile}"
+		[ "$debug" == true ] && AddToDebugFile "! download link # '$2'" "failed! Wget returned: ($result - $( WgetReturnCodes "$result" ))"
+		IncrementFile "${download_failures_count_pathfile}"
 
 		# delete temp file if one was created
 		[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
@@ -416,7 +416,6 @@ function DownloadImages
 	local message=""
 	local child_count=0
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
-	local downloads_count=0
 	failures_count=0
 	result=0
 	pids=""
@@ -434,6 +433,8 @@ function DownloadImages
 		done
 
 		if [ "$countdown" -gt 0 ] ; then
+			ShowProgressMsg
+
 			((result_index++))
 
 			SingleImageDownloader "$msg" "$result_index" &
@@ -447,39 +448,18 @@ function DownloadImages
 			done
 
 			# how many were successful?
-			[ -e "${good_downloads_count_pathfile}" ] && good_count=$(<"${good_downloads_count_pathfile}") || good_count=0
+			[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 
-			if [ "$good_count" -lt "$images_required" ] ; then
+			if [ "$success_count" -lt "$images_required" ] ; then
 				# not enough yet, so go get some more
 				# increase countdown again to get remaining files
-				countdown=$(($images_required-$good_count))
+				countdown=$(($images_required-$success_count))
 			else
 				break
 			fi
 		fi
 
-# 		printf %${strlength}s | tr ' ' '\b'
-
-# 		progress_message="($(($downloads_count+1))/${images_required} images) "
-
-# 		if [ $failures_count -gt 0 ] ; then
-# 			progress_message+="with (${failures_count}/$failures_limit failures) "
-# 		fi
-
-# 		echo -n "$progress_message"
-# 		strlength=${#progress_message}
-
-# 		[ "$debug" == true ] && AddToDebugFile "? \$result_index" "$result_index"
-
-# 		if [ $result -eq 0 ] ; then
-# 			((downloads_count++))
-# 			[ "$debug" == true ] && AddToDebugFile "= \$result_index '$result_index'" "success!"
-# 		else
 # 			# increment failures_count but keep trying to download images
-# 			[ "$debug" == true ] && AddToDebugFile "! \$result_index '$result_index'" "failed! Wget returned: ($result - $( WgetReturnCodes "$result" ))"
-
-			# delete temp file if one was created
-# 			[ -e "$targetimage_pathfileext" ] && rm -f "${targetimage_pathfileext}"
 
 # 			((failures_count++))
 # 			[ "$debug" == true ] && AddToDebugFile "> incremented \$failures_count" "$failures_count"
@@ -488,9 +468,6 @@ function DownloadImages
 # 				result=1
 # 				break
 # 			fi
-# 		fi
-
-# 		[ $downloads_count -eq $images_required ] && break
 
 	done < "${imagelist_pathfile}"
 
@@ -501,13 +478,35 @@ function DownloadImages
 		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
 	fi
 
-	[ -e "${good_downloads_count_pathfile}" ] && good_count=$(<"${good_downloads_count_pathfile}") || good_count=0
-	[ -e "${bad_downloads_count_pathfile}" ] && bad_count=$(<"${bad_downloads_count_pathfile}") || bad_count=0
+	ShowProgressMsg
 
 	echo "all done!"
-	echo "$good_count images were downloaded with $bad_count failures."
 
 	return $result
+
+	}
+
+function ShowProgressMsg
+	{
+
+	printf %${strlength}s | tr ' ' '\b'
+
+	RefreshSuccessFailure
+
+	progress_message="(${success_count}/${images_required} images) "
+
+	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit failures) "
+
+	echo -n "$progress_message"
+	strlength=${#progress_message}
+
+	}
+
+function RefreshSuccessFailure
+	{
+
+	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
+	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
 
 	}
 
