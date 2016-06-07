@@ -95,13 +95,12 @@ This will download the first 250 available images for the search phrase "kittens
 ---
 **Known Issues:**
 
-- (2016-06-08) Script is ignoring the set failure-limit due to the new concurrency code inserted yesterday. Hoping to fix that today.
-- 'quiet' mode has not been enabled yet. This will supress display output. Low on my list but I'll correct this soon.
+- (2016-06-08) 'quiet' mode has not been enabled yet. This will supress display output. Low on my list but I'll correct this soon.
 
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Fixing that failure-limit issue ...
+- (2016-06-08) - Fixing 'quiet' mode ...
  
 ---
 **To-Do List:**

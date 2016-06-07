@@ -393,16 +393,16 @@ function DownloadImages
 	local func_startseconds=$( date +%s )
 	local result_index=0
 	local file_index=1
-	local strlength=0
 	local message=""
 	local child_count=0
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
+	strlength=0
 	failures_count=0
 	result=0
 	pids=""
 
 	echo "${child_count}" > "${process_tracker_pathfile}"
-	echo -n " -> downloading: "
+	echo -n " -> downloaded "
 
 	while read imagelink; do
 		while true; do
@@ -416,6 +416,17 @@ function DownloadImages
 		if [ "$countdown" -gt 0 ] ; then
 			ShowProgressMsg
 
+			if [ $failures_count -ge $failures_limit ] ; then
+ 				result=1
+
+ 				# wait here while all running downloads finish
+				for pid in ${pids[*]}; do
+					wait $pid
+				done
+
+ 				break
+ 			fi
+
 			((result_index++))
 
 			SingleImageDownloader "$msg" "$result_index" &
@@ -428,9 +439,9 @@ function DownloadImages
 				wait $pid
 			done
 
-			# how many were successful?
-			[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
+			RefreshSuccessFailure
 
+			# how many were successful?
 			if [ "$success_count" -lt "$images_required" ] ; then
 				# not enough yet, so go get some more
 				# increase countdown again to get remaining files
@@ -439,20 +450,7 @@ function DownloadImages
 				break
 			fi
 		fi
-
-# 			# increment failures_count but keep trying to download images
-
-# 			((failures_count++))
-# 			[ "$debug" == true ] && AddToDebugFile "> incremented \$failures_count" "$failures_count"
-
-# 			if [ $failures_count -ge $failures_limit ] ; then
-# 				result=1
-# 				break
-# 			fi
-
 	done < "${imagelist_pathfile}"
-
-# 	echo
 
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
@@ -461,7 +459,7 @@ function DownloadImages
 
 	ShowProgressMsg
 
-	echo "all done!"
+	echo
 
 	return $result
 
@@ -474,7 +472,7 @@ function BuildGallery
 
 	local func_startseconds=$( date +%s )
 
-	echo -n " -- building thumbnail gallery ... "
+	echo -n " -> building thumbnail gallery: "
 
 	gallery_cmd="montage \"${target_path}/*[0]\" -shadow -geometry 400x400 \"${target_path}/${gallery_name}-($user_query).png\""
 	[ "$debug" == true ] && AddToDebugFile "? \$gallery_cmd" "$gallery_cmd"
@@ -540,9 +538,9 @@ function ShowProgressMsg
 
 	RefreshSuccessFailure
 
-	progress_message="(${success_count}/${images_required} images) "
+	progress_message="(${success_count}/${images_required}) images "
 
-	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit failures) "
+	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
 
 	echo -n "$progress_message"
 	strlength=${#progress_message}
@@ -771,8 +769,8 @@ if [ $exitcode -eq 0 ] ; then
 	DownloadImages
 
 	if [ $? -gt 0 ] ; then
-		echo " !! failures_limit reached!"
-		[ "$debug" == true ] && AddToDebugFile "! failures_limit reached" "$failures_limit"
+		echo " !! failure limit reached!"
+		[ "$debug" == true ] && AddToDebugFile "! failure limit reached" "$failures_limit"
 		exitcode=5
 	fi
 
