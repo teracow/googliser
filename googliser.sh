@@ -143,7 +143,7 @@ function ShowHelp
 	HelpLineFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpLineFormat "h" "help" "Display this help then exit."
 	HelpLineFormat "v" "version " "Show script version then exit."
-	HelpLineFormat "q" "quiet" "Supress display output. (non-functional in this version)"
+	HelpLineFormat "q" "quiet" "Suppress display output. (non-functional in this version)"
 	HelpLineFormat "d" "debug" "Output debug info to file ($debug_file)."
 	echo
 	echo " - Example:"

@@ -25,7 +25,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 
     $ ./googliser.sh [PARAMETERS] ...
 
-where allowable parameters are a hyphen with a single character or the alternative form with 2 hypens and the full text:
+where allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text:
 
 `-n` or `--number INTEGER`
 
@@ -65,16 +65,22 @@ Show script version then exit.
 
 `-q` or `--quiet`
 
-Supress display output. (non-functional in this version)
+Suppress display output. (non-functional in this version)
 
 `-d` or `--debug`
 
 Output debug info to file.
 
-**Example:**
+
+**Examples:**
+
 `$ ./googliser.sh -n 20 -p "cows"`
 
 This will download the first 20 available images for the search phrase "cows"
+
+`$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10`
+
+This will download the first 250 available images for the search phrase "kittens" and download up to 10 images at once.
 
 ---
 **Return Values ($?):**  
