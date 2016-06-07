@@ -23,15 +23,18 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Usage:**
 
-`$ ./googliser.sh [PARAMETERS] ...`
+    $ ./googliser.sh [PARAMETERS] ...
 
--n --number=INTEGER
+where:
 
-    Number of images to download. Maximum of $results_max.
+`-n --number=INTEGER`
+
+Number of images to download. Maximum of $results_max.  
     
--p --phrase=STRING (required)  
 
-    Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
+`-p --phrase=STRING (required)`
+
+Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
     
 
 -l --limit=INTEGER  How many download failures before exiting? 0 for unlimited ($results_max)."
