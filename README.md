@@ -29,7 +29,7 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 `-n` or `--number INTEGER`
 
-Number of images to download. Maximum of 400.  
+Number of images to download. Default is 25. Maximum is 400.  
 
 `-p` or `--phrase STRING (required)`
 
@@ -37,23 +37,23 @@ Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
 
 `-f` or `--failures INTEGER`
 
-How many download failures before exiting? 0 for unlimited (400)."
+How many download failures before exiting? Default is 10. Enter 0 for unlimited (this will potentially try to download all results)."
 
 `-c` or `--concurrency INTEGER`
 
-How many concurrent image downloads? Maximum of 40. A higher number will not necessarily download faster!
+How many concurrent image downloads? Default is 8. Maximum is 40. A higher number will not necessarily download faster!
 
 `-t` or `--timeout INTEGER`
 
-Number of seconds before retrying download. Maximum of 600 (10 minutes).
+Number of seconds before retrying download. Default is 15. Maximum is 600 (10 minutes).
 
 `-r` or `--retries INTEGER`
 
-Try to download each image this many times. Maximum of 100.
+Try to download each image this many times. Default is 3. Maximum is 100.
 
 `-g` or `--no-gallery`
 
-Don't create thumbnail gallery.
+Don't create thumbnail gallery. Default is that script always creates a thumbnail gallery after downloading images.
 
 `-h` or `--help`
 
@@ -69,7 +69,7 @@ Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`
 
-Output debug info to file.
+Append debug info to file. Default is no debug file created. If selected, output is appended to 'googliser-debug.log' in working directory.
 
 **Examples:**
 

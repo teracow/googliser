@@ -38,10 +38,7 @@ function Init
 	results_file="google-results.html"
 	server="www.google.com.au"
 
-	exitcode=0
 	results_max=400
-	result_index=0
-	failures_count=0
 	spawn_max=40
 	timeout_max=600
 	retries_max=100
@@ -55,7 +52,7 @@ function Init
 	spawn_limit=8
 	failures_limit=10
 	timeout=15
-	retries=2
+	retries=3
 	create_gallery=true
 	verbose=true
 	debug=false
@@ -65,6 +62,9 @@ function Init
 
 	script_starttime=$( date )
 	script_startseconds=$( date +%s )
+	result_index=0
+	failures_count=0
+	exitcode=0
 
 	WhatAreMyOptions
 
@@ -684,7 +684,7 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $spawn_limit -le 0 ] ; then
+			if [ $spawn_limit -lt 1 ] ; then
 				spawn_limit=1
 				[ "$debug" == true ] && AddToDebugFile "? \$spawn_limit too small so set as" "$spawn_limit"
 			fi
@@ -705,7 +705,7 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $timeout -le 0 ] ; then
+			if [ $timeout -lt 1 ] ; then
 				timeout=1
 				[ "$debug" == true ] && AddToDebugFile "? \$timeout too small so set as" "$timeout"
 			fi
@@ -726,7 +726,7 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $retries -le 0 ] ; then
+			if [ $retries -lt 1 ] ; then
 				retries=1
 				[ "$debug" == true ] && AddToDebugFile "? \$retries too small so set as" "$retries"
 			fi
