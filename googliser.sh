@@ -44,10 +44,10 @@ function Init
 	results_max=400
 	result_index=0
 	bad_count=0
-	child_limit=8		# run no more than this many wgets concurrently
-	process_tracker_file="${temp_path}/child-process.count"
-	good_downloads_count_file="${temp_path}/successful-downloads.count"
-	bad_downloads_count_file="${temp_path}/failed-downloads.count"
+	spawn_limit=8
+	process_tracker_pathfile="${temp_path}/child-process.count"
+	good_downloads_count_pathfile="${temp_path}/successful-downloads.count"
+	bad_downloads_count_pathfile="${temp_path}/failed-downloads.count"
 
 	# user parameters
 	user_query=""
@@ -84,8 +84,8 @@ function Init
 		IsProgramAvailable "montage" || exitcode=1
 	fi
 
-	[ -e "${good_downloads_count_file}" ] && rm -f "${good_downloads_count_file}"
-	[ -e "${bad_downloads_count_file}" ] && rm -f "${bad_downloads_count_file}"
+	[ -e "${good_downloads_count_pathfile}" ] && rm -f "${good_downloads_count_pathfile}"
+	[ -e "${bad_downloads_count_pathfile}" ] && rm -f "${bad_downloads_count_pathfile}"
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -344,7 +344,7 @@ function SingleImageDownloader
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
-	IncrementFile "${process_tracker_file}"
+	IncrementFile "${process_tracker_pathfile}"
 
 	echo "- starting download of link# [$2] ..."
 
@@ -363,17 +363,17 @@ function SingleImageDownloader
 
 	if [ $result -eq 0 ] ; then
 		echo "= finished download of link# [$2]: success!"
-		IncrementFile "${good_downloads_count_file}"
+		IncrementFile "${good_downloads_count_pathfile}"
 	else
 		# increment failures_count but keep trying to download images
 		echo "= finished download of link# [$2]: failed!"
-		IncrementFile "${bad_downloads_count_file}"
+		IncrementFile "${bad_downloads_count_pathfile}"
 
 		# delete temp file if one was created
 		[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 	fi
 
-	DecrementFile "${process_tracker_file}"
+	DecrementFile "${process_tracker_pathfile}"
 
 	}
 
@@ -394,14 +394,14 @@ function DownloadImages
 	result=0
 	pids=""
 
-	echo "${child_count}" > "${process_tracker_file}"
+	echo "${child_count}" > "${process_tracker_pathfile}"
 	echo -n " -> downloading: "
 
 	while read imagelink; do
 		while true; do
-			child_count=$(<"${process_tracker_file}")
+			child_count=$(<"${process_tracker_pathfile}")
 
-			[ "$child_count" -lt "$child_limit" ] && break
+			[ "$child_count" -lt "$spawn_limit" ] && break
 
 			sleep 0.5
 		done
@@ -412,15 +412,15 @@ function DownloadImages
 			SingleImageDownloader "$msg" "$result_index" &
 			pids[${result_index}]=$!		# record PID for checking later
 			((countdown--))
-			sleep 0.1			# allow new child process time to spawn and update process counter file
+			sleep 0.1				# allow spawned process time to update process accumulator file
 		else
-			# wait here while all current downloads finish
+			# wait here while all running downloads finish
 			for pid in ${pids[*]}; do
 				wait $pid
 			done
 
 			# how many were successful?
-			[ -e "${good_downloads_count_file}" ] && good_count=$(<"${good_downloads_count_file}") || good_count=0
+			[ -e "${good_downloads_count_pathfile}" ] && good_count=$(<"${good_downloads_count_pathfile}") || good_count=0
 
 			if [ "$good_count" -lt "$images_required" ] ; then
 				# not enough yet, so go get some more
@@ -474,8 +474,8 @@ function DownloadImages
 		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
 	fi
 
-	[ -e "${good_downloads_count_file}" ] && good_count=$(<"${good_downloads_count_file}") || good_count=0
-	[ -e "${bad_downloads_count_file}" ] && bad_count=$(<"${bad_downloads_count_file}") || bad_count=0
+	[ -e "${good_downloads_count_pathfile}" ] && good_count=$(<"${good_downloads_count_pathfile}") || good_count=0
+	[ -e "${bad_downloads_count_pathfile}" ] && bad_count=$(<"${bad_downloads_count_pathfile}") || bad_count=0
 
 	echo "all done!"
 	echo "$good_count images were downloaded with $bad_count failures."
