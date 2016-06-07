@@ -23,7 +23,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Usage:**
 
-> $ ./$script_name [PARAMETERS] ..."
+`$ ./$script_name [PARAMETERS] ...`
 
 > -n --number=INTEGER Number of images to download. Maximum of $results_max.
 	
