@@ -4,7 +4,7 @@ This is a BASH script to perform fast bulk image downloads sourced from Google I
 
 (This is an expansion upon a solution provided by ShellFish [here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
-*This script has now replaced **bulk-google-image-downloader.sh***
+*This script has now replaced* ***bulk-google-image-downloader.sh***
 
 A sub-directory is created below the current directory with the name of the user-specified search-phrase. All image links from this search are saved to a file. The script then iterates through this file and downloads the first [n]umber (user-specified) of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached (optionally specified). A single thumbnail gallery image is then built using ImageMagick's **montage**.
 
