@@ -33,15 +33,15 @@ Number of images to download. Default is 25. Maximum is 400.
 
 `-p` or `--phrase STRING (required)`
 
-Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
+Search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
 
 `-f` or `--failures INTEGER`
 
-How many download failures before exiting? Default is 10. Enter 0 for unlimited (this will potentially try to download all results)."
+How many download failures before exiting? Default is 10. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures).
 
 `-c` or `--concurrency INTEGER`
 
-How many concurrent image downloads? Default is 8. Maximum is 40. A higher number will not necessarily download faster!
+How many concurrent image downloads? Default is 8. Maximum is 40. **A higher number will not necessarily download faster!**
 
 `-t` or `--timeout INTEGER`
 
@@ -75,11 +75,11 @@ Append debug info to file. Default is no debug file output. If selected, debuggi
 
 `$ ./googliser.sh -n 20 -p "cows"`
 
-This will download the first 20 available images for the search phrase "cows"
+This will download the first 20 available images for the search phrase *"cows"*
 
-`$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10`
+`$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0`
 
-This will download the first 250 available images for the search phrase "kittens" and download up to 10 images at once.
+This will download the first 250 available images for the search phrase *"kittens"* and download up to 10 images at once and ignore failures limit.
 
 ---
 **Return Values ($?):**  
