@@ -65,11 +65,11 @@ Show script version then exit.
 
 `-q` or `--quiet`
 
-Suppress display output. Error messages are still shown. Great for finding out what commands and parameters were run! :)
+Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`
 
-Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory.
+Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what commands and parameters were run! :)
 
 **Examples:**
 
