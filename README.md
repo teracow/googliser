@@ -33,7 +33,6 @@ Suggestions / comments / advice (are|is) most welcome. :)
 **Known Issues:**
 
 - (2016-06-08) Script is ignoring the set failure-limit due to the new concurrency code inserted yesterday. Hoping to fix that today.
-- Display output during download needs to be a little more sensible. Still using the test program's output.
 - 'quiet' mode has not been enabled yet. This will supress display output. Low on my list but I'll correct this soon.
 
 ---
