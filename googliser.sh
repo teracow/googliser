@@ -113,6 +113,8 @@ function Init
 function ShowHelp
 	{
 
+	[ "$debug" == true ] && AddToDebugFile "> [${FUNCNAME[0]}]" "entry"
+
 	local sample_images_required=12
 	local sample_user_query_short="cows"
 	local sample_user_query_long="small brown cows"
@@ -143,7 +145,7 @@ function ShowHelp
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
-	HelpParameterFormat "q" "quiet" "Suppress display output. (non-functional in this version)"
+	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
 	HelpParameterFormat "d" "debug" "Output debug info to file ($debug_file)."
 	echo
 	echo " - Example:"
@@ -151,6 +153,8 @@ function ShowHelp
 	echo
 	echo " This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
 	echo
+
+	[ "$debug" == true ] && AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
 
 	}
 
@@ -306,7 +310,7 @@ function DownloadList
 
 	local func_startseconds=$( date +%s )
 
-	echo -n " -> searching Google for images matching the phrase \"$user_query\": "
+	[ "$verbose" == true ] && echo -n " -> searching Google for images matching the phrase \"$user_query\": "
 
 	DownloadAllPageSegments
 
@@ -329,11 +333,10 @@ function DownloadList
 			AddToDebugFile "? \$result_count" "$result_count"
 		fi
 
-		echo "found ${result_count} results!"
+		[ "$verbose" == true ] && echo "found ${result_count} results!"
 	else
 		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
-
-		echo "failed!"
+		[ "$verbose" == true ] && echo "failed!"
 	fi
 
 	if [ "$debug" == true ] ; then
@@ -402,7 +405,7 @@ function DownloadImages
 	pids=""
 
 	echo "${child_count}" > "${process_tracker_pathfile}"
-	echo -n " -> downloaded "
+	[ "$verbose" == true ] && echo -n " -> downloaded "
 
 	while read imagelink; do
 		while true; do
@@ -459,7 +462,7 @@ function DownloadImages
 
 	ShowProgressMsg
 
-	echo
+	[ "$verbose" == true ] && echo
 
 	return $result
 
@@ -472,7 +475,7 @@ function BuildGallery
 
 	local func_startseconds=$( date +%s )
 
-	echo -n " -> building thumbnail gallery: "
+	[ "$verbose" == true ] && echo -n " -> building thumbnail gallery: "
 
 	gallery_cmd="montage \"${target_path}/*[0]\" -shadow -geometry 400x400 \"${target_path}/${gallery_name}-($user_query).png\""
 	[ "$debug" == true ] && AddToDebugFile "? \$gallery_cmd" "$gallery_cmd"
@@ -486,10 +489,10 @@ function BuildGallery
 
 	if [ $result -eq 0 ] ; then
 		[ "$debug" == true ] && AddToDebugFile "= [${FUNCNAME[0]}]" "success!"
-		echo "OK!"
+		[ "$verbose" == true ] && echo "OK!"
 	else
 		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! montage returned: ($result)"
-		echo "failed!"
+		[ "$verbose" == true ] && echo "failed!"
 	fi
 
 	if [ "$debug" == true ] ; then
@@ -534,16 +537,18 @@ function DecrementFile
 function ShowProgressMsg
 	{
 
-	printf %${strlength}s | tr ' ' '\b'
-
 	RefreshSuccessFailure
 
-	progress_message="(${success_count}/${images_required}) images "
+	if [ "$verbose" == true ] ; then
+		printf %${strlength}s | tr ' ' '\b'
 
-	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
+		progress_message="(${success_count}/${images_required}) images "
 
-	echo -n "$progress_message"
-	strlength=${#progress_message}
+		[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
+
+		echo -n "$progress_message"
+		strlength=${#progress_message}
+	fi
 
 	}
 
@@ -630,7 +635,8 @@ Init
 if [ $exitcode -eq 0 ] ; then
 	case ${images_required#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-n) must be a valid integer ... unable to continue."
+			[ "$debug" == true ] && AddToDebugFile "! specified \$images_required" "invalid"
+			echo " !! number specified after (-n --number) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -650,7 +656,8 @@ if [ $exitcode -eq 0 ] ; then
 
 	case ${failures_limit#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-l) must be a valid integer ... unable to continue."
+			[ "$debug" == true ] && AddToDebugFile "! specified \$failures_limit" "invalid"
+			echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -670,7 +677,8 @@ if [ $exitcode -eq 0 ] ; then
 
 	case ${spawn_limit#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-c) must be a valid integer ... unable to continue."
+			[ "$debug" == true ] && AddToDebugFile "! specified \$spawn_limit" "invalid"
+			echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -690,7 +698,8 @@ if [ $exitcode -eq 0 ] ; then
 
 	case ${timeout#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-t) must be a valid integer ... unable to continue."
+			[ "$debug" == true ] && AddToDebugFile "! specified \$timeout" "invalid"
+			echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -710,7 +719,8 @@ if [ $exitcode -eq 0 ] ; then
 
 	case ${retries#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-r) must be a valid integer ... unable to continue."
+			[ "$debug" == true ] && AddToDebugFile "! specified \$retries" "invalid"
+			echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -729,7 +739,8 @@ if [ $exitcode -eq 0 ] ; then
 	esac
 
 	if [ ! "$user_query" ] ; then
-		echo " !! search phrase (-p) was unspecified ... unable to continue."
+		[ "$debug" == true ] && AddToDebugFile "! \$user_query" "unspecified"
+		echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
 		echo
 		ShowHelp
 		exitcode=2
@@ -743,8 +754,8 @@ if [ $exitcode -eq 0 ] ; then
 	imagelist_pathfile="${target_path}/${imagelinkslist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
 
-	echo " ${script_details}"
-	echo
+	[ "$verbose" == true ] && echo " ${script_details}"
+	[ "$verbose" == true ] && echo
 
 	mkdir -p "${target_path}"
 

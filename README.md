@@ -65,7 +65,7 @@ Show script version then exit.
 
 `-q` or `--quiet`
 
-Suppress display output. (non-functional in this version)
+Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`
 
@@ -95,12 +95,12 @@ This will download the first 250 available images for the search phrase "kittens
 ---
 **Known Issues:**
 
-- (2016-06-08) 'quiet' mode has not been enabled yet. This will supress display output. Low on my list but I'll correct this soon.
+- (2016-06-08) None AFAIK.
 
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Fixing 'quiet' mode ...
+- (2016-06-08) - Hmmm... gallery title?
  
 ---
 **To-Do List:**
