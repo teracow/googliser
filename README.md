@@ -25,7 +25,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 
     $ ./googliser.sh [PARAMETERS] ...
 
-where allowable parameters are:
+where allowable parameters are a hyphen with a single character or the alternative form with 2 hypens and the full text:
 
 `-n` or `--number INTEGER`
 
@@ -35,39 +35,39 @@ Number of images to download. Maximum of 400.
 
 Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
 
-`-l` `--limit INTEGER`
+`-l` or `--limit INTEGER`
 
 How many download failures before exiting? 0 for unlimited (400)."
 
-`-c` `--concurrency INTEGER`
+`-c` or `--concurrency INTEGER`
 
-How many concurrent image downloads? Maximum of $spawn_max. Use wisely!
+How many concurrent image downloads? Maximum of 40. Use wisely. More will not necessarily download faster!
 
-`-t --timeout=INTEGER`
+`-t` or `--timeout INTEGER`
 
-Number of seconds before retrying download. Maximum of $timeout_max.
+Number of seconds before retrying download. Maximum of 600 (10 minutes).
 
-`-r --retries=INTEGER`
+`-r` or `--retries INTEGER`
 
-Try to download each image this many times. Maximum of $retries_max.
+Try to download each image this many times. Maximum of 100.
 
-`-g --no-gallery`
+`-g` or `--no-gallery`
 
 Don't create thumbnail gallery.
 
-`-h --help`
+`-h` or `--help`
 
 Display this help then exit.
 
-`-v --version`
+`-v` or `--version`
 
 Show script version then exit.
 
-`-q --quiet`
+`-q` or `--quiet`
 
 Supress display output. (non-functional in this version)
 
-`-d --debug`
+`-d` or `--debug`
 
 Output debug info to file.
 
