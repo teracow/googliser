@@ -24,7 +24,7 @@
 function Init
 	{
 
-	script_version="1.13"
+	script_version="1.14"
 	script_date="2016-06-07"
 	script_name="$( basename -- "$( readlink -f -- "$0" )" )"
 	script_details="${script_name} - v${script_version} (${script_date})"
@@ -241,6 +241,7 @@ function DownloadAllPageSegments
 		pids[${quarter}]=$!
 	done
 
+	# wait for spawned children to exit
 	for pid in ${pids[*]}; do
 		wait $pid
 	done
@@ -365,7 +366,7 @@ function DownloadImages
 
 		[ $downloads_count -eq $images_required ] && break
 
-	done <"${imagelist_pathfile}"
+	done < "${imagelist_pathfile}"
 
 	echo
 

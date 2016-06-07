@@ -37,7 +37,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Work-in-Progress**
 
-- (2016-06-07) - Working on concurrent downloads.
+- (2016-06-07) - Working on concurrent downloads. This is going quite well. I built [this](https://github.com/teracow/pstracker) this morning so I would have a better understanding of the problems involved in concurrent processes. I'm now working on a version that uses wget. Currently has a tendancy to 'overshoot' the required amount of images. When I solve this, I'll integrate this code into googliser. Best guess is a day or two from now.
 
 ---
 **To-Do List**
