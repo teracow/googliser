@@ -136,7 +136,7 @@ function ShowHelp
 	echo " Mandatory arguments to long options are mandatory for short options too."
 	HelpParameterFormat "n" "number=INTEGER ($images_required)" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
-	HelpParameterFormat "l" "limit=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpParameterFormat "f" "failures=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
 	HelpParameterFormat "c" "concurrency=INTEGER ($spawn_limit)" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
 	HelpParameterFormat "t" "timeout=INTEGER ($timeout)" "Number of seconds before retrying download. Maximum of $timeout_max."
 	HelpParameterFormat "r" "retries=INTEGER ($retries)" "Try to download each image this many times. Maximum of $retries_max."
@@ -183,7 +183,7 @@ function WhatAreMyOptions
 				images_required="$2"
 				shift 2		# shift to next parameter in $1
 				;;
-			-l | --limit )
+			-f | --failures )
 				failures_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
@@ -623,7 +623,7 @@ function ConvertSecs
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,r:,t:,c:,l:n:,p: --long help,no-gallery,debug,quiet,version,retries:,timeout:,concurrency:,limit:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
 user_parameters_result=$?
 
 Init

@@ -35,7 +35,7 @@ Number of images to download. Maximum of 400.
 
 Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
 
-`-l` or `--limit INTEGER`
+`-f` or `--failures INTEGER`
 
 How many download failures before exiting? 0 for unlimited (400)."
 
