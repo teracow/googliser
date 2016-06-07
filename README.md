@@ -27,19 +27,19 @@ Suggestions / comments / advice (are|is) most welcome. :)
 
 where allowable parameters are:
 
-`-n` or `--number=INTEGER`
+`-n` or `--number INTEGER`
 
 Number of images to download. Maximum of 400.  
 
-`-p` or `--phrase=STRING (required)`
+`-p` or `--phrase STRING (required)`
 
 Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
 
-`-l --limit=INTEGER`
+`-l` `--limit INTEGER`
 
 How many download failures before exiting? 0 for unlimited (400)."
 
-`-c --concurrency=INTEGER`
+`-c` `--concurrency INTEGER`
 
 How many concurrent image downloads? Maximum of $spawn_max. Use wisely!
 
@@ -71,6 +71,10 @@ Supress display output. (non-functional in this version)
 
 Output debug info to file.
 
+**Example:**
+`$ ./googliser.sh -n 20 -p "cows"`
+
+This will download the first 20 available images for the search phrase "cows"
 
 ---
 **Return Values ($?):**  
