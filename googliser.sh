@@ -29,7 +29,8 @@ function Init
 	script_name="$( basename -- "$( readlink -f -- "$0" )" )"
 	script_details="${script_name} - v${script_version} (${script_date})"
 
-	current_dir="$PWD"
+	current_path="$PWD"
+	temp_path="/dev/shm"
 	gallery_name="googliser-gallery"
 	imagelinkslist_file="googliser-links.list"
 	debug_file="googliser-debug.log"
@@ -41,6 +42,12 @@ function Init
 	download_retries=3
 	exitcode=0
 	results_max=400
+	result_index=0
+	bad_count=0
+	child_limit=8		# run no more than this many wgets concurrently
+	process_tracker_file="${temp_path}/child-process.count"
+	good_downloads_count_file="${temp_path}/successful-downloads.count"
+	bad_downloads_count_file="${temp_path}/failed-downloads.count"
 
 	# user parameters
 	user_query=""
@@ -76,6 +83,9 @@ function Init
 	if [ "$create_gallery" == true ] ; then
 		IsProgramAvailable "montage" || exitcode=1
 	fi
+
+	[ -e "${good_downloads_count_file}" ] && rm -f "${good_downloads_count_file}"
+	[ -e "${bad_downloads_count_file}" ] && rm -f "${bad_downloads_count_file}"
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -297,6 +307,76 @@ function DownloadList
 
 	}
 
+function IncrementFile
+	{
+
+	# $1 = pathfile containing an integer to increment
+
+	if [ -z "$1" ] ; then
+		return 1
+	else
+		[ -e "$1" ] && count=$(<"$1") || count=0
+		((count++))
+		echo "$count" > "$1"
+	fi
+
+	}
+
+function DecrementFile
+	{
+
+	# $1 = pathfile containing an integer to decrement
+
+	if [ -z "$1" ] ; then
+		return 1
+	else
+		[ -e "$1" ] && count=$(<"$1") || count=0
+		((count--))
+		echo "$count" > "$1"
+	fi
+
+	}
+
+function SingleImageDownloader
+	{
+
+	# This function runs as a background process
+	# $1 = URL to download
+	# $2 = current counter relative to main list
+
+	IncrementFile "${process_tracker_file}"
+
+	echo "- starting download of link# [$2] ..."
+
+	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
+	ext=$( echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/" )
+
+	[[ "$ext" =~ "." ]] || ext=".jpg"	# if URL did not have a file extension then choose jpg as default
+
+	targetimage_pathfileext="${targetimage_pathfile}($2)${ext}"
+
+	local wget_download_cmd="wget --max-redirect 0 --timeout=${download_timeout} --tries=${download_retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+	[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
+
+	eval $wget_download_cmd > /dev/null 2>&1
+	result=$?
+
+	if [ $result -eq 0 ] ; then
+		echo "= finished download of link# [$2]: success!"
+		IncrementFile "${good_downloads_count_file}"
+	else
+		# increment failures_count but keep trying to download images
+		echo "= finished download of link# [$2]: failed!"
+		IncrementFile "${bad_downloads_count_file}"
+
+		# delete temp file if one was created
+		[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
+	fi
+
+	DecrementFile "${process_tracker_file}"
+
+	}
+
 function DownloadImages
 	{
 
@@ -307,73 +387,98 @@ function DownloadImages
 	local file_index=1
 	local strlength=0
 	local message=""
-	downloads_count=0
+	local child_count=0
+	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
+	local downloads_count=0
 	failures_count=0
 	result=0
+	pids=""
 
+	echo "${child_count}" > "${process_tracker_file}"
 	echo -n " -> downloading: "
 
 	while read imagelink; do
-		((result_index++))
+		while true; do
+			child_count=$(<"${process_tracker_file}")
 
-		printf %${strlength}s | tr ' ' '\b'
+			[ "$child_count" -lt "$child_limit" ] && break
 
-		progress_message="($(($downloads_count+1))/${images_required} images) "
-
-		if [ $failures_count -gt 0 ] ; then
-			progress_message+="with (${failures_count}/$failures_max failures) "
-		fi
-
-		echo -n "$progress_message"
-		strlength=${#progress_message}
-
-		# extract file extension
-		ext=$( echo $imagelink | sed "s/.*\(\.[^\.]*\)$/\1/" )
-
-		# increment file_index if file already exists
-		while [[ -e "${targetimage_pathfile}(${file_index})${ext}" ]] ; do
-			((file_index++))
+			sleep 0.5
 		done
-		targetimage_pathfileext="${targetimage_pathfile}(${file_index})${ext}"
 
-		[ "$debug" == true ] && AddToDebugFile "? \$result_index" "$result_index"
+		if [ "$countdown" -gt 0 ] ; then
+			((result_index++))
 
-		# build wget command string
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${download_timeout} --tries=${download_retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
-		[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
-
-		eval $wget_download_cmd > /dev/null 2>&1
-		result=$?
-
-		if [ $result -eq 0 ] ; then
-			((downloads_count++))
-			[ "$debug" == true ] && AddToDebugFile "= \$result_index '$result_index'" "success!"
+			SingleImageDownloader "$msg" "$result_index" &
+			pids[${result_index}]=$!		# record PID for checking later
+			((countdown--))
+			sleep 0.1			# allow new child process time to spawn and update process counter file
 		else
-			# increment failures_count but keep trying to download images
-			[ "$debug" == true ] && AddToDebugFile "! \$result_index '$result_index'" "failed! Wget returned: ($result - $( WgetReturnCodes "$result" ))"
+			# wait here while all current downloads finish
+			for pid in ${pids[*]}; do
+				wait $pid
+			done
 
-			# delete temp file if one was created
-			[ -e "$targetimage_pathfileext" ] && rm -f "${targetimage_pathfileext}"
+			# how many were successful?
+			[ -e "${good_downloads_count_file}" ] && good_count=$(<"${good_downloads_count_file}") || good_count=0
 
-			((failures_count++))
-			[ "$debug" == true ] && AddToDebugFile "> incremented \$failures_count" "$failures_count"
-
-			if [ $failures_count -ge $failures_max ] ; then
-				result=1
+			if [ "$good_count" -lt "$images_required" ] ; then
+				# not enough yet, so go get some more
+				# increase countdown again to get remaining files
+				countdown=$(($images_required-$good_count))
+			else
 				break
 			fi
 		fi
 
-		[ $downloads_count -eq $images_required ] && break
+# 		printf %${strlength}s | tr ' ' '\b'
+
+# 		progress_message="($(($downloads_count+1))/${images_required} images) "
+
+# 		if [ $failures_count -gt 0 ] ; then
+# 			progress_message+="with (${failures_count}/$failures_max failures) "
+# 		fi
+
+# 		echo -n "$progress_message"
+# 		strlength=${#progress_message}
+
+# 		[ "$debug" == true ] && AddToDebugFile "? \$result_index" "$result_index"
+
+# 		if [ $result -eq 0 ] ; then
+# 			((downloads_count++))
+# 			[ "$debug" == true ] && AddToDebugFile "= \$result_index '$result_index'" "success!"
+# 		else
+# 			# increment failures_count but keep trying to download images
+# 			[ "$debug" == true ] && AddToDebugFile "! \$result_index '$result_index'" "failed! Wget returned: ($result - $( WgetReturnCodes "$result" ))"
+
+			# delete temp file if one was created
+# 			[ -e "$targetimage_pathfileext" ] && rm -f "${targetimage_pathfileext}"
+
+# 			((failures_count++))
+# 			[ "$debug" == true ] && AddToDebugFile "> incremented \$failures_count" "$failures_count"
+
+# 			if [ $failures_count -ge $failures_max ] ; then
+# 				result=1
+# 				break
+# 			fi
+# 		fi
+
+# 		[ $downloads_count -eq $images_required ] && break
 
 	done < "${imagelist_pathfile}"
 
-	echo
+# 	echo
 
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
 		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
 	fi
+
+	[ -e "${good_downloads_count_file}" ] && good_count=$(<"${good_downloads_count_file}") || good_count=0
+	[ -e "${bad_downloads_count_file}" ] && bad_count=$(<"${bad_downloads_count_file}") || bad_count=0
+
+	echo "all done!"
+	echo "$good_count images were downloaded with $bad_count failures."
 
 	return $result
 
@@ -538,7 +643,7 @@ if [ $exitcode -eq 0 ] ; then
 fi
 
 if [ $exitcode -eq 0 ] ; then
-	target_path="${current_dir}/${user_query}"
+	target_path="${current_path}/${user_query}"
 	results_pathfile="${target_path}/${results_file}"
 	imagelist_pathfile="${target_path}/${imagelinkslist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
