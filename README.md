@@ -23,11 +23,16 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Usage:**
 
-`$ ./$script_name [PARAMETERS] ...`
+`$ ./googliser.sh [PARAMETERS] ...`
 
-> -n --number=INTEGER Number of images to download. Maximum of $results_max.
-	
--p --phrase=STRING (required)   Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
+-n --number=INTEGER
+
+    Number of images to download. Maximum of $results_max.
+    
+-p --phrase=STRING (required)  
+
+    Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
+    
 
 -l --limit=INTEGER  How many download failures before exiting? 0 for unlimited ($results_max)."
 
