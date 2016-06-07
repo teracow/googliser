@@ -1,18 +1,18 @@
 ### googliser.sh
 ---
-This is a BASH script to perform fast bulk image downloads sourced from Google Images based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **wget** one-by-one but downloads 8 images concurrently. 
+This is a BASH script to perform fast bulk image downloads sourced from Google Images based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **wget** to download images concurrently. 
 
 (This is an expansion upon a solution provided by ShellFish [here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
 This script will replace **bulk-google-image-downloader.sh**
 
-A sub-directory is created below the current directory with the name of the user-specified search-phrase. All image links from this search are saved to a file. The script then iterates through this file and downloads the first [n]umber (user-specified) of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached (optionally specified). A single gallery image is then built using ImageMagick's **montage**.
+A sub-directory is created below the current directory with the name of the user-specified search-phrase. All image links from this search are saved to a file. The script then iterates through this file and downloads the first [n]umber (user-specified) of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached (optionally specified). A single thumbnail gallery image is then built using ImageMagick's **montage**.
 
-As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :) So, I've included an option to disable the gallery build.
+Thumbnail gallery building is now optional as not everyone will want to do this. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
 Any links for **YouTube** and **Vimeo** are removed.
 
-**Note:** this script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-07. 
+**Note:** this script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-08. 
 
 The latest copy of this script can be found [here](https://github.com/teracow/googliser).  
 
@@ -37,7 +37,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 ---
 **Work-in-Progress**
 
-- (2016-06-07) - Concurrent downloads are now available! Can perform 8 wgets at the same time (much faster). Still got some cleanup to do though, which I'll get to tomorrow ~ after fixing the car. :)
+- (2016-06-08) - Concurrent downloads are now available! Can perform 8 wgets at the same time (much faster). Still got some cleanup to do though, which I'll get to tomorrow ~ after fixing the car. :)
  
 ---
 **To-Do List**
@@ -45,3 +45,4 @@ Suggestions / comments / advice (are|is) most welcome. :)
 - Check if target directory already has .html and .list files present. Prompt to remove or overwrite these?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.
+- Add search phrase as thumbnail gallery title?

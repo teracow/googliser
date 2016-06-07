@@ -25,7 +25,7 @@ function Init
 	{
 
 	script_version="1.14"
-	script_date="2016-06-07"
+	script_date="2016-06-08"
 	script_name="$( basename -- "$( readlink -f -- "$0" )" )"
 	script_details="${script_name} - v${script_version} (${script_date})"
 
@@ -38,22 +38,26 @@ function Init
 	results_file="google-results.html"
 	server="www.google.com.au"
 
-	download_timeout=20
-	download_retries=3
 	exitcode=0
 	results_max=400
 	result_index=0
 	bad_count=0
-	spawn_limit=8
+	spawn_max=40
+	timeout_max=600
+	retries_max=100
 	process_tracker_pathfile="${temp_path}/child-process.count"
 	good_downloads_count_pathfile="${temp_path}/successful-downloads.count"
 	bad_downloads_count_pathfile="${temp_path}/failed-downloads.count"
 
 	# user parameters
 	user_query=""
-	failures_max=10
-	images_required=1
+	images_required=10
+	spawn_limit=8
+	failures_limit=10
+	timeout=20
+	retries=3
 	create_gallery=true
+	verbose=true
 	debug=false
 
 	# http://whatsmyuseragent.com
@@ -72,8 +76,10 @@ function Init
 		AddToDebugFile "? \$script_details" "$script_details"
 		AddToDebugFile "? \$user_query" "$user_query"
 		AddToDebugFile "? \$images_required" "$images_required"
+		AddToDebugFile "? \$spawn_limit" "$spawn_limit"
 		AddToDebugFile "? \$results_max" "$results_max"
-		AddToDebugFile "? \$failures_max" "$failures_max"
+		AddToDebugFile "? \$failures_limit" "$failures_limit"
+		AddToDebugFile "? \$verbose" "$verbose"
 		AddToDebugFile "? \$create_gallery" "$create_gallery"
 	fi
 
@@ -108,8 +114,8 @@ function ShowHelp
 	{
 
 	local sample_images_required=12
-	local sample_user_query="cows"
-	local sample_long_user_query="small brown cows"
+	local sample_user_query_short="cows"
+	local sample_user_query_long="small brown cows"
 
 	echo " ${script_details}"
 	echo
@@ -120,25 +126,30 @@ function ShowHelp
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
-	echo " Requirements: wget, Perl and ImageMagick."
+	echo " Requirements: Wget and Perl"
+	echo " Optional: ImageMagick (montage)"
 	echo
 	echo " Questions or comments? teracow@gmail.com"
 	echo
-	echo " Usage: ./$script_name [PARAMETERS]..."
+	echo " Usage: ./$script_name [PARAMETERS] ..."
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too."
-	echo "  -n, --number=INTEGER (default $images_required)  Number of images to download. Maximum of $results_max."
-	echo "  -p, --phrase=STRING (required)    Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_long_user_query\"."
-	echo "  -l, --limit=INTEGER (default $failures_max)  Allow this many image download failures before exiting. 0 for unlimited ($results_max)."
-	echo "  -g, --no-gallery                  Don't create thumbnail gallery. Default is to create a gallery."
+	echo "  -n, --number=INTEGER ($images_required)         Number of images to download. Maximum of $results_max."
+	echo "  -p, --phrase=STRING (required)    Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
+	echo "  -l, --limit=INTEGER ($failures_limit)          Allow this many image download failures before exiting. 0 for unlimited ($results_max)."
+	echo "  -c, --concurrency=INTEGER ($spawn_limit)     Allow up to this many concurrent image downloads. Maximum of $spawn_max."
+	echo "  -t, --timeout=INTEGER ($timeout)        Number of seconds before retrying download. Maximum of $timeout_max."
+	echo "  -r, --retries=INTEGER ($retries)         Try to download each image this many times. Maximum of $retries_max."
+	echo "  -g, --no-gallery                  Don't create thumbnail gallery."
 	echo "  -h, --help                        Display this help then exit."
-	echo "  -d, --debug                       Output debug info to file ($debug_file)."
 	echo "  -v, --version                     Show script version then exit."
+	echo "  -q, --quiet                       Supress display output. (non-functional in this version)"
+	echo "  -d, --debug                       Output debug info to file ($debug_file)."
 	echo
 	echo " example:"
-	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query}\""
+	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query_short}\""
 	echo
-	echo " - This will download the first $sample_images_required available images for the search phrase \"${sample_user_query}\""
+	echo " - This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
 	echo
 
 	}
@@ -162,11 +173,23 @@ function WhatAreMyOptions
 				shift 2		# shift to next parameter in $1
 				;;
 			-l | --limit )
-				failures_max="$2"
+				failures_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-p | --phrase )
 				user_query="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-c | --concurrency )
+				spawn_limit="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-t | --timeout )
+				timeout="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-r | --retries )
+				retries="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-h | --help )
@@ -175,6 +198,10 @@ function WhatAreMyOptions
 				;;
 			-g | --no-gallery )
 				create_gallery=false
+				shift
+				;;
+			-q | --quiet )
+				verbose=false
 				shift
 				;;
 			-d | --debug )
@@ -355,7 +382,7 @@ function SingleImageDownloader
 
 	targetimage_pathfileext="${targetimage_pathfile}($2)${ext}"
 
-	local wget_download_cmd="wget --max-redirect 0 --timeout=${download_timeout} --tries=${download_retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+	local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 	[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
 
 	eval $wget_download_cmd > /dev/null 2>&1
@@ -436,7 +463,7 @@ function DownloadImages
 # 		progress_message="($(($downloads_count+1))/${images_required} images) "
 
 # 		if [ $failures_count -gt 0 ] ; then
-# 			progress_message+="with (${failures_count}/$failures_max failures) "
+# 			progress_message+="with (${failures_count}/$failures_limit failures) "
 # 		fi
 
 # 		echo -n "$progress_message"
@@ -457,7 +484,7 @@ function DownloadImages
 # 			((failures_count++))
 # 			[ "$debug" == true ] && AddToDebugFile "> incremented \$failures_count" "$failures_count"
 
-# 			if [ $failures_count -ge $failures_max ] ; then
+# 			if [ $failures_count -ge $failures_limit ] ; then
 # 				result=1
 # 				break
 # 			fi
@@ -586,11 +613,12 @@ function ConvertSecs
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,v,l:n:,p: --long help,no-gallery,debug,version,limit:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,r:,t:,c:,l:n:,p: --long help,no-gallery,debug,quiet,version,retries:,timeout:,concurrency:,limit:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
 user_parameters_result=$?
 
 Init
 
+# user parameter validation and bounds checks
 if [ $exitcode -eq 0 ] ; then
 	case ${images_required#[-+]} in
 		*[!0-9]* )
@@ -612,7 +640,7 @@ if [ $exitcode -eq 0 ] ; then
 			;;
 	esac
 
-	case ${failures_max#[-+]} in
+	case ${failures_limit#[-+]} in
 		*[!0-9]* )
 			echo " !! number specified after (-l) must be a valid integer ... unable to continue."
 			echo
@@ -620,20 +648,78 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $failures_max -le 0 ] ; then
-				failures_max=$results_max
-				[ "$debug" == true ] && AddToDebugFile "? \$failures_max too small so set as \$results_max" "$failures_max"
+			if [ $failures_limit -le 0 ] ; then
+				failures_limit=$results_max
+				[ "$debug" == true ] && AddToDebugFile "? \$failures_limit too small so set as \$results_max" "$failures_limit"
 			fi
 
-			if [ $failures_max -gt $results_max ] ; then
-				failures_max=$results_max
-				[ "$debug" == true ] && AddToDebugFile "? \$failures_max too large so set as \$results_max" "$failures_max"
+			if [ $failures_limit -gt $results_max ] ; then
+				failures_limit=$results_max
+				[ "$debug" == true ] && AddToDebugFile "? \$failures_limit too large so set as \$results_max" "$failures_limit"
 			fi
 			;;
 	esac
-fi
 
-if [ $exitcode -eq 0 ] ; then
+	case ${spawn_limit#[-+]} in
+		*[!0-9]* )
+			echo " !! number specified after (-c) must be a valid integer ... unable to continue."
+			echo
+			ShowHelp
+			exitcode=2
+			;;
+		* )
+			if [ $spawn_limit -le 0 ] ; then
+				spawn_limit=1
+				[ "$debug" == true ] && AddToDebugFile "? \$spawn_limit too small so set as" "$spawn_limit"
+			fi
+
+			if [ $spawn_limit -gt $spawn_max ] ; then
+				spawn_limit=$spawn_max
+				[ "$debug" == true ] && AddToDebugFile "? \$spawn_limit too large so set as" "$spawn_limit"
+			fi
+			;;
+	esac
+
+	case ${timeout#[-+]} in
+		*[!0-9]* )
+			echo " !! number specified after (-t) must be a valid integer ... unable to continue."
+			echo
+			ShowHelp
+			exitcode=2
+			;;
+		* )
+			if [ $timeout -le 0 ] ; then
+				timeout=1
+				[ "$debug" == true ] && AddToDebugFile "? \$timeout too small so set as" "$timeout"
+			fi
+
+			if [ $timeout -gt $timeout_max ] ; then
+				timeout=$timeout_max
+				[ "$debug" == true ] && AddToDebugFile "? \$timeout too large so set as" "$timeout"
+			fi
+			;;
+	esac
+
+	case ${retries#[-+]} in
+		*[!0-9]* )
+			echo " !! number specified after (-t) must be a valid integer ... unable to continue."
+			echo
+			ShowHelp
+			exitcode=2
+			;;
+		* )
+			if [ $retries -le 0 ] ; then
+				retries=1
+				[ "$debug" == true ] && AddToDebugFile "? \$retries too small so set as" "$retries"
+			fi
+
+			if [ $retries -gt $retries_max ] ; then
+				retries=$retries_max
+				[ "$debug" == true ] && AddToDebugFile "? \$retries too large so set as" "$retries"
+			fi
+			;;
+	esac
+
 	if [ ! "$user_query" ] ; then
 		echo " !! search phrase (-p) was unspecified ... unable to continue."
 		echo
@@ -672,12 +758,12 @@ if [ $exitcode -eq 0 ] ; then
 	DownloadImages
 
 	if [ $? -gt 0 ] ; then
-		echo " !! failures_max reached!"
-		[ "$debug" == true ] && AddToDebugFile "! failures_max reached" "$failures_max"
+		echo " !! failures_limit reached!"
+		[ "$debug" == true ] && AddToDebugFile "! failures_limit reached" "$failures_limit"
 		exitcode=5
 	fi
 
-	# build thumbnail gallery even if failures_max was reached
+	# build thumbnail gallery even if failures_limit was reached
 	if [ "$create_gallery" == true ] ; then
 		BuildGallery
 
