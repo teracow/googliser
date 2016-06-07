@@ -702,7 +702,7 @@ if [ $exitcode -eq 0 ] ; then
 
 	case ${retries#[-+]} in
 		*[!0-9]* )
-			echo " !! number specified after (-t) must be a valid integer ... unable to continue."
+			echo " !! number specified after (-r) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
@@ -728,6 +728,7 @@ if [ $exitcode -eq 0 ] ; then
 	fi
 fi
 
+# create directory for search phrase
 if [ $exitcode -eq 0 ] ; then
 	target_path="${current_path}/${user_query}"
 	results_pathfile="${target_path}/${results_file}"
@@ -745,6 +746,7 @@ if [ $exitcode -eq 0 ] ; then
 	fi
 fi
 
+# get list of search results
 if [ $exitcode -eq 0 ] ; then
 	DownloadList
 
@@ -754,6 +756,7 @@ if [ $exitcode -eq 0 ] ; then
 	fi
 fi
 
+# download images and build gallery
 if [ $exitcode -eq 0 ] ; then
 	DownloadImages
 
@@ -774,6 +777,7 @@ if [ $exitcode -eq 0 ] ; then
 	fi
 fi
 
+# write results into debug file
 if [ "$debug" == true ] ; then
 	AddToDebugFile "? image download \$failures_count" "$failures_count"
 	AddToDebugFile "T [$script_name] elapsed time" "$( ConvertSecs "$(($( date +%s )-$script_startseconds))")"
