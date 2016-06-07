@@ -71,7 +71,6 @@ Suppress display output. (non-functional in this version)
 
 Output debug info to file.
 
-
 **Examples:**
 
 `$ ./googliser.sh -n 20 -p "cows"`
@@ -86,8 +85,8 @@ This will download the first 250 available images for the search phrase "kittens
 **Return Values ($?):**  
 
 0 : successful download(s).  
-1 : required program unavailable (wget, curl, perl or montage).  
-2 : required parameter unspecified or wrong - help shown or version requested.  
+1 : required program unavailable (wget, perl or montage).  
+2 : required parameter incorrect - help /version shown.  
 3 : could not create sub-directory for 'search phrase'.  
 4 : could not get a list of search results from Google.  
 5 : image download aborted as failure-limit was reached.  
