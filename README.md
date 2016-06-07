@@ -25,35 +25,51 @@ Suggestions / comments / advice (are|is) most welcome. :)
 
     $ ./googliser.sh [PARAMETERS] ...
 
-where:
+where allowable parameters are:
 
-`-n --number=INTEGER`
+`-n` or `--number=INTEGER`
 
-Number of images to download. Maximum of $results_max.  
-    
+Number of images to download. Maximum of 400.  
 
-`-p --phrase=STRING (required)`
+`-p` or `--phrase=STRING (required)`
 
 Search phrase to look for. Enclose whitespace in quotes e.g. "small brown cows"
-    
 
--l --limit=INTEGER  How many download failures before exiting? 0 for unlimited ($results_max)."
+`-l --limit=INTEGER`
 
--c --concurrency=INTEGER    How many concurrent image downloads? Maximum of $spawn_max. Use wisely!
+How many download failures before exiting? 0 for unlimited (400)."
 
--t --timeout=INTEGER    Number of seconds before retrying download. Maximum of $timeout_max.
+`-c --concurrency=INTEGER`
 
--r --retries=INTEGER    Try to download each image this many times. Maximum of $retries_max.
+How many concurrent image downloads? Maximum of $spawn_max. Use wisely!
 
--g --no-gallery Don't create thumbnail gallery.
+`-t --timeout=INTEGER`
 
--h --help   Display this help then exit.
+Number of seconds before retrying download. Maximum of $timeout_max.
 
--v --version    Show script version then exit.
+`-r --retries=INTEGER`
 
--q --quiet      Supress display output. (non-functional in this version)
+Try to download each image this many times. Maximum of $retries_max.
 
--d --debug  Output debug info to file.
+`-g --no-gallery`
+
+Don't create thumbnail gallery.
+
+`-h --help`
+
+Display this help then exit.
+
+`-v --version`
+
+Show script version then exit.
+
+`-q --quiet`
+
+Supress display output. (non-functional in this version)
+
+`-d --debug`
+
+Output debug info to file.
 
 
 ---
