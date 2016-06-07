@@ -117,39 +117,39 @@ function ShowHelp
 	local sample_user_query_short="cows"
 	local sample_user_query_long="small brown cows"
 
-	echo " ${script_details}"
+	echo " > ${script_details}"
 	echo
-	echo " • a bulk image file downloader for 'Google Images' search results."
+	echo " - Basic: search 'Google Images' then download each of the image URLs returned."
 	echo
-	echo " - Description: downloads the first [n]umber of images returned by Google for [phrase]. A gallery of these is then built using ImageMagick." | fold -s
+	echo " - Description: downloads the first [n]umber of images returned by Google Images for [p]hrase. A gallery of these is then built using ImageMagick." | fold -s -w80
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
-	echo " Requirements: Wget and Perl"
-	echo " Optional: ImageMagick (montage)"
+	echo " - Requirements: Wget and Perl"
+	echo " - Optional: ImageMagick (montage)"
 	echo
-	echo " Questions or comments? teracow@gmail.com"
+	echo " - Questions or comments? teracow@gmail.com"
 	echo
-	echo " Usage: ./$script_name [PARAMETERS] ..."
+	echo " - Usage: ./$script_name [PARAMETERS] ..."
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too."
-	echo "  -n, --number=INTEGER ($images_required)         Number of images to download. Maximum of $results_max."
-	echo "  -p, --phrase=STRING (required)    Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
-	echo "  -l, --limit=INTEGER ($failures_limit)          Allow this many image download failures before exiting. 0 for unlimited ($results_max)."
-	echo "  -c, --concurrency=INTEGER ($spawn_limit)     Allow up to this many concurrent image downloads. Maximum of $spawn_max."
-	echo "  -t, --timeout=INTEGER ($timeout)        Number of seconds before retrying download. Maximum of $timeout_max."
-	echo "  -r, --retries=INTEGER ($retries)         Try to download each image this many times. Maximum of $retries_max."
-	echo "  -g, --no-gallery                  Don't create thumbnail gallery."
-	echo "  -h, --help                        Display this help then exit."
-	echo "  -v, --version                     Show script version then exit."
-	echo "  -q, --quiet                       Supress display output. (non-functional in this version)"
-	echo "  -d, --debug                       Output debug info to file ($debug_file)."
+	HelpLineFormat "n" "number=INTEGER ($images_required)" "Number of images to download. Maximum of $results_max."
+	HelpLineFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
+	HelpLineFormat "l" "limit=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpLineFormat "c" "concurrency=INTEGER ($spawn_limit)" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
+	HelpLineFormat "t" "timeout=INTEGER ($timeout)" "Number of seconds before retrying download. Maximum of $timeout_max."
+	HelpLineFormat "r" "retries=INTEGER ($retries)" "Try to download each image this many times. Maximum of $retries_max."
+	HelpLineFormat "g" "no-gallery" "Don't create thumbnail gallery."
+	HelpLineFormat "h" "help" "Display this help then exit."
+	HelpLineFormat "v" "version " "Show script version then exit."
+	HelpLineFormat "q" "quiet" "Supress display output. (non-functional in this version)"
+	HelpLineFormat "d" "debug" "Output debug info to file ($debug_file)."
 	echo
-	echo " example:"
+	echo " - Example:"
 	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query_short}\""
 	echo
-	echo " - This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
+	echo " This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
 	echo
 
 	}
@@ -242,6 +242,17 @@ function IsProgramAvailable
 		[ "$debug" == true ] && AddToDebugFile "= required program is available" "$1"
 		return 0
 	fi
+
+	}
+
+function HelpLineFormat
+	{
+
+	# $1 = short parameter
+	# $2 = long parameter
+	# $3 = description
+
+	printf "  -%-1s --%-24s %s\n" "$1" "$2" "$3"
 
 	}
 
