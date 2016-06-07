@@ -121,36 +121,47 @@ function ShowHelp
 	echo
 	echo " - Basic: search 'Google Images' then download each of the image URLs returned."
 	echo
-	echo " - Description: downloads the first [n]umber of images returned by Google Images for [p]hrase. A gallery of these is then built using ImageMagick." | fold -s -w80
+	echo " - Description: downloads the first [n]umber of images returned by Google Images for [p]hrase. These are then built into a gallery using ImageMagick." | fold -s -w80
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
 	echo " - Requirements: Wget and Perl"
-	echo " - Optional: ImageMagick (montage)"
+	echo " - Optional: montage (from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
 	echo " - Usage: ./$script_name [PARAMETERS] ..."
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too."
-	HelpLineFormat "n" "number=INTEGER ($images_required)" "Number of images to download. Maximum of $results_max."
-	HelpLineFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
-	HelpLineFormat "l" "limit=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
-	HelpLineFormat "c" "concurrency=INTEGER ($spawn_limit)" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
-	HelpLineFormat "t" "timeout=INTEGER ($timeout)" "Number of seconds before retrying download. Maximum of $timeout_max."
-	HelpLineFormat "r" "retries=INTEGER ($retries)" "Try to download each image this many times. Maximum of $retries_max."
-	HelpLineFormat "g" "no-gallery" "Don't create thumbnail gallery."
-	HelpLineFormat "h" "help" "Display this help then exit."
-	HelpLineFormat "v" "version " "Show script version then exit."
-	HelpLineFormat "q" "quiet" "Suppress display output. (non-functional in this version)"
-	HelpLineFormat "d" "debug" "Output debug info to file ($debug_file)."
+	HelpParameterFormat "n" "number=INTEGER ($images_required)" "Number of images to download. Maximum of $results_max."
+	HelpParameterFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
+	HelpParameterFormat "l" "limit=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpParameterFormat "c" "concurrency=INTEGER ($spawn_limit)" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
+	HelpParameterFormat "t" "timeout=INTEGER ($timeout)" "Number of seconds before retrying download. Maximum of $timeout_max."
+	HelpParameterFormat "r" "retries=INTEGER ($retries)" "Try to download each image this many times. Maximum of $retries_max."
+	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
+	HelpParameterFormat "h" "help" "Display this help then exit."
+	HelpParameterFormat "v" "version " "Show script version then exit."
+	HelpParameterFormat "q" "quiet" "Suppress display output. (non-functional in this version)"
+	HelpParameterFormat "d" "debug" "Output debug info to file ($debug_file)."
 	echo
 	echo " - Example:"
 	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query_short}\""
 	echo
 	echo " This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
 	echo
+
+	}
+
+function HelpParameterFormat
+	{
+
+	# $1 = short parameter
+	# $2 = long parameter
+	# $3 = description
+
+	printf "  -%-1s --%-24s %s\n" "$1" "$2" "$3"
 
 	}
 
@@ -245,17 +256,6 @@ function IsProgramAvailable
 
 	}
 
-function HelpLineFormat
-	{
-
-	# $1 = short parameter
-	# $2 = long parameter
-	# $3 = description
-
-	printf "  -%-1s --%-24s %s\n" "$1" "$2" "$3"
-
-	}
-
 function DownloadSpecificPageSegment
 	{
 
@@ -342,36 +342,6 @@ function DownloadList
 	fi
 
 	return $result
-
-	}
-
-function IncrementFile
-	{
-
-	# $1 = pathfile containing an integer to increment
-
-	if [ -z "$1" ] ; then
-		return 1
-	else
-		[ -e "$1" ] && count=$(<"$1") || count=0
-		((count++))
-		echo "$count" > "$1"
-	fi
-
-	}
-
-function DecrementFile
-	{
-
-	# $1 = pathfile containing an integer to decrement
-
-	if [ -z "$1" ] ; then
-		return 1
-	else
-		[ -e "$1" ] && count=$(<"$1") || count=0
-		((count--))
-		echo "$count" > "$1"
-	fi
 
 	}
 
@@ -497,30 +467,6 @@ function DownloadImages
 
 	}
 
-function ShowProgressMsg
-	{
-
-	printf %${strlength}s | tr ' ' '\b'
-
-	RefreshSuccessFailure
-
-	progress_message="(${success_count}/${images_required} images) "
-
-	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit failures) "
-
-	echo -n "$progress_message"
-	strlength=${#progress_message}
-
-	}
-
-function RefreshSuccessFailure
-	{
-
-	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
-	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
-
-	}
-
 function BuildGallery
 	{
 
@@ -554,6 +500,60 @@ function BuildGallery
 	fi
 
 	return $result
+
+	}
+
+function IncrementFile
+	{
+
+	# $1 = pathfile containing an integer to increment
+
+	if [ -z "$1" ] ; then
+		return 1
+	else
+		[ -e "$1" ] && count=$(<"$1") || count=0
+		((count++))
+		echo "$count" > "$1"
+	fi
+
+	}
+
+function DecrementFile
+	{
+
+	# $1 = pathfile containing an integer to decrement
+
+	if [ -z "$1" ] ; then
+		return 1
+	else
+		[ -e "$1" ] && count=$(<"$1") || count=0
+		((count--))
+		echo "$count" > "$1"
+	fi
+
+	}
+
+function ShowProgressMsg
+	{
+
+	printf %${strlength}s | tr ' ' '\b'
+
+	RefreshSuccessFailure
+
+	progress_message="(${success_count}/${images_required} images) "
+
+	[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit failures) "
+
+	echo -n "$progress_message"
+	strlength=${#progress_message}
+
+	}
+
+function RefreshSuccessFailure
+	{
+
+	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
+	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
 
 	}
 

@@ -25,7 +25,7 @@ Suggestions / comments / advice (are|is) most welcome. :)
 
     $ ./googliser.sh [PARAMETERS] ...
 
-where allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text:
 
 `-n` or `--number INTEGER`
 
@@ -41,7 +41,7 @@ How many download failures before exiting? 0 for unlimited (400)."
 
 `-c` or `--concurrency INTEGER`
 
-How many concurrent image downloads? Maximum of 40. Use wisely. More will not necessarily download faster!
+How many concurrent image downloads? Maximum of 40. A higher number will not necessarily download faster!
 
 `-t` or `--timeout INTEGER`
 
@@ -86,7 +86,7 @@ This will download the first 250 available images for the search phrase "kittens
 
 0 : successful download(s).  
 1 : required program unavailable (wget, perl or montage).  
-2 : required parameter incorrect - help /version shown.  
+2 : required parameter incorrect - help / version shown.  
 3 : could not create sub-directory for 'search phrase'.  
 4 : could not get a list of search results from Google.  
 5 : image download aborted as failure-limit was reached.  
