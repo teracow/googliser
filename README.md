@@ -112,14 +112,13 @@ This will download the first 56 available images for the search phrase *"fish an
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Only download images below certain file size. Gallery titling.
+- (2016-06-08) - Only download images between specified size limits. Gallery titling.
  
 ---
 **To-Do List:**
 
 - Put temp search results quarter pages into temp dir.
-- Add new option to only download files under a specified size.
-- Check if target directory already has .html and .list files present. Prompt to remove or overwrite these?
+- Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.
 - Add search phrase as thumbnail gallery title?
