@@ -10,16 +10,27 @@
 
 # If you find this code useful, please let me know. :) teracow@gmail.com
 
-# return values:
-#    $? = 0 - completed successfully.
-#	= 1 - required program unavailable (wget, perl, montage).
-#	= 2 - required parameter unspecified or wrong - help shown or version requested.
-#	= 3 - could not create subdirectory for 'search phrase'.
-#	= 4 - could not get a list of search results from Google.
-#	= 5 - image download aborted as failure limit was reached.
-#	= 6 - thumbnail gallery build failed.
-
 # The latest copy can be found here [https://github.com/teracow/googliser]
+
+# return values ($?):
+#	0	completed successfully
+#	1	required program unavailable (wget, perl, montage)
+#	2	required parameter unspecified or wrong - help shown or version requested
+#	3	could not create subdirectory for 'search phrase'
+#	4	could not get a list of search results from Google
+#	5	image download aborted as failure limit was reached
+#	6	thumbnail gallery build failed
+
+# debug log first character notation:
+#	>	script entry
+#	<	script exit
+#	\	function entry
+#	/	function exit
+#	?	variable value
+#	~	variable had boundary issues so was set within bounds
+#	$	success
+#	!	failure
+#	T	elapsed time
 
 function Init
 	{
@@ -113,7 +124,7 @@ function Init
 function ShowHelp
 	{
 
-	[ "$debug" == true ] && AddToDebugFile "> [${FUNCNAME[0]}]" "entry"
+	[ "$debug" == true ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_images_required=12
 	local sample_user_query_short="cows"
@@ -154,7 +165,7 @@ function ShowHelp
 	echo " This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
 	echo
 
-	[ "$debug" == true ] && AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
+	[ "$debug" == true ] && AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 
 	}
 
@@ -254,7 +265,7 @@ function IsProgramAvailable
 		ShowHelp
 		return 1
 	else
-		[ "$debug" == true ] && AddToDebugFile "= required program is available" "$1"
+		[ "$debug" == true ] && AddToDebugFile "$ required program is available" "$1"
 		return 0
 	fi
 
@@ -306,7 +317,7 @@ function DownloadAllPageSegments
 function DownloadList
 	{
 
-	[ "$debug" == true ] && AddToDebugFile "> [${FUNCNAME[0]}]" "entry"
+	[ "$debug" == true ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$( date +%s )
 
@@ -329,7 +340,7 @@ function DownloadList
 		result_count=$( wc -l < "${imagelist_pathfile}" )
 
 		if [ "$debug" == true ] ; then
-			AddToDebugFile "= [${FUNCNAME[0]}]" "success!"
+			AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
 			AddToDebugFile "? \$result_count" "$result_count"
 		fi
 
@@ -341,7 +352,7 @@ function DownloadList
 
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
-		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
+		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	return $result
@@ -373,7 +384,7 @@ function SingleImageDownloader
 	result=$?
 
 	if [ $result -eq 0 ] ; then
-		[ "$debug" == true ] && AddToDebugFile "= download link # '$2'" "success!"
+		[ "$debug" == true ] && AddToDebugFile "$ download link # '$2'" "success!"
 		IncrementFile "${download_success_count_pathfile}"
 	else
 		# increment failures_count but keep trying to download images
@@ -391,7 +402,7 @@ function SingleImageDownloader
 function DownloadImages
 	{
 
-	[ "$debug" == true ] && AddToDebugFile "> [${FUNCNAME[0]}]" "entry"
+	[ "$debug" == true ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$( date +%s )
 	local result_index=0
@@ -457,7 +468,7 @@ function DownloadImages
 
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
-		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
+		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	ShowProgressMsg
@@ -471,7 +482,7 @@ function DownloadImages
 function BuildGallery
 	{
 
-	[ "$debug" == true ] && AddToDebugFile "> [${FUNCNAME[0]}]" "entry"
+	[ "$debug" == true ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$( date +%s )
 
@@ -488,7 +499,7 @@ function BuildGallery
 	result=0
 
 	if [ $result -eq 0 ] ; then
-		[ "$debug" == true ] && AddToDebugFile "= [${FUNCNAME[0]}]" "success!"
+		[ "$debug" == true ] && AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
 		[ "$verbose" == true ] && echo "OK!"
 	else
 		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! montage returned: ($result)"
@@ -497,7 +508,7 @@ function BuildGallery
 
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
-		AddToDebugFile "< [${FUNCNAME[0]}]" "exit"
+		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	return $result
@@ -644,12 +655,12 @@ if [ $exitcode -eq 0 ] ; then
 		* )
 			if [ $images_required -lt 1 ] ; then
 				images_required=1
-				[ "$debug" == true ] && AddToDebugFile "? \$images_required too small so set sensible minimum" "$images_required"
+				[ "$debug" == true ] && AddToDebugFile "~ \$images_required too small so set sensible minimum" "$images_required"
 			fi
 
 			if [ $images_required -gt $results_max ] ; then
 				images_required=$results_max
-				[ "$debug" == true ] && AddToDebugFile "? \$images_required too large so set as \$results_max" "$images_required"
+				[ "$debug" == true ] && AddToDebugFile "~ \$images_required too large so set as \$results_max" "$images_required"
 			fi
 			;;
 	esac
@@ -665,12 +676,12 @@ if [ $exitcode -eq 0 ] ; then
 		* )
 			if [ $failures_limit -le 0 ] ; then
 				failures_limit=$results_max
-				[ "$debug" == true ] && AddToDebugFile "? \$failures_limit too small so set as \$results_max" "$failures_limit"
+				[ "$debug" == true ] && AddToDebugFile "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
 			fi
 
 			if [ $failures_limit -gt $results_max ] ; then
 				failures_limit=$results_max
-				[ "$debug" == true ] && AddToDebugFile "? \$failures_limit too large so set as \$results_max" "$failures_limit"
+				[ "$debug" == true ] && AddToDebugFile "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
 			fi
 			;;
 	esac
@@ -686,12 +697,12 @@ if [ $exitcode -eq 0 ] ; then
 		* )
 			if [ $spawn_limit -lt 1 ] ; then
 				spawn_limit=1
-				[ "$debug" == true ] && AddToDebugFile "? \$spawn_limit too small so set as" "$spawn_limit"
+				[ "$debug" == true ] && AddToDebugFile "~ \$spawn_limit too small so set as" "$spawn_limit"
 			fi
 
 			if [ $spawn_limit -gt $spawn_max ] ; then
 				spawn_limit=$spawn_max
-				[ "$debug" == true ] && AddToDebugFile "? \$spawn_limit too large so set as" "$spawn_limit"
+				[ "$debug" == true ] && AddToDebugFile "~ \$spawn_limit too large so set as" "$spawn_limit"
 			fi
 			;;
 	esac
@@ -707,12 +718,12 @@ if [ $exitcode -eq 0 ] ; then
 		* )
 			if [ $timeout -lt 1 ] ; then
 				timeout=1
-				[ "$debug" == true ] && AddToDebugFile "? \$timeout too small so set as" "$timeout"
+				[ "$debug" == true ] && AddToDebugFile "~ \$timeout too small so set as" "$timeout"
 			fi
 
 			if [ $timeout -gt $timeout_max ] ; then
 				timeout=$timeout_max
-				[ "$debug" == true ] && AddToDebugFile "? \$timeout too large so set as" "$timeout"
+				[ "$debug" == true ] && AddToDebugFile "~ \$timeout too large so set as" "$timeout"
 			fi
 			;;
 	esac
@@ -728,12 +739,12 @@ if [ $exitcode -eq 0 ] ; then
 		* )
 			if [ $retries -lt 1 ] ; then
 				retries=1
-				[ "$debug" == true ] && AddToDebugFile "? \$retries too small so set as" "$retries"
+				[ "$debug" == true ] && AddToDebugFile "~ \$retries too small so set as" "$retries"
 			fi
 
 			if [ $retries -gt $retries_max ] ; then
 				retries=$retries_max
-				[ "$debug" == true ] && AddToDebugFile "? \$retries too large so set as" "$retries"
+				[ "$debug" == true ] && AddToDebugFile "~ \$retries too large so set as" "$retries"
 			fi
 			;;
 	esac
