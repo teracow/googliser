@@ -53,11 +53,11 @@ Retry download of each image this many times. Default is 3. Maximum is 100.
 
 `-u` or `--upper-size INTEGER`
 
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file size, so these will be downloaded anyway. Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-l` or `--lower-size INTEGER`
 
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file size, so these will be downloaded anyway. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
 
 `-g` or `--no-gallery`
 

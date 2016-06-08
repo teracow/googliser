@@ -401,12 +401,16 @@ function SingleImageDownloader
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt 0 ] || [ "$lower_size_limit" -gt 0 ] ; then
 		# try to get file size from server
-		estimated_size="$(wget --max-redirect 0 --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
+		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
 		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
+
+		if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
+			estimated_size="unknown"
+		fi
 
 		[ "$debug" == true ] && AddToDebugFile "? \$estimated_size for link # '$2'" "$estimated_size bytes"
 
-		if [ ! -z "$estimated_size" ] && [ "$estimated_size" != "unspecified" ] ; then
+		if [ "$estimated_size" != "unknown" ] ; then
 			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
 				[ "$debug" == true ] && AddToDebugFile "! link # '$2' before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 				size_ok=false
@@ -431,7 +435,14 @@ function SingleImageDownloader
 		if [ $result -eq 0 ] ; then
 			actual_size=$(wc -c < "$targetimage_pathfileext")
 
-			[ "$debug" == true ] && AddToDebugFile "? \$actual_size for link # '$2'" "$actual_size bytes"
+			if [ "$debug" == true ] ; then
+				AddToDebugFile "? \$actual_size for link # '$2'" "$actual_size bytes"
+				if [ "$estimated_size" == "$actual_size" ] ; then
+					AddToDebugFile "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+				else
+					AddToDebugFile "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
+				fi
+			fi
 
 			if [ "$actual_size" -lt "$lower_size_limit" ] ; then
 				[ "$debug" == true ] && AddToDebugFile "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
