@@ -99,6 +99,8 @@ function Init
 
 	if [ "$create_gallery" == true ] ; then
 		IsProgramAvailable "montage" || exitcode=1
+		IsProgramAvailable "convert" || exitcode=1
+		IsProgramAvailable "composite" || exitcode=1
 	fi
 
 	[ -e "${download_success_count_pathfile}" ] && rm -f "${download_success_count_pathfile}"
@@ -140,7 +142,7 @@ function ShowHelp
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
 	echo " - Requirements: Wget and Perl"
-	echo " - Optional: montage (from ImageMagick)"
+	echo " - Optional: montage, convert and composite (from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
@@ -345,6 +347,8 @@ function DownloadList
 		fi
 
 		[ "$verbose" == true ] && echo "found ${result_count} results!"
+		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
+
 	else
 		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
 		[ "$verbose" == true ] && echo "failed!"
@@ -488,10 +492,12 @@ function BuildGallery
 
 	[ "$verbose" == true ] && echo -n " -> building thumbnail gallery: "
 
-	gallery_cmd="montage \"${target_path}/*[0]\" -shadow -geometry 400x400 \"${target_path}/${gallery_name}-($user_query).png\""
-	[ "$debug" == true ] && AddToDebugFile "? \$gallery_cmd" "$gallery_cmd"
+	# build gallery
+	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x100 -bordercolor none -border 30 \"${temp_path}/gallery-foreground.png\""
 
-	eval $gallery_cmd 2> /dev/null
+	[ "$debug" == true ] && AddToDebugFile "? \$build_foreground_cmd" "$build_foreground_cmd"
+
+	eval $build_foreground_cmd 2> /dev/null
 	result=$?
 
 	# note! montage will always return 1 at the moment coz the '.list' file cannot be opened by it. Gallery image still builds correctly.
@@ -499,10 +505,56 @@ function BuildGallery
 	result=0
 
 	if [ $result -eq 0 ] ; then
+		[ "$debug" == true ] && AddToDebugFile "$ \$build_foreground_cmd" "success!"
+	else
+		[ "$debug" == true ] && AddToDebugFile "! \$build_foreground_cmd" "failed! montage returned: ($result)"
+	fi
+
+	#convert googliser-gallery-\(test\ search\).png -gravity north -pointsize 80 -annotate +0+40 'test title' tester.png
+
+	if [ $result -eq 0 ] ; then
+		# get image dimensions
+		read -r width height <<< $(convert -ping "${temp_path}/gallery-foreground.png" -format "%w %h" info:)
+
+		# create a black image with white sphere in centre
+		build_background_cmd="convert -size ${width}x${height} radial-gradient:white-black \"${temp_path}/gallery-background.png\""
+
+		[ "$debug" == true ] && AddToDebugFile "? \$build_background_cmd" "$build_background_cmd"
+
+		eval $build_background_cmd 2> /dev/null
+		result=$?
+
+		if [ $result -eq 0 ] ; then
+			[ "$debug" == true ] && AddToDebugFile "$ \$build_background_cmd" "success!"
+		else
+			[ "$debug" == true ] && AddToDebugFile "! \$build_background_cmd" "failed! convert returned: ($result)"
+		fi
+
+		if [ $result -eq 0 ] ; then
+			# overlay foreground on background
+			overlay_cmd="composite -gravity center \"${temp_path}/gallery-foreground.png\" \"${temp_path}/gallery-background.png\" \"${target_path}/${gallery_name}-($user_query).png\""
+
+			[ "$debug" == true ] && AddToDebugFile "? \$overlay_cmd" "$overlay_cmd"
+
+			eval $overlay_cmd 2> /dev/null
+			result=$?
+
+			if [ $result -eq 0 ] ; then
+				[ "$debug" == true ] && AddToDebugFile "$ \$overlay_cmd" "success!"
+			else
+				[ "$debug" == true ] && AddToDebugFile "! \$overlay_cmd" "failed! convert returned: ($result)"
+			fi
+
+			# remove build files
+			rm -f "${temp_path}/gallery-foreground.png" "${temp_path}/gallery-background.png"
+		fi
+	fi
+
+	if [ $result -eq 0 ] ; then
 		[ "$debug" == true ] && AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
 		[ "$verbose" == true ] && echo "OK!"
 	else
-		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! montage returned: ($result)"
+		[ "$debug" == true ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! See previous!"
 		[ "$verbose" == true ] && echo "failed!"
 	fi
 
@@ -556,6 +608,9 @@ function ShowProgressMsg
 		progress_message="(${success_count}/${images_required}) images "
 
 		[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
+
+		# also show here the number of files currently downloading
+		# progress_message+="and (${current_downloads}/$spawn_limit) in progress "
 
 		echo -n "$progress_message"
 		strlength=${#progress_message}

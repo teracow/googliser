@@ -100,7 +100,7 @@ This will download the first 250 available images for the search phrase *"kitten
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Hmmm... gallery title?
+- (2016-06-08) - gallery titling.
  
 ---
 **To-Do List:**
