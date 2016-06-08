@@ -419,12 +419,12 @@ function DownloadImages
 	failures_count=0
 	result=0
 
-	echo "${child_count}" > "${process_tracker_pathfile}"
+	ResetChildCount
 	[ "$verbose" == true ] && echo -n " -> "
 
 	while read imagelink; do
 		while true; do
-			RefreshChildCount
+			ShowProgressMsg
 
 			[ "$child_count" -lt "$spawn_limit" ] && break
 
@@ -442,6 +442,8 @@ function DownloadImages
 					wait $pid
 				done
 
+				ResetChildCount
+
  				break
  			fi
 
@@ -457,6 +459,7 @@ function DownloadImages
 				wait $pid
 			done
 
+			ResetChildCount
 			RefreshSuccessFailureCounts
 
 			# how many were successful?
@@ -470,14 +473,14 @@ function DownloadImages
 		fi
 	done < "${imagelist_pathfile}"
 
+	ShowProgressMsg
+
+	[ "$verbose" == true ] && echo
+
 	if [ "$debug" == true ] ; then
 		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
 		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 	fi
-
-	ShowProgressMsg
-
-	[ "$verbose" == true ] && echo
 
 	return $result
 
@@ -564,6 +567,15 @@ function BuildGallery
 	fi
 
 	return $result
+
+	}
+
+function ResetChildCount
+	{
+
+	child_count=0
+
+	echo "${child_count}" > "${process_tracker_pathfile}"
 
 	}
 
