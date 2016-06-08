@@ -81,9 +81,9 @@ Append debug info to file. Default is no debug file output. If selected, debuggi
 
 **Examples:**
 
-`$ ./googliser.sh -n 20 -p "cows"`
+`$ ./googliser.sh -p "cows"`
 
-This will download the first 20 available images for the search phrase *"cows"*
+This will download the first 25 available images for the search phrase *"cows"*
 
 `$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0`
 
