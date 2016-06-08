@@ -35,8 +35,8 @@
 function Init
 	{
 
-	script_version="1.14"
-	script_date="2016-06-08"
+	script_version="1.15"
+	script_date="2016-06-09"
 	script_name="$( basename -- "$( readlink -f -- "$0" )" )"
 	script_details="${script_name} - v${script_version} (${script_date})"
 
@@ -62,6 +62,8 @@ function Init
 	images_required=25
 	spawn_limit=8
 	failures_limit=10
+	upper_size_limit=0
+	lower_size_limit=1000
 	timeout=15
 	retries=3
 	create_gallery=true
@@ -88,6 +90,8 @@ function Init
 		AddToDebugFile "? \$user_query" "$user_query"
 		AddToDebugFile "? \$images_required" "$images_required"
 		AddToDebugFile "? \$spawn_limit" "$spawn_limit"
+		AddToDebugFile "? \$upper_size_limit" "$upper_size_limit"
+		AddToDebugFile "? \$lower_size_limit" "$lower_size_limit"
 		AddToDebugFile "? \$results_max" "$results_max"
 		AddToDebugFile "? \$failures_limit" "$failures_limit"
 		AddToDebugFile "? \$verbose" "$verbose"
@@ -148,18 +152,20 @@ function ShowHelp
 	echo
 	echo " - Usage: ./$script_name [PARAMETERS] ..."
 	echo
-	echo " Mandatory arguments to long options are mandatory for short options too."
-	HelpParameterFormat "n" "number=INTEGER ($images_required)" "Number of images to download. Maximum of $results_max."
+	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
+	HelpParameterFormat "n" "number=INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
-	HelpParameterFormat "f" "failures=INTEGER ($failures_limit)" "How many download failures before exiting? 0 for unlimited ($results_max)."
-	HelpParameterFormat "c" "concurrency=INTEGER ($spawn_limit)" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
-	HelpParameterFormat "t" "timeout=INTEGER ($timeout)" "Number of seconds before retrying download. Maximum of $timeout_max."
-	HelpParameterFormat "r" "retries=INTEGER ($retries)" "Try to download each image this many times. Maximum of $retries_max."
+	HelpParameterFormat "f" "failures=INTEGER [$failures_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpParameterFormat "c" "concurrency=INTEGER [$spawn_limit]" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
+	HelpParameterFormat "t" "timeout=INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
+	HelpParameterFormat "r" "retries=INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
+	HelpParameterFormat "u" "upper-size=INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
+	HelpParameterFormat "l" "lower-size=INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "d" "debug" "Output debug info to file ($debug_file)."
+	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file]."
 	echo
 	echo " - Example:"
 	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query_short}\""
@@ -178,7 +184,7 @@ function HelpParameterFormat
 	# $2 = long parameter
 	# $3 = description
 
-	printf "  -%-1s --%-24s %s\n" "$1" "$2" "$3"
+	printf "  -%-1s --%-25s %s\n" "$1" "$2" "$3"
 
 	}
 
@@ -218,6 +224,14 @@ function WhatAreMyOptions
 				;;
 			-r | --retries )
 				retries="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-u | --upper-size )
+				upper_size_limit="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-l | --lower-size )
+				lower_size_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-h | --help )
@@ -370,6 +384,9 @@ function SingleImageDownloader
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
+	local result=0
+	local size_ok=true
+	local get_download=true
 	IncrementFile "${process_tracker_pathfile}"
 
 	[ "$debug" == true ] && AddToDebugFile "- download link # '$2'" "start"
@@ -381,22 +398,66 @@ function SingleImageDownloader
 
 	targetimage_pathfileext="${targetimage_pathfile}($2)${ext}"
 
-	local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
-	[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
+	# are file size limits going to be applied before download?
+	if [ "$upper_size_limit" -gt 0 ] || [ "$lower_size_limit" -gt 0 ] ; then
+		# try to get file size from server
+		estimated_size="$(wget --max-redirect 0 --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
+		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
 
-	eval $wget_download_cmd > /dev/null 2>&1
-	result=$?
+		[ "$debug" == true ] && AddToDebugFile "? \$estimated_size for link # '$2'" "$estimated_size bytes"
 
-	if [ $result -eq 0 ] ; then
-		[ "$debug" == true ] && AddToDebugFile "$ download link # '$2'" "success!"
-		IncrementFile "${download_success_count_pathfile}"
-	else
-		# increment failures_count but keep trying to download images
-		[ "$debug" == true ] && AddToDebugFile "! download link # '$2'" "failed! Wget returned: ($result - $( WgetReturnCodes "$result" ))"
-		IncrementFile "${download_failures_count_pathfile}"
+		if [ ! -z "$estimated_size" ] && [ "$estimated_size" != "unspecified" ] ; then
+			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
+				[ "$debug" == true ] && AddToDebugFile "! link # '$2' before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+				size_ok=false
+				get_download=false
+			fi
 
-		# delete temp file if one was created
-		[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
+			if [ "$upper_size_limit" != "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
+				[ "$debug" == true ] && AddToDebugFile "! link # '$2' before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+				size_ok=false
+				get_download=false
+			fi
+		fi
+	fi
+
+	if [ "$get_download" == true ] ; then
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+		[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
+
+		eval $wget_download_cmd > /dev/null 2>&1
+		result=$?
+
+		if [ $result -eq 0 ] ; then
+			actual_size=$(wc -c < "$targetimage_pathfileext")
+
+			[ "$debug" == true ] && AddToDebugFile "? \$actual_size for link # '$2'" "$actual_size bytes"
+
+			if [ "$actual_size" -lt "$lower_size_limit" ] ; then
+				[ "$debug" == true ] && AddToDebugFile "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
+				rm -f "$targetimage_pathfileext"
+				size_ok=false
+			fi
+
+			if [ "$upper_size_limit" -gt 0 ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
+				[ "$debug" == true ] && AddToDebugFile "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
+				rm -f "$targetimage_pathfileext"
+				size_ok=false
+			fi
+
+			if [ "$size_ok" == true ] ; then
+				[ "$debug" == true ] && AddToDebugFile "$ download link # '$2'" "success!"
+				IncrementFile "${download_success_count_pathfile}"
+			else
+				IncrementFile "${download_failures_count_pathfile}"
+			fi
+		else
+			[ "$debug" == true ] && AddToDebugFile "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+			IncrementFile "${download_failures_count_pathfile}"
+
+			# delete temp file if one was created
+			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
+		fi
 	fi
 
 	DecrementFile "${process_tracker_pathfile}"
@@ -714,7 +775,7 @@ function ConvertSecs
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -793,12 +854,12 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $timeout -lt 1 ] ; then
+			if [ "$timeout" -lt 1 ] ; then
 				timeout=1
 				[ "$debug" == true ] && AddToDebugFile "~ \$timeout too small so set as" "$timeout"
 			fi
 
-			if [ $timeout -gt $timeout_max ] ; then
+			if [ "$timeout" -gt "$timeout_max" ] ; then
 				timeout=$timeout_max
 				[ "$debug" == true ] && AddToDebugFile "~ \$timeout too large so set as" "$timeout"
 			fi
@@ -814,14 +875,51 @@ if [ $exitcode -eq 0 ] ; then
 			exitcode=2
 			;;
 		* )
-			if [ $retries -lt 1 ] ; then
+			if [ "$retries" -lt 1 ] ; then
 				retries=1
 				[ "$debug" == true ] && AddToDebugFile "~ \$retries too small so set as" "$retries"
 			fi
 
-			if [ $retries -gt $retries_max ] ; then
+			if [ "$retries" -gt "$retries_max" ] ; then
 				retries=$retries_max
 				[ "$debug" == true ] && AddToDebugFile "~ \$retries too large so set as" "$retries"
+			fi
+			;;
+	esac
+
+	case ${upper_size_limit#[-+]} in
+		*[!0-9]* )
+			[ "$debug" == true ] && AddToDebugFile "! specified \$upper_size_limit" "invalid"
+			echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
+			echo
+			ShowHelp
+			exitcode=2
+			;;
+		* )
+			if [ "$upper_size_limit" -lt 0 ] ; then
+				upper_size_limit=0
+				[ "$debug" == true ] && AddToDebugFile "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
+			fi
+			;;
+	esac
+
+	case ${lower_size_limit#[-+]} in
+		*[!0-9]* )
+			[ "$debug" == true ] && AddToDebugFile "! specified \$lower_size_limit" "invalid"
+			echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
+			echo
+			ShowHelp
+			exitcode=2
+			;;
+		* )
+			if [ "$lower_size_limit" -lt 0 ] ; then
+				lower_size_limit=0
+				[ "$debug" == true ] && AddToDebugFile "~ \$lower_size_limit too small so set as" "$lower_size_limit"
+			fi
+
+			if [ "$upper_size_limit" -gt 0 ] && [ "$lower_size_limit" -gt "$upper_size_limit" ] ; then
+				lower_size_limit=$(($upper_size_limit-1))
+				[ "$debug" == true ] && AddToDebugFile "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
 			fi
 			;;
 	esac

@@ -49,7 +49,15 @@ Number of seconds before retrying download. Default is 15. Maximum is 600 (10 mi
 
 `-r` or `--retries INTEGER`
 
-Try to download each image this many times. Default is 3. Maximum is 100.
+Retry download of each image this many times. Default is 3. Maximum is 100.
+
+`-u` or `--upper-size INTEGER`
+
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file size, so these will be downloaded anyway. Enter 0 for unlimited size. Default is 0 (unlimited).
+
+`-l` or `--lower-size INTEGER`
+
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file size, so these will be downloaded anyway. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
 
 `-g` or `--no-gallery`
 
@@ -79,7 +87,11 @@ This will download the first 20 available images for the search phrase *"cows"*
 
 `$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0`
 
-This will download the first 250 available images for the search phrase *"kittens"* and download up to 10 images at once and ignore failures limit.
+This will download the first 250 available images for the search phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
+
+`$ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug`
+
+This will download the first 56 available images for the search phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
 ---
 **Return Values ($?):**  
@@ -100,11 +112,13 @@ This will download the first 250 available images for the search phrase *"kitten
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - gallery titling.
+- (2016-06-08) - Only download images below certain file size. Gallery titling.
  
 ---
 **To-Do List:**
 
+- Put temp search results quarter pages into temp dir.
+- Add new option to only download files under a specified size.
 - Check if target directory already has .html and .list files present. Prompt to remove or overwrite these?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.
