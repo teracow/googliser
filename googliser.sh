@@ -414,17 +414,17 @@ function DownloadImages
 	local message=""
 	local child_count=0
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
-	strlength=0
+	local strlength=0
+	local pids=""
 	failures_count=0
 	result=0
-	pids=""
 
 	echo "${child_count}" > "${process_tracker_pathfile}"
-	[ "$verbose" == true ] && echo -n " -> downloaded "
+	[ "$verbose" == true ] && echo -n " -> "
 
 	while read imagelink; do
 		while true; do
-			child_count=$(<"${process_tracker_pathfile}")
+			RefreshChildCount
 
 			[ "$child_count" -lt "$spawn_limit" ] && break
 
@@ -457,7 +457,7 @@ function DownloadImages
 				wait $pid
 			done
 
-			RefreshSuccessFailure
+			RefreshSuccessFailureCounts
 
 			# how many were successful?
 			if [ "$success_count" -lt "$images_required" ] ; then
@@ -600,17 +600,20 @@ function DecrementFile
 function ShowProgressMsg
 	{
 
-	RefreshSuccessFailure
+	RefreshSuccessFailureCounts
+	RefreshChildCount
 
 	if [ "$verbose" == true ] ; then
 		printf %${strlength}s | tr ' ' '\b'
 
-		progress_message="(${success_count}/${images_required}) images "
+		# start with number of image downloads that are OK
+		progress_message="downloaded (${success_count}/${images_required}) images "
 
+		# include failures (if any)
 		[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
 
-		# also show here the number of files currently downloading
-		# progress_message+="and (${current_downloads}/$spawn_limit) in progress "
+		# also show the number of files currently downloading
+		progress_message+="and (${child_count}/$spawn_limit) in progress "
 
 		echo -n "$progress_message"
 		strlength=${#progress_message}
@@ -618,11 +621,18 @@ function ShowProgressMsg
 
 	}
 
-function RefreshSuccessFailure
+function RefreshSuccessFailureCounts
 	{
 
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
+
+	}
+
+function RefreshChildCount
+	{
+
+	[ -e "${process_tracker_pathfile}" ] && child_count=$(<"${process_tracker_pathfile}") || child_count=0
 
 	}
 
