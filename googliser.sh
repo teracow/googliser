@@ -42,21 +42,23 @@ function Init
 
 	current_path="$PWD"
 	temp_path="/dev/shm"
+
 	gallery_name="googliser-gallery"
 	imagelinkslist_file="googliser-links.list"
 	debug_file="googliser-debug.log"
 	image_file="google-image"
-	results_file="google-results.html"
-	server="www.google.com.au"
 
-	results_max=400
-	spawn_max=40
-	timeout_max=600
-	retries_max=100
 	spawn_count_pathfile="${temp_path}/spawned-process.count"
 	success_count_pathfile="${temp_path}/successful-download.count"
 	failure_count_pathfile="${temp_path}/failed-download.count"
 	unknown_size_count_pathfile="${temp_path}/unknown-size-download.count"
+	results_pathfile="${temp_path}/google-results.html"
+
+	server="www.google.com.au"
+	results_max=400
+	spawn_max=40
+	timeout_max=600
+	retries_max=100
 
 	# user parameters
 	user_query=""
@@ -108,6 +110,7 @@ function Init
 		IsProgramAvailable "composite" || exitcode=1
 	fi
 
+	[ -e "${spawn_count_pathfile}" ] && rm -f "${spawn_count_pathfile}"
 	[ -e "${success_count_pathfile}" ] && rm -f "${success_count_pathfile}"
 	[ -e "${failure_count_pathfile}" ] && rm -f "${failure_count_pathfile}"
 	[ -e "${unknown_size_count_pathfile}" ] && rm -f "${unknown_size_count_pathfile}"
@@ -998,7 +1001,6 @@ fi
 # create directory for search phrase
 if [ "$exitcode" -eq "0" ] ; then
 	target_path="${current_path}/${user_query}"
-	results_pathfile="${target_path}/${results_file}"
 	imagelist_pathfile="${target_path}/${imagelinkslist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
 
