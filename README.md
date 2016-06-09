@@ -1,10 +1,8 @@
 ![teracow](http://i.imgur.com/IhG8j5Q.png) googliser.sh
 ---
-This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. 
+This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
 
 (This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
-
-*This script has now replaced* ***bulk-google-image-downloader.sh***
 
 ---
 **Description:**
