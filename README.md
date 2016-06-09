@@ -107,7 +107,7 @@ generates this image:
 
 generates this image:
 
-![cows](http://i.imgur.com/U9Xwkn5l.jpg)
+![cows](http://i.imgur.com/u72A9bhh.jpg)
 
 ---
 **Return Values ($?):**  
