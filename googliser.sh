@@ -89,20 +89,19 @@ function Init
 
 	exitcode=$?
 
-	if [ "$debug" == "true" ] ; then
-		[ -e "${debug_file}" ] && echo "" >> "${debug_file}"
-		AddToDebugFile "> started" "$script_starttime"
-		AddToDebugFile "? \$script_details" "$script_details"
-		AddToDebugFile "? \$user_query" "$user_query"
-		AddToDebugFile "? \$images_required" "$images_required"
-		AddToDebugFile "? \$spawn_limit" "$spawn_limit"
-		AddToDebugFile "? \$upper_size_limit" "$upper_size_limit"
-		AddToDebugFile "? \$lower_size_limit" "$lower_size_limit"
-		AddToDebugFile "? \$results_max" "$results_max"
-		AddToDebugFile "? \$failures_limit" "$failures_limit"
-		AddToDebugFile "? \$verbose" "$verbose"
-		AddToDebugFile "? \$create_gallery" "$create_gallery"
-	fi
+	[ "$debug" == "true" ] && [ -e "${debug_file}" ] && echo "" >> "${debug_file}"
+
+	AddToDebug "> started" "$script_starttime"
+	AddToDebug "? \$script_details" "$script_details"
+	AddToDebug "? \$user_query" "$user_query"
+	AddToDebug "? \$images_required" "$images_required"
+	AddToDebug "? \$spawn_limit" "$spawn_limit"
+	AddToDebug "? \$upper_size_limit" "$upper_size_limit"
+	AddToDebug "? \$lower_size_limit" "$lower_size_limit"
+	AddToDebug "? \$results_max" "$results_max"
+	AddToDebug "? \$failures_limit" "$failures_limit"
+	AddToDebug "? \$verbose" "$verbose"
+	AddToDebug "? \$create_gallery" "$create_gallery"
 
 	IsProgramAvailable "wget" || exitcode=1
 	IsProgramAvailable "perl" || exitcode=1
@@ -138,7 +137,7 @@ function Init
 function ShowHelp
 	{
 
-	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
 
@@ -177,7 +176,7 @@ function ShowHelp
 	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery."
 	echo
 
-	[ "$debug" == "true" ] && AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
+	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	}
 
@@ -278,11 +277,11 @@ function IsProgramAvailable
 	if [ "$?" -gt "0" ] ; then
 		echo " !! required program [$1] is unavailable ... unable to continue."
 		echo
-		[ "$debug" == "true" ] && AddToDebugFile "! required program is unavailable" "$1"
+		AddToDebug "! required program is unavailable" "$1"
 		ShowHelp
 		return 1
 	else
-		[ "$debug" == "true" ] && AddToDebugFile "$ required program is available" "$1"
+		AddToDebug "$ required program is available" "$1"
 		return 0
 	fi
 
@@ -297,7 +296,7 @@ function DownloadSpecificPageSegment
 	local search_quarter="&ijn=$1"
 	local search_start="&start=$2"
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_quarter}${search_start}' --user-agent '$useragent' --output-document -"
-	[ "$debug" == "true" ] && AddToDebugFile "? \$wget_list_cmd" "$wget_list_cmd"
+	AddToDebug "? \$wget_list_cmd" "$wget_list_cmd"
 
 	eval $wget_list_cmd >> "${results_pathfile}.$1"
 
@@ -334,7 +333,7 @@ function DownloadAllPageSegments
 function DownloadList
 	{
 
-	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
 
@@ -357,21 +356,21 @@ function DownloadList
 		result_count=$(wc -l < "${imagelist_pathfile}")
 
 		if [ "$debug" == "true" ] ; then
-			AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
-			AddToDebugFile "? \$result_count" "$result_count"
+			AddToDebug "$ [${FUNCNAME[0]}]" "success!"
+			AddToDebug "? \$result_count" "$result_count"
 		fi
 
 		[ "$verbose" == "true" ] && echo "found ${result_count} results!"
 # 		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
 
 	else
-		[ "$debug" == "true" ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
+		AddToDebug "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
 		[ "$verbose" == "true" ] && echo "failed!"
 	fi
 
 	if [ "$debug" == "true" ] ; then
-		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
-		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
+		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	return $result
@@ -390,7 +389,7 @@ function SingleImageDownloader
 	local get_download=true
 	IncrementFile "${spawn_count_pathfile}"
 
-	[ "$debug" == "true" ] && AddToDebugFile "- download link # '$2'" "start"
+	AddToDebug "- download link # '$2'" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -409,17 +408,17 @@ function SingleImageDownloader
 			estimated_size="unknown"
 		fi
 
-		[ "$debug" == "true" ] && AddToDebugFile "? \$estimated_size for link # '$2'" "$estimated_size bytes"
+		AddToDebug "? \$estimated_size for link # '$2'" "$estimated_size bytes"
 
 		if [ "$estimated_size" != "unknown" ] ; then
 			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "! link # '$2' before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+				AddToDebug "! link # '$2' before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
 
 			if [ "$upper_size_limit" != "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "! link # '$2' before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+				AddToDebug "! link # '$2' before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
@@ -430,7 +429,7 @@ function SingleImageDownloader
 		[ "$estimated_size" == "unknown" ] && IncrementFile "${unknown_size_count_pathfile}"
 
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
-		[ "$debug" == "true" ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
+		AddToDebug "? \$wget_download_cmd" "$wget_download_cmd"
 
 		eval $wget_download_cmd > /dev/null 2>&1
 		result=$?
@@ -439,35 +438,35 @@ function SingleImageDownloader
 			actual_size=$(wc -c < "$targetimage_pathfileext")
 
 			if [ "$debug" == "true" ] ; then
-				AddToDebugFile "? \$actual_size for link # '$2'" "$actual_size bytes"
+				AddToDebug "? \$actual_size for link # '$2'" "$actual_size bytes"
 				if [ "$estimated_size" == "$actual_size" ] ; then
-					AddToDebugFile "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
 				else
-					AddToDebugFile "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
+					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
 				fi
 			fi
 
 			if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
+				AddToDebug "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
 				rm -f "$targetimage_pathfileext"
 				size_ok=false
 			fi
 
 			if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
+				AddToDebug "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
 				rm -f "$targetimage_pathfileext"
 				size_ok=false
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "$ download link # '$2'" "success!"
+				AddToDebug "$ download link # '$2'" "success!"
 				IncrementFile "${success_count_pathfile}"
 			else
 				# files that were outside size limits still count as failures
 				IncrementFile "${failure_count_pathfile}"
 			fi
 		else
-			[ "$debug" == "true" ] && AddToDebugFile "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+			AddToDebug "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 			IncrementFile "${failure_count_pathfile}"
 
 			# delete temp file if one was created
@@ -486,7 +485,7 @@ function SingleImageDownloader
 function DownloadImages
 	{
 
-	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
 	local result_index=0
@@ -567,8 +566,8 @@ function DownloadImages
 	[ "$verbose" == "true" ] && echo
 
 	if [ "$debug" == "true" ] ; then
-		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
-		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
+		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
+		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	return $result
@@ -580,17 +579,23 @@ function BuildGallery
 
 	local title_font="Century-Schoolbook-L-Bold-Italic"
 	local title_colour="goldenrod1"
+	local strlength=0
 
-	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
 
-	[ "$verbose" == "true" ] && echo -n " -> building thumbnail gallery: "
+	if [ "$verbose" == "true" ] ; then
+		echo -n " -> building thumbnail gallery: "
+		progress_message="step 1 - construct thumbnails "
+		echo -n "$progress_message"
+		strlength=${#progress_message}
+	fi
 
 	# build gallery
 	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
 
-	[ "$debug" == "true" ] && AddToDebugFile "? \$build_foreground_cmd" "$build_foreground_cmd"
+	AddToDebug "? \$build_foreground_cmd" "$build_foreground_cmd"
 
 	eval $build_foreground_cmd 2> /dev/null
 	result=$?
@@ -600,62 +605,88 @@ function BuildGallery
 	result=0
 
 	if [ "$result" -eq "0" ] ; then
-		[ "$debug" == "true" ] && AddToDebugFile "$ \$build_foreground_cmd" "success!"
+		AddToDebug "$ \$build_foreground_cmd" "success!"
 	else
-		[ "$debug" == "true" ] && AddToDebugFile "! \$build_foreground_cmd" "failed! montage returned: ($result)"
+		AddToDebug "! \$build_foreground_cmd" "failed! montage returned: ($result)"
 	fi
 
 	if [ "$result" -eq "0" ] ; then
+		if [ "$verbose" == "true" ] ; then
+			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+
+			progress_message="step 2 - draw background pattern "
+			echo -n "$progress_message"
+			strlength=${#progress_message}
+		fi
+
 		# get image dimensions
 		read -r width height <<< $(convert -ping "${gallery_thumbnails_pathfile}" -format "%w %h" info:)
 
 		# create a dark image with light sphere in centre
 		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${gallery_background_pathfile}\""
 
-		[ "$debug" == "true" ] && AddToDebugFile "? \$build_background_cmd" "$build_background_cmd"
+		AddToDebug "? \$build_background_cmd" "$build_background_cmd"
 
 		eval $build_background_cmd 2> /dev/null
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			[ "$debug" == "true" ] && AddToDebugFile "$ \$build_background_cmd" "success!"
+			AddToDebug "$ \$build_background_cmd" "success!"
 		else
-			[ "$debug" == "true" ] && AddToDebugFile "! \$build_background_cmd" "failed! convert returned: ($result)"
+			AddToDebug "! \$build_background_cmd" "failed! convert returned: ($result)"
 		fi
 	fi
 
 	if [ "$result" -eq "0" ] ; then
+		if [ "$verbose" == "true" ] ; then
+			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+
+			progress_message="step 3 - draw title text image "
+			echo -n "$progress_message"
+			strlength=${#progress_message}
+		fi
+
 		# create title image
 		# let's try a fixed height of 100 pixels
 		build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${user_query}\" -blur 0x5 -fill $title_colour -stroke none label:\"${user_query}\" -flatten \"${gallery_title_pathfile}\""
 
-		[ "$debug" == "true" ] && AddToDebugFile "? \$build_title_cmd" "$build_title_cmd"
+		AddToDebug "? \$build_title_cmd" "$build_title_cmd"
 
 		eval $build_title_cmd 2> /dev/null
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			[ "$debug" == "true" ] && AddToDebugFile "$ \$build_title_cmd" "success!"
+			AddToDebug "$ \$build_title_cmd" "success!"
 		else
-			[ "$debug" == "true" ] && AddToDebugFile "! \$build_title_cmd" "failed! convert returned: ($result)"
+			AddToDebug "! \$build_title_cmd" "failed! convert returned: ($result)"
 		fi
 	fi
 
 	if [ "$result" -eq "0" ] ; then
+		if [ "$verbose" == "true" ] ; then
+			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+
+			progress_message="step 4 - compile all images "
+			echo -n "$progress_message"
+			strlength=${#progress_message}
+		fi
+
 		# compose thumbnails image on background image, then title image on top
 		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
 
-		[ "$debug" == "true" ] && AddToDebugFile "? \$build_compose_cmd" "$build_compose_cmd"
+		AddToDebug "? \$build_compose_cmd" "$build_compose_cmd"
 
 		eval $build_compose_cmd 2> /dev/null
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			[ "$debug" == "true" ] && AddToDebugFile "$ \$build_compose_cmd" "success!"
+			AddToDebug "$ \$build_compose_cmd" "success!"
 		else
-			[ "$debug" == "true" ] && AddToDebugFile "! \$build_compose_cmd" "failed! convert returned: ($result)"
+			AddToDebug "! \$build_compose_cmd" "failed! convert returned: ($result)"
 		fi
-
 	fi
 
 	[ -e "${gallery_title_pathfile}" ] && rm -f "${gallery_title_pathfile}"
@@ -663,16 +694,20 @@ function BuildGallery
 	[ -e "${gallery_background_pathfile}" ] && rm -f "${gallery_background_pathfile}"
 
 	if [ "$result" -eq "0" ] ; then
-		[ "$debug" == "true" ] && AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
-		[ "$verbose" == "true" ] && echo "OK!"
+		AddToDebug "$ [${FUNCNAME[0]}]" "success!"
+		if [ "$verbose" == "true" ] ; then
+			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+			echo "done!"
+		fi
 	else
-		[ "$debug" == "true" ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! See previous!"
+		AddToDebug "! [${FUNCNAME[0]}]" "failed! See previous!"
 		[ "$verbose" == "true" ] && echo "failed!"
 	fi
 
 	if [ "$debug" == "true" ] ; then
-		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
-		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
+		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
+		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
 	return $result
@@ -793,13 +828,13 @@ function RefreshActiveCounts
 
 	}
 
-function AddToDebugFile
+function AddToDebug
 	{
 
 	# $1 = item
 	# $2 = value
 
-	echo "$1: '$2'" >> "${debug_file}"
+	[ "$debug" == "true" ] && echo "$1: '$2'" >> "${debug_file}"
 
 	}
 
@@ -868,7 +903,7 @@ Init
 if [ "$exitcode" -eq "0" ] ; then
 	case ${images_required#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$images_required" "invalid"
+			AddToDebug "! specified \$images_required" "invalid"
 			echo " !! number specified after (-n --number) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -877,19 +912,19 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$images_required" -lt "1" ] ; then
 				images_required=1
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$images_required too small so set sensible minimum" "$images_required"
+				AddToDebug "~ \$images_required too small so set sensible minimum" "$images_required"
 			fi
 
 			if [ "$images_required" -gt "$results_max" ] ; then
 				images_required=$results_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$images_required too large so set as \$results_max" "$images_required"
+				AddToDebug "~ \$images_required too large so set as \$results_max" "$images_required"
 			fi
 			;;
 	esac
 
 	case ${failures_limit#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$failures_limit" "invalid"
+			AddToDebug "! specified \$failures_limit" "invalid"
 			echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -898,19 +933,19 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$failures_limit" -le "0" ] ; then
 				failures_limit=$results_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
+				AddToDebug "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
 			fi
 
 			if [ "$failures_limit" -gt "$results_max" ] ; then
 				failures_limit=$results_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
+				AddToDebug "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
 			fi
 			;;
 	esac
 
 	case ${spawn_limit#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$spawn_limit" "invalid"
+			AddToDebug "! specified \$spawn_limit" "invalid"
 			echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -919,19 +954,19 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$spawn_limit" -lt "1" ] ; then
 				spawn_limit=1
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$spawn_limit too small so set as" "$spawn_limit"
+				AddToDebug "~ \$spawn_limit too small so set as" "$spawn_limit"
 			fi
 
 			if [ "$spawn_limit" -gt "$spawn_max" ] ; then
 				spawn_limit=$spawn_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$spawn_limit too large so set as" "$spawn_limit"
+				AddToDebug "~ \$spawn_limit too large so set as" "$spawn_limit"
 			fi
 			;;
 	esac
 
 	case ${timeout#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$timeout" "invalid"
+			AddToDebug "! specified \$timeout" "invalid"
 			echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -940,19 +975,19 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$timeout" -lt "1" ] ; then
 				timeout=1
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$timeout too small so set as" "$timeout"
+				AddToDebug "~ \$timeout too small so set as" "$timeout"
 			fi
 
 			if [ "$timeout" -gt "$timeout_max" ] ; then
 				timeout=$timeout_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$timeout too large so set as" "$timeout"
+				AddToDebug "~ \$timeout too large so set as" "$timeout"
 			fi
 			;;
 	esac
 
 	case ${retries#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$retries" "invalid"
+			AddToDebug "! specified \$retries" "invalid"
 			echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -961,19 +996,19 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$retries" -lt "1" ] ; then
 				retries=1
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$retries too small so set as" "$retries"
+				AddToDebug "~ \$retries too small so set as" "$retries"
 			fi
 
 			if [ "$retries" -gt "$retries_max" ] ; then
 				retries=$retries_max
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$retries too large so set as" "$retries"
+				AddToDebug "~ \$retries too large so set as" "$retries"
 			fi
 			;;
 	esac
 
 	case ${upper_size_limit#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$upper_size_limit" "invalid"
+			AddToDebug "! specified \$upper_size_limit" "invalid"
 			echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -982,14 +1017,14 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$upper_size_limit" -lt "0" ] ; then
 				upper_size_limit=0
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
+				AddToDebug "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
 			fi
 			;;
 	esac
 
 	case ${lower_size_limit#[-+]} in
 		*[!0-9]* )
-			[ "$debug" == "true" ] && AddToDebugFile "! specified \$lower_size_limit" "invalid"
+			AddToDebug "! specified \$lower_size_limit" "invalid"
 			echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
 			echo
 			ShowHelp
@@ -998,18 +1033,18 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$lower_size_limit" -lt "0" ] ; then
 				lower_size_limit=0
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$lower_size_limit too small so set as" "$lower_size_limit"
+				AddToDebug "~ \$lower_size_limit too small so set as" "$lower_size_limit"
 			fi
 
 			if [ "$upper_size_limit" -gt "0" ] && [ "$lower_size_limit" -gt "$upper_size_limit" ] ; then
 				lower_size_limit=$(($upper_size_limit-1))
-				[ "$debug" == "true" ] && AddToDebugFile "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
+				AddToDebug "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
 			fi
 			;;
 	esac
 
 	if [ ! "$user_query" ] ; then
-		[ "$debug" == "true" ] && AddToDebugFile "! \$user_query" "unspecified"
+		AddToDebug "! \$user_query" "unspecified"
 		echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
 		echo
 		ShowHelp
@@ -1050,7 +1085,7 @@ if [ "$exitcode" -eq "0" ] ; then
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! failure limit reached!"
-		[ "$debug" == "true" ] && AddToDebugFile "! failure limit reached" "$failures_limit"
+		AddToDebug "! failure limit reached" "$failures_limit"
 		exitcode=5
 	fi
 
@@ -1067,9 +1102,9 @@ fi
 
 # write results into debug file
 if [ "$debug" == "true" ] ; then
-	AddToDebugFile "? image download \$failure_count" "$failure_count"
-	AddToDebugFile "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
-	AddToDebugFile "< finished" "$(date)"
+	AddToDebug "? image download \$failure_count" "$failure_count"
+	AddToDebug "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+	AddToDebug "< finished" "$(date)"
 fi
 
 exit $exitcode
