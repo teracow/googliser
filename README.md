@@ -1,6 +1,6 @@
 ![teracow](http://i.imgur.com/IhG8j5Q.png) googliser.sh
 ---
-This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
+This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
 
 (This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
 
@@ -15,14 +15,14 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to 1000 images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
 ---
 **Notes:**
 
-I wrote this scraper so that users do not have to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
+I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
 Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
@@ -67,7 +67,7 @@ Only download image files that are reported by the server to be larger than this
 Specify a custom title for the gallery. Default is to use the search-phrase.
 
 `-g` or `--no-gallery`  
-Don't create thumbnail gallery. Default is that script always creates a thumbnail gallery after downloading images.
+Don't create thumbnail gallery. Default always creates a thumbnail gallery after downloading images.
 
 `-h` or `--help`  
 Display this help then exit.
@@ -79,7 +79,7 @@ Show script version then exit.
 Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`  
-Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what commands and parameters were run! :)
+Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what commands and parameters were run!
 
 **Usage Examples:**
 
@@ -105,7 +105,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Return Values ($?):**  
 
-0 : successful download(s).  
+0 : success!  
 1 : required external program unavailable.  
 2 : specified parameter incorrect - help / version shown.  
 3 : unable to create sub-directory for 'search-phrase'.  
