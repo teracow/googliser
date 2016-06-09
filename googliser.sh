@@ -608,7 +608,7 @@ function BuildGallery
 		read -r width height <<< $(convert -ping "${temp_path}/gallery-foreground.png" -format "%w %h" info:)
 
 		# create a black image with white sphere in centre
-		build_background_cmd="convert -size ${width}x${height} radial-gradient:white-black \"${temp_path}/gallery-background.png\""
+		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${temp_path}/gallery-background.png\""
 
 		[ "$debug" == "true" ] && AddToDebugFile "? \$build_background_cmd" "$build_background_cmd"
 
