@@ -97,13 +97,10 @@ This will download the first 56 available images for the search phrase *"fish an
 ---
 **Samples:**
 
-`$ ./googliser.sh --phrase "kittens" --upper-size 100000 --lower-size 2000 --failures 0`
-generates this image:  
+    $ ./googliser.sh --phrase "kittens" --upper-size 100000 --lower-size 2000 --failures 0
 ![kittens](http://i.imgur.com/vm1eisrh.jpg)
 
-
-`$ ./googliser.sh -n 400 -p "cows" -u 200000 -l 2000 -f 0`  
-generates this image:  
+    $ ./googliser.sh -n 400 -p "cows" -u 200000 -l 2000 -f 0
 ![cows](http://i.imgur.com/SMV2BInh.jpg)  
 For this sample, only 249 images were available out of the 381 search results returned. 132 images failed as they were unavailable or their file-size was outside the limits I set. The gallery image is built using however many images are downloaded.
 
