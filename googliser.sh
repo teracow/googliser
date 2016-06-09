@@ -41,7 +41,9 @@ function Init
 	script_details="${script_name} - v${script_version} (${script_date})"
 
 	current_path="$PWD"
-	temp_path="/dev/shm"
+	temp_path="/dev/shm/$script_name.$$"
+
+	mkdir -p "${temp_path}"
 
 	gallery_name="googliser-gallery"
 	imagelinkslist_file="googliser-links.list"
@@ -75,6 +77,7 @@ function Init
 	create_gallery=true
 	verbose=true
 	debug=false
+	gallery_title=""
 
 	# http://whatsmyuseragent.com
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
@@ -102,6 +105,8 @@ function Init
 	AddToDebug "? \$failures_limit" "$failures_limit"
 	AddToDebug "? \$verbose" "$verbose"
 	AddToDebug "? \$create_gallery" "$create_gallery"
+	AddToDebug "? \$gallery_title" "$gallery_title"
+	AddToDebug "? \$temp_path" "$temp_path"
 
 	IsProgramAvailable "wget" || exitcode=1
 	IsProgramAvailable "perl" || exitcode=1
@@ -164,6 +169,7 @@ function ShowHelp
 	HelpParameterFormat "r" "retries INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
 	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
 	HelpParameterFormat "l" "lower-size INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
+	HelpParameterFormat "i" "title STRING" "Custom title for thumbnail gallery. Default is search phrase (-p --phrase)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
@@ -232,6 +238,10 @@ function WhatAreMyOptions
 				;;
 			-l | --lower-size )
 				lower_size_limit="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			-i | --title )
+				gallery_title="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-h | --help )
@@ -642,7 +652,7 @@ function BuildGallery
 
 		# create title image
 		# let's try a fixed height of 100 pixels
-		build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${user_query}\" -blur 0x5 -fill $title_colour -stroke none label:\"${user_query}\" -flatten \"${gallery_title_pathfile}\""
+		build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${gallery_title}\" -blur 0x5 -fill $title_colour -stroke none label:\"${gallery_title}\" -flatten \"${gallery_title_pathfile}\""
 
 		AddToDebug "? \$build_title_cmd" "$build_title_cmd"
 
@@ -884,7 +894,7 @@ function ConvertSecs
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,i:,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,title:,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -912,133 +922,154 @@ if [ "$exitcode" -eq "0" ] ; then
 			;;
 	esac
 
-	case ${failures_limit#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$failures_limit" "invalid"
-			echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${failures_limit#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$failures_limit" "invalid"
+				echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$failures_limit" -le "0" ] ; then
+					failures_limit=$results_max
+					AddToDebug "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
+				fi
+
+				if [ "$failures_limit" -gt "$results_max" ] ; then
+					failures_limit=$results_max
+					AddToDebug "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${spawn_limit#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$spawn_limit" "invalid"
+				echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$spawn_limit" -lt "1" ] ; then
+					spawn_limit=1
+					AddToDebug "~ \$spawn_limit too small so set as" "$spawn_limit"
+				fi
+
+				if [ "$spawn_limit" -gt "$spawn_max" ] ; then
+					spawn_limit=$spawn_max
+					AddToDebug "~ \$spawn_limit too large so set as" "$spawn_limit"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${timeout#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$timeout" "invalid"
+				echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$timeout" -lt "1" ] ; then
+					timeout=1
+					AddToDebug "~ \$timeout too small so set as" "$timeout"
+				fi
+
+				if [ "$timeout" -gt "$timeout_max" ] ; then
+					timeout=$timeout_max
+					AddToDebug "~ \$timeout too large so set as" "$timeout"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${retries#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$retries" "invalid"
+				echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$retries" -lt "1" ] ; then
+					retries=1
+					AddToDebug "~ \$retries too small so set as" "$retries"
+				fi
+
+				if [ "$retries" -gt "$retries_max" ] ; then
+					retries=$retries_max
+					AddToDebug "~ \$retries too large so set as" "$retries"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${upper_size_limit#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$upper_size_limit" "invalid"
+				echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$upper_size_limit" -lt "0" ] ; then
+					upper_size_limit=0
+					AddToDebug "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${lower_size_limit#[-+]} in
+			*[!0-9]* )
+				AddToDebug "! specified \$lower_size_limit" "invalid"
+				echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
+				echo
+				ShowHelp
+				exitcode=2
+				;;
+			* )
+				if [ "$lower_size_limit" -lt "0" ] ; then
+					lower_size_limit=0
+					AddToDebug "~ \$lower_size_limit too small so set as" "$lower_size_limit"
+				fi
+
+				if [ "$upper_size_limit" -gt "0" ] && [ "$lower_size_limit" -gt "$upper_size_limit" ] ; then
+					lower_size_limit=$(($upper_size_limit-1))
+					AddToDebug "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
+				fi
+				;;
+		esac
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		if [ ! "$user_query" ] ; then
+			AddToDebug "! \$user_query" "unspecified"
+			echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
 			echo
 			ShowHelp
 			exitcode=2
-			;;
-		* )
-			if [ "$failures_limit" -le "0" ] ; then
-				failures_limit=$results_max
-				AddToDebug "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
-			fi
+		fi
+	fi
 
-			if [ "$failures_limit" -gt "$results_max" ] ; then
-				failures_limit=$results_max
-				AddToDebug "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
-			fi
-			;;
-	esac
-
-	case ${spawn_limit#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$spawn_limit" "invalid"
-			echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
-			echo
-			ShowHelp
-			exitcode=2
-			;;
-		* )
-			if [ "$spawn_limit" -lt "1" ] ; then
-				spawn_limit=1
-				AddToDebug "~ \$spawn_limit too small so set as" "$spawn_limit"
-			fi
-
-			if [ "$spawn_limit" -gt "$spawn_max" ] ; then
-				spawn_limit=$spawn_max
-				AddToDebug "~ \$spawn_limit too large so set as" "$spawn_limit"
-			fi
-			;;
-	esac
-
-	case ${timeout#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$timeout" "invalid"
-			echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
-			echo
-			ShowHelp
-			exitcode=2
-			;;
-		* )
-			if [ "$timeout" -lt "1" ] ; then
-				timeout=1
-				AddToDebug "~ \$timeout too small so set as" "$timeout"
-			fi
-
-			if [ "$timeout" -gt "$timeout_max" ] ; then
-				timeout=$timeout_max
-				AddToDebug "~ \$timeout too large so set as" "$timeout"
-			fi
-			;;
-	esac
-
-	case ${retries#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$retries" "invalid"
-			echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
-			echo
-			ShowHelp
-			exitcode=2
-			;;
-		* )
-			if [ "$retries" -lt "1" ] ; then
-				retries=1
-				AddToDebug "~ \$retries too small so set as" "$retries"
-			fi
-
-			if [ "$retries" -gt "$retries_max" ] ; then
-				retries=$retries_max
-				AddToDebug "~ \$retries too large so set as" "$retries"
-			fi
-			;;
-	esac
-
-	case ${upper_size_limit#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$upper_size_limit" "invalid"
-			echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
-			echo
-			ShowHelp
-			exitcode=2
-			;;
-		* )
-			if [ "$upper_size_limit" -lt "0" ] ; then
-				upper_size_limit=0
-				AddToDebug "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
-			fi
-			;;
-	esac
-
-	case ${lower_size_limit#[-+]} in
-		*[!0-9]* )
-			AddToDebug "! specified \$lower_size_limit" "invalid"
-			echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
-			echo
-			ShowHelp
-			exitcode=2
-			;;
-		* )
-			if [ "$lower_size_limit" -lt "0" ] ; then
-				lower_size_limit=0
-				AddToDebug "~ \$lower_size_limit too small so set as" "$lower_size_limit"
-			fi
-
-			if [ "$upper_size_limit" -gt "0" ] && [ "$lower_size_limit" -gt "$upper_size_limit" ] ; then
-				lower_size_limit=$(($upper_size_limit-1))
-				AddToDebug "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
-			fi
-			;;
-	esac
-
-	if [ ! "$user_query" ] ; then
-		AddToDebug "! \$user_query" "unspecified"
-		echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
-		echo
-		ShowHelp
-		exitcode=2
+	if [ "$exitcode" -eq "0" ] ; then
+		if [ ! "$gallery_title" ] ; then
+			gallery_title=$user_query
+			AddToDebug "~ \$gallery_title was unspecified so set as" "$gallery_title"
+		fi
 	fi
 fi
 

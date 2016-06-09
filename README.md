@@ -45,9 +45,9 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 Number of images to download. Default is 25. Maximum is 400.  
 
-`-p` or `--phrase STRING (required)`
+`-p` or `--phrase STRING`
 
-Search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
+**Required!** - The search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
 
 `-f` or `--failures INTEGER`
 
@@ -72,6 +72,10 @@ Only download image files that are reported by the server to be smaller than thi
 `-l` or `--lower-size INTEGER`
 
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
+
+`-i` or `--title STRING`
+
+Specify a custom title for the gallery. Default is to use the search phrase.
 
 `-g` or `--no-gallery`
 
@@ -149,7 +153,6 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **To-Do List:**
 
-- Create temp dir with PID so that multiple copies of googliser can be run.
 - Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.
