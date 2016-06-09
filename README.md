@@ -128,6 +128,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **To-Do List:**
 
+- ignore results for .php in list?
 - limit download results? 
 - Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?

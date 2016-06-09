@@ -297,11 +297,12 @@ function IsProgramAvailable
 
 	}
 
-function DownloadSpecificPageSegment
+function DownloadPageSegment_auto
 	{
 
-	# $1 = page segment to load:		(0, 1, 2, 3)
-	# $2 = pointer starts at result:	(0, 100, 200, 300)
+	# *** This function runs as a background process ***
+	# $1 = page segment to load:		(0, 1, 2, 3, etc...)
+	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
 	local search_quarter="&ijn=$1"
 	local search_start="&start=$2"
@@ -312,7 +313,7 @@ function DownloadSpecificPageSegment
 
 	}
 
-function DownloadAllPageSegments
+function DownloadPageSegments
 	{
 
 	local segments_max=$(($results_max/100))
@@ -324,9 +325,9 @@ function DownloadAllPageSegments
 		pointer=$((($segment-1)*100))
 
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-		#percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
+		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
 
-		DownloadSpecificPageSegment $(($segment-1)) "$pointer" &
+		DownloadPageSegment_auto $(($segment-1)) "$pointer" &
 		pids[${segment}]=$!
 	done
 
@@ -340,7 +341,7 @@ function DownloadAllPageSegments
 
 	}
 
-function DownloadList
+function DownloadSearchList
 	{
 
 	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
@@ -349,7 +350,7 @@ function DownloadList
 
 	[ "$verbose" == "true" ] && echo -n " -> searching Google for images matching the phrase \"$user_query\": "
 
-	DownloadAllPageSegments
+	DownloadPageSegments
 
 	# regexes explained:
 	# 1. look for lines with '<div' and insert 2 linefeeds before them
@@ -383,10 +384,10 @@ function DownloadList
 
 	}
 
-function SingleImageDownloader
+function DownloadImage_auto
 	{
 
-	# This function runs as a background process
+	# *** This function runs as a background process ***
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
@@ -530,7 +531,7 @@ function DownloadImages
 
 			((result_index++))
 
-			SingleImageDownloader "$msg" "$result_index" &
+			DownloadImage_auto "$msg" "$result_index" &
 			pids[${result_index}]=$!		# record PID for checking later
 			((countdown--))
 			sleep 0.1				# allow spawned process time to update process accumulator file
@@ -1092,7 +1093,7 @@ fi
 
 # get list of search results
 if [ "$exitcode" -eq "0" ] ; then
-	DownloadList
+	DownloadSearchList
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! couldn't download Google search results ... unable to continue."
