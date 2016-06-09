@@ -131,4 +131,3 @@ For this sample, only 249 images were available out of the 381 search results re
 - limit download results? 
 - Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?
-- Increase results_max to 800 ~ 1200? Need to get next results page.
