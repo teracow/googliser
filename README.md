@@ -109,7 +109,7 @@ generates this image:
 
 ![cows](http://i.imgur.com/u72A9bhh.jpg)
 
-For this sample, only 253 images were available out of the 382 search results returned. 129 images failed due to unavailable or their size fell outside the limits I set. The gallery image is built using however many images are downloaded.
+For this sample, only 253 images were available out of the 382 search results returned. 129 images failed due to being unavailable or their file size fell outside the limits I set. The gallery image is built using however many images are downloaded.
 
 ---
 **Return Values ($?):**  

@@ -137,15 +137,11 @@ function ShowHelp
 
 	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
-	local sample_images_required=12
-	local sample_user_query_short="cows"
-	local sample_user_query_long="small brown cows"
+	local sample_user_query="cows"
 
 	echo " > ${script_details}"
 	echo
-	echo " - Basic: search 'Google Images' then download each of the image URLs returned."
-	echo
-	echo " - Description: downloads the first [n]umber of images returned by Google Images for [p]hrase. These are then built into a gallery using ImageMagick." | fold -s -w80
+	echo " - search 'Google Images', download each of the image URLs returned, then build a thumbnail gallery using ImageMagick."
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
@@ -158,14 +154,14 @@ function ShowHelp
 	echo " - Usage: ./$script_name [PARAMETERS] ..."
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
-	HelpParameterFormat "n" "number=INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
-	HelpParameterFormat "p" "phrase=STRING (required)" "Search phrase to look for. Enclose whitespace in quotes e.g. \"$sample_user_query_long\"."
-	HelpParameterFormat "f" "failures=INTEGER [$failures_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
-	HelpParameterFormat "c" "concurrency=INTEGER [$spawn_limit]" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
-	HelpParameterFormat "t" "timeout=INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
-	HelpParameterFormat "r" "retries=INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
-	HelpParameterFormat "u" "upper-size=INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
-	HelpParameterFormat "l" "lower-size=INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
+	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
+	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
+	HelpParameterFormat "f" "failures INTEGER [$failures_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpParameterFormat "c" "concurrency INTEGER [$spawn_limit]" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
+	HelpParameterFormat "t" "timeout INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
+	HelpParameterFormat "r" "retries INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
+	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
+	HelpParameterFormat "l" "lower-size INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
@@ -173,9 +169,9 @@ function ShowHelp
 	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file]."
 	echo
 	echo " - Example:"
-	echo " $ ./$script_name -n $sample_images_required -p \"${sample_user_query_short}\""
+	echo " $ ./$script_name -p \"${sample_user_query}\""
 	echo
-	echo " This will download the first $sample_images_required available images for the search phrase \"${sample_user_query_short}\""
+	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery."
 	echo
 
 	[ "$debug" == "true" ] && AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
