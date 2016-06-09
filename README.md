@@ -109,6 +109,8 @@ generates this image:
 
 ![cows](http://i.imgur.com/u72A9bhh.jpg)
 
+For this sample, only 253 images were available out of the 382 search results returned. The gallery image is built using however many images are downloaded.
+
 ---
 **Return Values ($?):**  
 
