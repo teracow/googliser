@@ -1,4 +1,5 @@
 changelog:
+v1.16 (2016-06-10) Initial list download limited to concurrency specified and shows download progress.
 v1.15 (2016-06-09) User can now specify upper and lower file size limits. Initial search results are handled in temp dir. Thumbail gallery now has search phrase as title. Custom title can also be specified. 1000 results now!
 v1.14 (2016-06-08) Concurrent image downloads now available! Fixed problem of URLs without specified extensions. Files now download sequentially. Added options for concurrent downloads, timeout, tries, quiet. Renamed 'l - limit' parameter to 'f - failures'. Now correctly aborts download when failures_limit is reached. Generates nice looking background for gallery.
 v1.13 (2016-06-07) Now called googliser! Changed internal file names to match. Removed curl and now only using wget. Search results download concurrently.

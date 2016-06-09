@@ -35,8 +35,8 @@
 function Init
 	{
 
-	script_version="1.15"
-	script_date="2016-06-09"
+	script_version="1.16"
+	script_date="2016-06-10"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
 	script_details="${script_name} - v${script_version} (${script_date})"
 
@@ -60,6 +60,10 @@ function Init
 	gallery_background_pathfile="${temp_path}/gallery-background.png"
 
 	server="www.google.com.au"
+
+	# http://whatsmyuseragent.com
+	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
+
 	results_max=1000
 	spawn_max=40
 	timeout_max=600
@@ -79,13 +83,9 @@ function Init
 	debug=false
 	gallery_title=""
 
-	# http://whatsmyuseragent.com
-	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
-
 	script_starttime=$(date)
 	script_startseconds=$(date +%s)
 	result_index=0
-	failure_count=0
 	exitcode=0
 
 	WhatAreMyOptions
@@ -115,12 +115,6 @@ function Init
 		IsProgramAvailable "montage" || exitcode=1
 		IsProgramAvailable "convert" || exitcode=1
 	fi
-
-	[ -e "${spawn_count_pathfile}" ] && rm -f "${spawn_count_pathfile}"
-	[ -e "${success_count_pathfile}" ] && rm -f "${success_count_pathfile}"
-	[ -e "${failure_count_pathfile}" ] && rm -f "${failure_count_pathfile}"
-	[ -e "${unknown_size_count_pathfile}" ] && rm -f "${unknown_size_count_pathfile}"
-	[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"*
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -304,78 +298,80 @@ function DownloadPageSegment_auto
 	# $1 = page segment to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
-	local search_quarter="&ijn=$1"
+	IncrementFile "${spawn_count_pathfile}"
+
+	local search_segment="&ijn=$1"
 	local search_start="&start=$2"
-	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_quarter}${search_start}' --user-agent '$useragent' --output-document -"
+
+	AddToDebug "- results segment # '$1'" "start"
+
+	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document -"
 	AddToDebug "? \$wget_list_cmd" "$wget_list_cmd"
 
 	eval $wget_list_cmd >> "${results_pathfile}.$1"
+	result=$?
+
+	if [ "$result" -eq "0" ] ; then
+		AddToDebug "$ results segment # '$1'" "success!"
+		IncrementFile "${success_count_pathfile}"
+	else
+		AddToDebug "! results segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		IncrementFile "${failure_count_pathfile}"
+	fi
+
+	DecrementFile "${spawn_count_pathfile}"
 
 	}
 
 function DownloadPageSegments
 	{
 
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
+
+	local func_startseconds=$(date +%s)
 	local segments_max=$(($results_max/100))
 	local pointer=0
-	#local percent=""
+	local strlength=0
 	local pids=""
 
+	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
+
+	ResetAllCounts
+
 	for ((segment=1; segment<=$segments_max; segment++)) ; do
+		while true; do
+			RefreshActiveCounts
+			ShowResultsDownloadProgress
+
+			[ "$spawn_count" -lt "$spawn_limit" ] && break
+
+			sleep 0.5
+		done
+
 		pointer=$((($segment-1)*100))
 
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
+# 		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
 
 		DownloadPageSegment_auto $(($segment-1)) "$pointer" &
-		pids[${segment}]=$!
+		pids[${segment}]=$!			# record PID for checking later
+		sleep 0.1				# allow spawned process time to update spawn_count file
 	done
 
-	# wait for spawned children to exit
+	# wait here while all running downloads finish
 	for pid in ${pids[*]}; do
 		wait $pid
 	done
 
+	ResetSpawnCount
+	ResetUnknownSizesCount
+	RefreshActiveCounts
+	ShowResultsDownloadProgress
+
 	cat "${results_pathfile}".* > "${results_pathfile}"
 	rm -f "${results_pathfile}".*
 
-	}
-
-function DownloadSearchList
-	{
-
-	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
-
-	local func_startseconds=$(date +%s)
-
-	[ "$verbose" == "true" ] && echo -n " -> searching Google for images matching the phrase \"$user_query\": "
-
-	DownloadPageSegments
-
-	# regexes explained:
-	# 1. look for lines with '<div' and insert 2 linefeeds before them
-	# 2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
-	# 3. only list lines without 'youtube' or 'vimeo'
-	# 4. remove everything from '<div class="rg_meta">' up to 'http' but keep 'http' on each line
-	# 5. remove everything including and after '","ow"' on each line
-	# 6. remove everything including and after '?' on each line
-
-	cat "${results_pathfile}" | sed 's|<div|\n\n<div|g' | grep '<div class=\"rg_meta\">.*http' | grep -ivE 'youtube|vimeo' | perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' > "${imagelist_pathfile}"
-	result=$?
-
-	if [ "$result" -eq "0" ] ; then
-		result_count=$(wc -l < "${imagelist_pathfile}")
-
-		AddToDebug "$ [${FUNCNAME[0]}]" "success!"
-		AddToDebug "? \$result_count" "$result_count"
-
-		[ "$verbose" == "true" ] && echo "found ${result_count} results!"
-# 		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
-
-	else
-		AddToDebug "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
-		[ "$verbose" == "true" ] && echo "failed!"
-	fi
+	ParseResults
 
 	AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
@@ -391,10 +387,11 @@ function DownloadImage_auto
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
+	IncrementFile "${spawn_count_pathfile}"
+
 	local result=0
 	local size_ok=true
 	local get_download=true
-	IncrementFile "${spawn_count_pathfile}"
 
 	AddToDebug "- download link # '$2'" "start"
 
@@ -442,24 +439,29 @@ function DownloadImage_auto
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			actual_size=$(wc -c < "$targetimage_pathfileext")
+			if [ -e "${targetimage_pathfileext}" ] ; then
+				actual_size=$(wc -c < "$targetimage_pathfileext")
 
-			AddToDebug "? \$actual_size for link # '$2'" "$actual_size bytes"
-			if [ "$estimated_size" == "$actual_size" ] ; then
-				AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+				AddToDebug "? \$actual_size for link # '$2'" "$actual_size bytes"
+				if [ "$estimated_size" == "$actual_size" ] ; then
+					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+				else
+					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
+				fi
+
+				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
+					AddToDebug "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					rm -f "$targetimage_pathfileext"
+					size_ok=false
+				fi
+
+				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
+					AddToDebug "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					rm -f "$targetimage_pathfileext"
+					size_ok=false
+				fi
 			else
-				AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
-			fi
-
-			if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-				AddToDebug "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
-				rm -f "$targetimage_pathfileext"
-				size_ok=false
-			fi
-
-			if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-				AddToDebug "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
-				rm -f "$targetimage_pathfileext"
+				# file does not exist
 				size_ok=false
 			fi
 
@@ -500,17 +502,15 @@ function DownloadImages
 	local strlength=0
 	local pids=""
 	local result=0
-	failure_count=0
 
-	ResetSpawnCount
-	ResetUnknownSizesCount
+	ResetAllCounts
 
 	[ "$verbose" == "true" ] && echo -n " -> "
 
 	while read imagelink; do
 		while true; do
 			RefreshActiveCounts
-			ShowProgressMsg
+			ShowImagesDownloadProgress
 
 			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
@@ -534,7 +534,7 @@ function DownloadImages
 			DownloadImage_auto "$msg" "$result_index" &
 			pids[${result_index}]=$!		# record PID for checking later
 			((countdown--))
-			sleep 0.1				# allow spawned process time to update process accumulator file
+			sleep 0.1				# allow spawned process time to update spawn_count file
 		else
 			# can't start any more concurrent downloads yet so kill some time
 			# wait here while all running downloads finish
@@ -545,7 +545,7 @@ function DownloadImages
 			ResetSpawnCount
 			ResetUnknownSizesCount
 			RefreshActiveCounts
-			ShowProgressMsg
+			ShowImagesDownloadProgress
 
 			# how many were successful?
 			if [ "$success_count" -lt "$images_required" ] ; then
@@ -566,7 +566,7 @@ function DownloadImages
 	ResetSpawnCount
 	ResetUnknownSizesCount
 	RefreshActiveCounts
-	ShowProgressMsg
+	ShowImagesDownloadProgress
 
 	[ "$verbose" == "true" ] && echo
 
@@ -574,6 +574,36 @@ function DownloadImages
 	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
+
+	}
+
+function ParseResults
+	{
+
+	AddToDebug "\ [${FUNCNAME[0]}]" "entry"
+
+	result_count=0
+
+	# regexes explained:
+	# 1. look for lines with '<div' and insert 2 linefeeds before them
+	# 2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
+	# 3. only list lines without 'youtube' or 'vimeo'
+	# 4. remove everything from '<div class="rg_meta">' up to 'http' but keep 'http' on each line
+	# 5. remove everything including and after '","ow"' on each line
+	# 6. remove everything including and after '?' on each line
+
+	cat "${results_pathfile}" | sed 's|<div|\n\n<div|g' | grep '<div class=\"rg_meta\">.*http' | grep -ivE 'youtube|vimeo' | perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' > "${imagelist_pathfile}"
+
+	if [ -e "$imagelist_pathfile" ] ; then
+		result_count=$(wc -l < "${imagelist_pathfile}")
+
+		[ "$verbose" == "true" ] && echo "Found ${result_count} results!"
+	else
+		[ "$verbose" == "true" ] && echo "No results to count!"
+	fi
+
+	AddToDebug "? \$result_count" "$result_count"
+	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	}
 
@@ -589,7 +619,7 @@ function BuildGallery
 	local func_startseconds=$(date +%s)
 
 	if [ "$verbose" == "true" ] ; then
-		echo -n " -> building thumbnail gallery: "
+		echo -n " -> Building thumbnail gallery: "
 		progress_message="step 1 - construct thumbnails "
 		echo -n "$progress_message"
 		strlength=${#progress_message}
@@ -733,6 +763,20 @@ function ResetUnknownSizesCount
 
 	}
 
+function ResetAllCounts
+	{
+
+	ResetSpawnCount
+	ResetUnknownSizesCount
+
+	success_count=0
+	echo "${success_count}" > "${success_count_pathfile}"
+
+	failure_count=0
+	echo "${failure_count}" > "${failure_count_pathfile}"
+
+	}
+
 function IncrementFile
 	{
 
@@ -767,7 +811,26 @@ function DecrementFile
 
 	}
 
-function ShowProgressMsg
+function ShowResultsDownloadProgress
+	{
+
+	if [ "$verbose" == "true" ] ; then
+		# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+		printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+
+		# number of results page segments that downloaded OK
+		progress_message="${success_count}/${segments_max} page segments have downloaded."
+
+		# append a space to separate cursor from message
+		progress_message+=" "
+
+		echo -n "$progress_message"
+		strlength=${#progress_message}
+	fi
+
+	}
+
+function ShowImagesDownloadProgress
 	{
 
 	if [ "$verbose" == "true" ] ; then
@@ -1093,7 +1156,7 @@ fi
 
 # get list of search results
 if [ "$exitcode" -eq "0" ] ; then
-	DownloadSearchList
+	DownloadPageSegments
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! couldn't download Google search results ... unable to continue."
@@ -1110,8 +1173,10 @@ if [ "$exitcode" -eq "0" ] ; then
 		AddToDebug "! failure limit reached" "$failures_limit"
 		exitcode=5
 	fi
+fi
 
-	# build thumbnail gallery even if failures_limit was reached
+# build thumbnail gallery even if failures_limit was reached
+if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 	if [ "$create_gallery" == "true" ] ; then
 		BuildGallery
 

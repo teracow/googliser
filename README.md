@@ -28,7 +28,7 @@ I wrote this so that users do not have to obtain an API key from Google to downl
 
 Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
-This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-09. 
+This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-10. 
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -123,7 +123,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Need to display initial list download progress.
+- (2016-06-08) - Various things - nothing specific.
  
 ---
 **To-Do List:**
