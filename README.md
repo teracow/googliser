@@ -83,15 +83,15 @@ Suppress display output. Error messages are still shown.
 `-d` or `--debug`  
 Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what commands and parameters were run! :)
 
-**Examples:**
+**Usage Examples:**
 
-`$ ./googliser.sh -p "cows"`  
+    $ ./googliser.sh -p "cows"
 This will download the first 25 available images for the search phrase *"cows"*
 
-`$ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0`  
+    $ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0
 This will download the first 250 available images for the search phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
 
-`$ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug`  
+    $ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug
 This will download the first 56 available images for the search phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
 ---
