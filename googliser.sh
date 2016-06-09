@@ -53,6 +53,9 @@ function Init
 	failure_count_pathfile="${temp_path}/failed-download.count"
 	unknown_size_count_pathfile="${temp_path}/unknown-size-download.count"
 	results_pathfile="${temp_path}/google-results.html"
+	gallery_title_pathfile="${temp_path}/gallery-title.png"
+	gallery_thumbnails_pathfile="${temp_path}/gallery-thumbnails.png"
+	gallery_background_pathfile="${temp_path}/gallery-background.png"
 
 	server="www.google.com.au"
 	results_max=400
@@ -585,7 +588,7 @@ function BuildGallery
 	[ "$verbose" == "true" ] && echo -n " -> building thumbnail gallery: "
 
 	# build gallery
-	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${temp_path}/gallery-foreground.png\""
+	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
 
 	[ "$debug" == "true" ] && AddToDebugFile "? \$build_foreground_cmd" "$build_foreground_cmd"
 
@@ -604,10 +607,10 @@ function BuildGallery
 
 	if [ "$result" -eq "0" ] ; then
 		# get image dimensions
-		read -r width height <<< $(convert -ping "${temp_path}/gallery-foreground.png" -format "%w %h" info:)
+		read -r width height <<< $(convert -ping "${gallery_thumbnails_pathfile}" -format "%w %h" info:)
 
 		# create a dark image with light sphere in centre
-		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${temp_path}/gallery-background.png\""
+		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${gallery_background_pathfile}\""
 
 		[ "$debug" == "true" ] && AddToDebugFile "? \$build_background_cmd" "$build_background_cmd"
 
@@ -619,46 +622,45 @@ function BuildGallery
 		else
 			[ "$debug" == "true" ] && AddToDebugFile "! \$build_background_cmd" "failed! convert returned: ($result)"
 		fi
+	fi
+
+	if [ "$result" -eq "0" ] ; then
+		# create title image
+		# let's try a fixed height of 100 pixels
+		build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${user_query}\" -blur 0x5 -fill $title_colour -stroke none label:\"${user_query}\" -flatten \"${gallery_title_pathfile}\""
+
+		[ "$debug" == "true" ] && AddToDebugFile "? \$build_title_cmd" "$build_title_cmd"
+
+		eval $build_title_cmd 2> /dev/null
+		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			# create title image
-			# let's try a fixed height of 100 pixels
-			build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${user_query}\" -blur 0x5 -fill $title_colour -stroke none label:\"${user_query}\" -flatten \"${temp_path}/title-foreground.png\""
+			[ "$debug" == "true" ] && AddToDebugFile "$ \$build_title_cmd" "success!"
+		else
+			[ "$debug" == "true" ] && AddToDebugFile "! \$build_title_cmd" "failed! convert returned: ($result)"
+		fi
+	fi
 
-			[ "$debug" == "true" ] && AddToDebugFile "? \$build_title_cmd" "$build_title_cmd"
+	if [ "$result" -eq "0" ] ; then
+		# compose thumbnails image on background image, then title image on top
+		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
 
-			eval $build_title_cmd 2> /dev/null
-			result=$?
+		[ "$debug" == "true" ] && AddToDebugFile "? \$build_compose_cmd" "$build_compose_cmd"
 
-			if [ "$result" -eq "0" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "$ \$build_title_cmd" "success!"
-			else
-				[ "$debug" == "true" ] && AddToDebugFile "! \$build_title_cmd" "failed! convert returned: ($result)"
-			fi
+		eval $build_compose_cmd 2> /dev/null
+		result=$?
 
-			if [ "$result" -eq "0" ] ; then
-				# compose thumbnails image on background image, then title image on top
-				build_compose_cmd="convert \"${temp_path}/gallery-background.png\" \"${temp_path}/gallery-foreground.png\" -gravity center -composite \"${temp_path}/title-foreground.png\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
-
-				[ "$debug" == "true" ] && AddToDebugFile "? \$build_compose_cmd" "$build_compose_cmd"
-
-				eval $build_compose_cmd 2> /dev/null
-				result=$?
-
-				if [ "$result" -eq "0" ] ; then
-					[ "$debug" == "true" ] && AddToDebugFile "$ \$build_compose_cmd" "success!"
-				else
-					[ "$debug" == "true" ] && AddToDebugFile "! \$build_compose_cmd" "failed! convert returned: ($result)"
-				fi
-
-				rm -f "${temp_path}/title-foreground.png"
-			fi
-
-			rm -f "${temp_path}/gallery-background.png"
+		if [ "$result" -eq "0" ] ; then
+			[ "$debug" == "true" ] && AddToDebugFile "$ \$build_compose_cmd" "success!"
+		else
+			[ "$debug" == "true" ] && AddToDebugFile "! \$build_compose_cmd" "failed! convert returned: ($result)"
 		fi
 
-		rm -f "${temp_path}/gallery-foreground.png"
 	fi
+
+	[ -e "${gallery_title_pathfile}" ] && rm -f "${gallery_title_pathfile}"
+	[ -e "${gallery_thumbnails_pathfile}" ] && rm -f "${gallery_thumbnails_pathfile}"
+	[ -e "${gallery_background_pathfile}" ] && rm -f "${gallery_background_pathfile}"
 
 	if [ "$result" -eq "0" ] ; then
 		[ "$debug" == "true" ] && AddToDebugFile "$ [${FUNCNAME[0]}]" "success!"
