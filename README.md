@@ -116,12 +116,12 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Known Issues:**
 
-- (2016-06-08) None at the moment.
+- (2016-06-10) None at the moment.
 
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Various things - nothing specific.
+- (2016-06-10) - Various things - nothing specific.
  
 ---
 **To-Do List:**
