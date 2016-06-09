@@ -45,9 +45,8 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 Number of images to download. Default is 25. Maximum is 400.  
 
-`-p` or `--phrase STRING`
-
-**Required!** - The search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
+`-p` or `--phrase STRING`  
+**Required!** The search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 `-f` or `--failures INTEGER`
 
