@@ -46,7 +46,7 @@ Number of images to download. Default is 25. Maximum is 1000.
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 `-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 10. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures).
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures).
 
 `-c` or `--concurrency [INTEGER]`  
 How many concurrent image downloads? Default is 8. Maximum is 40. **A higher number will not necessarily download faster!**

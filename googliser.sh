@@ -73,7 +73,7 @@ function Init
 	user_query=""
 	images_required=25
 	spawn_limit=8
-	failures_limit=10
+	failures_limit=40
 	upper_size_limit=0
 	lower_size_limit=1000
 	timeout=15
@@ -303,7 +303,7 @@ function DownloadPageSegment_auto
 	local search_segment="&ijn=$1"
 	local search_start="&start=$2"
 
-	AddToDebug "- results segment # '$1'" "start"
+	AddToDebug "- result segment # '$1'" "start"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document -"
 	AddToDebug "? \$wget_list_cmd" "$wget_list_cmd"
@@ -312,10 +312,10 @@ function DownloadPageSegment_auto
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		AddToDebug "$ results segment # '$1'" "success!"
+		AddToDebug "$ result segment # '$1'" "success!"
 		IncrementFile "${success_count_pathfile}"
 	else
-		AddToDebug "! results segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		AddToDebug "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		IncrementFile "${failure_count_pathfile}"
 	fi
 
@@ -821,7 +821,7 @@ function ShowResultsDownloadProgress
 		printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
 		# number of results page segments that downloaded OK
-		progress_message="${success_count}/${segments_max} page segments have downloaded."
+		progress_message="${success_count}/${segments_max} result segments have been downloaded."
 
 		# append a space to separate cursor from message
 		progress_message+=" "
