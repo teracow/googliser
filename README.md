@@ -1,13 +1,13 @@
 ![teracow](http://i.imgur.com/IhG8j5Q.png) googliser.sh
 ---
-This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
+This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
 
 (This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
 
 ---
 **Description:**
 
-1. The user supplies a search phrase and some other optional parameters on the command line. 
+1. The user supplies a search-phrase and some other optional parameters on the command line. 
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
@@ -22,7 +22,7 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 ---
 **Notes:**
 
-I wrote this so that users do not have to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
+I wrote this scraper so that users do not have to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
 Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
@@ -30,7 +30,7 @@ This script will need to be updated from time-to-time as Google periodically cha
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
-Suggestions / comments / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
+Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
 ---
 **Usage:**
@@ -43,7 +43,7 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 Number of images to download. Default is 25. Maximum is 1000.  
 
 `-p` or `--phrase [STRING]`  
-**Required!** The search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
+**Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 `-f` or `--failures [INTEGER]`  
 How many download failures before exiting? Default is 10. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures).
@@ -64,7 +64,7 @@ Only download image files that are reported by the server to be smaller than thi
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
 
 `-i` or `--title [STRING]`  
-Specify a custom title for the gallery. Default is to use the search phrase.
+Specify a custom title for the gallery. Default is to use the search-phrase.
 
 `-g` or `--no-gallery`  
 Don't create thumbnail gallery. Default is that script always creates a thumbnail gallery after downloading images.
@@ -84,13 +84,13 @@ Append debug info to file. Default is no debug file output. If selected, debuggi
 **Usage Examples:**
 
     $ ./googliser.sh -p "cows"
-This will download the first 25 available images for the search phrase *"cows"*
+This will download the first 25 available images for the search-phrase *"cows"*
 
     $ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0
-This will download the first 250 available images for the search phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
+This will download the first 250 available images for the search-phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug
-This will download the first 56 available images for the search phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
+This will download the first 56 available images for the search-phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
 ---
 **Samples:**
@@ -108,7 +108,7 @@ For this sample, only 249 images were available out of the 381 search results re
 0 : successful download(s).  
 1 : required external program unavailable.  
 2 : specified parameter incorrect - help / version shown.  
-3 : unable to create sub-directory for 'search phrase'.  
+3 : unable to create sub-directory for 'search-phrase'.  
 4 : could not get a list of search results from Google.  
 5 : image download aborted as failure-limit was reached.  
 6 : thumbnail gallery build failed.
