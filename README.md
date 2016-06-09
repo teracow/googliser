@@ -1,4 +1,4 @@
-![teracow](http://i.imgur.com/yzRKnIMh.png)### googliser.sh
+![teracow](http://i.imgur.com/IhG8j5Q.png) googliser.sh
 ---
 This is a BASH script to perform fast bulk image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. 
 
