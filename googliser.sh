@@ -373,6 +373,8 @@ function DownloadPageSegments
 
 	ParseResults
 
+	[ "$failure_count" -gt "0" ] && result=1 || result=0
+
 	AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
