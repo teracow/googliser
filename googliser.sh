@@ -53,10 +53,10 @@ function Init
 	spawn_max=40
 	timeout_max=600
 	retries_max=100
-	process_tracker_pathfile="${temp_path}/child-process.count"
-	download_success_count_pathfile="${temp_path}/successful-downloads.count"
-	download_failures_count_pathfile="${temp_path}/failed-downloads.count"
-	download_unknown_sizes_count_pathfile="${temp_path}/unknown-sizes-downloads.count"
+	spawn_count_pathfile="${temp_path}/spawned-process.count"
+	success_count_pathfile="${temp_path}/successful-download.count"
+	failure_count_pathfile="${temp_path}/failed-download.count"
+	unknown_size_count_pathfile="${temp_path}/unknown-size-download.count"
 
 	# user parameters
 	user_query=""
@@ -77,7 +77,7 @@ function Init
 	script_starttime=$(date)
 	script_startseconds=$(date +%s)
 	result_index=0
-	failures_count=0
+	failure_count=0
 	exitcode=0
 
 	WhatAreMyOptions
@@ -108,9 +108,9 @@ function Init
 		IsProgramAvailable "composite" || exitcode=1
 	fi
 
-	[ -e "${download_success_count_pathfile}" ] && rm -f "${download_success_count_pathfile}"
-	[ -e "${download_failures_count_pathfile}" ] && rm -f "${download_failures_count_pathfile}"
-	[ -e "${download_unknown_sizes_count_pathfile}" ] && rm -f "${download_unknown_sizes_count_pathfile}"
+	[ -e "${success_count_pathfile}" ] && rm -f "${success_count_pathfile}"
+	[ -e "${failure_count_pathfile}" ] && rm -f "${failure_count_pathfile}"
+	[ -e "${unknown_size_count_pathfile}" ] && rm -f "${unknown_size_count_pathfile}"
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -386,7 +386,7 @@ function SingleImageDownloader
 	local result=0
 	local size_ok=true
 	local get_download=true
-	IncrementFile "${process_tracker_pathfile}"
+	IncrementFile "${spawn_count_pathfile}"
 
 	[ "$debug" == "true" ] && AddToDebugFile "- download link # '$2'" "start"
 
@@ -425,7 +425,7 @@ function SingleImageDownloader
 	fi
 
 	if [ "$get_download" == "true" ] ; then
-		[ "$estimated_size" == "unknown" ] && IncrementFile "${download_unknown_sizes_count_pathfile}"
+		[ "$estimated_size" == "unknown" ] && IncrementFile "${unknown_size_count_pathfile}"
 
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		[ "$debug" == "true" ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
@@ -459,25 +459,25 @@ function SingleImageDownloader
 
 			if [ "$size_ok" == "true" ] ; then
 				[ "$debug" == "true" ] && AddToDebugFile "$ download link # '$2'" "success!"
-				IncrementFile "${download_success_count_pathfile}"
+				IncrementFile "${success_count_pathfile}"
 			else
 				# files that were outside size limits still count as failures
-				IncrementFile "${download_failures_count_pathfile}"
+				IncrementFile "${failure_count_pathfile}"
 			fi
 		else
 			[ "$debug" == "true" ] && AddToDebugFile "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-			IncrementFile "${download_failures_count_pathfile}"
+			IncrementFile "${failure_count_pathfile}"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
 
-		[ "$estimated_size" == "unknown" ] && DecrementFile "${download_unknown_sizes_count_pathfile}"
+		[ "$estimated_size" == "unknown" ] && DecrementFile "${unknown_size_count_pathfile}"
 	else
-		IncrementFile "${download_failures_count_pathfile}"
+		IncrementFile "${failure_count_pathfile}"
 	fi
 
-	DecrementFile "${process_tracker_pathfile}"
+	DecrementFile "${spawn_count_pathfile}"
 
 	}
 
@@ -494,9 +494,9 @@ function DownloadImages
 	local strlength=0
 	local pids=""
 	local result=0
-	failures_count=0
+	failure_count=0
 
-	ResetChildCount
+	ResetSpawnCount
 	ResetUnknownSizesCount
 
 	[ "$verbose" == "true" ] && echo -n " -> "
@@ -515,7 +515,7 @@ function DownloadImages
 			RefreshActiveCounts
 			ShowProgressMsg
 
-			if [ "$failures_count" -ge "$failures_limit" ] ; then
+			if [ "$failure_count" -ge "$failures_limit" ] ; then
  				result=1
 
  				# wait here while all running downloads finish
@@ -523,7 +523,7 @@ function DownloadImages
 					wait $pid
 				done
 
-				ResetChildCount
+				ResetSpawnCount
 				ResetUnknownSizesCount
 
  				break
@@ -541,7 +541,7 @@ function DownloadImages
 				wait $pid
 			done
 
-			ResetChildCount
+			ResetSpawnCount
 			ResetUnknownSizesCount
 			RefreshActiveCounts
 			ShowProgressMsg
@@ -563,7 +563,7 @@ function DownloadImages
 	[ "$verbose" == "true" ] && echo
 
 	if [ "$debug" == "true" ] ; then
-		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
+		AddToDebugFile "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
 		AddToDebugFile "/ [${FUNCNAME[0]}]" "exit"
 	fi
 
@@ -655,21 +655,21 @@ function BuildGallery
 
 	}
 
-function ResetChildCount
+function ResetSpawnCount
 	{
 
 	spawn_count=0
 
-	echo "${spawn_count}" > "${process_tracker_pathfile}"
+	echo "${spawn_count}" > "${spawn_count_pathfile}"
 
 	}
 
 function ResetUnknownSizesCount
 	{
 
-	unknown_sizes_count=0
+	unknown_size_count=0
 
-	echo "${unknown_sizes_count}" > "${download_unknown_sizes_count_pathfile}"
+	echo "${unknown_size_count}" > "${unknown_size_count_pathfile}"
 
 	}
 
@@ -718,8 +718,8 @@ function ShowProgressMsg
 		progress_message="${success_count}/${images_required} images have downloaded"
 
 		# include failures (if any)
-		if [ "$failures_count" -gt "0" ] ; then
-			progress_message+=" with ${failures_count}/$failures_limit failures"
+		if [ "$failure_count" -gt "0" ] ; then
+			progress_message+=" with ${failure_count}/${failures_limit} failures"
 		fi
 
 		progress_message+="."
@@ -730,15 +730,15 @@ function ShowProgressMsg
 				progress_message+=""
 				;;
 			1 )
-				progress_message+=" ${spawn_count}/$spawn_limit download is in progress"
+				progress_message+=" ${spawn_count}/${spawn_limit} download is in progress"
 				;;
 			* )
-				progress_message+=" ${spawn_count}/$spawn_limit downloads are in progress"
+				progress_message+=" ${spawn_count}/${spawn_limit} downloads are in progress"
 				;;
 		esac
 
 		# show the number of files currently downloading where the file size is unknown (if any)
-		case "$unknown_sizes_count" in
+		case "$unknown_size_count" in
 			0 )
 				progress_message+=""
 				;;
@@ -746,11 +746,11 @@ function ShowProgressMsg
 				progress_message+=" (but 1 is of unknown size)"
 				;;
 			* )
-				progress_message+=" (but ${unknown_sizes_count} are of unknown size)"
+				progress_message+=" (but ${unknown_size_count} are of unknown size)"
 				;;
 		esac
 
-		[ "$spawn_count" -gt "0" ] || [ "$unknown_sizes_count" -gt "0" ] && progress_message+="."
+		[ "$spawn_count" -gt "0" ] || [ "$unknown_size_count" -gt "0" ] && progress_message+="."
 
 		# append a space to separate cursor from message
 		progress_message+=" "
@@ -764,10 +764,10 @@ function ShowProgressMsg
 function RefreshActiveCounts
 	{
 
-	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
-	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
-	[ -e "${download_unknown_sizes_count_pathfile}" ] && unknown_sizes_count=$(<"${download_unknown_sizes_count_pathfile}") || unknown_sizes_count=0
-	[ -e "${process_tracker_pathfile}" ] && spawn_count=$(<"${process_tracker_pathfile}") || spawn_count=0
+	[ -e "${success_count_pathfile}" ] && success_count=$(<"${success_count_pathfile}") || success_count=0
+	[ -e "${failure_count_pathfile}" ] && failure_count=$(<"${failure_count_pathfile}") || failure_count=0
+	[ -e "${unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${unknown_size_count_pathfile}") || unknown_size_count=0
+	[ -e "${spawn_count_pathfile}" ] && spawn_count=$(<"${spawn_count_pathfile}") || spawn_count=0
 
 	}
 
@@ -1046,7 +1046,7 @@ fi
 
 # write results into debug file
 if [ "$debug" == "true" ] ; then
-	AddToDebugFile "? image download \$failures_count" "$failures_count"
+	AddToDebugFile "? image download \$failure_count" "$failure_count"
 	AddToDebugFile "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
 	AddToDebugFile "< finished" "$(date)"
 fi
