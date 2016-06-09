@@ -13,7 +13,7 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
-3. Google Image search is then queried and the results saved.
+3. **[Google Images](https://www.google.com/imghp?hl=en)** is then queried and the results saved.
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
