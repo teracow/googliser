@@ -93,7 +93,9 @@ This will download the first 250 available images for the search phrase *"kitten
 
 This will download the first 56 available images for the search phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
-**Samples:**
+---
+**Sample Images:**
+
 ![kittens](http://i.imgur.com/PXcuwkMl.jpg)
 
 ---
