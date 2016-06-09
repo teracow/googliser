@@ -355,10 +355,8 @@ function DownloadList
 	if [ "$result" -eq "0" ] ; then
 		result_count=$(wc -l < "${imagelist_pathfile}")
 
-		if [ "$debug" == "true" ] ; then
-			AddToDebug "$ [${FUNCNAME[0]}]" "success!"
-			AddToDebug "? \$result_count" "$result_count"
-		fi
+		AddToDebug "$ [${FUNCNAME[0]}]" "success!"
+		AddToDebug "? \$result_count" "$result_count"
 
 		[ "$verbose" == "true" ] && echo "found ${result_count} results!"
 # 		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
@@ -368,10 +366,8 @@ function DownloadList
 		[ "$verbose" == "true" ] && echo "failed!"
 	fi
 
-	if [ "$debug" == "true" ] ; then
-		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
-		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
-	fi
+	AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
 
@@ -437,13 +433,11 @@ function SingleImageDownloader
 		if [ "$result" -eq "0" ] ; then
 			actual_size=$(wc -c < "$targetimage_pathfileext")
 
-			if [ "$debug" == "true" ] ; then
-				AddToDebug "? \$actual_size for link # '$2'" "$actual_size bytes"
-				if [ "$estimated_size" == "$actual_size" ] ; then
-					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
-				else
-					AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
-				fi
+			AddToDebug "? \$actual_size for link # '$2'" "$actual_size bytes"
+			if [ "$estimated_size" == "$actual_size" ] ; then
+				AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+			else
+				AddToDebug "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
 			fi
 
 			if [ "$actual_size" -lt "$lower_size_limit" ] ; then
@@ -565,10 +559,8 @@ function DownloadImages
 
 	[ "$verbose" == "true" ] && echo
 
-	if [ "$debug" == "true" ] ; then
-		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
-		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
-	fi
+	AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
+	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
 
@@ -705,10 +697,8 @@ function BuildGallery
 		[ "$verbose" == "true" ] && echo "failed!"
 	fi
 
-	if [ "$debug" == "true" ] ; then
-		AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$( ConvertSecs "$(($( date +%s )-$func_startseconds))")"
-		AddToDebug "/ [${FUNCNAME[0]}]" "exit"
-	fi
+	AddToDebug "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+	AddToDebug "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
 
@@ -894,7 +884,7 @@ function ConvertSecs
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $( readlink -f -- "$0" ) -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -1101,10 +1091,8 @@ if [ "$exitcode" -eq "0" ] ; then
 fi
 
 # write results into debug file
-if [ "$debug" == "true" ] ; then
-	AddToDebug "? image download \$failure_count" "$failure_count"
-	AddToDebug "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
-	AddToDebug "< finished" "$(date)"
-fi
+AddToDebug "? image download \$failure_count" "$failure_count"
+AddToDebug "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+AddToDebug "< finished" "$(date)"
 
 exit $exitcode
