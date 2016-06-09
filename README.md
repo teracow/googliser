@@ -6,17 +6,31 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 
 *This script has now replaced* ***bulk-google-image-downloader.sh***
 
-A sub-directory is created below the current directory with the name of the user-specified search-phrase. All image links from this search are saved to a file. The script then iterates through this file and downloads the first [n]umber (user-specified) of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached (optionally specified). A single thumbnail gallery image is then built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
+---
+**Description:**
 
-Thumbnail gallery building is now optional as not everyone will want to do this. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+1. The user supplies a search phrase and some other optional parameters on the command line. 
 
-Any links for **YouTube** and **Vimeo** are removed.
+2. A sub-directory is created below the current directory with the name of this search-phrase.
+
+3. Google Image search is then queried and the results saved.
+
+4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
+
+5. The script then iterates through this list file and downloads the first [n]umber of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached. 
+
+6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
+
+---
+**Notes:**
 
 I wrote this so that users do not have to obtain an API key from Google to download multiple images. It also uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
-**Note:** this script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-09. 
+Thumbnail gallery building can now be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
-The latest copy of this script can be found **[here](https://github.com/teracow/googliser)**.  
+This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-09. 
+
+The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 Suggestions / comments / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
@@ -25,7 +39,7 @@ Suggestions / comments / advice (are|is) most welcome. :) **[email me](mailto:te
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Parameters can be specified as follows:
 
 `-n` or `--number INTEGER`
 
