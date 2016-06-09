@@ -107,13 +107,13 @@ function Init
 	if [ "$create_gallery" == "true" ] ; then
 		IsProgramAvailable "montage" || exitcode=1
 		IsProgramAvailable "convert" || exitcode=1
-		IsProgramAvailable "composite" || exitcode=1
 	fi
 
 	[ -e "${spawn_count_pathfile}" ] && rm -f "${spawn_count_pathfile}"
 	[ -e "${success_count_pathfile}" ] && rm -f "${success_count_pathfile}"
 	[ -e "${failure_count_pathfile}" ] && rm -f "${failure_count_pathfile}"
 	[ -e "${unknown_size_count_pathfile}" ] && rm -f "${unknown_size_count_pathfile}"
+	[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"*
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -147,7 +147,7 @@ function ShowHelp
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
 	echo " - Requirements: Wget and Perl"
-	echo " - Optional: montage, convert and composite (from ImageMagick)"
+	echo " - Optional: montage & convert (from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
@@ -359,7 +359,7 @@ function DownloadList
 		fi
 
 		[ "$verbose" == "true" ] && echo "found ${result_count} results!"
-		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
+# 		[ -e "${results_pathfile}" ] && rm -f "${results_pathfile}"
 
 	else
 		[ "$debug" == "true" ] && AddToDebugFile "! [${FUNCNAME[0]}]" "failed! wget returned: ($result)"
@@ -575,6 +575,9 @@ function DownloadImages
 function BuildGallery
 	{
 
+	local title_font="Century-Schoolbook-L-Bold-Italic"
+	local title_colour="goldenrod1"
+
 	[ "$debug" == "true" ] && AddToDebugFile "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
@@ -582,7 +585,7 @@ function BuildGallery
 	[ "$verbose" == "true" ] && echo -n " -> building thumbnail gallery: "
 
 	# build gallery
-	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x100 -bordercolor none -border 30 \"${temp_path}/gallery-foreground.png\""
+	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${temp_path}/gallery-foreground.png\""
 
 	[ "$debug" == "true" ] && AddToDebugFile "? \$build_foreground_cmd" "$build_foreground_cmd"
 
@@ -599,13 +602,11 @@ function BuildGallery
 		[ "$debug" == "true" ] && AddToDebugFile "! \$build_foreground_cmd" "failed! montage returned: ($result)"
 	fi
 
-	#convert googliser-gallery-\(test\ search\).png -gravity north -pointsize 80 -annotate +0+40 'test title' tester.png
-
 	if [ "$result" -eq "0" ] ; then
 		# get image dimensions
 		read -r width height <<< $(convert -ping "${temp_path}/gallery-foreground.png" -format "%w %h" info:)
 
-		# create a black image with white sphere in centre
+		# create a dark image with light sphere in centre
 		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${temp_path}/gallery-background.png\""
 
 		[ "$debug" == "true" ] && AddToDebugFile "? \$build_background_cmd" "$build_background_cmd"
@@ -620,23 +621,43 @@ function BuildGallery
 		fi
 
 		if [ "$result" -eq "0" ] ; then
-			# overlay foreground on background
-			overlay_cmd="composite -gravity center \"${temp_path}/gallery-foreground.png\" \"${temp_path}/gallery-background.png\" \"${target_path}/${gallery_name}-($user_query).png\""
+			# create title image
+			# let's try a fixed height of 100 pixels
+			build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${user_query}\" -blur 0x5 -fill $title_colour -stroke none label:\"${user_query}\" -flatten \"${temp_path}/title-foreground.png\""
 
-			[ "$debug" == "true" ] && AddToDebugFile "? \$overlay_cmd" "$overlay_cmd"
+			[ "$debug" == "true" ] && AddToDebugFile "? \$build_title_cmd" "$build_title_cmd"
 
-			eval $overlay_cmd 2> /dev/null
+			eval $build_title_cmd 2> /dev/null
 			result=$?
 
 			if [ "$result" -eq "0" ] ; then
-				[ "$debug" == "true" ] && AddToDebugFile "$ \$overlay_cmd" "success!"
+				[ "$debug" == "true" ] && AddToDebugFile "$ \$build_title_cmd" "success!"
 			else
-				[ "$debug" == "true" ] && AddToDebugFile "! \$overlay_cmd" "failed! convert returned: ($result)"
+				[ "$debug" == "true" ] && AddToDebugFile "! \$build_title_cmd" "failed! convert returned: ($result)"
 			fi
 
-			# remove build files
-			rm -f "${temp_path}/gallery-foreground.png" "${temp_path}/gallery-background.png"
+			if [ "$result" -eq "0" ] ; then
+				# compose thumbnails image on background image, then title image on top
+				build_compose_cmd="convert \"${temp_path}/gallery-background.png\" \"${temp_path}/gallery-foreground.png\" -gravity center -composite \"${temp_path}/title-foreground.png\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
+
+				[ "$debug" == "true" ] && AddToDebugFile "? \$build_compose_cmd" "$build_compose_cmd"
+
+				eval $build_compose_cmd 2> /dev/null
+				result=$?
+
+				if [ "$result" -eq "0" ] ; then
+					[ "$debug" == "true" ] && AddToDebugFile "$ \$build_compose_cmd" "success!"
+				else
+					[ "$debug" == "true" ] && AddToDebugFile "! \$build_compose_cmd" "failed! convert returned: ($result)"
+				fi
+
+				rm -f "${temp_path}/title-foreground.png"
+			fi
+
+			rm -f "${temp_path}/gallery-background.png"
 		fi
+
+		rm -f "${temp_path}/gallery-foreground.png"
 	fi
 
 	if [ "$result" -eq "0" ] ; then

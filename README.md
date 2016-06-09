@@ -14,7 +14,7 @@ Any links for **YouTube** and **Vimeo** are removed.
 
 I wrote this so that users do not have to obtain an API key from Google to download multiple images. It also uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
-**Note:** this script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-08. 
+**Note:** this script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-09. 
 
 The latest copy of this script can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -100,16 +100,16 @@ This will download the first 56 available images for the search phrase *"fish an
 
 generates this image:
 
-![kittens](http://i.imgur.com/PXcuwkMh.jpg)
+![kittens](http://i.imgur.com/vm1eisrh.jpg)
 
 
 `$ ./googliser.sh -n 400 -p "cows" -u 200000 -l 2000 -f 0`
 
 generates this image:
 
-![cows](http://i.imgur.com/u72A9bhh.jpg)
+![cows](http://i.imgur.com/SMV2BInh.jpg)
 
-For this sample, only 253 images were available out of the 382 search results returned. 129 images failed due to being unavailable or their file size fell outside the limits I set. The gallery image is built using however many images are downloaded.
+For this sample, only 249 images were available out of the 381 search results returned. 132 images failed as they were unavailable or their file size was outside the limits I set. The gallery image is built using however many images are downloaded.
 
 ---
 **Return Values ($?):**  
@@ -130,12 +130,12 @@ For this sample, only 253 images were available out of the 382 search results re
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Gallery titling and background.
+- (2016-06-08) - Progress display during gallery creation.
  
 ---
 **To-Do List:**
 
+- Create temp dir with PID so that multiple copies of googliser can be run.
 - Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.
-- Add search phrase as thumbnail gallery title?
