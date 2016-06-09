@@ -515,9 +515,6 @@ function DownloadImages
 		done
 
 		if [ "$countdown" -gt "0" ] ; then
-			RefreshActiveCounts
-			ShowProgressMsg
-
 			if [ "$failure_count" -ge "$failures_limit" ] ; then
  				result=1
 
@@ -525,9 +522,6 @@ function DownloadImages
 				for pid in ${pids[*]}; do
 					wait $pid
 				done
-
-				ResetSpawnCount
-				ResetUnknownSizesCount
 
  				break
  			fi
@@ -539,6 +533,7 @@ function DownloadImages
 			((countdown--))
 			sleep 0.1				# allow spawned process time to update process accumulator file
 		else
+			# can't start any more concurrent downloads yet so kill some time
 			# wait here while all running downloads finish
 			for pid in ${pids[*]}; do
 				wait $pid
@@ -560,6 +555,13 @@ function DownloadImages
 		fi
 	done < "${imagelist_pathfile}"
 
+	# wait here while all running downloads finish
+	for pid in ${pids[*]}; do
+		wait $pid
+	done
+
+	ResetSpawnCount
+	ResetUnknownSizesCount
 	RefreshActiveCounts
 	ShowProgressMsg
 
@@ -1002,7 +1004,7 @@ if [ "$exitcode" -eq "0" ] ; then
 	imagelist_pathfile="${target_path}/${imagelinkslist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
 
-	[ "$verbose" == "true" ] && echo " ${script_details}"
+	[ "$verbose" == "true" ] && echo " > ${script_details}"
 	[ "$verbose" == "true" ] && echo
 
 	mkdir -p "${target_path}"

@@ -102,6 +102,13 @@ generates this image:
 
 ![kittens](http://i.imgur.com/PXcuwkMh.jpg)
 
+
+`$ ./googliser.sh -n 400 -p "cows" -u 200000 -l 2000 -f 0`
+
+generates this image:
+
+![cows](http://i.imgur.com/U9Xwkn5h.jpg)
+
 ---
 **Return Values ($?):**  
 
@@ -116,7 +123,7 @@ generates this image:
 ---
 **Known Issues:**
 
-- (2016-06-08) None AFAIK.
+- (2016-06-08) None at the moment.
 
 ---
 **Work-in-Progress:**
