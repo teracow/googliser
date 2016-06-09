@@ -17,16 +17,16 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list file and downloads the first [n]umber of available images into this sub-directory. Up to 400 images can be downloaded. If an image is unavailable, the script skips it and continues until it has downloaded the requested amount or its failure-limit is reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to 400 images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
 ---
 **Notes:**
 
-I wrote this so that users do not have to obtain an API key from Google to download multiple images. It also uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
+I wrote this so that users do not have to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
-Thumbnail gallery building can now be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-09. 
 
@@ -67,11 +67,11 @@ Retry download of each image this many times. Default is 3. Maximum is 100.
 
 `-u` or `--upper-size INTEGER`
 
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-l` or `--lower-size INTEGER`
 
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
 
 `-g` or `--no-gallery`
 
@@ -123,7 +123,7 @@ generates this image:
 
 ![cows](http://i.imgur.com/SMV2BInh.jpg)
 
-For this sample, only 249 images were available out of the 381 search results returned. 132 images failed as they were unavailable or their file size was outside the limits I set. The gallery image is built using however many images are downloaded.
+For this sample, only 249 images were available out of the 381 search results returned. 132 images failed as they were unavailable or their file-size was outside the limits I set. The gallery image is built using however many images are downloaded.
 
 ---
 **Return Values ($?):**  
