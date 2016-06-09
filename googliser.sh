@@ -56,6 +56,7 @@ function Init
 	process_tracker_pathfile="${temp_path}/child-process.count"
 	download_success_count_pathfile="${temp_path}/successful-downloads.count"
 	download_failures_count_pathfile="${temp_path}/failed-downloads.count"
+	download_unknown_sizes_count_pathfile="${temp_path}/unknown-sizes-downloads.count"
 
 	# user parameters
 	user_query=""
@@ -109,6 +110,7 @@ function Init
 
 	[ -e "${download_success_count_pathfile}" ] && rm -f "${download_success_count_pathfile}"
 	[ -e "${download_failures_count_pathfile}" ] && rm -f "${download_failures_count_pathfile}"
+	[ -e "${download_unknown_sizes_count_pathfile}" ] && rm -f "${download_unknown_sizes_count_pathfile}"
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -392,14 +394,14 @@ function SingleImageDownloader
 	[ "$debug" == true ] && AddToDebugFile "- download link # '$2'" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
-	ext=$( echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/" )
+	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
 
 	[[ "$ext" =~ "." ]] || ext=".jpg"	# if URL did not have a file extension then choose jpg as default
 
 	targetimage_pathfileext="${targetimage_pathfile}($2)${ext}"
 
 	# are file size limits going to be applied before download?
-	if [ "$upper_size_limit" -gt 0 ] || [ "$lower_size_limit" -gt 0 ] ; then
+	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
 		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
 		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
@@ -425,7 +427,9 @@ function SingleImageDownloader
 		fi
 	fi
 
-	if [ "$get_download" == true ] ; then
+	if [ "$get_download" == "true" ] ; then
+		[ "$estimated_size" == "unknown" ] && IncrementFile "${download_unknown_sizes_count_pathfile}"
+
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		[ "$debug" == true ] && AddToDebugFile "? \$wget_download_cmd" "$wget_download_cmd"
 
@@ -460,6 +464,7 @@ function SingleImageDownloader
 				[ "$debug" == true ] && AddToDebugFile "$ download link # '$2'" "success!"
 				IncrementFile "${download_success_count_pathfile}"
 			else
+				# files that were outside size limits still count as failures
 				IncrementFile "${download_failures_count_pathfile}"
 			fi
 		else
@@ -469,6 +474,10 @@ function SingleImageDownloader
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
+
+		[ "$estimated_size" == "unknown" ] && DecrementFile "${download_unknown_sizes_count_pathfile}"
+	else
+		IncrementFile "${download_failures_count_pathfile}"
 	fi
 
 	DecrementFile "${process_tracker_pathfile}"
@@ -496,6 +505,7 @@ function DownloadImages
 
 	while read imagelink; do
 		while true; do
+			RefreshActiveCounts
 			ShowProgressMsg
 
 			[ "$child_count" -lt "$spawn_limit" ] && break
@@ -504,9 +514,10 @@ function DownloadImages
 		done
 
 		if [ "$countdown" -gt 0 ] ; then
+			RefreshActiveCounts
 			ShowProgressMsg
 
-			if [ $failures_count -ge $failures_limit ] ; then
+			if [ "$failures_count" -ge "$failures_limit" ] ; then
  				result=1
 
  				# wait here while all running downloads finish
@@ -532,7 +543,8 @@ function DownloadImages
 			done
 
 			ResetChildCount
-			RefreshSuccessFailureCounts
+			RefreshActiveCounts
+			ShowProgressMsg
 
 			# how many were successful?
 			if [ "$success_count" -lt "$images_required" ] ; then
@@ -545,6 +557,7 @@ function DownloadImages
 		fi
 	done < "${imagelist_pathfile}"
 
+	RefreshActiveCounts
 	ShowProgressMsg
 
 	[ "$verbose" == true ] && echo
@@ -656,10 +669,12 @@ function IncrementFile
 
 	# $1 = pathfile containing an integer to increment
 
+	local count=0
+
 	if [ -z "$1" ] ; then
 		return 1
 	else
-		[ -e "$1" ] && count=$(<"$1") || count=0
+		[ -e "$1" ] && count=$(<"$1")
 		((count++))
 		echo "$count" > "$1"
 	fi
@@ -671,10 +686,12 @@ function DecrementFile
 
 	# $1 = pathfile containing an integer to decrement
 
+	local count=0
+
 	if [ -z "$1" ] ; then
 		return 1
 	else
-		[ -e "$1" ] && count=$(<"$1") || count=0
+		[ -e "$1" ] && count=$(<"$1")
 		((count--))
 		echo "$count" > "$1"
 	fi
@@ -684,20 +701,50 @@ function DecrementFile
 function ShowProgressMsg
 	{
 
-	RefreshSuccessFailureCounts
-	RefreshChildCount
-
 	if [ "$verbose" == true ] ; then
-		printf %${strlength}s | tr ' ' '\b'
+		# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+		printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
-		# start with number of image downloads that are OK
-		progress_message="downloaded (${success_count}/${images_required}) images "
+		# number of image downloads that are OK
+		progress_message="${success_count}/${images_required} images have downloaded"
 
 		# include failures (if any)
-		[ $failures_count -gt 0 ] && progress_message+="with (${failures_count}/$failures_limit) failures "
+		if [ "$failures_count" -gt "0" ] ; then
+			progress_message+=" with ${failures_count}/$failures_limit failures"
+		fi
 
-		# also show the number of files currently downloading
-		progress_message+="and (${child_count}/$spawn_limit) in progress "
+		progress_message+="."
+
+		# show the number of files currently downloading (if any)
+		case "$child_count" in
+			0 )
+				progress_message+=""
+				;;
+			1 )
+				progress_message+=" ${child_count}/$spawn_limit download is in progress"
+				;;
+			* )
+				progress_message+=" ${child_count}/$spawn_limit downloads are in progress"
+				;;
+		esac
+
+		# show the number of files currently downloading where the file size is unknown (if any)
+		case "$unknown_sizes_count" in
+			0 )
+				progress_message+=""
+				;;
+			1 )
+				progress_message+=" (but 1 is of unknown size)"
+				;;
+			* )
+				progress_message+=" (but ${unknown_sizes_count} are of unknown size)"
+				;;
+		esac
+
+		[ "$child_count" -gt "0" ] || [ "$unknown_sizes_count" -gt 0 ] && progress_message+="."
+
+		# append a space to separate cursor from message
+		progress_message+=" "
 
 		echo -n "$progress_message"
 		strlength=${#progress_message}
@@ -705,17 +752,12 @@ function ShowProgressMsg
 
 	}
 
-function RefreshSuccessFailureCounts
+function RefreshActiveCounts
 	{
 
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
-
-	}
-
-function RefreshChildCount
-	{
-
+	[ -e "${download_unknown_sizes_count_pathfile}" ] && unknown_sizes_count=$(<"${download_unknown_sizes_count_pathfile}") || unknown_sizes_count=0
 	[ -e "${process_tracker_pathfile}" ] && child_count=$(<"${process_tracker_pathfile}") || child_count=0
 
 	}
