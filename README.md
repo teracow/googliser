@@ -17,7 +17,7 @@ This is a BASH script to perform fast bulk image downloads sourced from **[Googl
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to 400 images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to 1000 images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
@@ -42,7 +42,7 @@ Suggestions / comments / advice (are|is) most welcome. :) **[email me](mailto:te
 Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Parameters can be specified as follows:
 
 `-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 400.  
+Number of images to download. Default is 25. Maximum is 1000.  
 
 `-p` or `--phrase [STRING]`  
 **Required!** The search phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
@@ -109,8 +109,8 @@ For this sample, only 249 images were available out of the 381 search results re
 
 0 : successful download(s).  
 1 : required external program unavailable.  
-2 : required parameter incorrect - help / version shown.  
-3 : could not create sub-directory for 'search phrase'.  
+2 : specified parameter incorrect - help / version shown.  
+3 : unable to create sub-directory for 'search phrase'.  
 4 : could not get a list of search results from Google.  
 5 : image download aborted as failure-limit was reached.  
 6 : thumbnail gallery build failed.
@@ -123,11 +123,12 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Work-in-Progress:**
 
-- (2016-06-08) - Progress display during gallery creation.
+- (2016-06-08) - Need to display initial list download progress.
  
 ---
 **To-Do List:**
 
+- limit download results? 
 - Check if target directory already has .list file present. Prompt to remove or overwrite?
 - Move debug file into target directory?
 - Increase results_max to 800 ~ 1200? Need to get next results page.

@@ -60,7 +60,7 @@ function Init
 	gallery_background_pathfile="${temp_path}/gallery-background.png"
 
 	server="www.google.com.au"
-	results_max=400
+	results_max=1000
 	spawn_max=40
 	timeout_max=600
 	retries_max=100
@@ -300,7 +300,7 @@ function IsProgramAvailable
 function DownloadSpecificPageSegment
 	{
 
-	# $1 = page quarter to load:		(0, 1, 2, 3)
+	# $1 = page segment to load:		(0, 1, 2, 3)
 	# $2 = pointer starts at result:	(0, 100, 200, 300)
 
 	local search_quarter="&ijn=$1"
@@ -315,19 +315,19 @@ function DownloadSpecificPageSegment
 function DownloadAllPageSegments
 	{
 
-	local total=4
+	local segments_max=$(($results_max/100))
 	local pointer=0
-	local percent=""
+	#local percent=""
 	local pids=""
 
-	for ((quarter=1; quarter<=$total; quarter++)) ; do
-		pointer=$((($quarter-1)*100))
+	for ((segment=1; segment<=$segments_max; segment++)) ; do
+		pointer=$((($segment-1)*100))
 
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-		percent="$((200*($quarter-1)/$total % 2 + 100*($quarter-1)/$total))% "
+		#percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
 
-		DownloadSpecificPageSegment $(($quarter-1)) "$pointer" &
-		pids[${quarter}]=$!
+		DownloadSpecificPageSegment $(($segment-1)) "$pointer" &
+		pids[${segment}]=$!
 	done
 
 	# wait for spawned children to exit
