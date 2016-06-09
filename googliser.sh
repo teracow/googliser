@@ -725,18 +725,16 @@ function ShowProgressMsg
 			progress_message+=" with ${failure_count}/${failures_limit} failures"
 		fi
 
-		progress_message+="."
-
 		# show the number of files currently downloading (if any)
 		case "$spawn_count" in
 			0 )
 				progress_message+=""
 				;;
 			1 )
-				progress_message+=" ${spawn_count}/${spawn_limit} download is in progress"
+				progress_message+=", ${spawn_count}/${spawn_limit} download is in progress"
 				;;
 			* )
-				progress_message+=" ${spawn_count}/${spawn_limit} downloads are in progress"
+				progress_message+=", ${spawn_count}/${spawn_limit} downloads are in progress"
 				;;
 		esac
 
@@ -753,7 +751,7 @@ function ShowProgressMsg
 				;;
 		esac
 
-		[ "$spawn_count" -gt "0" ] || [ "$unknown_size_count" -gt "0" ] && progress_message+="."
+ 		progress_message+="."
 
 		# append a space to separate cursor from message
 		progress_message+=" "
