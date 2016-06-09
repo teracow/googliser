@@ -493,7 +493,7 @@ function DownloadImages
 	local result_index=0
 	local file_index=1
 	local message=""
-	local child_count=0
+	local spawn_count=0
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
 	local strlength=0
 	local pids=""
@@ -508,7 +508,7 @@ function DownloadImages
 			RefreshActiveCounts
 			ShowProgressMsg
 
-			[ "$child_count" -lt "$spawn_limit" ] && break
+			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
 			sleep 0.5
 		done
@@ -658,9 +658,9 @@ function BuildGallery
 function ResetChildCount
 	{
 
-	child_count=0
+	spawn_count=0
 
-	echo "${child_count}" > "${process_tracker_pathfile}"
+	echo "${spawn_count}" > "${process_tracker_pathfile}"
 
 	}
 
@@ -716,15 +716,15 @@ function ShowProgressMsg
 		progress_message+="."
 
 		# show the number of files currently downloading (if any)
-		case "$child_count" in
+		case "$spawn_count" in
 			0 )
 				progress_message+=""
 				;;
 			1 )
-				progress_message+=" ${child_count}/$spawn_limit download is in progress"
+				progress_message+=" ${spawn_count}/$spawn_limit download is in progress"
 				;;
 			* )
-				progress_message+=" ${child_count}/$spawn_limit downloads are in progress"
+				progress_message+=" ${spawn_count}/$spawn_limit downloads are in progress"
 				;;
 		esac
 
@@ -741,7 +741,7 @@ function ShowProgressMsg
 				;;
 		esac
 
-		[ "$child_count" -gt "0" ] || [ "$unknown_sizes_count" -gt 0 ] && progress_message+="."
+		[ "$spawn_count" -gt "0" ] || [ "$unknown_sizes_count" -gt 0 ] && progress_message+="."
 
 		# append a space to separate cursor from message
 		progress_message+=" "
@@ -758,7 +758,7 @@ function RefreshActiveCounts
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_failures_count_pathfile}" ] && failures_count=$(<"${download_failures_count_pathfile}") || failures_count=0
 	[ -e "${download_unknown_sizes_count_pathfile}" ] && unknown_sizes_count=$(<"${download_unknown_sizes_count_pathfile}") || unknown_sizes_count=0
-	[ -e "${process_tracker_pathfile}" ] && child_count=$(<"${process_tracker_pathfile}") || child_count=0
+	[ -e "${process_tracker_pathfile}" ] && spawn_count=$(<"${process_tracker_pathfile}") || spawn_count=0
 
 	}
 
