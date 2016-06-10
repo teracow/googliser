@@ -60,16 +60,16 @@ How many download failures before exiting? Default is 40. Enter 0 for unlimited 
 How many concurrent image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
 
 `-t` or `--timeout [INTEGER]`  
-Number of seconds before retrying download. Default is 15. Maximum is 600 (10 minutes).
+Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
 
 `-r` or `--retries [INTEGER]`  
-Retry download of each image this many times. Default is 3. Maximum is 100.
+Number of download retries for each image. Default is 3. Maximum is 100.
 
 `-u` or `--upper-size [INTEGER]`  
 Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase.
@@ -87,7 +87,7 @@ Show script version then exit.
 Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`  
-Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what external commands and parameters were used!
+Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'debug.log' in the created sub-directory. Great for finding out what external commands and parameters were used!
 
 **Usage Examples:**
 
@@ -124,12 +124,12 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Known Issues:**
 
-- (2016-06-10) - None at the moment.
+- (2016-06-11) - None at the moment.
 
 ---
 **Work-in-Progress:**
 
-- (2016-06-10) - Stuff & junk...
+- (2016-06-11) - Adding image download stats (speed, time) to debug file...
  
 ---
 **To-Do List:**
