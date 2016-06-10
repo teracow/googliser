@@ -636,10 +636,6 @@ function BuildGallery
 	eval $build_foreground_cmd 2> /dev/null
 	result=$?
 
-	# note! montage will always return 1 at the moment coz the '.list' file cannot be opened by it. Gallery image still builds correctly.
-	# So the following line is a workaround until I figure out how to get montage to ignore this file. :)
-	result=0
-
 	if [ "$result" -eq "0" ] ; then
 		AddToDebug "$ \$build_foreground_cmd" "success!"
 	else
@@ -1193,7 +1189,7 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 fi
 
 # copy links list into target directory
-[ "$target_path_created" == "true" ] &&	cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
+[ "$target_path_created" == "true" ] && cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
 
 # write results into debug file
 AddToDebug "? image download \$failure_count" "$failure_count"
