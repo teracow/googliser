@@ -15,7 +15,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit is reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
@@ -28,9 +28,9 @@ Thumbnail gallery building can be disabled if not required. As a guide, I built 
 
 When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated .gif).
 
-Typically, downloads run quite fast and get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. This is normal behaviour.
+Typically, downloads run quite fast and get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up dealing with these problems. This is normal behaviour. Be patient. Grab a coffee.
 
-A case that I have seen several times is something like 24 out of 25 images have downloaded without issue. This leaves only one download slot to use. However, this slot keeps hitting a series of problems with either servers not responding, large downloads, unavailable downloads, etc... and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab a coffee. ;)
+Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab an apricot danish to go with the coffee. **:)**
 
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-10. 
 
