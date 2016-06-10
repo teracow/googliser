@@ -333,7 +333,6 @@ function DownloadResultSegments
 	local segments_max=$(($results_max/100))
 	local pointer=0
 	local strlength=0
-	local pids=""
 
 	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
 
@@ -356,14 +355,11 @@ function DownloadResultSegments
 # 		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
 
 		DownloadResultSegment_auto $(($segment-1)) "$pointer" &
-		pids[${segment}]=$!			# record PID for checking later
 		sleep 0.1				# allow spawned process time to update spawn_count file
 	done
 
 	# wait here while all running downloads finish
-	for pid in ${pids[*]}; do
-		wait $pid
-	done
+	wait
 
 	ResetSpawnCount
 	ResetUnknownSizesCount
@@ -505,7 +501,6 @@ function DownloadImages
 	local message=""
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
 	local strlength=0
-	local pids=""
 	local result=0
 
 	ResetAllCounts
@@ -530,9 +525,7 @@ function DownloadImages
  				result=1
 
  				# wait here while all running downloads finish
-				for pid in ${pids[*]}; do
-					wait $pid
-				done
+				wait
 
  				break
  			fi
@@ -540,15 +533,12 @@ function DownloadImages
 			((result_index++))
 
 			DownloadImage_auto "$msg" "$result_index" &
-			pids[${result_index}]=$!		# record PID for checking later
 			((countdown--))
 			sleep 0.1				# allow spawned process time to update spawn_count file
 		else
 			# can't start any more concurrent downloads yet so kill some time
 			# wait here while all running downloads finish
-			for pid in ${pids[*]}; do
-				wait $pid
-			done
+			wait
 
 			ResetSpawnCount
 			ResetUnknownSizesCount
@@ -567,9 +557,7 @@ function DownloadImages
 	done < "${imagelist_pathfile}"
 
 	# wait here while all running downloads finish
-	for pid in ${pids[*]}; do
-		wait $pid
-	done
+	wait
 
 	ResetSpawnCount
 	ResetUnknownSizesCount
