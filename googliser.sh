@@ -46,7 +46,7 @@ function Init
 	mkdir -p "${temp_path}"
 
 	gallery_name="googliser-gallery"
-	imagelinkslist_file="googliser-links.list"
+	imagelist_file="googliser-links.list"
 	debug_file="googliser-debug.log"
 	image_file="google-image"
 
@@ -58,6 +58,8 @@ function Init
 	gallery_title_pathfile="${temp_path}/gallery-title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery-thumbnails.png"
 	gallery_background_pathfile="${temp_path}/gallery-background.png"
+	debug_pathfile="${temp_path}/${debug_file}"
+	imagelist_pathfile="${temp_path}/${imagelist_file}"
 
 	server="www.google.com.au"
 
@@ -86,13 +88,12 @@ function Init
 	script_starttime=$(date)
 	script_startseconds=$(date +%s)
 	result_index=0
+	target_path_created=false
 	exitcode=0
 
 	WhatAreMyOptions
 
 	exitcode=$?
-
-	[ "$debug" == "true" ] && [ -e "${debug_file}" ] && echo "" >> "${debug_file}"
 
 	AddToDebug "> started" "$script_starttime"
 	AddToDebug "? \$script_details" "$script_details"
@@ -622,7 +623,7 @@ function BuildGallery
 
 	if [ "$verbose" == "true" ] ; then
 		echo -n " -> Building thumbnail gallery: "
-		progress_message="step 1 - construct thumbnails "
+		progress_message="step 1 (construct thumbnails) "
 		echo -n "$progress_message"
 		strlength=${#progress_message}
 	fi
@@ -650,7 +651,7 @@ function BuildGallery
 			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
 			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
-			progress_message="step 2 - draw background pattern "
+			progress_message="step 2 (draw background pattern) "
 			echo -n "$progress_message"
 			strlength=${#progress_message}
 		fi
@@ -678,7 +679,7 @@ function BuildGallery
 			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
 			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
-			progress_message="step 3 - draw title text image "
+			progress_message="step 3 (draw title text image) "
 			echo -n "$progress_message"
 			strlength=${#progress_message}
 		fi
@@ -704,7 +705,7 @@ function BuildGallery
 			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
 			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
-			progress_message="step 4 - compile all images "
+			progress_message="step 4 (compile all images) "
 			echo -n "$progress_message"
 			strlength=${#progress_message}
 		fi
@@ -900,7 +901,7 @@ function AddToDebug
 	# $1 = item
 	# $2 = value
 
-	[ "$debug" == "true" ] && echo "$1: '$2'" >> "${debug_file}"
+	[ "$debug" == "true" ] && echo "$1: '$2'" >> "${debug_pathfile}"
 
 	}
 
@@ -1142,7 +1143,7 @@ fi
 # create directory for search phrase
 if [ "$exitcode" -eq "0" ] ; then
 	target_path="${current_path}/${user_query}"
-	imagelist_pathfile="${target_path}/${imagelinkslist_file}"
+# 	imagelist_pathfile="${target_path}/${imagelist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
 
 	[ "$verbose" == "true" ] && echo " > ${script_details}"
@@ -1153,6 +1154,8 @@ if [ "$exitcode" -eq "0" ] ; then
 	if [ "$?" -gt "0" ] ; then
 		echo " !! couldn't create sub-directory [${target_path}] for phrase \"${user_query}\" ... unable to continue."
 		exitcode=3
+	else
+		target_path_created=true
 	fi
 fi
 
@@ -1189,9 +1192,25 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 	fi
 fi
 
+# copy links list into target directory
+[ "$target_path_created" == "true" ] &&	cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
+
 # write results into debug file
 AddToDebug "? image download \$failure_count" "$failure_count"
 AddToDebug "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
 AddToDebug "< finished" "$(date)"
+
+# copy debug file into target directory if possible. If not, then copy to current directory.
+if [ "$debug" == "true" ] ; then
+	if [ "$target_path_created" == "true" ] ; then
+		[ -e "${target_path}/${debug_file}" ] && echo "" >> "${target_path}/${debug_file}"
+
+		cat "${debug_pathfile}" >> "${target_path}/${debug_file}"
+	else
+		[ -e "${current_path}/${debug_file}" ] && echo "" >> "${current_path}/${debug_file}"
+
+		cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
+	fi
+fi
 
 exit $exitcode
