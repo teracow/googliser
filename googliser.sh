@@ -351,19 +351,31 @@ function DownloadResultSegments
 
 	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
 
-	ResetAllCounts
+	ResetAllResultCounts
 
 	for ((segment=1; segment<=$segments_max; segment++)) ; do
-		RefreshActiveCounts
+		RefreshActiveResultCounts
 
 		if [ "$spawn_count" -eq "$spawn_limit" ] ; then
 			# wait here while all running downloads finish
-			# when all current downloads have finished, then start next batch
+			# when all current downloads have finished, then start next batchfunction ResetAllDownloadCounts
+	{
+
+	ResetUnknownSizesCount
+
+	success_count=0
+	echo "${success_count}" > "${download_success_count_pathfile}"
+
+	fail_count=0
+	echo "${fail_count}" > "${download_fail_count_pathfile}"
+
+	}
+
 			wait
 		fi
 
 		while true; do
-			RefreshActiveCounts
+			RefreshActiveResultCounts
 
 			ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
@@ -383,8 +395,7 @@ function DownloadResultSegments
 	# wait here while all running downloads finish
 	wait
 
-	ResetUnknownSizesCount
-	RefreshActiveCounts
+	RefreshActiveResultCounts
 	ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
 	# build all segments into a single file
@@ -495,7 +506,7 @@ function DownloadImage_auto
 				IncrementFile "${download_fail_count_pathfile}"
 			fi
 		else
-			DebugThis "! link #$2 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+			DebugThis "! link #$2 download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
 			IncrementFile "${download_fail_count_pathfile}"
 
 			# delete temp file if one was created
@@ -524,13 +535,13 @@ function DownloadImages
 	local strlength=0
 	local result=0
 
-	ResetAllCounts
+	ResetAllDownloadCounts
 
 	[ "$verbose" == "true" ] && echo -n " -> "
 
 	while read imagelink; do
 		while true; do
-			RefreshActiveCounts
+			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
 			[ "$spawn_count" -lt "$spawn_limit" ] && break
@@ -561,7 +572,7 @@ function DownloadImages
 			wait
 
 			ResetUnknownSizesCount
-			RefreshActiveCounts
+			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
 			# how many were successful?
@@ -579,7 +590,7 @@ function DownloadImages
 	wait
 
 	ResetUnknownSizesCount
-	RefreshActiveCounts
+	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
 
 	[ "$verbose" == "true" ] && echo
@@ -742,7 +753,18 @@ function ResetUnknownSizesCount
 
 	}
 
-function ResetAllCounts
+function ResetAllResultCounts
+	{
+
+	success_count=0
+	echo "${success_count}" > "${results_success_count_pathfile}"
+
+	fail_count=0
+	echo "${fail_count}" > "${results_fail_count_pathfile}"
+
+	}
+
+function ResetAllDownloadCounts
 	{
 
 	ResetUnknownSizesCount
@@ -851,7 +873,17 @@ function ShowImageDownloadProgress
 
 	}
 
-function RefreshActiveCounts
+function RefreshActiveResultCounts
+	{
+
+	[ -e "${results_success_count_pathfile}" ] && success_count=$(<"${results_success_count_pathfile}") || success_count=0
+	[ -e "${results_fail_count_pathfile}" ] && fail_count=$(<"${results_fail_count_pathfile}") || fail_count=0
+
+	spawn_count=$(jobs -p | wc -w)
+
+	}
+
+function RefreshActiveDownloadCounts
 	{
 
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
