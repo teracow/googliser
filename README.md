@@ -15,7 +15,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit has been reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
@@ -44,7 +44,7 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email
 Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Parameters can be specified as follows:
 
 `-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 1000.  
+Number of images to download. Default is 25. Maximum is 1,000.  
 
 `-p` or `--phrase [STRING]`  
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
@@ -65,7 +65,7 @@ Retry download of each image this many times. Default is 3. Maximum is 100.
 Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this useful for ignoring files sent by servers that send HTML instead of the JPG I requested. :)
 
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase.

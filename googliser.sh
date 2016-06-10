@@ -303,10 +303,10 @@ function DownloadResultSegment_auto
 
 	DebugThis "- result segment # '$1'" "start"
 
-	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document -"
+	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? \$wget_list_cmd" "$wget_list_cmd"
 
-	eval $wget_list_cmd >> "${results_pathfile}.$1"
+	eval $wget_list_cmd
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
@@ -316,6 +316,8 @@ function DownloadResultSegment_auto
 		DebugThis "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		IncrementFile "${fail_count_pathfile}"
 	fi
+
+	return 0
 
 	}
 
@@ -328,18 +330,27 @@ function DownloadResultSegments
 	local segments_max=$(($results_max/100))
 	local pointer=0
 	local strlength=0
+	local spawn_count=0
 
 	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
 
 	ResetAllCounts
 
 	for ((segment=1; segment<=$segments_max; segment++)) ; do
+		RefreshActiveCounts
+
+		if [ "$spawn_count" -eq "$spawn_limit" ] ; then
+			# wait here while all running downloads finish
+			# when all current downloads have finished, then start next batch
+			wait
+		fi
+
 		while true; do
 			RefreshActiveCounts
 
 			ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
- 			[ "$spawn_count" -lt "$spawn_limit" ] && break
+  			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
 			sleep 0.5
 		done
@@ -476,6 +487,8 @@ function DownloadImage_auto
 	else
 		IncrementFile "${fail_count_pathfile}"
 	fi
+
+	return 0
 
 	}
 
