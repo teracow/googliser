@@ -358,18 +358,7 @@ function DownloadResultSegments
 
 		if [ "$spawn_count" -eq "$spawn_limit" ] ; then
 			# wait here while all running downloads finish
-			# when all current downloads have finished, then start next batchfunction ResetAllDownloadCounts
-	{
-
-	ResetUnknownSizesCount
-
-	success_count=0
-	echo "${success_count}" > "${download_success_count_pathfile}"
-
-	fail_count=0
-	echo "${fail_count}" > "${download_fail_count_pathfile}"
-
-	}
+			# when all current downloads have finished, then start next batch
 
 			wait
 		fi
