@@ -121,11 +121,12 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Work-in-Progress:**
 
-- (2016-06-10) - Various things - nothing specific.
+- (2016-06-10) - Stuff & junk...
  
 ---
 **To-Do List:**
 
+- when failures limit reached, then overshoots ???
+- exit if target directory already present.
 - ignore results for .php in list?
 - limit download results? 
-- Check if target directory already has .list file present. Prompt to remove or overwrite?
