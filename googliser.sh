@@ -560,7 +560,7 @@ function DownloadImages
 			# wait here while all running downloads finish
 			wait
 
-			ResetUnknownSizesCount
+# 			ResetUnknownSizesCount
 			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
@@ -578,9 +578,11 @@ function DownloadImages
 	# wait here while all running downloads finish
 	wait
 
-	ResetUnknownSizesCount
+# 	ResetUnknownSizesCount
 	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
+
+	[ "$spawn_count" -gt "0" ] && DebugThis "! \$spawn_count" "$spawn_count ($(jobs -l))"
 
 	[ "$verbose" == "true" ] && echo
 
@@ -889,7 +891,7 @@ function DebugThis
 	# $1 = item
 	# $2 = value
 
-	[ "$debug" == "true" ] && echo "$1: '$2'" >> "${debug_pathfile}"
+	echo "$1: '$2'" >> "${debug_pathfile}"
 
 	}
 

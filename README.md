@@ -87,7 +87,7 @@ Show script version then exit.
 Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`  
-Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'debug.log' in the created sub-directory. Great for finding out what external commands and parameters were used!
+Copy debug log file into sub-directory afterwards. Default is no debug log file. If selected, debugging output is appended to 'debug.log' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 **Usage Examples:**
 
@@ -115,7 +115,7 @@ For this sample, only 249 images were available out of the 381 search results re
 
 0 : success!  
 1 : required external program unavailable.  
-2 : specified parameter incorrect - help / version shown.  
+2 : specified parameter incorrect - help shown.  
 3 : unable to create sub-directory for 'search-phrase'.  
 4 : could not get a list of search results from Google.  
 5 : image download aborted as failure-limit was reached.  
@@ -129,12 +129,11 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Work-in-Progress:**
 
-- (2016-06-11) - Adding image download stats (speed, time) to debug file...
+- (2016-06-11) - Bit & pieces...
  
 ---
 **To-Do List:**
 
-- separate temp files for list download success/fail?
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
 - limit download results? 
