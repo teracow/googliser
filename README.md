@@ -34,8 +34,6 @@ Script icon has been used from **[here](http://www.iconarchive.com/show/social-i
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
-![teracow](http://i.imgur.com/IhG8j5Q.png) 
-
 ---
 **Usage:**
 

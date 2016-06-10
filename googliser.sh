@@ -578,6 +578,8 @@ function DownloadImages
 
 	[ "$verbose" == "true" ] && echo
 
+	DebugThis "? \$success_count" "$success_count"
+	DebugThis "? \$fail_count" "$fail_count"
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
