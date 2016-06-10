@@ -28,6 +28,10 @@ Thumbnail gallery building can be disabled if not required. As a guide, I built 
 
 When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated .gif).
 
+Typically, downloads run quite fast and get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding or are downloading very large files. New download slots won't open up until at least 1 of these fails or times-out. This is normal behaviour.
+
+A case that I have seen several times is something like 24 out of 25 images have downloaded without issue. This leaves only 1 download slot to use. However, this slot keeps hitting a series of problems with either servers not responding, large downloads, unavailable downloads, etc... and so it can take some time to get that last download image as the script works it way through the links list. Be patient. Grab a coffee. ;)
+
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-10. 
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
@@ -132,5 +136,5 @@ For this sample, only 249 images were available out of the 381 search results re
 
 - separate temp files for list download success/fail?
 - need way to cancel background procs when user cancels. Trap user cancel?
-- ignore results for .php in list?
+- ignore .php results in list?
 - limit download results? 
