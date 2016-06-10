@@ -26,6 +26,8 @@ I wrote this scraper so that users do not need to obtain an API key from Google 
 
 Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
+When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated .gif).
+
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-10. 
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
