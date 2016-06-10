@@ -436,13 +436,13 @@ function DownloadImage_auto
 
 		if [ "$estimated_size" != "unknown" ] ; then
 			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-				DebugThis "! link #$2 before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+				DebugThis "! link #$2 (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
 
 			if [ "$upper_size_limit" != "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-				DebugThis "! link #$2 before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+				DebugThis "! link #$2 (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
@@ -464,21 +464,20 @@ function DownloadImage_auto
 			if [ -e "${targetimage_pathfileext}" ] ; then
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
-				DebugThis "? link #$2 \$actual_size" "$actual_size bytes"
-				if [ "$estimated_size" == "$actual_size" ] ; then
-					DebugThis "= link #$2 size estimate was" "correct."
+				if [ "$actual_size" == "$estimated_size" ] ; then
+					DebugThis "? link #$2 \$actual_size" "$actual_size bytes (estimate was correct)"
 				else
-					DebugThis "= link #$2 size estimate was" "incorrect!"
+					DebugThis "? link #$2 \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link #$2 \$actual_size after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					DebugThis "! link #$2 \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link #$2 \$actual_size after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					DebugThis "! link #$2 \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
