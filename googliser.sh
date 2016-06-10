@@ -318,7 +318,7 @@ function DownloadResultSegment_auto
 	local search_segment="&ijn=$1"
 	local search_start="&start=$2"
 
-	DebugThis "- result segment # '$1'" "start"
+	DebugThis "- result segment #$1 download" "start"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? \$wget_list_cmd" "$wget_list_cmd"
@@ -327,10 +327,10 @@ function DownloadResultSegment_auto
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		DebugThis "$ result segment # '$1'" "success!"
+		DebugThis "$ result segment #$1 download" "success!"
 		IncrementFile "${results_success_count_pathfile}"
 	else
-		DebugThis "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		DebugThis "! result segment #$1 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		IncrementFile "${results_fail_count_pathfile}"
 	fi
 
@@ -413,7 +413,7 @@ function DownloadImage_auto
 	local size_ok=true
 	local get_download=true
 
-	DebugThis "- download link # '$2'" "start"
+	DebugThis "- link #$2 download" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -432,51 +432,53 @@ function DownloadImage_auto
 			estimated_size="unknown"
 		fi
 
-		DebugThis "? \$estimated_size for link # '$2'" "$estimated_size bytes"
+		DebugThis "? link #$2 \$estimated_size" "$estimated_size bytes"
 
 		if [ "$estimated_size" != "unknown" ] ; then
 			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-				DebugThis "! link # '$2' before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+				DebugThis "! link #$2 before download is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
 
 			if [ "$upper_size_limit" != "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-				DebugThis "! link # '$2' before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+				DebugThis "! link #$2 before download is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 				size_ok=false
 				get_download=false
 			fi
 		fi
 	fi
 
+	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
 		[ "$estimated_size" == "unknown" ] && IncrementFile "${download_unknown_size_count_pathfile}"
 
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
 
-		eval $wget_download_cmd > /dev/null 2>&1
+		# http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
+		download_speed=$(eval $wget_download_cmd 2>&1 | grep -o '\([0-9.]\+ [KM]B/s\)')
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
 			if [ -e "${targetimage_pathfileext}" ] ; then
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
-				DebugThis "? \$actual_size for link # '$2'" "$actual_size bytes"
+				DebugThis "? link #$2 \$actual_size" "$actual_size bytes"
 				if [ "$estimated_size" == "$actual_size" ] ; then
-					DebugThis "= \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+					DebugThis "= link #$2 size estimate was" "correct."
 				else
-					DebugThis "= \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
+					DebugThis "= link #$2 size estimate was" "incorrect!"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link # '$2' after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					DebugThis "! link #$2 \$actual_size after download is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link # '$2' after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					DebugThis "! link #$2 \$actual_size after download is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
@@ -486,14 +488,15 @@ function DownloadImage_auto
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				DebugThis "$ download link # '$2'" "success!"
+				DebugThis "$ link #$2 download" "success!"
 				IncrementFile "${download_success_count_pathfile}"
+				DebugThis "? link #$2 \$download_speed" "$download_speed"
 			else
 				# files that were outside size limits still count as failures
 				IncrementFile "${download_fail_count_pathfile}"
 			fi
 		else
-			DebugThis "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+			DebugThis "! link #$2 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 			IncrementFile "${download_fail_count_pathfile}"
 
 			# delete temp file if one was created
