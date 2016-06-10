@@ -38,7 +38,7 @@ function Init
 	script_version="1.16"
 	script_date="2016-06-10"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
-	script_details="${script_name} - v${script_version} (${script_date})"
+	script_details="${script_name} - v${script_version} (${script_date}) PID:[$$]"
 
 	current_path="$PWD"
 	temp_path="/dev/shm/$script_name.$$"
