@@ -27,6 +27,7 @@
 #	\	function entry
 #	/	function exit
 #	?	variable value
+#	=	evaluation
 #	~	variable had boundary issues so was set within bounds
 #	$	success
 #	!	failure
@@ -449,9 +450,9 @@ function DownloadImage_auto
 
 				DebugThis "? \$actual_size for link # '$2'" "$actual_size bytes"
 				if [ "$estimated_size" == "$actual_size" ] ; then
-					DebugThis "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
+					DebugThis "= \$estimated_size for link # '$2' ($estimated_size bytes) was" "correct."
 				else
-					DebugThis "? \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
+					DebugThis "= \$estimated_size for link # '$2' ($estimated_size bytes) was" "incorrect!"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
