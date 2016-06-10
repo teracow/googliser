@@ -50,7 +50,6 @@ function Init
 	imagelist_file="links.list"
 	debug_file="debug.log"
 
-	spawn_count_pathfile="${temp_path}/spawns.count"
 	success_count_pathfile="${temp_path}/success.count"
 	fail_count_pathfile="${temp_path}/fail.count"
 	unknown_size_count_pathfile="${temp_path}/unknown-size.count"
@@ -299,8 +298,6 @@ function DownloadResultSegment_auto
 	# $1 = page segment to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
-	IncrementFile "${spawn_count_pathfile}"
-
 	local search_segment="&ijn=$1"
 	local search_start="&start=$2"
 
@@ -319,8 +316,6 @@ function DownloadResultSegment_auto
 		DebugThis "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		IncrementFile "${fail_count_pathfile}"
 	fi
-
-	DecrementFile "${spawn_count_pathfile}"
 
 	}
 
@@ -344,7 +339,7 @@ function DownloadResultSegments
 
 			ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
-			[ "$spawn_count" -lt "$spawn_limit" ] && break
+ 			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
 			sleep 0.5
 		done
@@ -355,20 +350,18 @@ function DownloadResultSegments
 # 		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
 
 		DownloadResultSegment_auto $(($segment-1)) "$pointer" &
-		sleep 0.1				# allow spawned process time to update spawn_count file
 	done
 
 	# wait here while all running downloads finish
 	wait
 
-	ResetSpawnCount
 	ResetUnknownSizesCount
 	RefreshActiveCounts
 	ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
 	# build all segments into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
-	rm -f "${results_pathfile}".*
+	#rm -f "${results_pathfile}".*
 
 	ParseResults
 
@@ -387,8 +380,6 @@ function DownloadImage_auto
 	# *** This function runs as a background process ***
 	# $1 = URL to download
 	# $2 = current counter relative to main list
-
-	IncrementFile "${spawn_count_pathfile}"
 
 	local result=0
 	local size_ok=true
@@ -486,8 +477,6 @@ function DownloadImage_auto
 		IncrementFile "${fail_count_pathfile}"
 	fi
 
-	DecrementFile "${spawn_count_pathfile}"
-
 	}
 
 function DownloadImages
@@ -534,13 +523,11 @@ function DownloadImages
 
 			DownloadImage_auto "$msg" "$result_index" &
 			((countdown--))
-			sleep 0.1				# allow spawned process time to update spawn_count file
 		else
 			# can't start any more concurrent downloads yet so kill some time
 			# wait here while all running downloads finish
 			wait
 
-			ResetSpawnCount
 			ResetUnknownSizesCount
 			RefreshActiveCounts
 			ShowImageDownloadProgress
@@ -559,7 +546,6 @@ function DownloadImages
 	# wait here while all running downloads finish
 	wait
 
-	ResetSpawnCount
 	ResetUnknownSizesCount
 	RefreshActiveCounts
 	ShowImageDownloadProgress
@@ -715,15 +701,6 @@ function BuildGallery
 
 	}
 
-function ResetSpawnCount
-	{
-
-	spawn_count=0
-
-	echo "${spawn_count}" > "${spawn_count_pathfile}"
-
-	}
-
 function ResetUnknownSizesCount
 	{
 
@@ -736,7 +713,6 @@ function ResetUnknownSizesCount
 function ResetAllCounts
 	{
 
-	ResetSpawnCount
 	ResetUnknownSizesCount
 
 	success_count=0
@@ -849,7 +825,8 @@ function RefreshActiveCounts
 	[ -e "${success_count_pathfile}" ] && success_count=$(<"${success_count_pathfile}") || success_count=0
 	[ -e "${fail_count_pathfile}" ] && fail_count=$(<"${fail_count_pathfile}") || fail_count=0
 	[ -e "${unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${unknown_size_count_pathfile}") || unknown_size_count=0
-	[ -e "${spawn_count_pathfile}" ] && spawn_count=$(<"${spawn_count_pathfile}") || spawn_count=0
+
+	spawn_count=$(jobs -p | wc -w)
 
 	}
 
