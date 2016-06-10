@@ -15,7 +15,7 @@
 # return values ($?):
 #	0	completed successfully
 #	1	required program unavailable (wget, perl, montage)
-#	2	required parameter unspecified or wrong - help shown or version requested
+#	2	required parameter unspecified or wrong
 #	3	could not create subdirectory for 'search phrase'
 #	4	could not get a list of search results from Google
 #	5	image download aborted as failure limit was reached
@@ -91,11 +91,28 @@ function Init
 	script_startseconds=$(date +%s)
 	result_index=0
 	target_path_created=false
-	exitcode=0
+	helpme=false
+	showversion=false
+	showhelp=false
 
 	WhatAreMyOptions
 
 	exitcode=$?
+
+	# display start
+	if [ "$showversion" == "true" ] ; then
+		echo "v${script_version} (${script_date})"
+		verbose=false
+	fi
+
+	if [ "$verbose" == "true" ] ; then
+		echo " > ${script_details}"
+		echo
+	fi
+
+	if [ "$showhelp" == "true" ] ; then
+		DisplayHelp
+	fi
 
 	DebugThis "> started" "$script_starttime"
 	DebugThis "? \$script_details" "$script_details"
@@ -136,15 +153,13 @@ function Init
 
 	}
 
-function ShowHelp
+function DisplayHelp
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
 
-	echo " > ${script_details}"
-	echo
 	echo " - search 'Google Images', download each of the image URLs returned, then build a thumbnail gallery using ImageMagick."
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
@@ -177,7 +192,6 @@ function ShowHelp
 	echo " $ ./$script_name -p \"${sample_user_query}\""
 	echo
 	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery."
-	echo
 
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
@@ -198,7 +212,7 @@ function WhatAreMyOptions
 	{
 
 	# if getopt exited with an error then show help to user
-	[ "$user_parameters_result" != "0" ] && echo && ShowHelp && return 2
+	[ "$user_parameters_result" != "0" ] && echo && DisplayHelp && return 2
 
 	eval set -- "$user_parameters"
 
@@ -242,8 +256,8 @@ function WhatAreMyOptions
 				shift 2		# shift to next parameter in $1
 				;;
 			-h | --help )
-				ShowHelp
-				return 2
+				showhelp=true
+				return 7
 				;;
 			-g | --no-gallery )
 				create_gallery=false
@@ -258,8 +272,8 @@ function WhatAreMyOptions
 				shift
 				;;
 			-v | --version )
-				echo "v${script_version} (${script_date})"
-				return 2
+				showversion=true
+				return 7
 				;;
 			-- )
 				shift		# shift to next parameter in $1
@@ -285,7 +299,7 @@ function IsProgramAvailable
 		echo " !! required program [$1] is unavailable ... unable to continue."
 		echo
 		DebugThis "! required program is unavailable" "$1"
-		ShowHelp
+		DisplayHelp
 		return 1
 	else
 		DebugThis "$ required program is available" "$1"
@@ -922,9 +936,9 @@ if [ "$exitcode" -eq "0" ] ; then
 	case ${images_required#[-+]} in
 		*[!0-9]* )
 			DebugThis "! specified \$images_required" "invalid"
-			echo " !! number specified after (-n --number) must be a valid integer ... unable to continue."
+			DisplayHelp
 			echo
-			ShowHelp
+			echo " !! number specified after (-n --number) must be a valid integer ... unable to continue."
 			exitcode=2
 			;;
 		* )
@@ -944,9 +958,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${fail_limit#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$fail_limit" "invalid"
-				echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -967,9 +981,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${spawn_limit#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$spawn_limit" "invalid"
-				echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -990,9 +1004,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${timeout#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$timeout" "invalid"
-				echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -1013,9 +1027,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${retries#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$retries" "invalid"
-				echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -1036,9 +1050,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${upper_size_limit#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$upper_size_limit" "invalid"
-				echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -1054,9 +1068,9 @@ if [ "$exitcode" -eq "0" ] ; then
 		case ${lower_size_limit#[-+]} in
 			*[!0-9]* )
 				DebugThis "! specified \$lower_size_limit" "invalid"
-				echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
+				DisplayHelp
 				echo
-				ShowHelp
+				echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
@@ -1076,10 +1090,13 @@ if [ "$exitcode" -eq "0" ] ; then
 	if [ "$exitcode" -eq "0" ] ; then
 		if [ ! "$user_query" ] ; then
 			DebugThis "! \$user_query" "unspecified"
-			echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
+			DisplayHelp
 			echo
-			ShowHelp
+			echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
 			exitcode=2
+		else
+			target_path="${current_path}/${user_query}"
+			targetimage_pathfile="${target_path}/${image_file}"
 		fi
 	fi
 
@@ -1093,14 +1110,6 @@ fi
 
 # create directory for search phrase
 if [ "$exitcode" -eq "0" ] ; then
-	if [ "$verbose" == "true" ] ; then
-		echo " > ${script_details}"
-		echo
-	fi
-
-	target_path="${current_path}/${user_query}"
-	targetimage_pathfile="${target_path}/${image_file}"
-
 	if [ -e "${target_path}" ] ; then
 		DebugThis "! create sub-directory [${target_path}]" "failed! Sub-directory already exists!"
 		echo " !! sub-directory [${target_path}] already exists ... unable to continue."
@@ -1172,6 +1181,27 @@ if [ "$debug" == "true" ] ; then
 
 		cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
 	fi
+fi
+
+# display end
+if [ "$verbose" == "true" ] ; then
+	case "$exitcode" in
+		0 )
+			echo
+			echo " -> Finished!"
+			;;
+		[1-6] )
+			echo
+			echo " -> Finished! (with errors)"
+			;;
+		* )
+			;;
+	esac
+fi
+
+# reset exitcode if only displaying info
+if [ "$showversion" == "true" ] || [ "$showhelp" == "true" ] ; then
+	exitcode=0
 fi
 
 exit $exitcode
