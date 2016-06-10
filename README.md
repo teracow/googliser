@@ -32,7 +32,7 @@ Typically, downloads run quite fast and get slower as the required number of ima
 
 Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab an apricot danish to go with the coffee. **:)**
 
-This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-10. 
+This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-11. 
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 

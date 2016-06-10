@@ -35,8 +35,8 @@
 function Init
 	{
 
-	script_version="1.16"
-	script_date="2016-06-10"
+	script_version="1.17"
+	script_date="2016-06-11"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
 	script_details="${script_name} - v${script_version} (${script_date}) PID:[$$]"
 
@@ -47,16 +47,18 @@ function Init
 
 	image_file="google-image"
 	gallery_name="googliser-gallery"
-	imagelist_file="links.list"
+	imagelist_file="download.links.list"
 	debug_file="debug.log"
 
-	success_count_pathfile="${temp_path}/success.count"
-	fail_count_pathfile="${temp_path}/fail.count"
-	unknown_size_count_pathfile="${temp_path}/unknown-size.count"
-	results_pathfile="${temp_path}/results.html"
-	gallery_title_pathfile="${temp_path}/gallery-title.png"
-	gallery_thumbnails_pathfile="${temp_path}/gallery-thumbnails.png"
-	gallery_background_pathfile="${temp_path}/gallery-background.png"
+	results_success_count_pathfile="${temp_path}/results.success.count"
+	results_fail_count_pathfile="${temp_path}/results.fail.count"
+	download_success_count_pathfile="${temp_path}/download.success.count"
+	download_fail_count_pathfile="${temp_path}/download.fail.count"
+	download_unknown_size_count_pathfile="${temp_path}/download.unknown.size.count"
+	results_pathfile="${temp_path}/results.page.html"
+	gallery_title_pathfile="${temp_path}/gallery.title.png"
+	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
+	gallery_background_pathfile="${temp_path}/gallery.background.png"
 	debug_pathfile="${temp_path}/${debug_file}"
 	imagelist_pathfile="${temp_path}/${imagelist_file}"
 
@@ -311,10 +313,10 @@ function DownloadResultSegment_auto
 
 	if [ "$result" -eq "0" ] ; then
 		DebugThis "$ result segment # '$1'" "success!"
-		IncrementFile "${success_count_pathfile}"
+		IncrementFile "${results_success_count_pathfile}"
 	else
 		DebugThis "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-		IncrementFile "${fail_count_pathfile}"
+		IncrementFile "${results_fail_count_pathfile}"
 	fi
 
 	return 0
@@ -433,7 +435,7 @@ function DownloadImage_auto
 	fi
 
 	if [ "$get_download" == "true" ] ; then
-		[ "$estimated_size" == "unknown" ] && IncrementFile "${unknown_size_count_pathfile}"
+		[ "$estimated_size" == "unknown" ] && IncrementFile "${download_unknown_size_count_pathfile}"
 
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
@@ -470,22 +472,22 @@ function DownloadImage_auto
 
 			if [ "$size_ok" == "true" ] ; then
 				DebugThis "$ download link # '$2'" "success!"
-				IncrementFile "${success_count_pathfile}"
+				IncrementFile "${download_success_count_pathfile}"
 			else
 				# files that were outside size limits still count as failures
-				IncrementFile "${fail_count_pathfile}"
+				IncrementFile "${download_fail_count_pathfile}"
 			fi
 		else
 			DebugThis "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-			IncrementFile "${fail_count_pathfile}"
+			IncrementFile "${download_fail_count_pathfile}"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
 
-		[ "$estimated_size" == "unknown" ] && DecrementFile "${unknown_size_count_pathfile}"
+		[ "$estimated_size" == "unknown" ] && DecrementFile "${download_unknown_size_count_pathfile}"
 	else
-		IncrementFile "${fail_count_pathfile}"
+		IncrementFile "${download_fail_count_pathfile}"
 	fi
 
 	return 0
@@ -719,7 +721,7 @@ function ResetUnknownSizesCount
 
 	unknown_size_count=0
 
-	echo "${unknown_size_count}" > "${unknown_size_count_pathfile}"
+	echo "${unknown_size_count}" > "${download_unknown_size_count_pathfile}"
 
 	}
 
@@ -729,10 +731,10 @@ function ResetAllCounts
 	ResetUnknownSizesCount
 
 	success_count=0
-	echo "${success_count}" > "${success_count_pathfile}"
+	echo "${success_count}" > "${download_success_count_pathfile}"
 
 	fail_count=0
-	echo "${fail_count}" > "${fail_count_pathfile}"
+	echo "${fail_count}" > "${download_fail_count_pathfile}"
 
 	}
 
@@ -835,9 +837,9 @@ function ShowImageDownloadProgress
 function RefreshActiveCounts
 	{
 
-	[ -e "${success_count_pathfile}" ] && success_count=$(<"${success_count_pathfile}") || success_count=0
-	[ -e "${fail_count_pathfile}" ] && fail_count=$(<"${fail_count_pathfile}") || fail_count=0
-	[ -e "${unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${unknown_size_count_pathfile}") || unknown_size_count=0
+	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
+	[ -e "${download_fail_count_pathfile}" ] && fail_count=$(<"${download_fail_count_pathfile}") || fail_count=0
+	[ -e "${download_unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${download_unknown_size_count_pathfile}") || unknown_size_count=0
 
 	spawn_count=$(jobs -p | wc -w)
 
