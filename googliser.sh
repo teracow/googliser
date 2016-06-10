@@ -55,7 +55,6 @@ function Init
 	results_fail_count_pathfile="${temp_path}/results.fail.count"
 	download_success_count_pathfile="${temp_path}/download.success.count"
 	download_fail_count_pathfile="${temp_path}/download.fail.count"
-	download_unknown_size_count_pathfile="${temp_path}/download.unknown.size.count"
 	results_pathfile="${temp_path}/results.page.html"
 	gallery_title_pathfile="${temp_path}/gallery.title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
@@ -387,6 +386,8 @@ function DownloadResultSegments
 	RefreshActiveResultCounts
 	ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
+	[ "$spawn_count" -gt "0" ] && DebugThis "! \$spawn_count" "$spawn_count ($(jobs -l))"
+
 	# build all segments into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
 	#rm -f "${results_pathfile}".*
@@ -451,8 +452,6 @@ function DownloadImage_auto
 
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
-		[ "$estimated_size" == "unknown" ] && IncrementFile "${download_unknown_size_count_pathfile}"
-
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
 
@@ -501,8 +500,6 @@ function DownloadImage_auto
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
-
-		[ "$estimated_size" == "unknown" ] && DecrementFile "${download_unknown_size_count_pathfile}"
 	else
 		IncrementFile "${download_fail_count_pathfile}"
 	fi
@@ -560,7 +557,6 @@ function DownloadImages
 			# wait here while all running downloads finish
 			wait
 
-# 			ResetUnknownSizesCount
 			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
@@ -578,7 +574,6 @@ function DownloadImages
 	# wait here while all running downloads finish
 	wait
 
-# 	ResetUnknownSizesCount
 	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
 
@@ -735,15 +730,6 @@ function BuildGallery
 
 	}
 
-function ResetUnknownSizesCount
-	{
-
-	unknown_size_count=0
-
-	echo "${unknown_size_count}" > "${download_unknown_size_count_pathfile}"
-
-	}
-
 function ResetAllResultCounts
 	{
 
@@ -757,8 +743,6 @@ function ResetAllResultCounts
 
 function ResetAllDownloadCounts
 	{
-
-	ResetUnknownSizesCount
 
 	success_count=0
 	echo "${success_count}" > "${download_success_count_pathfile}"
@@ -844,19 +828,6 @@ function ShowImageDownloadProgress
 				;;
 		esac
 
-		# show the number of files currently downloading where the file size is unknown (if any)
-		case "$unknown_size_count" in
-			0 )
-				progress_message+=""
-				;;
-			1 )
-				progress_message+=" (but 1 is of unknown size)"
-				;;
-			* )
-				progress_message+=" (but ${unknown_size_count} are of unknown size)"
-				;;
-		esac
-
  		progress_message+="."
 
 		ProgressUpdater "${progress_message}"
@@ -879,7 +850,6 @@ function RefreshActiveDownloadCounts
 
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_fail_count_pathfile}" ] && fail_count=$(<"${download_fail_count_pathfile}") || fail_count=0
-	[ -e "${download_unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${download_unknown_size_count_pathfile}") || unknown_size_count=0
 
 	spawn_count=$(jobs -p | wc -w)
 
