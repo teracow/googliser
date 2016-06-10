@@ -410,7 +410,7 @@ function DownloadImage_auto
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
-		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
+		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent ${useragent} --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
 		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
 
 		if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
@@ -437,7 +437,7 @@ function DownloadImage_auto
 	if [ "$get_download" == "true" ] ; then
 		[ "$estimated_size" == "unknown" ] && IncrementFile "${unknown_size_count_pathfile}"
 
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --quiet --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
 
 		eval $wget_download_cmd > /dev/null 2>&1
