@@ -50,10 +50,10 @@ function Init
 	debug_file="googliser-debug.log"
 	image_file="google-image"
 
-	spawn_count_pathfile="${temp_path}/spawned-process.count"
-	success_count_pathfile="${temp_path}/successful-download.count"
-	failure_count_pathfile="${temp_path}/failed-download.count"
-	unknown_size_count_pathfile="${temp_path}/unknown-size-download.count"
+	spawn_count_pathfile="${temp_path}/spawns.count"
+	success_count_pathfile="${temp_path}/success.count"
+	fail_count_pathfile="${temp_path}/fail.count"
+	unknown_size_count_pathfile="${temp_path}/unknown-size.count"
 	results_pathfile="${temp_path}/google-results.html"
 	gallery_title_pathfile="${temp_path}/gallery-title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery-thumbnails.png"
@@ -75,7 +75,7 @@ function Init
 	user_query=""
 	images_required=25
 	spawn_limit=8
-	failures_limit=40
+	fail_limit=40
 	upper_size_limit=0
 	lower_size_limit=1000
 	timeout=15
@@ -103,7 +103,7 @@ function Init
 	DebugThis "? \$upper_size_limit" "$upper_size_limit"
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
 	DebugThis "? \$results_max" "$results_max"
-	DebugThis "? \$failures_limit" "$failures_limit"
+	DebugThis "? \$fail_limit" "$fail_limit"
 	DebugThis "? \$verbose" "$verbose"
 	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
@@ -158,7 +158,7 @@ function ShowHelp
 	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
 	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
-	HelpParameterFormat "f" "failures INTEGER [$failures_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
+	HelpParameterFormat "f" "failures INTEGER [$fail_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
 	HelpParameterFormat "c" "concurrency INTEGER [$spawn_limit]" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
 	HelpParameterFormat "t" "timeout INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
 	HelpParameterFormat "r" "retries INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
@@ -208,7 +208,7 @@ function WhatAreMyOptions
 				shift 2		# shift to next parameter in $1
 				;;
 			-f | --failures )
-				failures_limit="$2"
+				fail_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-p | --phrase )
@@ -317,7 +317,7 @@ function DownloadResultSegment_auto
 		IncrementFile "${success_count_pathfile}"
 	else
 		DebugThis "! result segment # '$1'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-		IncrementFile "${failure_count_pathfile}"
+		IncrementFile "${fail_count_pathfile}"
 	fi
 
 	DecrementFile "${spawn_count_pathfile}"
@@ -376,7 +376,7 @@ function DownloadResultSegments
 
 	ParseResults
 
-	[ "$failure_count" -gt "0" ] && result=1 || result=0
+	[ "$fail_count" -gt "0" ] && result=1 || result=0
 
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
@@ -475,11 +475,11 @@ function DownloadImage_auto
 				IncrementFile "${success_count_pathfile}"
 			else
 				# files that were outside size limits still count as failures
-				IncrementFile "${failure_count_pathfile}"
+				IncrementFile "${fail_count_pathfile}"
 			fi
 		else
 			DebugThis "! download link # '$2'" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-			IncrementFile "${failure_count_pathfile}"
+			IncrementFile "${fail_count_pathfile}"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
@@ -487,7 +487,7 @@ function DownloadImage_auto
 
 		[ "$estimated_size" == "unknown" ] && DecrementFile "${unknown_size_count_pathfile}"
 	else
-		IncrementFile "${failure_count_pathfile}"
+		IncrementFile "${fail_count_pathfile}"
 	fi
 
 	DecrementFile "${spawn_count_pathfile}"
@@ -524,7 +524,7 @@ function DownloadImages
 
 		if [ "$countdown" -gt "0" ] ; then
 			# some images are still required
-			if [ "$failure_count" -ge "$failures_limit" ] ; then
+			if [ "$fail_count" -ge "$fail_limit" ] ; then
 				# but too many failures so stop downloading.
  				result=1
 
@@ -751,8 +751,8 @@ function ResetAllCounts
 	success_count=0
 	echo "${success_count}" > "${success_count_pathfile}"
 
-	failure_count=0
-	echo "${failure_count}" > "${failure_count_pathfile}"
+	fail_count=0
+	echo "${fail_count}" > "${fail_count_pathfile}"
 
 	}
 
@@ -815,8 +815,8 @@ function ShowImageDownloadProgress
 		progress_message="${success_count}/${images_required} images have downloaded"
 
 		# include failures (if any)
-		if [ "$failure_count" -gt "0" ] ; then
-			progress_message+=" with ${failure_count}/${failures_limit} failures"
+		if [ "$fail_count" -gt "0" ] ; then
+			progress_message+=" with ${fail_count}/${fail_limit} failures"
 		fi
 
 		# show the number of files currently downloading (if any)
@@ -856,7 +856,7 @@ function RefreshActiveCounts
 	{
 
 	[ -e "${success_count_pathfile}" ] && success_count=$(<"${success_count_pathfile}") || success_count=0
-	[ -e "${failure_count_pathfile}" ] && failure_count=$(<"${failure_count_pathfile}") || failure_count=0
+	[ -e "${fail_count_pathfile}" ] && fail_count=$(<"${fail_count_pathfile}") || fail_count=0
 	[ -e "${unknown_size_count_pathfile}" ] && unknown_size_count=$(<"${unknown_size_count_pathfile}") || unknown_size_count=0
 	[ -e "${spawn_count_pathfile}" ] && spawn_count=$(<"${spawn_count_pathfile}") || spawn_count=0
 
@@ -957,23 +957,23 @@ if [ "$exitcode" -eq "0" ] ; then
 	esac
 
 	if [ "$exitcode" -eq "0" ] ; then
-		case ${failures_limit#[-+]} in
+		case ${fail_limit#[-+]} in
 			*[!0-9]* )
-				DebugThis "! specified \$failures_limit" "invalid"
+				DebugThis "! specified \$fail_limit" "invalid"
 				echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
 				echo
 				ShowHelp
 				exitcode=2
 				;;
 			* )
-				if [ "$failures_limit" -le "0" ] ; then
-					failures_limit=$results_max
-					DebugThis "~ \$failures_limit too small so set as \$results_max" "$failures_limit"
+				if [ "$fail_limit" -le "0" ] ; then
+					fail_limit=$results_max
+					DebugThis "~ \$fail_limit too small so set as \$results_max" "$fail_limit"
 				fi
 
-				if [ "$failures_limit" -gt "$results_max" ] ; then
-					failures_limit=$results_max
-					DebugThis "~ \$failures_limit too large so set as \$results_max" "$failures_limit"
+				if [ "$fail_limit" -gt "$results_max" ] ; then
+					fail_limit=$results_max
+					DebugThis "~ \$fail_limit too large so set as \$results_max" "$fail_limit"
 				fi
 				;;
 		esac
@@ -1142,12 +1142,12 @@ if [ "$exitcode" -eq "0" ] ; then
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! failure limit reached!"
-		DebugThis "! failure limit reached" "$failures_limit"
+		DebugThis "! failure limit reached" "$fail_limit"
 		exitcode=5
 	fi
 fi
 
-# build thumbnail gallery even if failures_limit was reached
+# build thumbnail gallery even if fail_limit was reached
 if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 	if [ "$create_gallery" == "true" ] ; then
 		BuildGallery
@@ -1163,7 +1163,7 @@ fi
 [ "$target_path_created" == "true" ] && cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
 
 # write results into debug file
-DebugThis "? image download \$failure_count" "$failure_count"
+DebugThis "? image download \$fail_count" "$fail_count"
 DebugThis "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
 DebugThis "< finished" "$(date)"
 
