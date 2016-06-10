@@ -370,6 +370,7 @@ function DownloadResultSegments
 	RefreshActiveCounts
 	ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
+	# build all segments into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
 	rm -f "${results_pathfile}".*
 
@@ -522,7 +523,9 @@ function DownloadImages
 		done
 
 		if [ "$countdown" -gt "0" ] ; then
+			# some images are still required
 			if [ "$failure_count" -ge "$failures_limit" ] ; then
+				# but too many failures so stop downloading.
  				result=1
 
  				# wait here while all running downloads finish

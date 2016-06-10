@@ -46,10 +46,10 @@ Number of images to download. Default is 25. Maximum is 1000.
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 `-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures).
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible to get more failures than this. Worst case would be reported as high as `((failures - 1) + concurrency)`. The inevitable consequence of concurrent downloads. :) 
 
 `-c` or `--concurrency [INTEGER]`  
-How many concurrent image downloads? Default is 8. Maximum is 40. **A higher number will not necessarily download faster!**
+How many concurrent image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
 
 `-t` or `--timeout [INTEGER]`  
 Number of seconds before retrying download. Default is 15. Maximum is 600 (10 minutes).
@@ -79,7 +79,7 @@ Show script version then exit.
 Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`  
-Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what commands and parameters were run!
+Append debug info to file. Default is no debug file output. If selected, debugging output is appended to 'googliser-debug.log' in working directory. Great for finding out what external commands and parameters were used!
 
 **Usage Examples:**
 
@@ -128,5 +128,6 @@ For this sample, only 249 images were available out of the 381 search results re
 
 - when failures limit reached, then overshoots ???
 - exit if target directory already present.
+- need way to cancel background procs when user cancels. Trap user cancel?
 - ignore results for .php in list?
 - limit download results? 
