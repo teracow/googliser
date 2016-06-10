@@ -130,8 +130,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **To-Do List:**
 
-- when failures limit reached, then overshoots ???
-- exit if target directory already present.
+- separate temp files for list download success/fail?
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore results for .php in list?
 - limit download results? 

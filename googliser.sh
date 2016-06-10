@@ -45,16 +45,16 @@ function Init
 
 	mkdir -p "${temp_path}"
 
-	gallery_name="googliser-gallery"
-	imagelist_file="googliser-links.list"
-	debug_file="googliser-debug.log"
 	image_file="google-image"
+	gallery_name="googliser-gallery"
+	imagelist_file="links.list"
+	debug_file="debug.log"
 
 	spawn_count_pathfile="${temp_path}/spawns.count"
 	success_count_pathfile="${temp_path}/success.count"
 	fail_count_pathfile="${temp_path}/fail.count"
 	unknown_size_count_pathfile="${temp_path}/unknown-size.count"
-	results_pathfile="${temp_path}/google-results.html"
+	results_pathfile="${temp_path}/results.html"
 	gallery_title_pathfile="${temp_path}/gallery-title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery-thumbnails.png"
 	gallery_background_pathfile="${temp_path}/gallery-background.png"
@@ -526,6 +526,7 @@ function DownloadImages
 			# some images are still required
 			if [ "$fail_count" -ge "$fail_limit" ] ; then
 				# but too many failures so stop downloading.
+				DebugThis "! failure limit reached" "$fail_limit"
  				result=1
 
  				# wait here while all running downloads finish
@@ -1109,20 +1110,32 @@ fi
 
 # create directory for search phrase
 if [ "$exitcode" -eq "0" ] ; then
+	if [ "$verbose" == "true" ] ; then
+		echo " > ${script_details}"
+		echo
+	fi
+
 	target_path="${current_path}/${user_query}"
-# 	imagelist_pathfile="${target_path}/${imagelist_file}"
 	targetimage_pathfile="${target_path}/${image_file}"
 
-	[ "$verbose" == "true" ] && echo " > ${script_details}"
-	[ "$verbose" == "true" ] && echo
-
-	mkdir -p "${target_path}"
-
-	if [ "$?" -gt "0" ] ; then
-		echo " !! couldn't create sub-directory [${target_path}] for phrase \"${user_query}\" ... unable to continue."
+	if [ -e "${target_path}" ] ; then
+		DebugThis "! create sub-directory [${target_path}]" "failed! Sub-directory already exists!"
+		echo " !! sub-directory [${target_path}] already exists ... unable to continue."
 		exitcode=3
-	else
-		target_path_created=true
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		mkdir -p "${target_path}"
+		result=$?
+
+		if [ "$result" -gt "0" ] ; then
+			DebugThis "! create sub-directory [${target_path}]" "failed! mkdir returned: ($result)"
+			echo " !! couldn't create sub-directory [${target_path}] ... unable to continue."
+			exitcode=3
+		else
+			DebugThis "$ create sub-directory [${target_path}]" "success!"
+			target_path_created=true
+		fi
 	fi
 fi
 
@@ -1142,7 +1155,6 @@ if [ "$exitcode" -eq "0" ] ; then
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! failure limit reached!"
-		DebugThis "! failure limit reached" "$fail_limit"
 		exitcode=5
 	fi
 fi
@@ -1163,7 +1175,6 @@ fi
 [ "$target_path_created" == "true" ] && cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
 
 # write results into debug file
-DebugThis "? image download \$fail_count" "$fail_count"
 DebugThis "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
 DebugThis "< finished" "$(date)"
 
