@@ -1,5 +1,4 @@
-![googliser](http://i.imgur.com/yahgjDC.png)
-googliser.sh
+![googliser](http://i.imgur.com/yahgjDC.png) googliser.sh
 ---
 This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
 
@@ -34,6 +33,8 @@ The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 Script icon has been used from **[here](http://www.iconarchive.com/show/social-inside-icons-by-icontexto/social-inside-google-icon.html)**. Please support the artist!
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
+
+![teracow](http://i.imgur.com/IhG8j5Q.png) 
 
 ---
 **Usage:**
@@ -134,5 +135,3 @@ For this sample, only 249 images were available out of the 381 search results re
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore results for .php in list?
 - limit download results? 
-
-![teracow](http://i.imgur.com/IhG8j5Q.png) 
