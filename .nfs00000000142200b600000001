@@ -366,7 +366,7 @@ function DownloadResultSegments
 		while true; do
 			RefreshActiveResultCounts
 
-			ProgressUpdater "${success_count}/${segments_max} result segments have downloaded."
+			ProgressUpdater "${success_count}/${segments_max} result segments have been downloaded."
 
   			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
