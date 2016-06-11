@@ -28,9 +28,9 @@ Thumbnail gallery building can be disabled if not required. As a guide, I built 
 
 When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
 
-Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour. Please be patient. Grab yourself a coffee.
+Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab yourself a coffee.
 
-Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab a danish to go with that coffee. **:)**
+Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-11. 
 
@@ -127,7 +127,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Known Issues:**
 
-- (2016-06-11) - None at the moment.
+- (2016-06-11) - Wget download speed capture is interferring with return code so I've disabled this for now.
 
 ---
 **Work-in-Progress:**

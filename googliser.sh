@@ -455,7 +455,7 @@ function DownloadImage_auto
 				get_download=false
 			fi
 
-			if [ "$upper_size_limit" != "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
+			if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
 				DebugThis "! link #$2 (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 				size_ok=false
 				get_download=false
@@ -465,11 +465,15 @@ function DownloadImage_auto
 
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+#		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
 		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
 
 		# http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
-		download_speed=$(eval $wget_download_cmd 2>&1 | grep -o '\([0-9.]\+ [KM]B/s\)')
+#		download_speed=$(eval $wget_download_cmd 2>&1 | grep -o '\([0-9.]\+ [KM]B/s\)')
+		download_speed="** temporarily disabled! **"
+
+		eval $wget_download_cmd > /dev/null 2>&1
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
