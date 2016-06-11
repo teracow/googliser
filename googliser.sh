@@ -171,7 +171,7 @@ function DisplayHelp
 
 	local sample_user_query="cows"
 
-	echo " - search 'Google Images', download each of the image URLs returned, then build a thumbnail gallery using ImageMagick."
+	echo " - search '$(ShowGoogle) $(ColourTextBrightBlue "images")', download each of the image URLs returned, then build a thumbnail gallery using ImageMagick."
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
@@ -181,7 +181,13 @@ function DisplayHelp
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
-	echo " - Usage: ./$script_name [PARAMETERS] ..."
+
+	if [ "$colourised" == "true" ] ; then
+		echo " - Usage: $(ColourTextBrightWhite "./$script_name") [PARAMETERS] ..."
+	else
+		echo " - Usage: ./$script_name [PARAMETERS] ..."
+	fi
+
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
 	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
@@ -202,7 +208,13 @@ function DisplayHelp
 	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file] in target directory."
 	echo
 	echo " - Example:"
-	echo " $ ./$script_name -p \"${sample_user_query}\""
+
+	if [ "$colourised" == "true" ] ; then
+		echo "$(ColourTextBrightWhite " $ ./$script_name -p \"${sample_user_query}\"")"
+	else
+		echo " $ ./$script_name -p \"${sample_user_query}\""
+	fi
+
 	echo
 	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery."
 
@@ -329,6 +341,13 @@ function IsProgramAvailable
 
 	}
 
+function ShowGoogle
+	{
+
+	echo -n "$(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e")"
+
+	}
+
 function DownloadResultGroup_auto
 	{
 
@@ -372,7 +391,8 @@ function DownloadResultGroups
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then
-			echo -n " -> searching $(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e"): "
+#			echo -n " -> searching $(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e"): "
+			echo -n " -> searching $(ShowGoogle): "
 		else
 			echo -n " -> searching Google: "
 		fi
