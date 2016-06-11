@@ -1,4 +1,4 @@
-![googliser](http://i.imgur.com/yahgjDC.png) googliser.sh
+![icon](images/icon.png) googliser.sh
 ---
 This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of that phrase. 
 
@@ -36,7 +36,7 @@ This script will need to be updated from time-to-time as Google periodically cha
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
-Script icon has been used from **[here](http://www.iconarchive.com/show/social-inside-icons-by-icontexto/social-inside-google-icon.html)**. Please support the artist!
+Script icon can be found **[here](http://findicons.com/icon/131388/search)**.
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
@@ -112,12 +112,13 @@ This will download the first 80 available images for the search-phrase *"storm c
 ---
 **Samples:**
 
-    $ ./googliser.sh --phrase "kittens" --upper-size 100000 --lower-size 2000 --failures 0
-![kittens](http://i.imgur.com/vm1eisrh.jpg)
+These images have been scaled down for easier distribution.
 
-    $ ./googliser.sh -n 400 -p "cows" -u 200000 -l 2000 -f 0
-![cows](http://i.imgur.com/SMV2BInh.jpg)  
-For this sample, only 249 images were available out of the 381 search results returned. 132 images failed as they were unavailable or their file-size was outside the limits I set. The gallery image is built using however many images are downloaded.
+    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
+![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
+
+    $ ./googliser.sh -n 240 -p "cows" -u 250000 -l 10000 -f 0
+![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
 **Return Values ($?):**  
