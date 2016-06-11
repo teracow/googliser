@@ -330,7 +330,7 @@ function DownloadResultGroup_auto
 	DebugThis "- result group #$1 download" "start"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
-	DebugThis "? \$wget_list_cmd" "$wget_list_cmd"
+	DebugThis "? result group #$1 \$wget_list_cmd" "$wget_list_cmd"
 
 	eval $wget_list_cmd
 	result=$?
