@@ -68,14 +68,14 @@ function Init
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
 
 	results_max=1000
-	spawn_max=40
+	parallel_max=40
 	timeout_max=600
 	retries_max=100
 
 	# user parameters
 	user_query=""
 	images_required=25
-	spawn_limit=8
+	parallel_limit=8
 	fail_limit=40
 	upper_size_limit=0
 	lower_size_limit=1000
@@ -118,7 +118,7 @@ function Init
 	DebugThis "? \$script_details" "$script_details"
 	DebugThis "? \$user_query" "$user_query"
 	DebugThis "? \$images_required" "$images_required"
-	DebugThis "? \$spawn_limit" "$spawn_limit"
+	DebugThis "? \$parallel_limit" "$parallel_limit"
 	DebugThis "? \$upper_size_limit" "$upper_size_limit"
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
 	DebugThis "? \$results_max" "$results_max"
@@ -176,7 +176,7 @@ function DisplayHelp
 	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
 	HelpParameterFormat "f" "failures INTEGER [$fail_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
-	HelpParameterFormat "c" "concurrency INTEGER [$spawn_limit]" "How many concurrent image downloads? Maximum of $spawn_max. Use wisely!"
+	HelpParameterFormat "p" "parallel INTEGER [$parallel_limit]" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "t" "timeout INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
 	HelpParameterFormat "r" "retries INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
 	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
@@ -231,8 +231,8 @@ function WhatAreMyOptions
 				user_query="$2"
 				shift 2		# shift to next parameter in $1
 				;;
-			-c | --concurrency )
-				spawn_limit="$2"
+			-p | --parallel )
+				parallel_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-t | --timeout )
@@ -347,7 +347,7 @@ function DownloadResultSegments
 	local segments_max=$(($results_max/100))
 	local pointer=0
 	local strlength=0
-	local spawn_count=0
+	local parallel_count=0
 
 	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
 
@@ -356,7 +356,7 @@ function DownloadResultSegments
 	for ((segment=1; segment<=$segments_max; segment++)) ; do
 		ShowResultDownloadProgress
 
-		if [ "$spawn_count" -eq "$spawn_limit" ] ; then
+		if [ "$parallel_count" -eq "$parallel_limit" ] ; then
 			# wait here while all running downloads finish
 			# when all current downloads have finished, then start next batch
 
@@ -366,7 +366,7 @@ function DownloadResultSegments
 		while true; do
 			ShowResultDownloadProgress
 
-  			[ "$spawn_count" -lt "$spawn_limit" ] && break
+  			[ "$parallel_count" -lt "$parallel_limit" ] && break
 
 			sleep 0.5
 		done
@@ -384,7 +384,7 @@ function DownloadResultSegments
 
 	ShowResultDownloadProgress
 
-	[ "$spawn_count" -gt "0" ] && DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
+	[ "$parallel_count" -gt "0" ] && DebugThis "! found some leftover parallel!" "$parallel_count ($(jobs -l))"
 
 	# build all segments into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
@@ -527,7 +527,7 @@ function DownloadImages
 		while true; do
 			ShowImageDownloadProgress
 
-			[ "$spawn_count" -lt "$spawn_limit" ] && break
+			[ "$parallel_count" -lt "$parallel_limit" ] && break
 
 			sleep 0.5
 		done
@@ -572,7 +572,7 @@ function DownloadImages
 
 	ShowImageDownloadProgress
 
-	[ "$spawn_count" -gt "0" ] && DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
+	[ "$parallel_count" -gt "0" ] && DebugThis "! found some leftover parallel!" "$parallel_count ($(jobs -l))"
 
 	[ "$verbose" == "true" ] && echo
 
@@ -813,22 +813,26 @@ function ShowImageDownloadProgress
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
 		progress_message="${success_count}/${images_required} images have downloaded"
+# 		progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}") images have downloaded"
 
 		# include failures (if any)
 		if [ "$fail_count" -gt "0" ] ; then
 			progress_message+=" with ${fail_count}/${fail_limit} failures"
+# 			progress_message+=" with $(ColourTextBrightRed "${fail_count}/${fail_limit}") failures"
 		fi
 
 		# show the number of files currently downloading (if any)
-		case "$spawn_count" in
+		case "$parallel_count" in
 			0 )
 				progress_message+=""
 				;;
 			1 )
-				progress_message+=", ${spawn_count}/${spawn_limit} download is in progress"
+ 				progress_message+=", ${parallel_count}/${parallel_limit} download is in progress"
+# 				progress_message+=", $(ColourTextBrightOrange "${parallel_count}/${parallel_limit}") download is in progress"
 				;;
 			* )
-				progress_message+=", ${spawn_count}/${spawn_limit} downloads are in progress"
+ 				progress_message+=", ${parallel_count}/${parallel_limit} downloads are in progress"
+# 				progress_message+=", $(ColourTextBrightOrange "${parallel_count}/${parallel_limit}") downloads are in progress"
 				;;
 		esac
 
@@ -845,7 +849,7 @@ function RefreshActiveResultCounts
 	[ -e "${results_success_count_pathfile}" ] && success_count=$(<"${results_success_count_pathfile}") || success_count=0
 	[ -e "${results_fail_count_pathfile}" ] && fail_count=$(<"${results_fail_count_pathfile}") || fail_count=0
 
-	spawn_count=$(jobs -l | grep Running | wc -l)
+	parallel_count=$(jobs -l | grep Running | wc -l)
 
 	}
 
@@ -855,8 +859,7 @@ function RefreshActiveDownloadCounts
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_fail_count_pathfile}" ] && fail_count=$(<"${download_fail_count_pathfile}") || fail_count=0
 
-#	spawn_count=$(jobs -p | wc -w)
-	spawn_count=$(jobs -l | grep Running | wc -l)
+	parallel_count=$(jobs -l | grep Running | wc -l)
 
 	}
 
@@ -925,8 +928,50 @@ function ConvertSecs
 
 	}
 
+function ColourTextBrightGreen
+	{
+
+	echo -en '\E[1;32m'"$(PrintResetColours "$1")"
+
+	}
+
+function ColourTextLightOrange
+	{
+
+	echo -en '\E[38;5;220m'"$(PrintResetColours "$1")"
+
+	}
+
+function ColourTextBrightOrange
+	{
+
+	echo -en '\E[1;38;5;214m'"$(PrintResetColours "$1")"
+
+	}
+
+function ColourTextLightRed
+	{
+
+	echo -en '\E[0;91m'"$(PrintResetColours "$1")"
+
+	}
+
+function ColourTextBrightRed
+	{
+
+	echo -en '\E[1;31m'"$(PrintResetColours "$1")"
+
+	}
+
+function PrintResetColours
+	{
+
+	echo -en "$1"'\E[0m'
+
+	}
+
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,i:,l:,u:,r:,t:,c:,f:,n:,p: --long help,no-gallery,debug,quiet,version,title:,lower-size:,upper-size:,retries:,timeout:,concurrency:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,quiet,version,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -978,23 +1023,23 @@ if [ "$exitcode" -eq "0" ] ; then
 	fi
 
 	if [ "$exitcode" -eq "0" ] ; then
-		case ${spawn_limit#[-+]} in
+		case ${parallel_limit#[-+]} in
 			*[!0-9]* )
-				DebugThis "! specified \$spawn_limit" "invalid"
+				DebugThis "! specified \$parallel_limit" "invalid"
 				DisplayHelp
 				echo
 				echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
 				exitcode=2
 				;;
 			* )
-				if [ "$spawn_limit" -lt "1" ] ; then
-					spawn_limit=1
-					DebugThis "~ \$spawn_limit too small so set as" "$spawn_limit"
+				if [ "$parallel_limit" -lt "1" ] ; then
+					parallel_limit=1
+					DebugThis "~ \$parallel_limit too small so set as" "$parallel_limit"
 				fi
 
-				if [ "$spawn_limit" -gt "$spawn_max" ] ; then
-					spawn_limit=$spawn_max
-					DebugThis "~ \$spawn_limit too large so set as" "$spawn_limit"
+				if [ "$parallel_limit" -gt "$parallel_max" ] ; then
+					parallel_limit=$parallel_max
+					DebugThis "~ \$parallel_limit too large so set as" "$parallel_limit"
 				fi
 				;;
 		esac

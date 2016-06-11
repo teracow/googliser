@@ -1,6 +1,6 @@
 ![googliser](http://i.imgur.com/yahgjDC.png) googliser.sh
 ---
-This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images concurrently. The idea is to build a picture of that phrase. 
+This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of that phrase. 
 
 (This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
 
@@ -54,10 +54,10 @@ Number of images to download. Default is 25. Maximum is 1,000.
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 `-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + concurrency)`. The inevitable consequence of concurrent downloads. :) 
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
 
-`-c` or `--concurrency [INTEGER]`  
-How many concurrent image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
+`-p` or `--parallel [INTEGER]`  
+How many parallel image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
 
 `-t` or `--timeout [INTEGER]`  
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
@@ -94,7 +94,7 @@ Copy debug log file into sub-directory afterwards. Default is no debug log file.
     $ ./googliser.sh -p "cows"
 This will download the first 25 available images for the search-phrase *"cows"*
 
-    $ ./googliser.sh --number 250 --phrase "kittens" --concurrency 10 --failures 0
+    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 10 --failures 0
 This will download the first 250 available images for the search-phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug
@@ -134,6 +134,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **To-Do List:**
 
+- ANSI colours?
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
 - limit download results? 
