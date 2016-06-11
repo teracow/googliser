@@ -716,9 +716,10 @@ function BuildGallery
 
 	local func_startseconds=$(date +%s)
 
-	[ "$verbose" == "true" ] && echo -n " -> building gallery: "
-
-	ProgressUpdater "stage 1/4 (construct thumbnails)"
+	if [ "$verbose" == "true" ] ; then
+		echo -n " -> building gallery: "
+		ProgressUpdater "stage 1/4 (construct thumbnails)"
+	fi
 
 	# build gallery
 	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
@@ -735,7 +736,7 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		ProgressUpdater "stage 2/4 (draw background pattern)"
+		[ "$verbose" == "true" ] && ProgressUpdater "stage 2/4 (draw background pattern)"
 
 		# get image dimensions
 		read -r width height <<< $(convert -ping "${gallery_thumbnails_pathfile}" -format "%w %h" info:)
@@ -756,7 +757,7 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		ProgressUpdater "stage 3/4 (draw title text image)"
+		[ "$verbose" == "true" ] && ProgressUpdater "stage 3/4 (draw title text image)"
 
 		# create title image
 		# let's try a fixed height of 100 pixels
@@ -775,7 +776,7 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		ProgressUpdater "stage 4/4 (compile all images)"
+		[ "$verbose" == "true" ] && ProgressUpdater "stage 4/4 (compile all images)"
 
 		# compose thumbnails image on background image, then title image on top
 		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
@@ -799,13 +800,10 @@ function BuildGallery
 	if [ "$result" -eq "0" ] ; then
 		DebugThis "$ [${FUNCNAME[0]}]" "success!"
 		if [ "$verbose" == "true" ] ; then
-			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
-			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
-
 			if [ "$colourised" == "true" ] ; then
-				echo "$(ColourTextBrightGreen "done!")"
+				ProgressUpdater "$(ColourTextBrightGreen "done!")"
 			else
-				echo "done!"
+				ProgressUpdater "done!"
 			fi
 		fi
 	else
