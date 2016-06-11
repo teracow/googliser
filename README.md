@@ -13,9 +13,9 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 3. **[Google Images](https://www.google.com/imghp?hl=en)** is then queried and the results saved.
 
-4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
+4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
+5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
@@ -32,7 +32,7 @@ Typically, downloads run quite fast and then get slower as the required number o
 
 Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-11. 
+This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-12. 
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -78,7 +78,13 @@ Specify a custom title for the gallery. Default is to use the search-phrase.
 Display with ANSI coloured text. Default is no colours. But definitely try it with colours. :)
 
 `-g` or `--no-gallery`  
-Don't create thumbnail gallery. Default always creates a thumbnail gallery after downloading images.
+Don't create a thumbnail gallery.
+
+`-k` or `--links`  
+Put the URL results file into sub-directory. If selected, the URL list will be found in 'download.links.list' in the sub-directory. This file is always created in the temporary build directory.
+
+`-q` or `--quiet`  
+Suppress display output. Error messages are still shown.
 
 `-h` or `--help`  
 Display this help then exit.
@@ -86,11 +92,8 @@ Display this help then exit.
 `-v` or `--version`  
 Show script version then exit.
 
-`-q` or `--quiet`  
-Suppress display output. Error messages are still shown.
-
 `-d` or `--debug`  
-Copy debug log file into sub-directory afterwards. Default is no debug log file. If selected, debugging output is appended to 'debug.log' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+Put the debug log file into sub-directory. If selected, debugging output is appended to 'debug.log' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 **Usage Examples:**
 

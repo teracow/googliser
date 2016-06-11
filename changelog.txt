@@ -1,4 +1,5 @@
 changelog:
+v1.18 (2016-06-12) New option (-k --links) to copy URL links file to target directory.
 v1.17 (2016-06-11) Fixes for display of help and version number. Changed (-c --concurrency) to (-p --parallel) in preparation for new colourised option. Switched to a more reliable method of counting running background jobs. Colours now available! Changed result 'segments' to result 'groups'.
 v1.16 (2016-06-10) Initial list download limited to concurrency specified and shows download progress.
 v1.15 (2016-06-09) User can now specify upper and lower file size limits. Initial search results are handled in temp dir. Thumbail gallery now has search phrase as title. Custom title can also be specified. 1000 results now!

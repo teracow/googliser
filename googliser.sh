@@ -36,8 +36,8 @@
 function Init
 	{
 
-	script_version="1.17"
-	script_date="2016-06-11"
+	script_version="1.18"
+	script_date="2016-06-12"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -48,7 +48,7 @@ function Init
 
 	image_file="google-image"
 	gallery_name="googliser-gallery"
-	imagelist_file="download.links.list"
+	imagelinks_file="download.links.list"
 	debug_file="debug.log"
 
 	results_success_count_pathfile="${temp_path}/results.success.count"
@@ -59,14 +59,23 @@ function Init
 	gallery_title_pathfile="${temp_path}/gallery.title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
 	gallery_background_pathfile="${temp_path}/gallery.background.png"
+
 	debug_pathfile="${temp_path}/${debug_file}"
-	imagelist_pathfile="${temp_path}/${imagelist_file}"
+	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
 
 	server="www.google.com.au"
 
 	# http://whatsmyuseragent.com
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
 
+	# internals
+	script_starttime=$(date)
+	script_startseconds=$(date +%s)
+	result_index=0
+	target_path_created=false
+	helpme=false
+	showversion=false
+	showhelp=false
 	results_max=1000
 	parallel_max=40
 	timeout_max=600
@@ -84,17 +93,9 @@ function Init
 	create_gallery=true
 	verbose=true
 	debug=false
+	links=false
 	gallery_title=""
 	colourised=false
-
-	# internals
-	script_starttime=$(date)
-	script_startseconds=$(date +%s)
-	result_index=0
-	target_path_created=false
-	helpme=false
-	showversion=false
-	showhelp=false
 
 	WhatAreMyOptions
 
@@ -120,16 +121,22 @@ function Init
 
 	DebugThis "> started" "$script_starttime"
 	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
+	DebugThis "= environment" "*** user parameters ***"
 	DebugThis "? \$user_query" "$user_query"
 	DebugThis "? \$images_required" "$images_required"
+	DebugThis "? \$fail_limit" "$fail_limit"
 	DebugThis "? \$parallel_limit" "$parallel_limit"
+	DebugThis "? \$timeout" "$timeout"
+	DebugThis "? \$retries" "$retries"
 	DebugThis "? \$upper_size_limit" "$upper_size_limit"
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
-	DebugThis "? \$results_max" "$results_max"
-	DebugThis "? \$fail_limit" "$fail_limit"
-	DebugThis "? \$verbose" "$verbose"
-	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
+	DebugThis "? \$links" "$links"
+	DebugThis "? \$colourised" "$colourised"
+	DebugThis "? \$create_gallery" "$create_gallery"
+	DebugThis "? \$verbose" "$verbose"
+	DebugThis "= environment" "*** internal parameters ***"
+	DebugThis "? \$results_max" "$results_max"
 	DebugThis "? \$temp_path" "$temp_path"
 
 	IsProgramAvailable "wget" || exitcode=1
@@ -177,8 +184,8 @@ function DisplayHelp
 	echo " - Usage: ./$script_name [PARAMETERS] ..."
 	echo
 	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
-	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
+	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "f" "failures INTEGER [$fail_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
 	HelpParameterFormat "p" "parallel INTEGER [$parallel_limit]" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "t" "timeout INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
@@ -186,12 +193,13 @@ function DisplayHelp
 	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
 	HelpParameterFormat "l" "lower-size INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
 	HelpParameterFormat "i" "title STRING" "Custom title for thumbnail gallery. Default is search phrase (-p --phrase)."
+	HelpParameterFormat "k" "links" "Output URL list to file [$imagelinks_file] in target directory."
 	HelpParameterFormat "c" "colourised" "Output with ANSI coloured text."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file]."
+	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file] in target directory."
 	echo
 	echo " - Example:"
 	echo " $ ./$script_name -p \"${sample_user_query}\""
@@ -259,6 +267,10 @@ function WhatAreMyOptions
 			-i | --title )
 				gallery_title="$2"
 				shift 2		# shift to next parameter in $1
+				;;
+			-k | --links )
+				links=true
+				shift
 				;;
 			-h | --help )
 				showhelp=true
@@ -592,7 +604,7 @@ function DownloadImages
 				break
 			fi
 		fi
-	done < "${imagelist_pathfile}"
+	done < "${imagelinks_pathfile}"
 
 	# wait here while all running downloads finish
 	wait
@@ -636,11 +648,11 @@ function ParseResults
 	grep '<div class=\"rg_meta\">.*http' |\
 	grep -ivE 'youtube|vimeo' |\
 	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
-	> "${imagelist_pathfile}"
+	> "${imagelinks_pathfile}"
 	#---------------------------------------------------------------------------------------------------------------
 
-	if [ -e "$imagelist_pathfile" ] ; then
-		result_count=$(wc -l < "${imagelist_pathfile}")
+	if [ -e "$imagelinks_pathfile" ] ; then
+		result_count=$(wc -l < "${imagelinks_pathfile}")
 
 		if [ "$verbose" == "true" ] ; then
 			if [ "$colourised" == "true" ] ; then
@@ -1073,7 +1085,7 @@ function RemoveColourCodes
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
+user_parameters=`getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -1316,8 +1328,14 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 	fi
 fi
 
-# copy links list into target directory
-[ "$target_path_created" == "true" ] && cp -f "${imagelist_pathfile}" "${target_path}/${imagelist_file}"
+# copy links file into target directory if possible. If not, then copy to current directory.
+if [ "$links" == "true" ] ; then
+	if [ "$target_path_created" == "true" ] ; then
+		cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
+	else
+		cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
+	fi
+fi
 
 # write results into debug file
 DebugThis "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
@@ -1328,8 +1346,9 @@ if [ "$debug" == "true" ] ; then
 	if [ "$target_path_created" == "true" ] ; then
 		[ -e "${target_path}/${debug_file}" ] && echo "" >> "${target_path}/${debug_file}"
 
-		cat "${debug_pathfile}" >> "${target_path}/${debug_file}"
+		cp -f "${debug_pathfile}" "${target_path}/${debug_file}"
 	else
+		# append to current path debug file (if it exists)
 		[ -e "${current_path}/${debug_file}" ] && echo "" >> "${current_path}/${debug_file}"
 
 		cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
