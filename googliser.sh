@@ -439,7 +439,7 @@ function DownloadImage_auto
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
-		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent ${useragent} --spider "${imagelink}" 2>&1 | grep -i "length" | cut -d' ' -f2)"
+		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent ${useragent} --spider "${imagelink}" 2>&1 | grep "Length:" | cut -d' ' -f2)"
 		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
 
 		if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
