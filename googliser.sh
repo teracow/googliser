@@ -39,7 +39,7 @@ function Init
 	script_version="1.17"
 	script_date="2016-06-11"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
-	script_details="${script_name} - v${script_version} (${script_date}) PID:[$$]"
+	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
 	current_path="$PWD"
 	temp_path="/dev/shm/$script_name.$$"
@@ -85,6 +85,7 @@ function Init
 	verbose=true
 	debug=false
 	gallery_title=""
+	colourised=false
 
 	# internals
 	script_starttime=$(date)
@@ -106,16 +107,19 @@ function Init
 	fi
 
 	if [ "$verbose" == "true" ] ; then
-		echo " > ${script_details}"
+		if [ "$colourised" == "true" ] ; then
+			echo " ${script_details}"
+		else
+			echo " $(RemoveColourCodes "${script_details}")"
+		fi
+
 		echo
 	fi
 
-	if [ "$showhelp" == "true" ] ; then
-		DisplayHelp
-	fi
+	[ "$showhelp" == "true" ] && DisplayHelp
 
 	DebugThis "> started" "$script_starttime"
-	DebugThis "? \$script_details" "$script_details"
+	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
 	DebugThis "? \$user_query" "$user_query"
 	DebugThis "? \$images_required" "$images_required"
 	DebugThis "? \$parallel_limit" "$parallel_limit"
@@ -182,6 +186,7 @@ function DisplayHelp
 	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
 	HelpParameterFormat "l" "lower-size INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
 	HelpParameterFormat "i" "title STRING" "Custom title for thumbnail gallery. Default is search phrase (-p --phrase)."
+	HelpParameterFormat "c" "colourised" "Output with ANSI coloured text."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "v" "version " "Show script version then exit."
@@ -258,6 +263,10 @@ function WhatAreMyOptions
 			-h | --help )
 				showhelp=true
 				return 7
+				;;
+			-c | --colourised )
+				colourised=true
+				shift
 				;;
 			-g | --no-gallery )
 				create_gallery=false
@@ -349,7 +358,13 @@ function DownloadResultSegments
 	local strlength=0
 	local parallel_count=0
 
-	[ "$verbose" == "true" ] && echo -n " -> Searching Google for phrase \"$user_query\": "
+	if [ "$verbose" == "true" ] ; then
+		if [ "$colourised" == "true" ] ; then
+			echo -n " -> searching $(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e"): "
+		else
+			echo -n " -> searching Google: "
+		fi
+	fi
 
 	ResetAllResultCounts
 
@@ -521,7 +536,7 @@ function DownloadImages
 
 	ResetAllDownloadCounts
 
-	[ "$verbose" == "true" ] && echo -n " -> "
+	[ "$verbose" == "true" ] && echo -n " -> downloading images: "
 
 	while read imagelink; do
 		while true; do
@@ -605,9 +620,21 @@ function ParseResults
 	if [ -e "$imagelist_pathfile" ] ; then
 		result_count=$(wc -l < "${imagelist_pathfile}")
 
-		[ "$verbose" == "true" ] && echo "Found ${result_count} results!"
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colourised" == "true" ] ; then
+				echo "Found $(ColourTextBrightWhite "${result_count}") results!"
+			else
+				echo "Found ${result_count} results!"
+			fi
+		fi
 	else
-		[ "$verbose" == "true" ] && echo "No results to count!"
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colourised" == "true" ] ; then
+				echo "$(ColourTextBrightRed "No results to count!")"
+			else
+				echo "No results to count!"
+			fi
+		fi
 	fi
 
 	DebugThis "? \$result_count" "$result_count"
@@ -626,7 +653,7 @@ function BuildGallery
 
 	local func_startseconds=$(date +%s)
 
-	[ "$verbose" == "true" ] && echo -n " -> Building thumbnail gallery: "
+	[ "$verbose" == "true" ] && echo -n " -> building gallery: "
 
 	ProgressUpdater "step 1 (construct thumbnails)"
 
@@ -711,7 +738,12 @@ function BuildGallery
 		if [ "$verbose" == "true" ] ; then
 			# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
 			printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
-			echo "done!"
+
+			if [ "$colourised" == "true" ] ; then
+				echo "$(ColourTextBrightGreen "done!")"
+			else
+				echo "done!"
+			fi
 		fi
 	else
 		DebugThis "! [${FUNCNAME[0]}]" "failed! See previous!"
@@ -792,7 +824,9 @@ function ProgressUpdater
 	printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
 	echo -n "$1 "
-	strlength=$((${#1}+1))
+
+	temp=$(RemoveColourCodes "$1")
+	strlength=$((${#temp}+1))
 
 	}
 
@@ -801,7 +835,21 @@ function ShowResultDownloadProgress
 
 	RefreshActiveResultCounts
 
-	[ "$verbose" == "true" ] && ProgressUpdater "${success_count}/${segments_max} result segments have downloaded."
+	if [ "$verbose" == "true" ] ; then
+		if [ "$colourised" == "true" ] ; then
+			if [ "$success_count" -eq "$segments_max" ] ; then
+				progress_message="$(ColourTextBrightGreen "${success_count}/${segments_max}")"
+			else
+				progress_message="$(ColourTextBrightOrange "${success_count}/${segments_max}")"
+			fi
+		else
+			progress_message="${success_count}/${segments_max}"
+		fi
+
+		progress_message+=" result segments have downloaded."
+
+		ProgressUpdater "${progress_message}"
+	fi
 
 	}
 
@@ -812,29 +860,39 @@ function ShowImageDownloadProgress
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
-		progress_message="${success_count}/${images_required} images have downloaded"
-# 		progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}") images have downloaded"
+		if [ "$colourised" == "true" ] ; then
+			progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
+		else
+			progress_message="${success_count}/${images_required}"
+		fi
+
+		progress_message+=" have downloaded"
 
 		# include failures (if any)
 		if [ "$fail_count" -gt "0" ] ; then
-			progress_message+=" with ${fail_count}/${fail_limit} failures"
-# 			progress_message+=" with $(ColourTextBrightRed "${fail_count}/${fail_limit}") failures"
+			progress_message+=", "
+
+			if [ "$colourised" == "true" ] ; then
+				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
+			else
+				progress_message+="${fail_count}/${fail_limit}"
+			fi
+
+			progress_message+=" failed"
 		fi
 
 		# show the number of files currently downloading (if any)
-		case "$parallel_count" in
-			0 )
-				progress_message+=""
-				;;
-			1 )
- 				progress_message+=", ${parallel_count}/${parallel_limit} download is in progress"
-# 				progress_message+=", $(ColourTextBrightOrange "${parallel_count}/${parallel_limit}") download is in progress"
-				;;
-			* )
- 				progress_message+=", ${parallel_count}/${parallel_limit} downloads are in progress"
-# 				progress_message+=", $(ColourTextBrightOrange "${parallel_count}/${parallel_limit}") downloads are in progress"
-				;;
-		esac
+		if [ "$parallel_count" -gt "0" ] ; then
+			progress_message+=" and "
+
+			if [ "$colourised" == "true" ] ; then
+				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
+			else
+				progress_message+="${parallel_count}/${parallel_limit}"
+			fi
+
+			progress_message+=" are in progress"
+		fi
 
  		progress_message+="."
 
@@ -928,6 +986,13 @@ function ConvertSecs
 
 	}
 
+function ColourTextBrightWhite
+	{
+
+	echo -en '\E[1;97m'"$(PrintResetColours "$1")"
+
+	}
+
 function ColourTextBrightGreen
 	{
 
@@ -963,6 +1028,13 @@ function ColourTextBrightRed
 
 	}
 
+function ColourTextBrightBlue
+	{
+
+	echo -en '\E[1;94m'"$(PrintResetColours "$1")"
+
+	}
+
 function PrintResetColours
 	{
 
@@ -970,8 +1042,16 @@ function PrintResetColours
 
 	}
 
+function RemoveColourCodes
+	{
+
+	# http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
+	echo -n "$1" | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g"
+
+	}
+
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,q,v,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,quiet,version,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
+user_parameters=`getopt -o h,g,d,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
 user_parameters_result=$?
 
 Init
@@ -1137,7 +1217,13 @@ if [ "$exitcode" -eq "0" ] ; then
 			DebugThis "! \$user_query" "unspecified"
 			DisplayHelp
 			echo
-			echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
+
+			if [ "$colourised" == "true" ] ; then
+				echo "$(ColourTextBrightRed "!! search phrase (-p --phrase) was unspecified ... unable to continue.")"
+			else
+				echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
+			fi
+
 			exitcode=2
 		else
 			target_path="${current_path}/${user_query}"
@@ -1233,11 +1319,21 @@ if [ "$verbose" == "true" ] ; then
 	case "$exitcode" in
 		0 )
 			echo
-			echo " -> Finished!"
+
+			if [ "$colourised" == "true" ] ; then
+				echo " -> $(ColourTextBrightGreen "All done!")"
+			else
+				echo " -> All done!"
+			fi
 			;;
 		[1-6] )
 			echo
-			echo " -> Finished! (with errors)"
+
+			if [ "$colourised" == "true" ] ; then
+				echo " -> $(ColourTextBrightRed "All done! (with errors)")"
+			else
+				echo " -> All done! (with errors)"
+			fi
 			;;
 		* )
 			;;

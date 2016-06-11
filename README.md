@@ -74,6 +74,9 @@ Only download image files that are reported by the server to be larger than this
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase.
 
+`-c` or `--colourised`  
+Display with ANSI coloured text. Default is no colours. But definitely try it with colours. :)
+
 `-g` or `--no-gallery`  
 Don't create thumbnail gallery. Default always creates a thumbnail gallery after downloading images.
 
@@ -134,7 +137,6 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **To-Do List:**
 
-- ANSI colours?
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
 - limit download results? 
