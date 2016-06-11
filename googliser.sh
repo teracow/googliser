@@ -548,7 +548,7 @@ function DownloadImages
 
 	ResetAllDownloadCounts
 
-	[ "$verbose" == "true" ] && echo -n " -> getting images: "
+	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
 	while read imagelink; do
 		while true; do
@@ -619,32 +619,42 @@ function ParseResults
 
 	result_count=0
 
-	# regexes explained:
-	# 1. look for lines with '<div' and insert 2 linefeeds before them
-	# 2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
-	# 3. only list lines without 'youtube' or 'vimeo'
-	# 4. remove everything from '<div class="rg_meta">' up to 'http' but keep 'http' on each line
-	# 5. remove everything including and after '","ow"' on each line
-	# 6. remove everything including and after '?' on each line
+	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
+	#
+	# sed   1. look for lines with '<div' and insert 2 linefeeds before them
+	#
+	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
+	#
+	# grep  3. only list lines without 'youtube' or 'vimeo' (case insenstive)
+	#
+	# perl  4. remove everything from '<div class="rg_meta">' up to 'http' on each line
+	#       5. remove everything including and after '","ow"' on each line
+	#       6. remove everything including and after '?' on each line
 
-	cat "${results_pathfile}" | sed 's|<div|\n\n<div|g' | grep '<div class=\"rg_meta\">.*http' | grep -ivE 'youtube|vimeo' | perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' > "${imagelist_pathfile}"
+	cat "${results_pathfile}" |\
+	sed 's|<div|\n\n<div|g' |\
+	grep '<div class=\"rg_meta\">.*http' |\
+	grep -ivE 'youtube|vimeo' |\
+	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
+	> "${imagelist_pathfile}"
+	#---------------------------------------------------------------------------------------------------------------
 
 	if [ -e "$imagelist_pathfile" ] ; then
 		result_count=$(wc -l < "${imagelist_pathfile}")
 
 		if [ "$verbose" == "true" ] ; then
 			if [ "$colourised" == "true" ] ; then
-				echo "Found $(ColourTextBrightWhite "${result_count}") results!"
+				echo "$(ColourTextBrightWhite "${result_count}") results!"
 			else
-				echo "Found ${result_count} results!"
+				echo "${result_count} results!"
 			fi
 		fi
 	else
 		if [ "$verbose" == "true" ] ; then
 			if [ "$colourised" == "true" ] ; then
-				echo "$(ColourTextBrightRed "No results to count!")"
+				echo "$(ColourTextBrightRed "No results!")"
 			else
-				echo "No results to count!"
+				echo "No results!"
 			fi
 		fi
 	fi
