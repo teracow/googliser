@@ -127,7 +127,7 @@ For this sample, only 249 images were available out of the 381 search results re
 ---
 **Known Issues:**
 
-- (2016-06-11) - Wget download speed capture is interferring with return code so I've disabled this for now.
+- (2016-06-11) - None.
 
 ---
 **Work-in-Progress:**

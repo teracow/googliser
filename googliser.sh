@@ -475,18 +475,16 @@ function DownloadImage_auto
 
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
-#		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --quiet --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\""
-		DebugThis "? \$wget_download_cmd" "$wget_download_cmd"
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\" 2>&1"
+		DebugThis "? link #$2 \$wget_download_cmd" "$wget_download_cmd"
 
-		# http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
-#		download_speed=$(eval $wget_download_cmd 2>&1 | grep -o '\([0-9.]\+ [KM]B/s\)')
-		download_speed="** temporarily disabled! **"
-
-		eval $wget_download_cmd > /dev/null 2>&1
+		response=$(eval "$wget_download_cmd")
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
+			# http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
+			download_speed=$(grep -o '\([0-9.]\+ [KM]B/s\)' <<< "$response")
+
 			if [ -e "${targetimage_pathfileext}" ] ; then
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
