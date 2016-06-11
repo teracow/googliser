@@ -317,29 +317,29 @@ function IsProgramAvailable
 
 	}
 
-function DownloadResultSegment_auto
+function DownloadResultGroup_auto
 	{
 
 	# *** This function runs as a background process ***
-	# $1 = page segment to load:		(0, 1, 2, 3, etc...)
+	# $1 = page group to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
-	local search_segment="&ijn=$1"
+	local search_group="&ijn=$1"
 	local search_start="&start=$2"
 
-	DebugThis "- result segment #$1 download" "start"
+	DebugThis "- result group #$1 download" "start"
 
-	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_segment}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? \$wget_list_cmd" "$wget_list_cmd"
 
 	eval $wget_list_cmd
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		DebugThis "$ result segment #$1 download" "success!"
+		DebugThis "$ result group #$1 download" "success!"
 		IncrementFile "${results_success_count_pathfile}"
 	else
-		DebugThis "! result segment #$1 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		DebugThis "! result group #$1 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		IncrementFile "${results_fail_count_pathfile}"
 	fi
 
@@ -347,13 +347,13 @@ function DownloadResultSegment_auto
 
 	}
 
-function DownloadResultSegments
+function DownloadResultGroups
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
-	local segments_max=$(($results_max/100))
+	local groups_max=$(($results_max/100))
 	local pointer=0
 	local strlength=0
 	local parallel_count=0
@@ -368,7 +368,7 @@ function DownloadResultSegments
 
 	ResetAllResultCounts
 
-	for ((segment=1; segment<=$segments_max; segment++)) ; do
+	for ((group=1; group<=$groups_max; group++)) ; do
 		ShowResultDownloadProgress
 
 		if [ "$parallel_count" -eq "$parallel_limit" ] ; then
@@ -386,12 +386,12 @@ function DownloadResultSegments
 			sleep 0.5
 		done
 
-		pointer=$((($segment-1)*100))
+		pointer=$((($group-1)*100))
 
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-# 		percent="$((200*($segment-1)/$segments_max % 2 + 100*($segment-1)/$segments_max))% "
+# 		percent="$((200*($group-1)/$groups_max % 2 + 100*($group-1)/$groups_max))% "
 
-		DownloadResultSegment_auto $(($segment-1)) "$pointer" &
+		DownloadResultGroup_auto $(($group-1)) "$pointer" &
 	done
 
 	# wait here while all running downloads finish
@@ -401,7 +401,7 @@ function DownloadResultSegments
 
 	[ "$parallel_count" -gt "0" ] && DebugThis "! found some leftover parallel!" "$parallel_count ($(jobs -l))"
 
-	# build all segments into a single file
+	# build all groups into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
 	#rm -f "${results_pathfile}".*
 
@@ -440,13 +440,13 @@ function DownloadImage_auto
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
 		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"${imagelink}\" 2>&1"
-		DebugThis "? \$wget_server_response_cmd" "$wget_server_response_cmd"
+		DebugThis "? link #$2 \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			estimated_size=$(grep -v "Access-Control-Expose-Headers:" <<< "$reponse" | sed -ne '/Content-Length/{s/.*: //;p}')
+			estimated_size=$(grep -v "Access-Control-Expose-Headers:" <<< "$response" | sed -ne '/Content-Length/{s/.*: //;p}')
 
 			if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
 				estimated_size="unknown"
@@ -469,6 +469,7 @@ function DownloadImage_auto
 			fi
 		else
 			DebugThis "! link #$2 (before download) server-response" "failed!"
+			estimated_size="unknown"
 		fi
 	fi
 
@@ -549,7 +550,7 @@ function DownloadImages
 
 	ResetAllDownloadCounts
 
-	[ "$verbose" == "true" ] && echo -n " -> downloading images: "
+	[ "$verbose" == "true" ] && echo -n " -> getting images: "
 
 	while read imagelink; do
 		while true; do
@@ -850,16 +851,16 @@ function ShowResultDownloadProgress
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then
-			if [ "$success_count" -eq "$segments_max" ] ; then
-				progress_message="$(ColourTextBrightGreen "${success_count}/${segments_max}")"
+			if [ "$success_count" -eq "$groups_max" ] ; then
+				progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
 			else
-				progress_message="$(ColourTextBrightOrange "${success_count}/${segments_max}")"
+				progress_message="$(ColourTextBrightOrange "${success_count}/${groups_max}")"
 			fi
 		else
-			progress_message="${success_count}/${segments_max}"
+			progress_message="${success_count}/${groups_max}"
 		fi
 
-		progress_message+=" result segments have downloaded."
+		progress_message+=" result groups downloaded."
 
 		ProgressUpdater "${progress_message}"
 	fi
@@ -879,7 +880,7 @@ function ShowImageDownloadProgress
 			progress_message="${success_count}/${images_required}"
 		fi
 
-		progress_message+=" have downloaded"
+		progress_message+=" downloaded"
 
 		# include failures (if any)
 		if [ "$fail_count" -gt "0" ] ; then
@@ -1277,7 +1278,7 @@ fi
 
 # get list of search results
 if [ "$exitcode" -eq "0" ] ; then
-	DownloadResultSegments
+	DownloadResultGroups
 
 	if [ "$?" -gt "0" ] ; then
 		echo " !! couldn't download Google search results ... unable to continue."
