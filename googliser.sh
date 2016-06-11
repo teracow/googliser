@@ -439,27 +439,36 @@ function DownloadImage_auto
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
-		estimated_size="$(wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent ${useragent} --spider "${imagelink}" 2>&1 | grep "Length:" | cut -d' ' -f2)"
-		# possible return values are: 'unspecified', '123456' (integers), '' (empty)
+		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"${imagelink}\" 2>&1"
+		DebugThis "? \$wget_server_response_cmd" "$wget_server_response_cmd"
 
-		if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
-			estimated_size="unknown"
-		fi
+		response=$(eval "$wget_server_response_cmd")
+		result=$?
 
-		DebugThis "? link #$2 \$estimated_size" "$estimated_size bytes"
+		if [ "$result" -eq "0" ] ; then
+			estimated_size=$(grep -v "Access-Control-Expose-Headers:" <<< "$reponse" | sed -ne '/Content-Length/{s/.*: //;p}')
 
-		if [ "$estimated_size" != "unknown" ] ; then
-			if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-				DebugThis "! link #$2 (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
-				size_ok=false
-				get_download=false
+			if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
+				estimated_size="unknown"
 			fi
 
-			if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-				DebugThis "! link #$2 (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
-				size_ok=false
-				get_download=false
+			DebugThis "? link #$2 \$estimated_size" "$estimated_size bytes"
+
+			if [ "$estimated_size" != "unknown" ] ; then
+				if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
+					DebugThis "! link #$2 (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+					size_ok=false
+					get_download=false
+				fi
+
+				if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
+					DebugThis "! link #$2 (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+					size_ok=false
+					get_download=false
+				fi
 			fi
+		else
+			DebugThis "! link #$2 (before download) server-response" "failed!"
 		fi
 	fi
 
