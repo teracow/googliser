@@ -354,7 +354,7 @@ function DownloadResultSegments
 	ResetAllResultCounts
 
 	for ((segment=1; segment<=$segments_max; segment++)) ; do
-		RefreshActiveResultCounts
+		ShowResultDownloadProgress
 
 		if [ "$spawn_count" -eq "$spawn_limit" ] ; then
 			# wait here while all running downloads finish
@@ -364,8 +364,7 @@ function DownloadResultSegments
 		fi
 
 		while true; do
-			RefreshActiveResultCounts
-			ProgressUpdater "${success_count}/${segments_max} result segments have downloaded."
+			ShowResultDownloadProgress
 
   			[ "$spawn_count" -lt "$spawn_limit" ] && break
 
@@ -383,15 +382,9 @@ function DownloadResultSegments
 	# wait here while all running downloads finish
 	wait
 
-	RefreshActiveResultCounts
-	ProgressUpdater "${success_count}/${segments_max} result segments have downloaded."
+	ShowResultDownloadProgress
 
-	if [ "$spawn_count" -gt "0" ] ; then
-		DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
-		sleep 1
-		wait
-		DebugThis "! after a short sleep, here's what we've got" "$spawn_count ($(jobs -l))"
-	fi
+	[ "$spawn_count" -gt "0" ] && DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
 
 	# build all segments into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
@@ -532,7 +525,6 @@ function DownloadImages
 
 	while read imagelink; do
 		while true; do
-			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
 			[ "$spawn_count" -lt "$spawn_limit" ] && break
@@ -562,7 +554,6 @@ function DownloadImages
 			# wait here while all running downloads finish
 			wait
 
-			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
 			# how many were successful?
@@ -579,15 +570,9 @@ function DownloadImages
 	# wait here while all running downloads finish
 	wait
 
-	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
 
-	if [ "$spawn_count" -gt "0" ] ; then
-		DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
-		sleep 1
-		wait
-		DebugThis "! after a short sleep, here's what we've got" "$spawn_count ($(jobs -l))"
-	fi
+	[ "$spawn_count" -gt "0" ] && DebugThis "! found some leftover spawn!" "$spawn_count ($(jobs -l))"
 
 	[ "$verbose" == "true" ] && echo
 
@@ -803,18 +788,27 @@ function ProgressUpdater
 
 	# $1 = message to display.
 
-	if [ "$verbose" == "true" ] ; then
-		# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
-		printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+	# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+	printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
 
-		echo -n "$1 "
-		strlength=$((${#1}+1))
-	fi
+	echo -n "$1 "
+	strlength=$((${#1}+1))
+
+	}
+
+function ShowResultDownloadProgress
+	{
+
+	RefreshActiveResultCounts
+
+	[ "$verbose" == "true" ] && ProgressUpdater "${success_count}/${segments_max} result segments have downloaded."
 
 	}
 
 function ShowImageDownloadProgress
 	{
+
+	RefreshActiveDownloadCounts
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
@@ -851,7 +845,7 @@ function RefreshActiveResultCounts
 	[ -e "${results_success_count_pathfile}" ] && success_count=$(<"${results_success_count_pathfile}") || success_count=0
 	[ -e "${results_fail_count_pathfile}" ] && fail_count=$(<"${results_fail_count_pathfile}") || fail_count=0
 
-	spawn_count=$(jobs -p | wc -w)
+	spawn_count=$(jobs -l | grep Running | wc -l)
 
 	}
 
@@ -861,7 +855,8 @@ function RefreshActiveDownloadCounts
 	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
 	[ -e "${download_fail_count_pathfile}" ] && fail_count=$(<"${download_fail_count_pathfile}") || fail_count=0
 
-	spawn_count=$(jobs -p | wc -w)
+#	spawn_count=$(jobs -p | wc -w)
+	spawn_count=$(jobs -l | grep Running | wc -l)
 
 	}
 
