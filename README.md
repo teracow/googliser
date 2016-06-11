@@ -72,7 +72,7 @@ Only download image files that are reported by the server to be smaller than thi
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-i` or `--title [STRING]`  
-Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *"This is what cows look like!"*
+Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
 `-c` or `--colourised`  
 Display with ANSI coloured text. Default is no colours. But definitely try it with colours. :)
