@@ -1061,24 +1061,10 @@ function ColourTextBrightGreen
 
 	}
 
-function ColourTextLightOrange
-	{
-
-	echo -en '\E[38;5;220m'"$(PrintResetColours "$1")"
-
-	}
-
 function ColourTextBrightOrange
 	{
 
 	echo -en '\E[1;38;5;214m'"$(PrintResetColours "$1")"
-
-	}
-
-function ColourTextLightRed
-	{
-
-	echo -en '\E[0;91m'"$(PrintResetColours "$1")"
 
 	}
 
