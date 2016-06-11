@@ -26,11 +26,11 @@ I wrote this scraper so that users do not need to obtain an API key from Google 
 
 Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
-When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated .gif).
+When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
 
-Typically, downloads run quite fast and get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up dealing with these problems. This is normal behaviour. Be patient. Grab a coffee.
+Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour. Please be patient. Grab yourself a coffee.
 
-Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab an apricot danish to go with the coffee. **:)**
+Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Be patient. Grab a danish to go with that coffee. **:)**
 
 This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-11. 
 
