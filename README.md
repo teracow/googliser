@@ -15,7 +15,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 4. The results are parsed and all image links are extracted and saved to a list file in this sub-directory. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its failure-limit is reached. 
+5. The script then iterates through this list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
 
 6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
 
