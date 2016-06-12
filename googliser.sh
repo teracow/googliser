@@ -81,20 +81,29 @@ function Init
 	timeout_max=600
 	retries_max=100
 
-	# user parameters
+	# parameter defaults
+	images_required_default=25
+	parallel_limit_default=8
+	fail_limit_default=40
+	upper_size_limit_default=0
+	lower_size_limit_default=1000
+	timeout_default=15
+	retries_default=3
+
+	# user changable parameters
+	images_required=$images_required_default
+	parallel_limit=$parallel_limit_default
+	fail_limit=$fail_limit_default
+	upper_size_limit=$upper_size_limit_default
+	lower_size_limit=$lower_size_limit_default
+	timeout=$timeout_default
+	retries=$retries_default
 	user_query=""
-	images_required=25
-	parallel_limit=8
-	fail_limit=40
-	upper_size_limit=0
-	lower_size_limit=1000
-	timeout=15
-	retries=3
+	gallery_title=""
 	create_gallery=true
 	verbose=true
 	debug=false
 	links=false
-	gallery_title=""
 	colourised=false
 
 	WhatAreMyOptions
@@ -206,17 +215,17 @@ function DisplayHelp
 		echo " * Required *"
 	fi
 
-	HelpParameterFormat "p" "phrase \"STRING\"" "Search phrase. A sub-directory will be created with this name."
+	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory will be created with this name."
 	echo
 	echo " Optional"
-	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit>" "How many download failures before exiting? Use 0 for maximum ($results_max)."
-	HelpParameterFormat "i" "title \"STRING\" <phrase>" "Custom title for thumbnail gallery."
-	HelpParameterFormat "l" "lower-size INTEGER <$lower_size_limit>" "Only download images that are larger than this many bytes."
-	HelpParameterFormat "n" "number INTEGER <$images_required>" "Number of images to download. Maximum of $results_max."
-	HelpParameterFormat "p" "parallel INTEGER <$parallel_limit>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
-	HelpParameterFormat "r" "retries INTEGER <$retries>" "Retry image download this many times. Maximum of $retries_max."
-	HelpParameterFormat "t" "timeout INTEGER <$timeout>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
-	HelpParameterFormat "u" "upper-size INTEGER <$upper_size_limit>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
+	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($results_max)."
+	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
+	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
+	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $results_max."
+	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
+	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
+	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
 	echo
 	HelpParameterFormat "c" "colourised" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
@@ -248,7 +257,7 @@ function HelpParameterFormat
 	# $2 = long parameter
 	# $3 = description
 
-	printf "  -%-1s   --%-27s %s\n" "$1" "$2" "$3"
+	printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
 
 	}
 
