@@ -180,7 +180,6 @@ function DisplayHelp
 	fi
 
 	echo "${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
-
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
@@ -200,7 +199,13 @@ function DisplayHelp
 	echo
 	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in <>"
 	echo
-	echo " * Required *"
+
+	if [ "$colourised" == "true" ] ; then
+		echo " $(ColourTextBrightOrange "* Required *")"
+	else
+		echo " * Required *"
+	fi
+
 	HelpParameterFormat "p" "phrase \"STRING\"" "Search phrase. A sub-directory will be created with this name."
 	echo
 	echo " Optional"
