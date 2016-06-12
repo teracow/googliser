@@ -1138,6 +1138,19 @@ function ShowAsFailed
 
 	}
 
+function ShowAsSucceed
+	{
+
+	# $1 = message to show in colour if colourised is set
+
+	if [ "$colourised" == "true" ] ; then
+		echo -n "$(ColourTextBrightGreen "$1")"
+	else
+		echo -n "$1"
+	fi
+
+	}
+
 # check for command-line parameters
 user_parameters=$(getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
@@ -1326,7 +1339,7 @@ fi
 if [ "$exitcode" -eq "0" ] ; then
 	if [ -e "${target_path}" ] ; then
 		DebugThis "! create sub-directory [${target_path}]" "failed! Sub-directory already exists!"
-		echo " !! sub-directory [${target_path}] already exists ... unable to continue."
+		echo "$(ShowAsFailed " !! sub-directory [${target_path}] already exists ... unable to continue.")"
 		exitcode=3
 	fi
 
@@ -1336,7 +1349,7 @@ if [ "$exitcode" -eq "0" ] ; then
 
 		if [ "$result" -gt "0" ] ; then
 			DebugThis "! create sub-directory [${target_path}]" "failed! mkdir returned: ($result)"
-			echo " !! couldn't create sub-directory [${target_path}] ... unable to continue."
+			echo "$(ShowAsFailed " !! couldn't create sub-directory [${target_path}] ... unable to continue.")"
 			exitcode=3
 		else
 			DebugThis "$ create sub-directory [${target_path}]" "success!"
@@ -1350,7 +1363,7 @@ if [ "$exitcode" -eq "0" ] ; then
 	DownloadResultGroups
 
 	if [ "$?" -gt "0" ] ; then
-		echo " !! couldn't download Google search results ... unable to continue."
+		echo "$(ShowAsFailed " !! couldn't download Google search results ... unable to continue.")"
 		exitcode=4
 	fi
 fi
@@ -1368,18 +1381,20 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 		BuildGallery
 
 		if [ "$?" -gt "0" ] ; then
-			echo " !! couldn't build thumbnail gallery ... unable to continue (but we're all done anyway)."
+			echo "$(ShowAsFailed " !! couldn't build thumbnail gallery ... unable to continue (but we're all done anyway).")"
 			exitcode=6
 		fi
 	fi
 fi
 
 # copy links file into target directory if possible. If not, then copy to current directory.
-if [ "$links" == "true" ] ; then
-	if [ "$target_path_created" == "true" ] ; then
-		cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
-	else
-		cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
+if [ "$exitcode" -eq "0" ] ; then
+	if [ "$links" == "true" ] ; then
+		if [ "$target_path_created" == "true" ] ; then
+			cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
+		else
+			cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
+		fi
 	fi
 fi
 
@@ -1406,21 +1421,11 @@ if [ "$verbose" == "true" ] ; then
 	case "$exitcode" in
 		0 )
 			echo
-
-			if [ "$colourised" == "true" ] ; then
-				echo " -> $(ColourTextBrightGreen "All done!")"
-			else
-				echo " -> All done!"
-			fi
+			echo " -> $(ShowAsSucceed "All done!")"
 			;;
 		[1-6] )
 			echo
-
-			if [ "$colourised" == "true" ] ; then
-				echo " -> $(ColourTextBrightRed "All done! (with errors)")"
-			else
-				echo " -> All done! (with errors)"
-			fi
+			echo " -> $(ShowAsFailed "All done! (with errors)")"
 			;;
 		* )
 			;;
