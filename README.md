@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of that phrase. 
+This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of a phrase. 
 
 (This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
 
@@ -22,21 +22,32 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 ---
 **Notes:**
 
-I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses **[Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
+- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses **[GNU Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
 
-Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+- Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
-When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
+- When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
 
-Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab yourself a coffee.
+- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab yourself a coffee.
 
-Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
+- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-12. 
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-12. 
+
+---
+**Development Environment:**
+
+- [openSUSE](https://www.opensuse.org/) 13.2 64b
+- Kate - code editing
+- Dolphin - file management
+- [ReText](https://github.com/retext-project/retext) - markdown files
+- GNU Wget - downloading
+- Gwenview - image viewing
+- [GIMP](https://www.gimp.org/) - image editing
+- Konsole - terminal
+- [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
-
-Script icon was sourced from **[Find Icons](http://findicons.com/icon/131388/search)**.
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
@@ -45,13 +56,13 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Parameters can be specified as follows:
-
-`-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 1,000.  
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character options  with no arguments can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
 
 `-p` or `--phrase [STRING]`  
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
+
+`-n` or `--number [INTEGER]`  
+Number of images to download. Default is 25. Maximum is 1,000.  
 
 `-f` or `--failures [INTEGER]`  
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
@@ -74,23 +85,23 @@ Only download image files that are reported by the server to be larger than this
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
+`-k` or `--links`  
+Put the URL results file into sub-directory. If selected, the URL list will be found in 'download.links.list' in the sub-directory. This file is always created in the temporary build directory.
+
 `-c` or `--colourised`  
 Display with ANSI coloured text. Default is no colours. But definitely try it with colours. :)
 
 `-g` or `--no-gallery`  
 Don't create a thumbnail gallery.
 
-`-k` or `--links`  
-Put the URL results file into sub-directory. If selected, the URL list will be found in 'download.links.list' in the sub-directory. This file is always created in the temporary build directory.
-
-`-q` or `--quiet`  
-Suppress display output. Error messages are still shown.
-
 `-h` or `--help`  
 Display this help then exit.
 
 `-v` or `--version`  
 Show script version then exit.
+
+`-q` or `--quiet`  
+Suppress display output. Error messages are still shown.
 
 `-d` or `--debug`  
 Put the debug log file into sub-directory. If selected, debugging output is appended to 'debug.log' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
