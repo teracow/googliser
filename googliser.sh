@@ -171,8 +171,16 @@ function DisplayHelp
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
+	local message=" - search '"
 
-	echo " - search '$(ShowGoogle) $(ColourTextBrightBlue "images")', download each of the image URLs returned, then build a thumbnail gallery using ImageMagick."
+	if [ "$colourised" == "true" ] ; then
+		message+="$(ShowGoogle) $(ColourTextBrightBlue "images")"
+	else
+		message+="Google images"
+	fi
+
+	echo "${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
+
 	echo
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
@@ -217,7 +225,7 @@ function DisplayHelp
 	fi
 
 	echo
-	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery."
+	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery image."
 
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
