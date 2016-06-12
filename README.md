@@ -2,27 +2,27 @@
 ---
 This is a BASH script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of a phrase. 
 
-(This is an expansion upon a solution provided by ShellFish **[here](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line)** and has been updated to handle Google page-code that was changed in April 2016.)
+(This is an expansion upon a [solution provided by ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
 ---
-**Description:**
+###**Description:**
 
 1. The user supplies a search-phrase and some other optional parameters on the command line. 
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
-3. **[Google Images](https://www.google.com/imghp?hl=en)** is then queried and the results saved.
+3. [Google Images](https://www.google.com/imghp?hl=en) is then queried and the results saved.
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
 5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
 
-6. Lastly, a thumbnail gallery image is built using **[ImageMagick](http://www.imagemagick.org)'s montage**.
+6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s montage.
 
 ---
-**Notes:**
+###**Notes:**
 
-- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses **[GNU Wget](https://www.gnu.org/software/wget/)** as I think it's more widely available than alternatives such as **[cURL](https://github.com/curl/curl)**.
+- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses [GNU Wget](https://www.gnu.org/software/wget/) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
 - Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
@@ -35,7 +35,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-12. 
 
 ---
-**Development Environment:**
+###**Development Environment:**
 
 - [openSUSE](https://www.opensuse.org/) 13.2 64b
 - Kate - code editing
@@ -49,14 +49,14 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
-Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
+Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-**Usage:**
+###**Usage:**
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character options  with no arguments can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
 
 `-p` or `--phrase [STRING]`  
 **Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
@@ -86,10 +86,10 @@ Only download image files that are reported by the server to be larger than this
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
 `-k` or `--links`  
-Put the URL results file into sub-directory. If selected, the URL list will be found in 'download.links.list' in the sub-directory. This file is always created in the temporary build directory.
+Put the URL results file into sub-directory. If selected, the URL list will be found in '**download.links.list**' in the sub-directory. This file is always created in the temporary build directory.
 
 `-c` or `--colourised`  
-Display with ANSI coloured text. Default is no colours. But definitely try it with colours. :)
+Display with ANSI coloured text. Definitely try it with colours. :)
 
 `-g` or `--no-gallery`  
 Don't create a thumbnail gallery.
@@ -101,10 +101,10 @@ Display this help then exit.
 Show script version then exit.
 
 `-q` or `--quiet`  
-Suppress display output. Error messages are still shown.
+Suppress standard display output. Error messages are still shown.
 
 `-d` or `--debug`  
-Put the debug log file into sub-directory. If selected, debugging output is appended to 'debug.log' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 **Usage Examples:**
 
@@ -121,7 +121,7 @@ This will download the first 56 available images for the search-phrase *"fish an
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-**Samples:**
+###**Samples:**
 
 These images have been scaled down for easier distribution.
 
@@ -132,7 +132,7 @@ These images have been scaled down for easier distribution.
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
-**Return Values ($?):**  
+###**Return Values ($?):**  
 
 0 : success!  
 1 : required external program unavailable.  
@@ -143,17 +143,17 @@ These images have been scaled down for easier distribution.
 6 : thumbnail gallery build failed.
 
 ---
-**Known Issues:**
+###**Known Issues:**
 
 - (2016-06-12) - None.
 
 ---
-**Work-in-Progress:**
+###**Work-in-Progress:**
 
 - (2016-06-12) - Bit & pieces...
  
 ---
-**To-Do List:**
+###**To-Do List:**
 
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
