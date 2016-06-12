@@ -198,23 +198,28 @@ function DisplayHelp
 	fi
 
 	echo
-	echo " Mandatory arguments to long options are mandatory for short options too. Defaults values are shown in []"
-	HelpParameterFormat "p" "phrase STRING" "*required* Search phrase to look for. Enclose whitespace in quotes."
-	HelpParameterFormat "n" "number INTEGER [$images_required]" "Number of images to download. Maximum of $results_max."
-	HelpParameterFormat "f" "failures INTEGER [$fail_limit]" "How many download failures before exiting? 0 for unlimited ($results_max)."
-	HelpParameterFormat "p" "parallel INTEGER [$parallel_limit]" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
-	HelpParameterFormat "t" "timeout INTEGER [$timeout]" "Number of seconds before retrying download. Maximum of $timeout_max."
-	HelpParameterFormat "r" "retries INTEGER [$retries]" "Try to download each image this many times. Maximum of $retries_max."
-	HelpParameterFormat "u" "upper-size INTEGER [$upper_size_limit]" "Only download images that are smaller than this size. 0 for unlimited size."
-	HelpParameterFormat "l" "lower-size INTEGER [$lower_size_limit]" "Only download images that are larger than this size."
-	HelpParameterFormat "i" "title STRING" "Custom title for thumbnail gallery. Default is search phrase (-p --phrase)."
-	HelpParameterFormat "k" "links" "Output URL list to file [$imagelinks_file] in target directory."
+	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in <>"
+	echo
+	echo " * Required *"
+	HelpParameterFormat "p" "phrase \"STRING\"" "Search phrase. A sub-directory will be created with this name."
+	echo
+	echo " Optional"
+	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit>" "How many download failures before exiting? Use 0 for maximum ($results_max)."
+	HelpParameterFormat "i" "title \"STRING\" <phrase>" "Custom title for thumbnail gallery."
+	HelpParameterFormat "l" "lower-size INTEGER <$lower_size_limit>" "Only download images that are larger than this many bytes."
+	HelpParameterFormat "n" "number INTEGER <$images_required>" "Number of images to download. Maximum of $results_max."
+	HelpParameterFormat "p" "parallel INTEGER <$parallel_limit>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "r" "retries INTEGER <$retries>" "Retry image download this many times. Maximum of $retries_max."
+	HelpParameterFormat "t" "timeout INTEGER <$timeout>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
+	HelpParameterFormat "u" "upper-size INTEGER <$upper_size_limit>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
+	echo
 	HelpParameterFormat "c" "colourised" "Output with ANSI coloured text."
+	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
-	HelpParameterFormat "v" "version " "Show script version then exit."
+	HelpParameterFormat "k" "links" "Save URL list to file [$imagelinks_file] in target directory."
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "d" "debug" "Output debug info to file [$debug_file] in target directory."
+	HelpParameterFormat "v" "version " "Show script version then exit."
 	echo
 	echo " - Example:"
 
@@ -238,7 +243,7 @@ function HelpParameterFormat
 	# $2 = long parameter
 	# $3 = description
 
-	printf "  -%-1s --%-25s %s\n" "$1" "$2" "$3"
+	printf "  -%-1s   --%-27s %s\n" "$1" "$2" "$3"
 
 	}
 
