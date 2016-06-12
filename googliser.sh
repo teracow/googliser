@@ -43,6 +43,7 @@ function Init
 
 	current_path="$PWD"
 	temp_path="/dev/shm/$script_name.$$"
+	pids_path="$temp_path/pids"
 
 	mkdir -p "${temp_path}"
 
@@ -51,10 +52,18 @@ function Init
 	imagelinks_file="download.links.list"
 	debug_file="debug.log"
 
-	results_success_count_pathfile="${temp_path}/results.success.count"
-	results_fail_count_pathfile="${temp_path}/results.fail.count"
-	download_success_count_pathfile="${temp_path}/download.success.count"
-	download_fail_count_pathfile="${temp_path}/download.fail.count"
+	results_success_count_path="${temp_path}/results.success.count"
+	mkdir -p "${results_success_count_path}"
+
+	results_fail_count_path="${temp_path}/results.fail.count"
+	mkdir -p "${results_fail_count_path}"
+
+	download_success_count_path="${temp_path}/download.success.count"
+	mkdir -p "${download_success_count_path}"
+
+	download_fail_count_path="${temp_path}/download.fail.count"
+	mkdir -p "${download_fail_count_path}"
+
 	results_pathfile="${temp_path}/results.page.html"
 	gallery_title_pathfile="${temp_path}/gallery.title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
@@ -383,12 +392,15 @@ function DownloadResultGroup_auto
 	# $1 = page group to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
+	local success_pathfile="$results_success_count_path/$BASHPID"
+	local fail_pathfile="$results_fail_count_path/$BASHPID"
 	local result=0
 	local search_group="&ijn=$1"
 	local search_start="&start=$2"
 	local response=""
 
 	DebugThis "- result group #$1 download" "start"
+	DebugThis "? result group #$1 \$BASHPID" "$BASHPID"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? result group #$1 \$wget_list_cmd" "$wget_list_cmd"
@@ -398,10 +410,10 @@ function DownloadResultGroup_auto
 
 	if [ "$result" -eq "0" ] ; then
 		DebugThis "$ result group #$1 download" "success!"
-		IncrementFile "${results_success_count_pathfile}"
+		touch "$success_pathfile"
 	else
 		DebugThis "! result group #$1 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-		IncrementFile "${results_fail_count_pathfile}"
+		touch "$fail_pathfile"
 	fi
 
 	return 0
@@ -427,8 +439,6 @@ function DownloadResultGroups
 			echo -n " -> searching Google: "
 		fi
 	fi
-
-	ResetAllResultCounts
 
 	for ((group=1; group<=$groups_max; group++)) ; do
 		ShowResultDownloadProgress
@@ -485,12 +495,15 @@ function DownloadImage_auto
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
+	local success_pathfile="$download_success_count_path/$BASHPID"
+	local fail_pathfile="$download_fail_count_path/$BASHPID"
 	local result=0
 	local size_ok=true
 	local get_download=true
 	local response=""
 
 	DebugThis "- link #$2 download" "start"
+	DebugThis "? link #$2 \$BASHPID" "$BASHPID"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -575,21 +588,21 @@ function DownloadImage_auto
 
 			if [ "$size_ok" == "true" ] ; then
 				DebugThis "$ link #$2 download" "success!"
-				IncrementFile "${download_success_count_pathfile}"
+				touch "$success_pathfile"
 				DebugThis "? link #$2 \$download_speed" "$download_speed"
 			else
 				# files that were outside size limits still count as failures
-				IncrementFile "${download_fail_count_pathfile}"
+				touch "$fail_pathfile"
 			fi
 		else
 			DebugThis "! link #$2 download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
-			IncrementFile "${download_fail_count_pathfile}"
+			touch "$fail_pathfile"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
 	else
-		IncrementFile "${download_fail_count_pathfile}"
+		touch "$fail_pathfile"
 	fi
 
 	return 0
@@ -608,8 +621,6 @@ function DownloadImages
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
 	local strlength=0
 	local result=0
-
-	ResetAllDownloadCounts
 
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
@@ -849,62 +860,6 @@ function BuildGallery
 
 	}
 
-function ResetAllResultCounts
-	{
-
-	success_count=0
-	echo "${success_count}" > "${results_success_count_pathfile}"
-
-	fail_count=0
-	echo "${fail_count}" > "${results_fail_count_pathfile}"
-
-	}
-
-function ResetAllDownloadCounts
-	{
-
-	success_count=0
-	echo "${success_count}" > "${download_success_count_pathfile}"
-
-	fail_count=0
-	echo "${fail_count}" > "${download_fail_count_pathfile}"
-
-	}
-
-function IncrementFile
-	{
-
-	# $1 = pathfile containing an integer to increment
-
-	local count=0
-
-	if [ -z "$1" ] ; then
-		return 1
-	else
-		[ -e "$1" ] && count=$(<"$1")
-		((count++))
-		echo "$count" > "$1"
-	fi
-
-	}
-
-function DecrementFile
-	{
-
-	# $1 = pathfile containing an integer to decrement
-
-	local count=0
-
-	if [ -z "$1" ] ; then
-		return 1
-	else
-		[ -e "$1" ] && count=$(<"$1")
-		((count--))
-		echo "$count" > "$1"
-	fi
-
-	}
-
 function ProgressUpdater
 	{
 
@@ -925,7 +880,9 @@ function ProgressUpdater
 function ShowResultDownloadProgress
 	{
 
-	RefreshActiveResultCounts
+	success_count=$(ls "$results_success_count_path" | wc -l )
+	fail_count=$(ls "$results_fail_count_path" | wc -l )
+	parallel_count=$(jobs -l | grep Running | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then
@@ -948,7 +905,9 @@ function ShowResultDownloadProgress
 function ShowImageDownloadProgress
 	{
 
-	RefreshActiveDownloadCounts
+	success_count=$(ls "$download_success_count_path" | wc -l )
+	fail_count=$(ls "$download_fail_count_path" | wc -l )
+	parallel_count=$(jobs -l | grep Running | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
@@ -990,26 +949,6 @@ function ShowImageDownloadProgress
 
 		ProgressUpdater "${progress_message}"
 	fi
-
-	}
-
-function RefreshActiveResultCounts
-	{
-
-	[ -e "${results_success_count_pathfile}" ] && success_count=$(<"${results_success_count_pathfile}") || success_count=0
-	[ -e "${results_fail_count_pathfile}" ] && fail_count=$(<"${results_fail_count_pathfile}") || fail_count=0
-
-	parallel_count=$(jobs -l | grep Running | wc -l)
-
-	}
-
-function RefreshActiveDownloadCounts
-	{
-
-	[ -e "${download_success_count_pathfile}" ] && success_count=$(<"${download_success_count_pathfile}") || success_count=0
-	[ -e "${download_fail_count_pathfile}" ] && fail_count=$(<"${download_fail_count_pathfile}") || fail_count=0
-
-	parallel_count=$(jobs -l | grep Running | wc -l)
 
 	}
 
