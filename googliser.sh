@@ -121,7 +121,8 @@ function Init
 
 	DebugThis "> started" "$script_starttime"
 	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
-	DebugThis "= environment" "*** user parameters ***"
+	DebugThis "? \$user_parameters_raw" "$user_parameters_raw"
+	DebugThis "= environment" "*** decoded user parameters ***"
 	DebugThis "? \$user_query" "$user_query"
 	DebugThis "? \$images_required" "$images_required"
 	DebugThis "? \$fail_limit" "$fail_limit"
@@ -1098,8 +1099,9 @@ function RemoveColourCodes
 	}
 
 # check for command-line parameters
-user_parameters=`getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@"`
+user_parameters=$(getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
+user_parameters_raw="$@"
 
 Init
 

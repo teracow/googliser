@@ -36,7 +36,7 @@ This script will need to be updated from time-to-time as Google periodically cha
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
-Script icon can be found **[here](http://findicons.com/icon/131388/search)**.
+Script icon was sourced from **[Find Icons](http://findicons.com/icon/131388/search)**.
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) **[email me](mailto:teracow@gmail.com)**
 
@@ -107,7 +107,7 @@ This will download the first 250 available images for the search-phrase *"kitten
 This will download the first 56 available images for the search-phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
     $ ./googliser.sh -n 80 -p "storm clouds" -dkcg
-This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and don't create a thumbnail gallery.
+This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
 **Samples:**
