@@ -114,8 +114,8 @@ This will download the first 25 available images for the search-phrase *"cows"*
     $ ./googliser.sh --number 250 --phrase "kittens" --parallel 10 --failures 0
 This will download the first 250 available images for the search-phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
 
-    $ ./googliser.sh --number 56 --phrase "fish and chips" --upper-size 50000 --lower-size 2000 --failures 0 --debug
-This will download the first 56 available images for the search-phrase *"fish and chips"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
+    $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
+This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
     $ ./googliser.sh -n 80 -p "storm clouds" -dkcg
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
