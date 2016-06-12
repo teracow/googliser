@@ -1116,6 +1116,19 @@ function RemoveColourCodes
 
 	}
 
+function ShowAsFailed
+	{
+
+	# $1 = message to show in colour if colourised is set
+
+	if [ "$colourised" == "true" ] ; then
+		echo -n "$(ColourTextBrightRed "$1")"
+	else
+		echo -n "$1"
+	fi
+
+	}
+
 # check for command-line parameters
 user_parameters=$(getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
@@ -1130,7 +1143,7 @@ if [ "$exitcode" -eq "0" ] ; then
 			DebugThis "! specified \$images_required" "invalid"
 			DisplayHelp
 			echo
-			echo " !! number specified after (-n --number) must be a valid integer ... unable to continue."
+			echo "$(ShowAsFailed " !! number specified after (-n --number) must be a valid integer ... unable to continue.")"
 			exitcode=2
 			;;
 		* )
@@ -1152,7 +1165,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$fail_limit" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-f --failures) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-f --failures) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1175,7 +1188,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$parallel_limit" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-c --concurrency) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-p --parallel) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1198,7 +1211,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$timeout" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-t --timeout) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-t --timeout) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1221,7 +1234,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$retries" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-r --retries) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-r --retries) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1244,7 +1257,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$upper_size_limit" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1262,7 +1275,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$lower_size_limit" "invalid"
 				DisplayHelp
 				echo
-				echo " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue."
+				echo "$(ShowAsFailed " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
@@ -1284,13 +1297,7 @@ if [ "$exitcode" -eq "0" ] ; then
 			DebugThis "! \$user_query" "unspecified"
 			DisplayHelp
 			echo
-
-			if [ "$colourised" == "true" ] ; then
-				echo "$(ColourTextBrightRed "!! search phrase (-p --phrase) was unspecified ... unable to continue.")"
-			else
-				echo " !! search phrase (-p --phrase) was unspecified ... unable to continue."
-			fi
-
+			echo "$(ShowAsFailed " !! search phrase (-p --phrase) was unspecified ... unable to continue.")"
 			exitcode=2
 		else
 			target_path="${current_path}/${user_query}"
