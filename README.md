@@ -121,7 +121,7 @@ This will download the first 56 available images for the search-phrase *"fish"* 
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-###**Samples:**
+###**Sample Outputs:**
 
 These images have been scaled down for easier distribution.
 
