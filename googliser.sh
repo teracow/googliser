@@ -807,7 +807,7 @@ function BuildGallery
 		[ "$verbose" == "true" ] && ProgressUpdater "stage 4/4 (compile all images)"
 
 		# compose thumbnails image on background image, then title image on top
-		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($user_query).png\""
+		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
 		DebugThis "? \$build_compose_cmd" "$build_compose_cmd"
 
@@ -1322,7 +1322,10 @@ if [ "$exitcode" -eq "0" ] ; then
 			echo "$(ShowAsFailed " !! search phrase (-p --phrase) was unspecified ... unable to continue.")"
 			exitcode=2
 		else
-			target_path="${current_path}/${user_query}"
+			safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
+			DebugThis "? \$safe_query" "$safe_query"
+			target_path="${current_path}/${safe_query}"
+			DebugThis "? \$target_path" "$target_path"
 			targetimage_pathfile="${target_path}/${image_file}"
 		fi
 	fi
