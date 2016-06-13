@@ -37,16 +37,16 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 ---
 ###**Development Environment:**
 
-- [openSUSE](https://www.opensuse.org/) *v13.2 64b*
-- Kate *v3.14.9*
-- Dolphin* v15.04.0*
-- [ReText](https://github.com/retext-project/retext) *v5.0.0*
-- GNU Wget *v1.16*
-- Gwenview *v4.14.0*
-- [GIMP](https://www.gimp.org/) *v2.8.14*
-- Konsole *v2.14.2*
+- [openSUSE](https://www.opensuse.org/) - *v13.2 64b*
+- Kate - *v3.14.9*
+- Dolphin - *v15.04.0*
+- [ReText](https://github.com/retext-project/retext) - *v5.0.0*
+- GNU Wget *- v1.16*
+- Gwenview - *v4.14.0*
+- [GIMP](https://www.gimp.org/) - *v2.8.14*
+- Konsole - *v2.14.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
-- GNU BASH *v4.2.53*
+- GNU BASH - *v4.2.53*
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -70,9 +70,6 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown c
 
 `-c` or `--colour`  
 Display with ANSI coloured text. Pretty! :)
-
-`-d` or `--debug`  
-Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 `-d` or `--debug`  
 Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
