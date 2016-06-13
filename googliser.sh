@@ -397,21 +397,22 @@ function DownloadResultGroup_auto
 	local search_group="&ijn=$1"
 	local search_start="&start=$2"
 	local response=""
+	local debug_number=$(printf "#%02d" $1)
 
-	DebugThis "- result group #$1 download" "start"
-	DebugThis "? result group #$1 \$BASHPID" "$BASHPID"
+	DebugThis "- result group $debug_number download" "start"
+	DebugThis "? result group $debug_number \$BASHPID" "$BASHPID"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
-	DebugThis "? result group #$1 \$wget_list_cmd" "$wget_list_cmd"
+	DebugThis "? result group $debug_number \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		DebugThis "$ result group #$1 download" "success!"
+		DebugThis "$ result group $debug_number download" "success!"
 		touch "$success_pathfile"
 	else
-		DebugThis "! result group #$1 download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		DebugThis "! result group $debug_number download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		touch "$fail_pathfile"
 	fi
 
@@ -501,9 +502,10 @@ function DownloadImage_auto
 	local size_ok=true
 	local get_download=true
 	local response=""
+	local debug_number=$(printf "#%04d" $2)
 
-	DebugThis "- link #$2 download" "start"
-	DebugThis "? link #$2 \$BASHPID" "$BASHPID"
+	DebugThis "- link $debug_number download" "start"
+	DebugThis "? link $debug_number \$BASHPID" "$BASHPID"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -516,7 +518,7 @@ function DownloadImage_auto
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
 		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"${imagelink}\" 2>&1"
-		DebugThis "? link #$2 \$wget_server_response_cmd" "$wget_server_response_cmd"
+		DebugThis "? link $debug_number \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
 		result=$?
@@ -528,23 +530,23 @@ function DownloadImage_auto
 				estimated_size="unknown"
 			fi
 
-			DebugThis "? link #$2 \$estimated_size" "$estimated_size bytes"
+			DebugThis "? link $debug_number \$estimated_size" "$estimated_size bytes"
 
 			if [ "$estimated_size" != "unknown" ] ; then
 				if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link #$2 (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+					DebugThis "! link $debug_number (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link #$2 (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+					DebugThis "! link $debug_number (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 			fi
 		else
-			DebugThis "! link #$2 (before download) server-response" "failed!"
+			DebugThis "! link $debug_number (before download) server-response" "failed!"
 			estimated_size="unknown"
 		fi
 	fi
@@ -552,7 +554,7 @@ function DownloadImage_auto
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\" 2>&1"
-		DebugThis "? link #$2 \$wget_download_cmd" "$wget_download_cmd"
+		DebugThis "? link $debug_number \$wget_download_cmd" "$wget_download_cmd"
 
 		response=$(eval "$wget_download_cmd")
 		result=$?
@@ -565,19 +567,19 @@ function DownloadImage_auto
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
 				if [ "$actual_size" == "$estimated_size" ] ; then
-					DebugThis "? link #$2 \$actual_size" "$actual_size bytes (estimate was correct)"
+					DebugThis "? link $debug_number \$actual_size" "$actual_size bytes (estimate was correct)"
 				else
-					DebugThis "? link #$2 \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
+					DebugThis "? link $debug_number \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link #$2 \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					DebugThis "! link $debug_number \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link #$2 \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					DebugThis "! link $debug_number \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
@@ -587,15 +589,15 @@ function DownloadImage_auto
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				DebugThis "$ link #$2 download" "success!"
+				DebugThis "$ link $debug_number download" "success!"
 				touch "$success_pathfile"
-				DebugThis "? link #$2 \$download_speed" "$download_speed"
+				DebugThis "? link $debug_number \$download_speed" "$download_speed"
 			else
 				# files that were outside size limits still count as failures
 				touch "$fail_pathfile"
 			fi
 		else
-			DebugThis "! link #$2 download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
+			DebugThis "! link $debug_number download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
 			touch "$fail_pathfile"
 
 			# delete temp file if one was created
