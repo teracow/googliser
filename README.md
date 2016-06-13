@@ -37,15 +37,16 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 ---
 ###**Development Environment:**
 
-- [openSUSE](https://www.opensuse.org/) 13.2 64b
-- Kate - code editing
-- Dolphin - file management
-- [ReText](https://github.com/retext-project/retext) - markdown files
-- GNU Wget - downloading
-- Gwenview - image viewing
-- [GIMP](https://www.gimp.org/) - image editing
-- Konsole - terminal
+- [openSUSE](https://www.opensuse.org/) *v13.2 64b*
+- Kate *v3.14.9*
+- Dolphin* v15.04.0*
+- [ReText](https://github.com/retext-project/retext) *v5.0.0*
+- GNU Wget *v1.16*
+- Gwenview *v4.14.0*
+- [GIMP](https://www.gimp.org/) *v2.8.14*
+- Konsole *v2.14.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
+- GNU BASH *v4.2.53*
 
 The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -67,11 +68,17 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown c
 
 ***Optional***
 
-`-c` or `--colourised`  
-Display with ANSI coloured text. Definitely try it with colours. :)
+`-c` or `--colour`  
+Display with ANSI coloured text. Pretty! :)
 
 `-d` or `--debug`  
 Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+
+`-d` or `--debug`  
+Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+
+`-e` or `--delete-after`  
+Deletes the downloaded images after building the thumbnail gallery.
 
 `-f` or `--failures [INTEGER]`  
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
@@ -84,9 +91,6 @@ Display this help then exit.
 
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
-
-`-k` or `--links`  
-Put the URL results file into sub-directory. If selected, the URL list will be found in '**download.links.list**' in the sub-directory. This file is always created in the temporary build directory.
 
 `-l` or `--lower-size [INTEGER]`  
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
@@ -102,6 +106,9 @@ Suppress standard display output. Error messages are still shown.
 
 `-r` or `--retries [INTEGER]`  
 Number of download retries for each image. Default is 3. Maximum is 100.
+
+`-s` or `--save-links`  
+Put the URL results file into sub-directory. If selected, the URL list will be found in '**download.links.list**' in the sub-directory. This file is always created in the temporary build directory.
 
 `-t` or `--timeout [INTEGER]`  
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
@@ -156,14 +163,12 @@ These images have been scaled down for easier distribution.
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-13) - Bit & pieces ...
+- (2016-06-13) - stuff... :)
  
 ---
 ###**To-Do List:**
 
-- write leading zeros for results groups and download links in debug
 - ensure that temp path working dir is unique (mktemp)
-- make new option to delete downloaded images afterwards and only keep gallery image.
 - test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?

@@ -100,20 +100,21 @@ function Init
 	retries_default=3
 
 	# user changable parameters
+	user_query=""
 	images_required=$images_required_default
-	parallel_limit=$parallel_limit_default
 	fail_limit=$fail_limit_default
-	upper_size_limit=$upper_size_limit_default
-	lower_size_limit=$lower_size_limit_default
+	parallel_limit=$parallel_limit_default
 	timeout=$timeout_default
 	retries=$retries_default
-	user_query=""
-	gallery_title=""
+	upper_size_limit=$upper_size_limit_default
+	lower_size_limit=$lower_size_limit_default
 	create_gallery=true
-	verbose=true
-	debug=false
+	gallery_title=""
 	links=false
 	colourised=false
+	verbose=true
+	remove_after=false
+	debug=false
 
 	WhatAreMyOptions
 
@@ -149,11 +150,12 @@ function Init
 	DebugThis "? \$retries" "$retries"
 	DebugThis "? \$upper_size_limit" "$upper_size_limit"
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
+	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
 	DebugThis "? \$links" "$links"
 	DebugThis "? \$colourised" "$colourised"
-	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$verbose" "$verbose"
+	DebugThis "? \$remove_after" "$remove_after"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$results_max" "$results_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -227,18 +229,19 @@ function DisplayHelp
 	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory will be created with this name."
 	echo
 	echo " Optional"
-	HelpParameterFormat "c" "colourised" "Output with ANSI coloured text."
+	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
+	HelpParameterFormat "e" "delete-after" "Remove all images after building thumbnail gallery image."
 	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($results_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
-	HelpParameterFormat "k" "links" "Save URL list to file [$imagelinks_file] in target directory."
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $results_max."
 	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
+	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] in target directory."
 	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
 	HelpParameterFormat "v" "version " "Show script version then exit."
@@ -316,15 +319,19 @@ function WhatAreMyOptions
 				gallery_title="$2"
 				shift 2		# shift to next parameter in $1
 				;;
-			-k | --links )
+			-s | --save-links )
 				links=true
+				shift
+				;;
+			-e | --delete-after )
+				remove_after=true
 				shift
 				;;
 			-h | --help )
 				showhelp=true
 				return 7
 				;;
-			-c | --colourised )
+			-c | --colour )
 				colourised=true
 				shift
 				;;
@@ -1115,7 +1122,7 @@ function ShowAsSucceed
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,k,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,links,quiet,version,colourised,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1354,6 +1361,11 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ] ; then
 		if [ "$?" -gt "0" ] ; then
 			echo "$(ShowAsFailed " !! couldn't build thumbnail gallery ... unable to continue (but we're all done anyway).")"
 			exitcode=6
+		else
+			if [ "$remove_after" == "true" ] ; then
+				rm -f "${target_path}/${image_file}"*
+				DebugThis "= remove all downloaded images from" "[${target_path}]"
+			fi
 		fi
 	fi
 fi
