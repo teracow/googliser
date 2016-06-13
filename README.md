@@ -32,7 +32,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-13. 
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-14. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -47,8 +47,6 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 - Konsole - *v2.14.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 - GNU BASH - *v4.2.53*
-
-The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
@@ -75,7 +73,7 @@ Display with ANSI coloured text. Pretty! :)
 Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 `-e` or `--delete-after`  
-Deletes the downloaded images after building the thumbnail gallery.
+Delete the downloaded images after building the thumbnail gallery.
 
 `-f` or `--failures [INTEGER]`  
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
@@ -155,17 +153,16 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-13) - None.
+- (2016-06-14) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-13) - stuff... :)
+- (2016-06-14) - stuff... :)
  
 ---
 ###**To-Do List:**
 
-- ensure that temp path working dir is unique (mktemp)
 - test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?

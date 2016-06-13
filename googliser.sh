@@ -20,6 +20,7 @@
 #	4	could not get a list of search results from Google
 #	5	image download aborted as failure limit was reached
 #	6	thumbnail gallery build failed
+#	7	unable to create a temporary working directory
 
 # debug log first character notation:
 #	>	script entry
@@ -36,16 +37,21 @@
 function Init
 	{
 
-	script_version="1.18"
-	script_date="2016-06-13"
-	script_name="$(basename -- "$(readlink -f -- "$0")")"
+	local script_version="1.18"
+	local script_date="2016-06-14"
+	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
 	current_path="$PWD"
-	temp_path="/dev/shm/$script_name.$$"
-	pids_path="$temp_path/pids"
+	local temp_root="/dev/shm"
+	temp_path=$(mktemp -p "${temp_root}" -d "$script_name.$$.XXX")
+	result=$?
 
-	mkdir -p "${temp_path}"
+	if [ "$result" -gt "0" ] ; then
+		echo "! Unable to create temp directory!"
+		# ugly - need to get this to exit at the end of the script instead of bailing-out here
+		exit 7
+	fi
 
 	image_file="google-image"
 	gallery_name="googliser-gallery"
