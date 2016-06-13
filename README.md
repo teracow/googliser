@@ -28,7 +28,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
 
-- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab yourself a coffee.
+- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
@@ -59,13 +59,13 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:  
 
 
-***Required parameter***
+***Required***
 
 `-p` or `--phrase [STRING]`  
 The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 
-***Optional parameters***
+***Optional***
 
 `-c` or `--colourised`  
 Display with ANSI coloured text. Definitely try it with colours. :)
@@ -161,8 +161,7 @@ These images have been scaled down for easier distribution.
 ---
 ###**To-Do List:**
 
-- clear last progress msg update by appending spaces to new msg? At least, then it won't have to backspace to start x 2.
-- only re-write progress display if msg is different to previous one.
+- clear last progress msg update by appending spaces to new msg? Then won't have to backspace to start x 2.
 - write leading zeros for results groups and download links in debug
 - ensure that temp path working dir is unique (mktemp)
 - make new option to delete downloaded images afterwards and only keep gallery image.

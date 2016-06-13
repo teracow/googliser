@@ -37,7 +37,7 @@ function Init
 	{
 
 	script_version="1.18"
-	script_date="2016-06-12"
+	script_date="2016-06-13"
 	script_name="$(basename -- "$(readlink -f -- "$0")")"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -427,8 +427,9 @@ function DownloadResultGroups
 	local func_startseconds=$(date +%s)
 	local groups_max=$(($results_max/100))
 	local pointer=0
-	local strlength=0
 	local parallel_count=0
+
+	InitProgress
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then
@@ -618,10 +619,11 @@ function DownloadImages
 	local file_index=1
 	local message=""
 	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
-	local strlength=0
 	local result=0
 
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
+
+	InitProgress
 
 	while read imagelink; do
 		while true; do
@@ -751,11 +753,12 @@ function BuildGallery
 
 	local title_font="Century-Schoolbook-L-Bold-Italic"
 	local title_colour="goldenrod1"
-	local strlength=0
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
+
+	InitProgress
 
 	if [ "$verbose" == "true" ] ; then
 		echo -n " -> building gallery: "
@@ -859,20 +862,34 @@ function BuildGallery
 
 	}
 
+function InitProgress
+	{
+
+	# needs to be called prior to first call of ProgressUpdater
+
+	previous_length=0
+	previous_msg=""
+
+	}
+
 function ProgressUpdater
 	{
 
-	# This will take a message and overwrite the previous one if $strlength has been set.
+	# This will take a message and overwrite the previous one if $previous_length has been set.
 
 	# $1 = message to display.
 
-	# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
-	printf "%${strlength}s" | tr ' ' '\b' ; printf "%${strlength}s" ; printf "%${strlength}s" | tr ' ' '\b'
+	if [ "$1" != "$previous_msg" ] ; then
+		# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
+		[ "$previous_length" -gt "0" ] && printf "%${previous_length}s" | tr ' ' '\b' ; printf "%${previous_length}s" ; printf "%${previous_length}s" | tr ' ' '\b'
 
-	echo -n "$1 "
+		echo -n "$1 "
 
-	temp=$(RemoveColourCodes "$1")
-	strlength=$((${#temp}+1))
+		temp=$(RemoveColourCodes "$1")
+
+		previous_length=$((${#temp}+1))
+		previous_msg="$1"
+	fi
 
 	}
 
