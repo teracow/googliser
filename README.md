@@ -163,6 +163,7 @@ These images have been scaled down for easier distribution.
 ---
 ###**To-Do List:**
 
+- get rid of screen flicker during download progress screen writes
 - test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?

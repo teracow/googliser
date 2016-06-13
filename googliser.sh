@@ -42,41 +42,18 @@ function Init
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
-	current_path="$PWD"
-	local temp_root="/dev/shm"
-	temp_path=$(mktemp -p "${temp_root}" -d "$script_name.$$.XXX")
-	result=$?
+	image_file="google-image"
+	imagelinks_file="download.links.list"
+	debug_file="debug.log"
+	gallery_name="googliser-gallery"
 
-	if [ "$result" -gt "0" ] ; then
-		echo "! Unable to create temp directory!"
+	BuildEnviron
+
+	if [ "$?" -gt "0" ] ; then
+		echo "! Unable to create a temporary directory! Exiting."
 		# ugly - need to get this to exit at the end of the script instead of bailing-out here
 		exit 7
 	fi
-
-	image_file="google-image"
-	gallery_name="googliser-gallery"
-	imagelinks_file="download.links.list"
-	debug_file="debug.log"
-
-	results_success_count_path="${temp_path}/results.success.count"
-	mkdir -p "${results_success_count_path}"
-
-	results_fail_count_path="${temp_path}/results.fail.count"
-	mkdir -p "${results_fail_count_path}"
-
-	download_success_count_path="${temp_path}/download.success.count"
-	mkdir -p "${download_success_count_path}"
-
-	download_fail_count_path="${temp_path}/download.fail.count"
-	mkdir -p "${download_fail_count_path}"
-
-	results_pathfile="${temp_path}/results.page.html"
-	gallery_title_pathfile="${temp_path}/gallery.title.png"
-	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
-	gallery_background_pathfile="${temp_path}/gallery.background.png"
-
-	debug_pathfile="${temp_path}/${debug_file}"
-	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
 
 	server="www.google.com.au"
 
@@ -188,6 +165,42 @@ function Init
 
 	# 'site=imghp' seems to be result layout style
 	search_style="&site=imghp"
+
+	}
+
+function BuildEnviron
+	{
+
+	current_path="$PWD"
+
+	local temp_root="/dev/shm"
+	temp_path=$(mktemp -p "${temp_root}" -d "$script_name.$$.XXX")
+	[ "$?" -gt "0" ] && return 1
+
+	results_success_count_path="${temp_path}/results.success.count"
+	mkdir -p "${results_success_count_path}"
+	[ "$?" -gt "0" ] && return 1
+
+	results_fail_count_path="${temp_path}/results.fail.count"
+	mkdir -p "${results_fail_count_path}"
+	[ "$?" -gt "0" ] && return 1
+
+	download_success_count_path="${temp_path}/download.success.count"
+	mkdir -p "${download_success_count_path}"
+	[ "$?" -gt "0" ] && return 1
+
+	download_fail_count_path="${temp_path}/download.fail.count"
+	mkdir -p "${download_fail_count_path}"
+	[ "$?" -gt "0" ] && return 1
+
+	results_pathfile="${temp_path}/results.page.html"
+	gallery_title_pathfile="${temp_path}/gallery.title.png"
+	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
+	gallery_background_pathfile="${temp_path}/gallery.background.png"
+	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
+	debug_pathfile="${temp_path}/${debug_file}"
+
+	return 0
 
 	}
 
