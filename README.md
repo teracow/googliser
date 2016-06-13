@@ -161,7 +161,6 @@ These images have been scaled down for easier distribution.
 ---
 ###**To-Do List:**
 
-- make failures limit match results count (no higher)
 - write leading zeros for results groups and download links in debug
 - ensure that temp path working dir is unique (mktemp)
 - make new option to delete downloaded images afterwards and only keep gallery image.

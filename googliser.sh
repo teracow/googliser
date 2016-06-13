@@ -1329,6 +1329,11 @@ if [ "$exitcode" -eq "0" ] ; then
 	if [ "$?" -gt "0" ] ; then
 		echo "$(ShowAsFailed " !! couldn't download Google search results ... unable to continue.")"
 		exitcode=4
+	else
+		if [ "$fail_limit" -gt "$result_count" ] ; then
+			fail_limit=$result_count
+			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
+		fi
 	fi
 fi
 
