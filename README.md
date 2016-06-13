@@ -32,7 +32,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-12. 
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-13. 
 
 ---
 ###**Development Environment:**
@@ -161,7 +161,7 @@ These images have been scaled down for easier distribution.
 ---
 ###**To-Do List:**
 
-- clear last progress msg update by appending spaces to new msg? Then won't have to backspace to start x 2.
+- make failures limit match results count (no higher)
 - write leading zeros for results groups and download links in debug
 - ensure that temp path working dir is unique (mktemp)
 - make new option to delete downloaded images afterwards and only keep gallery image.

@@ -875,19 +875,22 @@ function InitProgress
 function ProgressUpdater
 	{
 
-	# This will take a message and overwrite the previous one if $previous_length has been set.
-
 	# $1 = message to display.
 
 	if [ "$1" != "$previous_msg" ] ; then
-		# backspace to start of previous message - then overwrite with spaces - then backspace to start again!
-		[ "$previous_length" -gt "0" ] && printf "%${previous_length}s" | tr ' ' '\b' ; printf "%${previous_length}s" ; printf "%${previous_length}s" | tr ' ' '\b'
-
-		echo -n "$1 "
-
 		temp=$(RemoveColourCodes "$1")
+		current_length=$((${#temp}+1))
 
-		previous_length=$((${#temp}+1))
+		if [ "$current_length" -lt "$previous_length" ] ; then
+			appended_length=$(($current_length-$previous_length))
+			# backspace to start of previous msg, print new msg, add additional spaces, then backspace to end of msg
+			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 " ; printf "%${appended_length}s" ; printf "%${appended_length}s" | tr ' ' '\b'
+		else
+			# backspace to start of previous msg, print new msg
+			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 "
+		fi
+
+		previous_length=$current_length
 		previous_msg="$1"
 	fi
 
