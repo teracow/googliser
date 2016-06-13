@@ -58,38 +58,23 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 
 Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
 
+
+**** Required ****
+
 `-p` or `--phrase [STRING]`  
-**Required!** The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
+The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
-`-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 1,000.  
 
-`-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
-
-`-p` or `--parallel [INTEGER]`  
-How many parallel image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
-
-`-t` or `--timeout [INTEGER]`  
-Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
-
-`-r` or `--retries [INTEGER]`  
-Number of download retries for each image. Default is 3. Maximum is 100.
-
-`-u` or `--upper-size [INTEGER]`  
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
-
-`-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
-
-`-i` or `--title [STRING]`  
-Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
-
-`-k` or `--links`  
-Put the URL results file into sub-directory. If selected, the URL list will be found in '**download.links.list**' in the sub-directory. This file is always created in the temporary build directory.
+***Optional***
 
 `-c` or `--colourised`  
 Display with ANSI coloured text. Definitely try it with colours. :)
+
+`-d` or `--debug`  
+Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+
+`-f` or `--failures [INTEGER]`  
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
 
 `-g` or `--no-gallery`  
 Don't create a thumbnail gallery.
@@ -97,14 +82,35 @@ Don't create a thumbnail gallery.
 `-h` or `--help`  
 Display this help then exit.
 
-`-v` or `--version`  
-Show script version then exit.
+`-i` or `--title [STRING]`  
+Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
+
+`-k` or `--links`  
+Put the URL results file into sub-directory. If selected, the URL list will be found in '**download.links.list**' in the sub-directory. This file is always created in the temporary build directory.
+
+`-l` or `--lower-size [INTEGER]`  
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
+
+`-n` or `--number [INTEGER]`  
+Number of images to download. Default is 25. Maximum is 1,000.  
+
+`-p` or `--parallel [INTEGER]`  
+How many parallel image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
 
 `-q` or `--quiet`  
 Suppress standard display output. Error messages are still shown.
 
-`-d` or `--debug`  
-Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+`-r` or `--retries [INTEGER]`  
+Number of download retries for each image. Default is 3. Maximum is 100.
+
+`-t` or `--timeout [INTEGER]`  
+Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
+
+`-u` or `--upper-size [INTEGER]`  
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
+
+`-v` or `--version`  
+Show script version then exit.
 
 **Usage Examples:**
 
