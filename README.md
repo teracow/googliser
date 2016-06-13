@@ -56,10 +56,10 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:  
 
 
-*** Required parameter***
+***Required parameter***
 
 `-p` or `--phrase [STRING]`  
 The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
@@ -95,7 +95,7 @@ Only download image files that are reported by the server to be larger than this
 Number of images to download. Default is 25. Maximum is 1,000.  
 
 `-p` or `--parallel [INTEGER]`  
-How many parallel image downloads? Default is 8. Maximum is 40. **Larger is not necessarily faster!**
+How many parallel image downloads? Default is 8. Maximum is 40. **More is not necessarily quicker!**
 
 `-q` or `--quiet`  
 Suppress standard display output. Error messages are still shown.
@@ -151,16 +151,22 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-12) - None.
+- (2016-06-13) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-12) - Bit & pieces...
+- (2016-06-13) - Bit & pieces ...
  
 ---
 ###**To-Do List:**
 
+- clear last progress msg update by appending spaces to new msg? At least, then it won't have to backspace to start x 2.
+- only re-write progress display if msg is different to previous one.
+- write leading zeros for results groups and download links in debug
+- ensure that temp path working dir is unique (mktemp)
+- make new option to delete downloaded images afterwards and only keep gallery image.
+- test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
-- limit download results? 
+- limit download results? Only download in batches as required? 
