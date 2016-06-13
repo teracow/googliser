@@ -59,13 +59,13 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:
 
 
-**** Required ****
+*** Required parameter***
 
 `-p` or `--phrase [STRING]`  
 The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
 
 
-***Optional***
+***Optional parameters***
 
 `-c` or `--colourised`  
 Display with ANSI coloured text. Definitely try it with colours. :)
