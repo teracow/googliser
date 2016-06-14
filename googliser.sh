@@ -657,13 +657,15 @@ function DownloadImages
 		while true; do
 			ShowImageDownloadProgress
 
+			# any more download slots available?
 			[ "$parallel_count" -lt "$parallel_limit" ] && break
 
+			# no - so wait here then look again
 			sleep 0.5
 		done
 
+		# any images still required?
 		if [ "$countdown" -gt "0" ] ; then
-			# some images are still required
 			if [ "$fail_count" -ge "$fail_limit" ] ; then
 				# but too many failures so stop downloading.
  				result=1
@@ -671,6 +673,7 @@ function DownloadImages
  				# wait here while all running downloads finish
 				wait
 
+				# abort downloading any more images
  				break
  			fi
 
@@ -679,8 +682,7 @@ function DownloadImages
 			DownloadImage_auto "$msg" "$result_index" &
 			((countdown--))
 		else
-			# can't start any more concurrent downloads yet so kill some time
-			# wait here while all running downloads finish
+			# can't start any more downloads yet (but we're nearly there). Need to check how all current downloads finish first (succeed or fail)
 			wait
 
 			ShowImageDownloadProgress
@@ -691,6 +693,7 @@ function DownloadImages
 				# increase countdown again to get remaining files
 				countdown=$(($images_required-$success_count))
 			else
+				# yep, got enough that succeded so it's OK to quit now.
 				break
 			fi
 		fi
