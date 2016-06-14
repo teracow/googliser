@@ -185,6 +185,10 @@ function BuildEnviron
 	mkdir -p "${results_fail_count_path}"
 	[ "$?" -gt "0" ] && return 1
 
+	download_run_count_path="${temp_path}/download.running.count"
+	mkdir -p "${download_run_count_path}"
+	[ "$?" -gt "0" ] && return 1
+
 	download_success_count_path="${temp_path}/download.success.count"
 	mkdir -p "${download_success_count_path}"
 	[ "$?" -gt "0" ] && return 1
@@ -522,16 +526,18 @@ function DownloadImage_auto
 	# $1 = URL to download
 	# $2 = current counter relative to main list
 
-	local success_pathfile="$download_success_count_path/$BASHPID"
-	local fail_pathfile="$download_fail_count_path/$BASHPID"
 	local result=0
 	local size_ok=true
 	local get_download=true
 	local response=""
-	local debug_number=$(printf "#%04d" $2)
+	local debug_number=$(printf "%04d" $2)
 
-	DebugThis "- link $debug_number download" "start"
-	DebugThis "? link $debug_number \$BASHPID" "$BASHPID"
+	local run_pathfile="$download_run_count_path/$debug_number"
+	local success_pathfile="$download_success_count_path/$debug_number"
+	local fail_pathfile="$download_fail_count_path/$debug_number"
+
+	DebugThis "- link ($debug_number) download" "start"
+	DebugThis "? link ($debug_number) \$BASHPID" "$BASHPID"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -544,7 +550,7 @@ function DownloadImage_auto
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
 		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"${imagelink}\" 2>&1"
-		DebugThis "? link $debug_number \$wget_server_response_cmd" "$wget_server_response_cmd"
+		DebugThis "? link ($debug_number) \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
 		result=$?
@@ -556,23 +562,23 @@ function DownloadImage_auto
 				estimated_size="unknown"
 			fi
 
-			DebugThis "? link $debug_number \$estimated_size" "$estimated_size bytes"
+			DebugThis "? link ($debug_number) \$estimated_size" "$estimated_size bytes"
 
 			if [ "$estimated_size" != "unknown" ] ; then
 				if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link $debug_number (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+					DebugThis "! link ($debug_number) (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link $debug_number (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+					DebugThis "! link ($debug_number) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 			fi
 		else
-			DebugThis "! link $debug_number (before download) server-response" "failed!"
+			DebugThis "! link ($debug_number) (before download) server-response" "failed!"
 			estimated_size="unknown"
 		fi
 	fi
@@ -580,7 +586,7 @@ function DownloadImage_auto
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\" 2>&1"
-		DebugThis "? link $debug_number \$wget_download_cmd" "$wget_download_cmd"
+		DebugThis "? link ($debug_number) \$wget_download_cmd" "$wget_download_cmd"
 
 		response=$(eval "$wget_download_cmd")
 		result=$?
@@ -593,19 +599,19 @@ function DownloadImage_auto
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
 				if [ "$actual_size" == "$estimated_size" ] ; then
-					DebugThis "? link $debug_number \$actual_size" "$actual_size bytes (estimate was correct)"
+					DebugThis "? link ($debug_number) \$actual_size" "$actual_size bytes (estimate was correct)"
 				else
-					DebugThis "? link $debug_number \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
+					DebugThis "? link ($debug_number) \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link $debug_number \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					DebugThis "! link ($debug_number) \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link $debug_number \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					DebugThis "! link ($debug_number) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
@@ -615,22 +621,22 @@ function DownloadImage_auto
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				DebugThis "$ link $debug_number download" "success!"
-				touch "$success_pathfile"
-				DebugThis "? link $debug_number \$download_speed" "$download_speed"
+				DebugThis "$ link ($debug_number) download" "success!"
+				mv "$run_pathfile" "$success_pathfile"
+				DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
 			else
 				# files that were outside size limits still count as failures
-				touch "$fail_pathfile"
+				mv "$run_pathfile" "$fail_pathfile"
 			fi
 		else
-			DebugThis "! link $debug_number download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
-			touch "$fail_pathfile"
+			DebugThis "! link ($debug_number) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
+			mv "$run_pathfile" "$fail_pathfile"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
 		fi
 	else
-		touch "$fail_pathfile"
+		mv "$run_pathfile" "$fail_pathfile"
 	fi
 
 	return 0
@@ -646,65 +652,46 @@ function DownloadImages
 	local result_index=0
 	local file_index=1
 	local message=""
-	local countdown=$images_required		# control how many files are downloaded. Counts down to zero.
 	local result=0
 
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
 	InitProgress
 
-	while read imagelink; do
-		while true; do
+	while read imagelink ; do
+		[ "$success_count" -eq "$images_required" ] && break
+
+		while true ; do
 			ShowImageDownloadProgress
 
-			# any more download slots available?
 			[ "$parallel_count" -lt "$parallel_limit" ] && break
 
-			# no - so wait here then look again
 			sleep 0.5
 		done
 
-		# any images still required?
-		if [ "$countdown" -gt "0" ] ; then
+		if [ "$(($success_count+$parallel_count))" -lt "$images_required" ] ; then
 			if [ "$fail_count" -ge "$fail_limit" ] ; then
-				# but too many failures so stop downloading.
  				result=1
 
- 				# wait here while all running downloads finish
 				wait
 
-				# abort downloading any more images
  				break
  			fi
 
 			((result_index++))
 
 			DownloadImage_auto "$msg" "$result_index" &
-			((countdown--))
-		else
-			# can't start any more downloads yet (but we're nearly there). Need to check how all current downloads finish first (succeed or fail)
-			wait
 
-			ShowImageDownloadProgress
-
-			# how many were successful?
-			if [ "$success_count" -lt "$images_required" ] ; then
-				# not enough yet, so go get some more
-				# increase countdown again to get remaining files
-				countdown=$(($images_required-$success_count))
-			else
-				# yep, got enough that succeded so it's OK to quit now.
-				break
-			fi
+			# create run file here as takes too long to happen in function above.
+			touch "$download_run_count_path/$(printf "%04d" $result_index)"
 		fi
 	done < "${imagelinks_pathfile}"
 
-	# wait here while all running downloads finish
 	wait
 
 	ShowImageDownloadProgress
 
-	if [ "$fail_count" -ge "$fail_limit" ] ; then
+	if [ "$result" -eq "1" ] ; then
 		DebugThis "! failure limit reached" "$fail_count/$fail_limit"
 
 		if [ "$colourised" == "true" ] ; then
@@ -955,9 +942,9 @@ function ShowResultDownloadProgress
 function ShowImageDownloadProgress
 	{
 
-	success_count=$(ls "$download_success_count_path" | wc -l )
-	fail_count=$(ls "$download_fail_count_path" | wc -l )
-	parallel_count=$(jobs -l | grep Running | wc -l)
+	parallel_count=$(ls "$download_run_count_path" | wc -l)
+	success_count=$(ls "$download_success_count_path" | wc -l)
+	fail_count=$(ls "$download_fail_count_path" | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
