@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.18"
-	local script_date="2016-06-15"
+	local script_date="2016-06-16"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -140,6 +140,7 @@ function Init
 	DebugThis "? \$links" "$links"
 	DebugThis "? \$colour" "$colour"
 	DebugThis "? \$verbose" "$verbose"
+	DebugThis "? \$debug" "$debug"
 	DebugThis "? \$remove_after" "$remove_after"
 	DebugThis "? \$max_results_required" "$max_results_required"
 	DebugThis "= environment" "*** internal parameters ***"
@@ -445,7 +446,6 @@ function DownloadResultGroup_auto
 	local fail_pathfile="$results_fail_count_path/$debug_number"
 
 	DebugThis "- result group ($debug_number) download" "start"
-	DebugThis "? result group ($debug_number) \$BASHPID" "$BASHPID"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? result group ($debug_number) \$wget_list_cmd" "$wget_list_cmd"
@@ -552,7 +552,6 @@ function DownloadImage_auto
 	local fail_pathfile="$download_fail_count_path/$debug_number"
 
 	DebugThis "- link ($debug_number) download" "start"
-	DebugThis "? link ($debug_number) \$BASHPID" "$BASHPID"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -564,7 +563,7 @@ function DownloadImage_auto
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
-		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"${imagelink}\" 2>&1"
+		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"$1\" 2>&1"
 		DebugThis "? link ($debug_number) \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
@@ -600,7 +599,7 @@ function DownloadImage_auto
 
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"${imagelink}\" 2>&1"
+		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"$1\" 2>&1"
 		DebugThis "? link ($debug_number) \$wget_download_cmd" "$wget_download_cmd"
 
 		response=$(eval "$wget_download_cmd")
@@ -639,12 +638,12 @@ function DownloadImage_auto
 				IsImageValid "$targetimage_pathfileext"
 
 				if [ "$?" -eq "0" ] ; then
-					DebugThis "$ image file type validation" "success!"
+					DebugThis "$ link ($debug_number) image type validation" "success!"
 					DebugThis "$ link ($debug_number) download" "success!"
 					mv "$run_pathfile" "$success_pathfile"
 					DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
-				else
-					DebugThis "! image file type validation" "failed!"
+# 				else
+					DebugThis "! link ($debug_number) image type validation" "failed!"
 				fi
 			else
 				# files that were outside size limits still count as failures
@@ -678,38 +677,48 @@ function DownloadImages
 	local parallel_count=0
 	local success_count=0
 	local fail_count=0
+	local imagelink=""
 
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
 	InitProgress
 
 	while read imagelink ; do
-		[ "$success_count" -eq "$images_required" ] && break
-
 		while true ; do
 			ShowImageDownloadProgress
 
-			[ "$parallel_count" -lt "$parallel_limit" ] && break
-
-			sleep 0.5
-		done
-
-		if [ "$(($success_count+$parallel_count))" -lt "$images_required" ] ; then
+			# abort downloading if too many failures
 			if [ "$fail_count" -ge "$fail_limit" ] ; then
- 				result=1
+				DebugThis "! failure limit reached" "$fail_count/$fail_limit"
+
+				result=1
 
 				wait
 
- 				break
- 			fi
+				break 2
+			fi
 
-			((result_index++))
+			# wait here until a download slot becomes available
+			while [ "$parallel_count" -eq "$parallel_limit" ] ; do
+				sleep 0.5
 
-			DownloadImage_auto "$msg" "$result_index" &
+				ShowImageDownloadProgress
+			done
 
-			# create run file here as it takes too long to happen in function above.
-			touch "$download_run_count_path/$(printf "%04d" $result_index)"
-		fi
+			# have enough images now so exit loop
+			[ "$success_count" -eq "$images_required" ] &&	break 2
+
+			if [ "$(($success_count+$parallel_count))" -lt "$images_required" ] ; then
+				((result_index++))
+
+				DownloadImage_auto "$imagelink" "$result_index" &
+
+				# create run file here as it takes too long to happen in function above.
+				touch "$download_run_count_path/$(printf "%04d" $result_index)"
+
+				break
+			fi
+		done
 	done < "${imagelinks_pathfile}"
 
 	wait
@@ -717,8 +726,6 @@ function DownloadImages
 	ShowImageDownloadProgress
 
 	if [ "$result" -eq "1" ] ; then
-		DebugThis "! failure limit reached" "$fail_count/$fail_limit"
-
 		if [ "$colour" == "true" ] ; then
 			echo "$(ColourTextBrightRed "Too many failures!")"
 		else
@@ -1445,7 +1452,7 @@ if [ "$exitcode" -eq "0" ] ; then
 	fi
 fi
 
-# download images and build gallery
+# download images
 if [ "$exitcode" -eq "0" ] ; then
 	DownloadImages
 

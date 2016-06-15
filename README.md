@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://www.gnu.org/software/wget/)** to download images in parallel. The idea is to build a picture of a phrase. 
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel. The idea is to build a picture of a phrase. 
 
 (This is an expansion upon a [solution provided by ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
@@ -32,9 +32,9 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses [GNU Wget](https://www.gnu.org/software/wget/) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
+- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-15. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-16. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -158,12 +158,12 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-15) - If script is cancelled (CTRL+C), background downloads will continue to run. 
+- (2016-06-16) - If script is cancelled (CTRL+C), background downloads will continue to run. 
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-15) - stuff... :)
+- (2016-06-16) - stuff... :)
  
 ---
 ###**To-Do List:**
