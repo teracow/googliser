@@ -95,7 +95,7 @@ Specify a custom title for the gallery. Default is to use the search-phrase. Enc
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-m` or `--max-results [INTEGER]`  
-Maximum number of search results to acquire from Google Images. Increased this will involve more Google searches when running (which takes more time). Default is 100. Maximum is 1,000. If you only need 25 images, then you probably don't need to download 1,000 results. ;)
+Maximum number of search results to acquire from Google Images. Increasing this will involve more Google searches (which takes time). Default is 100. Maximum is 1,000. If you only need 25 images, then you probably don't need to download 1,000 results. ;)
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000. Requesting more than 100 will require (-m --max-results) to be increased to allow more results to be downloaded.
