@@ -130,7 +130,7 @@ This will download the first 250 available images for the search-phrase *"kitten
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
-    $ ./googliser.sh -n 80 -p "storm clouds" -dkcg
+    $ ./googliser.sh -n 80 -p "storm clouds" -dscg
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
