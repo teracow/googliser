@@ -17,16 +17,18 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
 
-6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s montage.
+6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s montage into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
 ###**Notes:**
 
 - To potentially download 1,000 images, the (*-m --max-results*) parameter must be selected with 1000 as its argument. (e.g. *-m 1000*). You would also need to be lucky enough to have Google actually find at least 1,000 results for your search term, and for those images to be available for download. I sometimes get around 5 failures for every 25 images I download (depending on what I'm searching for).
 
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)) and [GIF](https://en.wikipedia.org/wiki/GIF) files are available for download (at the moment).
+
 - Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
-- When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated GIF).
+- When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
