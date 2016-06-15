@@ -751,6 +751,7 @@ function IsImageValid
 	# $? = 0 if so, 1 if not
 
 	local returncode=0
+	local result=0
 
 	return		# not ready yet!
 
@@ -777,6 +778,32 @@ function IsImageValid
 	fi
 
 	return $returncode
+
+	}
+
+function AllowableFileType
+	{
+
+	# only these image types are considered acceptable
+	# $1 = string to check
+	# $? = 0 if OK, 1 if not
+
+	local lcase=$(Lowercase "$1")
+	local ext=$(echo ${lcase:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
+
+	# if string does not have a '.' then assume no extension present
+	[[ ! "$ext" =~ "." ]] && ext=""
+
+	case "$ext" in
+		.png | .jpg | .jpeg | .gif )
+			# valid image type
+			return 0
+			;;
+		* )
+			# not a valid image
+			return 1
+			;;
+	esac
 
 	}
 
@@ -808,8 +835,21 @@ function ParseResults
 	#---------------------------------------------------------------------------------------------------------------
 
 	if [ -e "$imagelinks_pathfile" ] ; then
+		# check against allowable file types
+		while read imagelink ; do
+			AllowableFileType "$imagelink"
+			if [ "$?" -eq "0" ] ; then
+				echo "$imagelink" >> "$imagelinks_pathfile".tmp
+
+			fi
+		done < "${imagelinks_pathfile}"
+
+		[ -e "$imagelinks_pathfile".tmp ] && mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+
+		# get link count
 		result_count=$(wc -l < "${imagelinks_pathfile}")
 
+		# if too many results then trim
 		if [ "$result_count" -gt "$max_results_required" ] ; then
 			DebugThis "= received more results than required" "$result_count/$max_results_required"
 
@@ -1203,6 +1243,24 @@ function ShowAsSucceed
 	else
 		echo -n "$1"
 	fi
+
+	}
+
+function Uppercase
+	{
+
+	# $1 = some text to convert to uppercase
+
+	echo "$1" | tr "[a-z]" "[A-Z]"
+
+	}
+
+function Lowercase
+	{
+
+	# $1 = some text to convert to lowercase
+
+	echo "$1" | tr "[A-Z]" "[a-z]"
 
 	}
 
