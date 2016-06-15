@@ -59,7 +59,7 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdghkqv`. Parameters can be specified as follows:  
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdeghqsv`. Parameters can be specified as follows:  
 
 
 ***Required***

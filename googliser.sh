@@ -66,8 +66,8 @@ function Init
 	result_index=0
 	target_path_created=false
 	helpme=false
-	showversion=false
-	showhelp=false
+	show_version_only=false
+	show_help_only=false
 	google_max=1000
 	parallel_max=40
 	timeout_max=600
@@ -106,7 +106,7 @@ function Init
 	exitcode=$?
 
 	# display start
-	if [ "$showversion" == "true" ] ; then
+	if [ "$show_version_only" == "true" ] ; then
 		echo "v${script_version} (${script_date})"
 		verbose=false
 	fi
@@ -121,7 +121,7 @@ function Init
 		echo
 	fi
 
-	[ "$showhelp" == "true" ] && DisplayHelp
+	[ "$show_help_only" == "true" ] && DisplayHelp
 
 	DebugThis "> started" "$script_starttime"
 	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
@@ -263,7 +263,7 @@ function DisplayHelp
 	echo " Optional"
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
-	HelpParameterFormat "e" "delete-after" "Remove all images after building thumbnail gallery image."
+	HelpParameterFormat "e" "delete-after" "Remove all downloaded images after building thumbnail gallery."
 	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
@@ -309,7 +309,7 @@ function WhatAreMyOptions
 	{
 
 	# if getopt exited with an error then show help to user
-	[ "$user_parameters_result" != "0" ] && echo && showhelp=true && return 2
+	[ "$user_parameters_result" != "0" ] && echo && show_help_only=true && return 2
 
 	eval set -- "$user_parameters"
 
@@ -365,7 +365,7 @@ function WhatAreMyOptions
 				shift
 				;;
 			-h | --help )
-				showhelp=true
+				show_help_only=true
 				return 7
 				;;
 			-c | --colour )
@@ -385,7 +385,7 @@ function WhatAreMyOptions
 				shift
 				;;
 			-v | --version )
-				showversion=true
+				show_version_only=true
 				return 7
 				;;
 			-- )
@@ -1586,7 +1586,7 @@ if [ "$verbose" == "true" ] ; then
 fi
 
 # reset exitcode if only displaying info
-if [ "$showversion" == "true" ] || [ "$showhelp" == "true" ] ; then
+if [ "$show_version_only" == "true" ] || [ "$show_help_only" == "true" ] ; then
 	exitcode=0
 fi
 
