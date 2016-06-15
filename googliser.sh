@@ -148,6 +148,7 @@ function Init
 
 	IsProgramAvailable "wget" || exitcode=1
 	IsProgramAvailable "perl" || exitcode=1
+	IsProgramAvailable "identify" || exitcode=1
 
 	if [ "$create_gallery" == "true" ] ; then
 		IsProgramAvailable "montage" || exitcode=1
@@ -234,8 +235,8 @@ function DisplayHelp
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
-	echo " - Requirements: Wget and Perl"
-	echo " - Optional: montage & convert (from ImageMagick)"
+	echo " - Requirements: Wget, Perl & identify (from ImageMagick)"
+	echo " - Optional: montage & convert (also from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
@@ -286,7 +287,7 @@ function DisplayHelp
 	fi
 
 	echo
-	echo " This will download the first $images_required available images for the search phrase \"${sample_user_query}\" and build them into a gallery image."
+	echo " This will download the first $images_required_default available images for the search phrase \"${sample_user_query}\" and build them into a gallery image."
 
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
@@ -473,6 +474,8 @@ function DownloadResultGroups
 	local groups_max=$(($google_max/100))
 	local pointer=0
 	local parallel_count=0
+	local success_count=0
+	local fail_count=0
 
 	InitProgress
 
@@ -633,9 +636,16 @@ function DownloadImage_auto
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				DebugThis "$ link ($debug_number) download" "success!"
-				mv "$run_pathfile" "$success_pathfile"
-				DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
+				IsImageValid "$targetimage_pathfileext"
+
+				if [ "$?" -eq "0" ] ; then
+					DebugThis "$ image file type validation" "success!"
+					DebugThis "$ link ($debug_number) download" "success!"
+					mv "$run_pathfile" "$success_pathfile"
+					DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
+				else
+					DebugThis "! image file type validation" "failed!"
+				fi
 			else
 				# files that were outside size limits still count as failures
 				mv "$run_pathfile" "$fail_pathfile"
@@ -665,6 +675,9 @@ function DownloadImages
 	local file_index=1
 	local message=""
 	local result=0
+	local parallel_count=0
+	local success_count=0
+	local fail_count=0
 
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
@@ -721,6 +734,40 @@ function DownloadImages
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
+
+	}
+
+function IsImageValid
+	{
+
+	# is $1 an image file? Is it valid?
+	# $? = 0 if so, 1 if not
+
+	local returncode=0
+
+	[ -z "$1" ] && returncode=1
+	[ ! -e "$1" ] && returncode=1
+
+	if [ "$returncode" -eq "0" ] ; then
+		output=$(identify -format "%m" "$1")
+		result=$?
+
+		[ "$result" -gt "0" ] && return 1
+
+		# check first 4 characters of returned value
+		case ${output:0:4} in
+			"PNG" | "JPEG" | "GIF" | "GIFG" )
+				# valid image type
+				returncode=0
+				;;
+			* )
+				# not a valid image
+				returncode=1
+				;;
+		esac
+	fi
+
+	return $returncode
 
 	}
 
