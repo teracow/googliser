@@ -68,7 +68,7 @@ function Init
 	helpme=false
 	showversion=false
 	showhelp=false
-	results_max=1000
+	google_max=1000
 	parallel_max=40
 	timeout_max=600
 	retries_max=100
@@ -81,6 +81,7 @@ function Init
 	lower_size_limit_default=1000
 	timeout_default=15
 	retries_default=3
+	max_results_required_default=100
 
 	# user changable parameters
 	user_query=""
@@ -94,10 +95,11 @@ function Init
 	create_gallery=true
 	gallery_title=""
 	links=false
-	colourised=false
+	colour=false
 	verbose=true
 	remove_after=false
 	debug=false
+	max_results_required=$max_results_required_default
 
 	WhatAreMyOptions
 
@@ -110,7 +112,7 @@ function Init
 	fi
 
 	if [ "$verbose" == "true" ] ; then
-		if [ "$colourised" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
 			echo " ${script_details}"
 		else
 			echo " $(RemoveColourCodes "${script_details}")"
@@ -136,11 +138,12 @@ function Init
 	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
 	DebugThis "? \$links" "$links"
-	DebugThis "? \$colourised" "$colourised"
+	DebugThis "? \$colour" "$colour"
 	DebugThis "? \$verbose" "$verbose"
 	DebugThis "? \$remove_after" "$remove_after"
+	DebugThis "? \$max_results_required" "$max_results_required"
 	DebugThis "= environment" "*** internal parameters ***"
-	DebugThis "? \$results_max" "$results_max"
+	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
 
 	IsProgramAvailable "wget" || exitcode=1
@@ -220,7 +223,7 @@ function DisplayHelp
 	local sample_user_query="cows"
 	local message=" - search '"
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		message+="$(ShowGoogle) $(ColourTextBrightBlue "images")"
 	else
 		message+="Google images"
@@ -237,7 +240,7 @@ function DisplayHelp
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		echo " - Usage: $(ColourTextBrightWhite "./$script_name") [PARAMETERS] ..."
 	else
 		echo " - Usage: ./$script_name [PARAMETERS] ..."
@@ -247,7 +250,7 @@ function DisplayHelp
 	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in <>"
 	echo
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		echo " $(ColourTextBrightOrange "* Required *")"
 	else
 		echo " * Required *"
@@ -259,12 +262,13 @@ function DisplayHelp
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
 	HelpParameterFormat "e" "delete-after" "Remove all images after building thumbnail gallery image."
-	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($results_max)."
+	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
-	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $results_max."
+	HelpParameterFormat "m" "max-results [INTEGER] <$max_results_required_default>" "Maximum search results returned. Maximum(?) of $google_max."
+	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
 	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
@@ -275,7 +279,7 @@ function DisplayHelp
 	echo
 	echo " - Example:"
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		echo "$(ColourTextBrightWhite " $ ./$script_name -p \"${sample_user_query}\"")"
 	else
 		echo " $ ./$script_name -p \"${sample_user_query}\""
@@ -338,6 +342,10 @@ function WhatAreMyOptions
 				upper_size_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
+			-m | --max-results )
+				max_results_required="$2"
+				shift 2		# shift to next parameter in $1
+				;;
 			-l | --lower-size )
 				lower_size_limit="$2"
 				shift 2		# shift to next parameter in $1
@@ -359,7 +367,7 @@ function WhatAreMyOptions
 				return 7
 				;;
 			-c | --colour )
-				colourised=true
+				colour=true
 				shift
 				;;
 			-g | --no-gallery )
@@ -462,14 +470,14 @@ function DownloadResultGroups
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
-	local groups_max=$(($results_max/100))
+	local groups_max=$(($google_max/100))
 	local pointer=0
 	local parallel_count=0
 
 	InitProgress
 
 	if [ "$verbose" == "true" ] ; then
-		if [ "$colourised" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
 			echo -n " -> searching $(ShowGoogle): "
 		else
 			echo -n " -> searching Google: "
@@ -477,12 +485,8 @@ function DownloadResultGroups
 	fi
 
 	for ((group=1; group<=$groups_max; group++)) ; do
-		ShowResultDownloadProgress
-
 		if [ "$parallel_count" -eq "$parallel_limit" ] ; then
-			# wait here while all running downloads finish
 			# when all current downloads have finished, then start next batch
-
 			wait
 		fi
 
@@ -494,15 +498,18 @@ function DownloadResultGroups
 			sleep 0.5
 		done
 
-		pointer=$((($group-1)*100))
-
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
 # 		percent="$((200*($group-1)/$groups_max % 2 + 100*($group-1)/$groups_max))% "
 
+		pointer=$((($group-1)*100))
+
 		DownloadResultGroup_auto $(($group-1)) "$pointer" &
 
-		# create run file here as takes too long to happen in function above.
+		# create run file here as it takes too long to happen in function above.
 		touch "$results_run_count_path/$(printf "%02d" $(($group-1)))"
+		ShowResultDownloadProgress
+
+		[ "$(($group*100))" -ge "$max_results_required" ] && break
 	done
 
 	# wait here while all running downloads finish
@@ -510,11 +517,8 @@ function DownloadResultGroups
 
 	ShowResultDownloadProgress
 
-	[ "$parallel_count" -gt "0" ] && DebugThis "! found some leftover parallel!" "$parallel_count ($(jobs -l))"
-
 	# build all groups into a single file
 	cat "${results_pathfile}".* > "${results_pathfile}"
-	#rm -f "${results_pathfile}".*
 
 	ParseResults
 
@@ -690,7 +694,7 @@ function DownloadImages
 
 			DownloadImage_auto "$msg" "$result_index" &
 
-			# create run file here as takes too long to happen in function above.
+			# create run file here as it takes too long to happen in function above.
 			touch "$download_run_count_path/$(printf "%04d" $result_index)"
 		fi
 	done < "${imagelinks_pathfile}"
@@ -702,7 +706,7 @@ function DownloadImages
 	if [ "$result" -eq "1" ] ; then
 		DebugThis "! failure limit reached" "$fail_count/$fail_limit"
 
-		if [ "$colourised" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
 			echo "$(ColourTextBrightRed "Too many failures!")"
 		else
 			echo "Too many failures!"
@@ -710,8 +714,6 @@ function DownloadImages
 	else
 		[ "$verbose" == "true" ] && echo
 	fi
-
-	[ "$parallel_count" -gt "0" ] && DebugThis "! found some leftover parallel!" "$parallel_count ($(jobs -l))"
 
 	DebugThis "? \$success_count" "$success_count"
 	DebugThis "? \$fail_count" "$fail_count"
@@ -752,8 +754,18 @@ function ParseResults
 	if [ -e "$imagelinks_pathfile" ] ; then
 		result_count=$(wc -l < "${imagelinks_pathfile}")
 
+		if [ "$result_count" -gt "$max_results_required" ] ; then
+			DebugThis "= received more results than required" "$result_count/$max_results_required"
+
+			head --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
+			mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+			result_count=$max_results_required
+
+			DebugThis "= trimmed results back to \$max_results_required" "$max_results_required"
+		fi
+
 		if [ "$verbose" == "true" ] ; then
-			if [ "$colourised" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
 				echo "$(ColourTextBrightWhite "${result_count}") results!"
 			else
 				echo "${result_count} results!"
@@ -761,7 +773,7 @@ function ParseResults
 		fi
 	else
 		if [ "$verbose" == "true" ] ; then
-			if [ "$colourised" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
 				echo "$(ColourTextBrightRed "No results!")"
 			else
 				echo "No results!"
@@ -870,7 +882,7 @@ function BuildGallery
 	if [ "$result" -eq "0" ] ; then
 		DebugThis "$ [${FUNCNAME[0]}]" "success!"
 		if [ "$verbose" == "true" ] ; then
-			if [ "$colourised" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
 				ProgressUpdater "$(ColourTextBrightGreen "done!")"
 			else
 				ProgressUpdater "done!"
@@ -930,7 +942,7 @@ function ShowResultDownloadProgress
 	fail_count=$(ls "$results_fail_count_path" | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
-		if [ "$colourised" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
 			if [ "$success_count" -eq "$groups_max" ] ; then
 				progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
 			else
@@ -956,7 +968,7 @@ function ShowImageDownloadProgress
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
-		if [ "$colourised" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
 			progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
 		else
 			progress_message="${success_count}/${images_required}"
@@ -968,7 +980,7 @@ function ShowImageDownloadProgress
 		if [ "$parallel_count" -gt "0" ] ; then
 			progress_message+=", "
 
-			if [ "$colourised" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
 				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
 			else
 				progress_message+="${parallel_count}/${parallel_limit}"
@@ -981,7 +993,7 @@ function ShowImageDownloadProgress
 		if [ "$fail_count" -gt "0" ] ; then
 			progress_message+=" and "
 
-			if [ "$colourised" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
 				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
 			else
 				progress_message+="${fail_count}/${fail_limit}"
@@ -1115,9 +1127,9 @@ function RemoveColourCodes
 function ShowAsFailed
 	{
 
-	# $1 = message to show in colour if colourised is set
+	# $1 = message to show in colour if colour is set
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		echo -n "$(ColourTextBrightRed "$1")"
 	else
 		echo -n "$1"
@@ -1128,9 +1140,9 @@ function ShowAsFailed
 function ShowAsSucceed
 	{
 
-	# $1 = message to show in colour if colourised is set
+	# $1 = message to show in colour if colour is set
 
-	if [ "$colourised" == "true" ] ; then
+	if [ "$colour" == "true" ] ; then
 		echo -n "$(ColourTextBrightGreen "$1")"
 	else
 		echo -n "$1"
@@ -1139,7 +1151,7 @@ function ShowAsSucceed
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,m:,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,max-results:,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1161,12 +1173,35 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "~ \$images_required too small so set sensible minimum" "$images_required"
 			fi
 
-			if [ "$images_required" -gt "$results_max" ] ; then
-				images_required=$results_max
-				DebugThis "~ \$images_required too large so set as \$results_max" "$images_required"
+			if [ "$images_required" -gt "$google_max" ] ; then
+				images_required=$google_max
+				DebugThis "~ \$images_required too large so set as \$google_max" "$images_required"
 			fi
 			;;
 	esac
+
+	if [ "$exitcode" -eq "0" ] ; then
+		case ${max_results_required#[-+]} in
+			*[!0-9]* )
+				DebugThis "! specified \$max_results_required" "invalid"
+				DisplayHelp
+				echo
+				echo "$(ShowAsFailed " !! number specified after (-m --max-results) must be a valid integer ... unable to continue.")"
+				exitcode=2
+				;;
+			* )
+				if [ "$max_results_required" -le "$max_results_required_default" ] ; then
+					max_results_required=$max_results_required_default
+					DebugThis "~ \$max_results_required too small so set as \$max_results_required_default" "$max_results_required"
+				fi
+
+				if [ "$max_results_required" -gt "$google_max" ] ; then
+					max_results_required=$google_max
+					DebugThis "~ \$max_results_required too large so set as \$google_max" "$max_results_required"
+				fi
+				;;
+		esac
+	fi
 
 	if [ "$exitcode" -eq "0" ] ; then
 		case ${fail_limit#[-+]} in
@@ -1179,13 +1214,13 @@ if [ "$exitcode" -eq "0" ] ; then
 				;;
 			* )
 				if [ "$fail_limit" -le "0" ] ; then
-					fail_limit=$results_max
-					DebugThis "~ \$fail_limit too small so set as \$results_max" "$fail_limit"
+					fail_limit=$google_max
+					DebugThis "~ \$fail_limit too small so set as \$google_max" "$fail_limit"
 				fi
 
-				if [ "$fail_limit" -gt "$results_max" ] ; then
-					fail_limit=$results_max
-					DebugThis "~ \$fail_limit too large so set as \$results_max" "$fail_limit"
+				if [ "$fail_limit" -gt "$google_max" ] ; then
+					fail_limit=$google_max
+					DebugThis "~ \$fail_limit too large so set as \$google_max" "$fail_limit"
 				fi
 				;;
 		esac

@@ -22,7 +22,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 ---
 ###**Notes:**
 
-- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses [GNU Wget](https://www.gnu.org/software/wget/) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
+- To potentially download 1,000 images, the (*-m --max-results*) parameter must be selected with 1000 as its argument. (e.g. *-m 1000*). You would also need to be lucky enough to have Google actually find at least 1,000 results for your search term, and for those images to be available for download. I sometimes get around 5 failures for every 25 images I download (depending on what I'm searching for).
 
 - Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
@@ -31,6 +31,8 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
+
+- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. It uses [GNU Wget](https://www.gnu.org/software/wget/) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-15. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
@@ -76,7 +78,7 @@ Put the debug log file into sub-directory. If selected, debugging output is appe
 Delete the downloaded images after building the thumbnail gallery.
 
 `-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this may try to download all results - so only use if there are many failures). In rare circumstances, it is possible for the script to show more failures than this. Worst case would be reported as high as `((failures - 1) + parallel)`. The inevitable consequence of parallel downloads. :) 
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download all results - so only use if there are many failures).
 
 `-g` or `--no-gallery`  
 Don't create a thumbnail gallery.
@@ -90,8 +92,11 @@ Specify a custom title for the gallery. Default is to use the search-phrase. Enc
 `-l` or `--lower-size [INTEGER]`  
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
+`-m` or `--max-results [INTEGER]`  
+Maximum number of search results to acquire from Google Images. Increased this will involve more Google searches when running (which takes more time). Default is 100. Maximum is 1,000. If you only need 25 images, then you probably don't need to download 1,000 results. ;)
+
 `-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 1,000.  
+Number of images to download. Default is 25. Maximum is 1,000. Requesting more than 100 will require (-m --max-results) to be increased to allow more results to be downloaded.
 
 `-p` or `--parallel [INTEGER]`  
 How many parallel image downloads? Default is 8. Maximum is 40. **More is not necessarily quicker!**
@@ -167,4 +172,3 @@ These images have been scaled down for easier distribution.
 - test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
 - ignore .php results in list?
-- limit download results? Only download in batches as required? 
