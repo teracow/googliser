@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.18"
-	local script_date="2016-06-14"
+	local script_date="2016-06-15"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -175,6 +175,10 @@ function BuildEnviron
 
 	local temp_root="/dev/shm"
 	temp_path=$(mktemp -p "${temp_root}" -d "$script_name.$$.XXX")
+	[ "$?" -gt "0" ] && return 1
+
+	results_run_count_path="${temp_path}/results.running.count"
+	mkdir -p "${results_run_count_path}"
 	[ "$?" -gt "0" ] && return 1
 
 	results_success_count_path="${temp_path}/results.success.count"
@@ -421,29 +425,31 @@ function DownloadResultGroup_auto
 	# $1 = page group to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
 
-	local success_pathfile="$results_success_count_path/$BASHPID"
-	local fail_pathfile="$results_fail_count_path/$BASHPID"
 	local result=0
 	local search_group="&ijn=$1"
 	local search_start="&start=$2"
 	local response=""
-	local debug_number=$(printf "#%02d" $1)
+	local debug_number=$(printf "%02d" $1)
 
-	DebugThis "- result group $debug_number download" "start"
-	DebugThis "? result group $debug_number \$BASHPID" "$BASHPID"
+	local run_pathfile="$results_run_count_path/$debug_number"
+	local success_pathfile="$results_success_count_path/$debug_number"
+	local fail_pathfile="$results_fail_count_path/$debug_number"
+
+	DebugThis "- result group ($debug_number) download" "start"
+	DebugThis "? result group ($debug_number) \$BASHPID" "$BASHPID"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
-	DebugThis "? result group $debug_number \$wget_list_cmd" "$wget_list_cmd"
+	DebugThis "? result group ($debug_number) \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		DebugThis "$ result group $debug_number download" "success!"
-		touch "$success_pathfile"
+		DebugThis "$ result group ($debug_number) download" "success!"
+		mv "$run_pathfile" "$success_pathfile"
 	else
-		DebugThis "! result group $debug_number download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
-		touch "$fail_pathfile"
+		DebugThis "! result group ($debug_number) download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		mv "$run_pathfile" "$fail_pathfile"
 	fi
 
 	return 0
@@ -464,7 +470,6 @@ function DownloadResultGroups
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then
-#			echo -n " -> searching $(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e"): "
 			echo -n " -> searching $(ShowGoogle): "
 		else
 			echo -n " -> searching Google: "
@@ -495,6 +500,9 @@ function DownloadResultGroups
 # 		percent="$((200*($group-1)/$groups_max % 2 + 100*($group-1)/$groups_max))% "
 
 		DownloadResultGroup_auto $(($group-1)) "$pointer" &
+
+		# create run file here as takes too long to happen in function above.
+		touch "$results_run_count_path/$(printf "%02d" $(($group-1)))"
 	done
 
 	# wait here while all running downloads finish
@@ -917,9 +925,9 @@ function ProgressUpdater
 function ShowResultDownloadProgress
 	{
 
-	success_count=$(ls "$results_success_count_path" | wc -l )
-	fail_count=$(ls "$results_fail_count_path" | wc -l )
-	parallel_count=$(jobs -l | grep Running | wc -l)
+	parallel_count=$(ls "$results_run_count_path" | wc -l)
+	success_count=$(ls "$results_success_count_path" | wc -l)
+	fail_count=$(ls "$results_fail_count_path" | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colourised" == "true" ] ; then

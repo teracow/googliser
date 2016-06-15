@@ -32,7 +32,7 @@ This is a BASH script to perform fast image downloads sourced from **[Google Ima
 
 - Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-14. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-15. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -153,12 +153,12 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-14) - None.
+- (2016-06-15) - If script is cancelled (CTRL+C), background downloads will continue to run. 
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-14) - stuff... :)
+- (2016-06-15) - stuff... :)
  
 ---
 ###**To-Do List:**
