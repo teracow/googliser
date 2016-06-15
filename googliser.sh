@@ -752,6 +752,8 @@ function IsImageValid
 
 	local returncode=0
 
+	return		# not ready yet!
+
 	[ -z "$1" ] && returncode=1
 	[ ! -e "$1" ] && returncode=1
 
