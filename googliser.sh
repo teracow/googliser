@@ -807,12 +807,8 @@ function AllowableFileType
 
 	}
 
-function ParseResults
+function PageScraper
 	{
-
-	DebugThis "\ [${FUNCNAME[0]}]" "entry"
-
-	result_count=0
 
 	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
 	#
@@ -834,14 +830,22 @@ function ParseResults
 	> "${imagelinks_pathfile}"
 	#---------------------------------------------------------------------------------------------------------------
 
+	}
+
+function ParseResults
+	{
+
+	DebugThis "\ [${FUNCNAME[0]}]" "entry"
+
+	result_count=0
+
+	PageScraper
+
 	if [ -e "$imagelinks_pathfile" ] ; then
 		# check against allowable file types
 		while read imagelink ; do
 			AllowableFileType "$imagelink"
-			if [ "$?" -eq "0" ] ; then
-				echo "$imagelink" >> "$imagelinks_pathfile".tmp
-
-			fi
+			[ "$?" -eq "0" ] && echo "$imagelink" >> "$imagelinks_pathfile".tmp
 		done < "${imagelinks_pathfile}"
 
 		[ -e "$imagelinks_pathfile".tmp ] && mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
