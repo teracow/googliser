@@ -100,6 +100,7 @@ function Init
 	verbose=true
 	remove_after=false
 	debug=false
+	skip_no_size=false
 
 	WhatAreMyOptions
 
@@ -141,6 +142,7 @@ function Init
 	DebugThis "? \$colour" "$colour"
 	DebugThis "? \$verbose" "$verbose"
 	DebugThis "? \$debug" "$debug"
+	DebugThis "? \$skip_no_size" "$skip_no_size"
 	DebugThis "? \$remove_after" "$remove_after"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
@@ -267,6 +269,7 @@ function DisplayHelp
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
+	HelpParameterFormat "k" "skip-no-size" "Don't download any image if its size cannot be determined."
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
 	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
@@ -338,6 +341,10 @@ function WhatAreMyOptions
 			-i | --title )
 				gallery_title="$2"
 				shift 2		# shift to next parameter in $1
+				;;
+			-k | --skip-no-size )
+				skip_no_size=true
+				shift
 				;;
 			-s | --save-links )
 				links=true
@@ -573,6 +580,12 @@ function DownloadImage_auto
 				if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
 					DebugThis "! link ($debug_index) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 					size_ok=false
+					get_download=false
+				fi
+			else
+				if [ "$skip_no_size" == "true" ] ; then
+					DebugThis "! link ($debug_index) unknown image size so" "failed!"
+
 					get_download=false
 				fi
 			fi
@@ -1316,7 +1329,7 @@ function Lowercase
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
