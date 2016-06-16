@@ -44,15 +44,16 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 ###**Development Environment:**
 
 - [openSUSE](https://www.opensuse.org/) - *v13.2 64b*
+- GNU BASH - *v4.2.53*
+- GNU Wget - *v1.16*
+- [ImageMagick](http://www.imagemagick.org) - *v6.8.9-8 Q16 x86_64 2016-05-31*
 - Kate - *v3.14.9*
 - Dolphin - *v15.04.0*
 - [ReText](https://github.com/retext-project/retext) - *v5.0.0*
-- GNU Wget *- v1.16*
 - Gwenview - *v4.14.0*
 - [GIMP](https://www.gimp.org/) - *v2.8.14*
 - Konsole - *v2.14.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
-- GNU BASH - *v4.2.53*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
@@ -94,7 +95,7 @@ Display this help then exit.
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
 `-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-m` or `--max-results [INTEGER]`  
 Maximum number of search results to acquire from Google Images. Increasing this will involve more Google searches (which takes time). Default is 100. Maximum is 1,000. If you only need 25 images, then you probably don't need to download 1,000 results. ;)
