@@ -822,7 +822,16 @@ function BuildGallery
 
 	if [ "$verbose" == "true" ] ; then
 		echo -n " -> building gallery: "
-		ProgressUpdater "stage 1/4 (construct thumbnails)"
+
+		if [ "$colour" == "true" ] ; then
+			progress_message="$(ColourTextBrightOrange "stage 1/4")"
+		else
+			progress_message="stage 1/4"
+		fi
+
+		progress_message+=" (construct thumbnails)"
+
+		ProgressUpdater "${progress_message}"
 	fi
 
 	# build gallery
@@ -840,7 +849,17 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		[ "$verbose" == "true" ] && ProgressUpdater "stage 2/4 (draw background pattern)"
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
+				progress_message="$(ColourTextBrightOrange "stage 2/4")"
+			else
+				progress_message="stage 2/4"
+			fi
+
+			progress_message+=" (draw background pattern)"
+
+			ProgressUpdater "${progress_message}"
+		fi
 
 		# get image dimensions
 		read -r width height <<< $(convert -ping "${gallery_thumbnails_pathfile}" -format "%w %h" info:)
@@ -861,7 +880,17 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		[ "$verbose" == "true" ] && ProgressUpdater "stage 3/4 (draw title text image)"
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
+				progress_message="$(ColourTextBrightOrange "stage 3/4")"
+			else
+				progress_message="stage 3/4"
+			fi
+
+			progress_message+=" (draw title text image)"
+
+			ProgressUpdater "${progress_message}"
+		fi
 
 		# create title image
 		# let's try a fixed height of 100 pixels
@@ -880,7 +909,17 @@ function BuildGallery
 	fi
 
 	if [ "$result" -eq "0" ] ; then
-		[ "$verbose" == "true" ] && ProgressUpdater "stage 4/4 (compile all images)"
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
+				progress_message="$(ColourTextBrightOrange "stage 4/4")"
+			else
+				progress_message="stage 4/4"
+			fi
+
+			progress_message+=" (compile all images)"
+
+			ProgressUpdater "${progress_message}"
+		fi
 
 		# compose thumbnails image on background image, then title image on top
 		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
@@ -912,8 +951,15 @@ function BuildGallery
 		fi
 	else
 		DebugThis "! [${FUNCNAME[0]}]" "failed! See previous!"
-		[ "$verbose" == "true" ] && echo "failed!"
+
+		if [ "$colour" == "true" ] ; then
+			ProgressUpdater "$(ColourTextBrightRed "failed!")"
+		else
+			ProgressUpdater "failed!"
+		fi
 	fi
+
+	[ "$verbose" == "true" ] && echo
 
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
@@ -981,6 +1027,7 @@ function InitProgress
 
 	# needs to be called prior to first call of ProgressUpdater
 
+	progress_message=""
 	previous_length=0
 	previous_msg=""
 
