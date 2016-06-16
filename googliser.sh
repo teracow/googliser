@@ -294,17 +294,6 @@ function DisplayHelp
 
 	}
 
-function HelpParameterFormat
-	{
-
-	# $1 = short parameter
-	# $2 = long parameter
-	# $3 = description
-
-	printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
-
-	}
-
 function WhatAreMyOptions
 	{
 
@@ -397,34 +386,6 @@ function WhatAreMyOptions
 				;;
 		esac
 	done
-
-	}
-
-function IsProgramAvailable
-	{
-
-	# $1 = name of program to search for with 'which'
-	# $? = 0 if 'which' found it, 1 if not
-
-	which "$1" > /dev/null 2>&1
-
-	if [ "$?" -gt "0" ] ; then
-		echo " !! required program [$1] is unavailable ... unable to continue."
-		echo
-		DebugThis "! required program is unavailable" "$1"
-		DisplayHelp
-		return 1
-	else
-		DebugThis "$ required program is available" "$1"
-		return 0
-	fi
-
-	}
-
-function ShowGoogle
-	{
-
-	echo -n "$(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e")"
 
 	}
 
@@ -642,7 +603,7 @@ function DownloadImage_auto
 					DebugThis "$ link ($debug_number) download" "success!"
 					mv "$run_pathfile" "$success_pathfile"
 					DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
-# 				else
+				else
 					DebugThis "! link ($debug_number) image type validation" "failed!"
 				fi
 			else
@@ -685,6 +646,7 @@ function DownloadImages
 
 	while read imagelink ; do
 		while true ; do
+			RefreshActiveDownloadCounts
 			ShowImageDownloadProgress
 
 			# abort downloading if too many failures
@@ -702,7 +664,7 @@ function DownloadImages
 			while [ "$parallel_count" -eq "$parallel_limit" ] ; do
 				sleep 0.5
 
-				ShowImageDownloadProgress
+				RefreshActiveDownloadCounts
 			done
 
 			# have enough images now so exit loop
@@ -723,6 +685,7 @@ function DownloadImages
 
 	wait
 
+	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
 
 	if [ "$result" -eq "1" ] ; then
@@ -741,148 +704,6 @@ function DownloadImages
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
-
-	}
-
-function IsImageValid
-	{
-
-	# is $1 an image file? Is it valid?
-	# $? = 0 if so, 1 if not
-
-	local returncode=0
-	local result=0
-
-	return		# not ready yet!
-
-	[ -z "$1" ] && returncode=1
-	[ ! -e "$1" ] && returncode=1
-
-	if [ "$returncode" -eq "0" ] ; then
-		output=$(identify -format "%m" "$1")
-		result=$?
-
-		[ "$result" -gt "0" ] && return 1
-
-		# check first 4 characters of returned value
-		case ${output:0:4} in
-			"PNG" | "JPEG" | "GIF" | "GIFG" )
-				# valid image type
-				returncode=0
-				;;
-			* )
-				# not a valid image
-				returncode=1
-				;;
-		esac
-	fi
-
-	return $returncode
-
-	}
-
-function AllowableFileType
-	{
-
-	# only these image types are considered acceptable
-	# $1 = string to check
-	# $? = 0 if OK, 1 if not
-
-	local lcase=$(Lowercase "$1")
-	local ext=$(echo ${lcase:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
-
-	# if string does not have a '.' then assume no extension present
-	[[ ! "$ext" =~ "." ]] && ext=""
-
-	case "$ext" in
-		.png | .jpg | .jpeg | .gif )
-			# valid image type
-			return 0
-			;;
-		* )
-			# not a valid image
-			return 1
-			;;
-	esac
-
-	}
-
-function PageScraper
-	{
-
-	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
-	#
-	# sed   1. look for lines with '<div' and insert 2 linefeeds before them
-	#
-	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
-	#
-	# grep  3. only list lines without 'youtube' or 'vimeo' (case insenstive)
-	#
-	# perl  4. remove everything from '<div class="rg_meta">' up to 'http' on each line
-	#       5. remove everything including and after '","ow"' on each line
-	#       6. remove everything including and after '?' on each line
-
-	cat "${results_pathfile}" |\
-	sed 's|<div|\n\n<div|g' |\
-	grep '<div class=\"rg_meta\">.*http' |\
-	grep -ivE 'youtube|vimeo' |\
-	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
-	> "${imagelinks_pathfile}"
-	#---------------------------------------------------------------------------------------------------------------
-
-	}
-
-function ParseResults
-	{
-
-	DebugThis "\ [${FUNCNAME[0]}]" "entry"
-
-	result_count=0
-
-	PageScraper
-
-	if [ -e "$imagelinks_pathfile" ] ; then
-		# check against allowable file types
-		while read imagelink ; do
-			AllowableFileType "$imagelink"
-			[ "$?" -eq "0" ] && echo "$imagelink" >> "$imagelinks_pathfile".tmp
-		done < "${imagelinks_pathfile}"
-
-		[ -e "$imagelinks_pathfile".tmp ] && mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
-
-		# get link count
-		result_count=$(wc -l < "${imagelinks_pathfile}")
-
-		# if too many results then trim
-		if [ "$result_count" -gt "$max_results_required" ] ; then
-			DebugThis "= received more results than required" "$result_count/$max_results_required"
-
-			head --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
-			mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
-			result_count=$max_results_required
-
-			DebugThis "= trimmed results back to \$max_results_required" "$max_results_required"
-		fi
-
-		if [ "$verbose" == "true" ] ; then
-			if [ "$colour" == "true" ] ; then
-				echo "$(ColourTextBrightWhite "${result_count}") results!"
-			else
-				echo "${result_count} results!"
-			fi
-		fi
-	else
-		if [ "$verbose" == "true" ] ; then
-			if [ "$colour" == "true" ] ; then
-				echo "$(ColourTextBrightRed "No results!")"
-			else
-				echo "No results!"
-			fi
-		fi
-	fi
-
-	DebugThis "? \$result_count" "$result_count"
-	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
 	}
 
@@ -1000,46 +821,12 @@ function BuildGallery
 
 	}
 
-function InitProgress
-	{
-
-	# needs to be called prior to first call of ProgressUpdater
-
-	previous_length=0
-	previous_msg=""
-
-	}
-
-function ProgressUpdater
-	{
-
-	# $1 = message to display.
-
-	if [ "$1" != "$previous_msg" ] ; then
-		temp=$(RemoveColourCodes "$1")
-		current_length=$((${#temp}+1))
-
-		if [ "$current_length" -lt "$previous_length" ] ; then
-			appended_length=$(($current_length-$previous_length))
-			# backspace to start of previous msg, print new msg, add additional spaces, then backspace to end of msg
-			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 " ; printf "%${appended_length}s" ; printf "%${appended_length}s" | tr ' ' '\b'
-		else
-			# backspace to start of previous msg, print new msg
-			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 "
-		fi
-
-		previous_length=$current_length
-		previous_msg="$1"
-	fi
-
-	}
-
 function ShowResultDownloadProgress
 	{
 
-	parallel_count=$(ls "$results_run_count_path" | wc -l)
-	success_count=$(ls "$results_success_count_path" | wc -l)
-	fail_count=$(ls "$results_fail_count_path" | wc -l)
+	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
+	success_count=$(ls -I . -I .. "$results_success_count_path" | wc -l)
+	fail_count=$(ls -I . -I .. "$results_fail_count_path" | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colour" == "true" ] ; then
@@ -1061,10 +848,6 @@ function ShowResultDownloadProgress
 
 function ShowImageDownloadProgress
 	{
-
-	parallel_count=$(ls "$download_run_count_path" | wc -l)
-	success_count=$(ls "$download_success_count_path" | wc -l)
-	fail_count=$(ls "$download_fail_count_path" | wc -l)
 
 	if [ "$verbose" == "true" ] ; then
 		# number of image downloads that are OK
@@ -1106,6 +889,231 @@ function ShowImageDownloadProgress
 
 		ProgressUpdater "${progress_message}"
 	fi
+
+	}
+
+function RefreshActiveDownloadCounts
+	{
+
+	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
+	success_count=$(ls -I . -I .. "$download_success_count_path" | wc -l)
+	fail_count=$(ls -I . -I .. "$download_fail_count_path" | wc -l)
+
+	}
+
+function ParseResults
+	{
+
+	DebugThis "\ [${FUNCNAME[0]}]" "entry"
+
+	result_count=0
+
+	PageScraper
+
+	if [ -e "$imagelinks_pathfile" ] ; then
+		# check against allowable file types
+		while read imagelink ; do
+			AllowableFileType "$imagelink"
+			[ "$?" -eq "0" ] && echo "$imagelink" >> "$imagelinks_pathfile".tmp
+		done < "${imagelinks_pathfile}"
+
+		[ -e "$imagelinks_pathfile".tmp ] && mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+
+		# get link count
+		result_count=$(wc -l < "${imagelinks_pathfile}")
+
+		# if too many results then trim
+		if [ "$result_count" -gt "$max_results_required" ] ; then
+			DebugThis "= received more results than required" "$result_count/$max_results_required"
+
+			head --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
+			mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+			result_count=$max_results_required
+
+			DebugThis "= trimmed results back to \$max_results_required" "$max_results_required"
+		fi
+
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
+				echo "$(ColourTextBrightWhite "${result_count}") results!"
+			else
+				echo "${result_count} results!"
+			fi
+		fi
+	else
+		if [ "$verbose" == "true" ] ; then
+			if [ "$colour" == "true" ] ; then
+				echo "$(ColourTextBrightRed "No results!")"
+			else
+				echo "No results!"
+			fi
+		fi
+	fi
+
+	DebugThis "? \$result_count" "$result_count"
+	DebugThis "/ [${FUNCNAME[0]}]" "exit"
+
+	}
+
+function InitProgress
+	{
+
+	# needs to be called prior to first call of ProgressUpdater
+
+	previous_length=0
+	previous_msg=""
+
+	}
+
+function ProgressUpdater
+	{
+
+	# $1 = message to display.
+
+	if [ "$1" != "$previous_msg" ] ; then
+		temp=$(RemoveColourCodes "$1")
+		current_length=$((${#temp}+1))
+
+		if [ "$current_length" -lt "$previous_length" ] ; then
+			appended_length=$(($current_length-$previous_length))
+			# backspace to start of previous msg, print new msg, add additional spaces, then backspace to end of msg
+			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 " ; printf "%${appended_length}s" ; printf "%${appended_length}s" | tr ' ' '\b'
+		else
+			# backspace to start of previous msg, print new msg
+			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 "
+		fi
+
+		previous_length=$current_length
+		previous_msg="$1"
+	fi
+
+	}
+
+function IsProgramAvailable
+	{
+
+	# $1 = name of program to search for with 'which'
+	# $? = 0 if 'which' found it, 1 if not
+
+	which "$1" > /dev/null 2>&1
+
+	if [ "$?" -gt "0" ] ; then
+		echo " !! required program [$1] is unavailable ... unable to continue."
+		echo
+		DebugThis "! required program is unavailable" "$1"
+		DisplayHelp
+		return 1
+	else
+		DebugThis "$ required program is available" "$1"
+		return 0
+	fi
+
+	}
+
+function ShowGoogle
+	{
+
+	echo -n "$(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e")"
+
+	}
+
+function HelpParameterFormat
+	{
+
+	# $1 = short parameter
+	# $2 = long parameter
+	# $3 = description
+
+	printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
+
+	}
+
+function IsImageValid
+	{
+
+	# checks output of 'identify -format "%m"'
+	# is $1 an image file? Is it valid?
+	# $? = 0 if so, 1 if not
+
+	local returncode=0
+	local result=0
+
+	return		# not ready yet!
+
+	[ -z "$1" ] && returncode=1
+	[ ! -e "$1" ] && returncode=1
+
+	if [ "$returncode" -eq "0" ] ; then
+		output=$(identify -format "%m" "$1")
+		result=$?
+
+		[ "$result" -gt "0" ] && return 1
+
+		# check first 4 characters of returned value
+		case ${output:0:4} in
+			"PNG" | "JPEG" | "GIF" | "GIFG" )
+				# valid image type
+				returncode=0
+				;;
+			* )
+				# not a valid image
+				returncode=1
+				;;
+		esac
+	fi
+
+	return $returncode
+
+	}
+
+function AllowableFileType
+	{
+
+	# only these image types are considered acceptable
+	# $1 = string to check
+	# $? = 0 if OK, 1 if not
+
+	local lcase=$(Lowercase "$1")
+	local ext=$(echo ${lcase:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
+
+	# if string does not have a '.' then assume no extension present
+	[[ ! "$ext" =~ "." ]] && ext=""
+
+	case "$ext" in
+		.png | .jpg | .jpeg | .gif )
+			# valid image type
+			return 0
+			;;
+		* )
+			# not a valid image
+			return 1
+			;;
+	esac
+
+	}
+
+function PageScraper
+	{
+
+	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
+	#
+	# sed   1. look for lines with '<div' and insert 2 linefeeds before them
+	#
+	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
+	#
+	# grep  3. only list lines without 'youtube' or 'vimeo' (case insenstive)
+	#
+	# perl  4. remove everything from '<div class="rg_meta">' up to 'http' on each line
+	#       5. remove everything including and after '","ow"' on each line
+	#       6. remove everything including and after '?' on each line
+
+	cat "${results_pathfile}" |\
+	sed 's|<div|\n\n<div|g' |\
+	grep '<div class=\"rg_meta\">.*http' |\
+	grep -ivE 'youtube|vimeo' |\
+	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
+	> "${imagelinks_pathfile}"
+	#---------------------------------------------------------------------------------------------------------------
 
 	}
 
