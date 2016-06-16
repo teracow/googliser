@@ -28,7 +28,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range e.g. `--lower-size 12000 --upper-size 13000`.
 
-- Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+- Thumbnail gallery building can be disabled if not required (by using `--no-gallery`). As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
