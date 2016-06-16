@@ -112,6 +112,11 @@ function Init
 		verbose=false
 	fi
 
+	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] ; then
+		echo "Huh?"
+		exit 2
+	fi
+
 	if [ "$verbose" == "true" ] ; then
 		if [ "$colour" == "true" ] ; then
 			echo " ${script_details}"
@@ -264,7 +269,7 @@ function DisplayHelp
 	echo " Optional"
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
-	HelpParameterFormat "e" "delete-after" "Remove all downloaded images after building thumbnail gallery."
+	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
 	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."

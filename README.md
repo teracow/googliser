@@ -86,13 +86,13 @@ Display with nice ANSI coloured text.
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 `-e` or `--delete-after`  
-Delete the downloaded images after building the thumbnail gallery.
+Delete the downloaded images after building the thumbnail gallery. Umm, don't specify this and `--no-gallery` at the same time.
 
 `-f` or `--failures [INTEGER]`  
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download all results - so only use if there are many failures).
 
 `-g` or `--no-gallery`  
-Don't create a thumbnail gallery.
+Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
 `-h` or `--help`  
 Display this help then exit.
