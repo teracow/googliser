@@ -62,7 +62,7 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdeghqsv`. Parameters can be specified as follows:  
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdeghkqsv`. Parameters can be specified as follows:  
 
 
 ***Required***
@@ -74,7 +74,7 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown c
 ***Optional***
 
 `-c` or `--colour`  
-Display with ANSI coloured text. Pretty! :)
+Display with nice ANSI coloured text. 
 
 `-d` or `--debug`  
 Put the debug log file into the image sub-directory. If selected, debugging output is appended to '**debug.log**' in the created image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
