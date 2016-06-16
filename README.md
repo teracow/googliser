@@ -169,7 +169,7 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-17) - If script is cancelled (CTRL+C), background downloads will continue to run. 
+- (2016-06-17) - None at the moment. 
 
 ---
 ###**Work-in-Progress:**
@@ -180,4 +180,4 @@ These images have been scaled down for easier distribution.
 ###**To-Do List:**
 
 - read defaults from file (.defaults)?
-- need way to cancel background procs when user cancels. Trap user cancel?
+ 

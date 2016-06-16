@@ -177,6 +177,8 @@ function Init
 	# 'site=imghp' seems to be result layout style
 	search_style="&site=imghp"
 
+	trap CTRL_C_Captured INT
+
 	}
 
 function BuildEnviron
@@ -1229,6 +1231,43 @@ function PageScraper
 	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
 	> "${imagelinks_pathfile}"
 	#---------------------------------------------------------------------------------------------------------------
+
+	}
+
+function CTRL_C_Captured
+	{
+
+	DebugThis "! [SIGINT]" "detected"
+
+	echo
+
+	if [ "$colour" == "true" ] ; then
+		echo " -> $(ColourTextBrightRed "[SIGINT]") - let me perform some cleanup here..."
+	else
+		echo " -> [SIGINT] - let me perform some cleanup here..."
+	fi
+
+        # kill all processes who are children of THIS script (won't kill grandchildren, though)
+	pkill -P $$
+
+	# need to remove any leftover running download files
+	RefreshActiveDownloadCounts
+
+	if [ "$parallel_count" -gt "0" ] ; then
+		# remove any image files where processing by [DownloadImage_auto] was incomplete
+		for currentfile in `ls -I . -I .. $download_run_count_path` ; do
+			DebugThis "= link ($currentfile) was partially processed" "deleted!"
+
+ 			rm -f "${target_path}/${image_file}($currentfile)".*
+		done
+	fi
+
+	DebugThis "< finished" "$(date)"
+
+	echo
+	echo " -> And ... we're done."
+
+	exit
 
 	}
 
