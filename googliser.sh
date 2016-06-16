@@ -774,7 +774,17 @@ function DownloadImages
 			echo "Too many failures!"
 		fi
 	else
-		[ "$verbose" == "true" ] && echo
+		if [ "$result_index" -eq "$result_count" ] ; then
+			DebugThis "! ran out of links to download!" "$result_index/$result_count"
+
+			if [ "$colour" == "true" ] ; then
+				echo "$(ColourTextBrightRed "Ran out of links to download!")"
+			else
+				echo "Ran out of links to download!"
+			fi
+		else
+			[ "$verbose" == "true" ] && echo
+		fi
 	fi
 
 	DebugThis "? \$success_count" "$success_count"
