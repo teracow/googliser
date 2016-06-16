@@ -17,14 +17,14 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
 
-6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s montage into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
+6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s **montage** into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
 ###**Notes:**
 
 - To download 1,000 images, you would need to be lucky enough to have Google actually find at least 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for).
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)) and [GIF](https://en.wikipedia.org/wiki/GIF) files are available for download (at the moment).
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is available, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If the ImageMagic package is not available, then no type checking occurs.
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range e.g. `--lower-size 12000 --upper-size 13000`.
 

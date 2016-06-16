@@ -1109,7 +1109,7 @@ function AllowableFileType
 	[[ ! "$ext" =~ "." ]] && ext=""
 
 	case "$ext" in
-		.png | .jpg | .jpeg | .gif )
+		.png | .jpg | .jpeg | .gif | .php )
 			# valid image type
 			return 0
 			;;
