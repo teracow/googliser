@@ -426,6 +426,36 @@ function DownloadResultGroup_auto
 
 	}
 
+function RefreshActiveResultsCounts
+	{
+
+	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
+	success_count=$(ls -I . -I .. "$results_success_count_path" | wc -l)
+	fail_count=$(ls -I . -I .. "$results_fail_count_path" | wc -l)
+
+	}
+
+function ShowResultDownloadProgress
+	{
+
+	if [ "$verbose" == "true" ] ; then
+		if [ "$colour" == "true" ] ; then
+			if [ "$success_count" -eq "$groups_max" ] ; then
+				progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
+			else
+				progress_message="$(ColourTextBrightOrange "${success_count}/${groups_max}")"
+			fi
+		else
+			progress_message="${success_count}/${groups_max}"
+		fi
+
+		progress_message+=" result groups downloaded."
+
+		ProgressUpdater "${progress_message}"
+	fi
+
+	}
+
 function DownloadResultGroups
 	{
 
@@ -449,17 +479,12 @@ function DownloadResultGroups
 	fi
 
 	for ((group=1; group<=$groups_max; group++)) ; do
-		if [ "$parallel_count" -eq "$parallel_limit" ] ; then
-			# when all current downloads have finished, then start next batch
-			wait
-		fi
-
-		while true; do
-			ShowResultDownloadProgress
-
-  			[ "$parallel_count" -lt "$parallel_limit" ] && break
-
+		# wait here until a download slot becomes available
+		while [ "$parallel_count" -eq "$parallel_limit" ] ; do
 			sleep 0.5
+
+			RefreshActiveResultsCounts
+			ShowResultDownloadProgress
 		done
 
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -471,6 +496,8 @@ function DownloadResultGroups
 
 		# create run file here as it takes too long to happen in function above.
 		touch "$results_run_count_path/$(printf "%02d" $(($group-1)))"
+
+		RefreshActiveResultsCounts
 		ShowResultDownloadProgress
 
 		[ "$(($group*100))" -ge "$max_results_required" ] && break
@@ -479,6 +506,7 @@ function DownloadResultGroups
 	# wait here while all running downloads finish
 	wait
 
+	RefreshActiveResultsCounts
 	ShowResultDownloadProgress
 
 	# build all groups into a single file
@@ -622,6 +650,61 @@ function DownloadImage_auto
 	fi
 
 	return 0
+
+	}
+
+function RefreshActiveDownloadCounts
+	{
+
+	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
+	success_count=$(ls -I . -I .. "$download_success_count_path" | wc -l)
+	fail_count=$(ls -I . -I .. "$download_fail_count_path" | wc -l)
+
+	}
+
+function ShowImageDownloadProgress
+	{
+
+	if [ "$verbose" == "true" ] ; then
+		# number of image downloads that are OK
+		if [ "$colour" == "true" ] ; then
+			progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
+		else
+			progress_message="${success_count}/${images_required}"
+		fi
+
+		progress_message+=" downloaded"
+
+		# show the number of files currently downloading (if any)
+		if [ "$parallel_count" -gt "0" ] ; then
+			progress_message+=", "
+
+			if [ "$colour" == "true" ] ; then
+				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
+			else
+				progress_message+="${parallel_count}/${parallel_limit}"
+			fi
+
+			progress_message+=" are in progress"
+		fi
+
+		# include failures (if any)
+		if [ "$fail_count" -gt "0" ] ; then
+			progress_message+=" and "
+
+			if [ "$colour" == "true" ] ; then
+				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
+			else
+				progress_message+="${fail_count}/${fail_limit}"
+			fi
+
+			progress_message+=" failed"
+		fi
+
+ 		progress_message+="."
+
+		ProgressUpdater "${progress_message}"
+	fi
 
 	}
 
@@ -818,86 +901,6 @@ function BuildGallery
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
 	return $result
-
-	}
-
-function ShowResultDownloadProgress
-	{
-
-	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
-	success_count=$(ls -I . -I .. "$results_success_count_path" | wc -l)
-	fail_count=$(ls -I . -I .. "$results_fail_count_path" | wc -l)
-
-	if [ "$verbose" == "true" ] ; then
-		if [ "$colour" == "true" ] ; then
-			if [ "$success_count" -eq "$groups_max" ] ; then
-				progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
-			else
-				progress_message="$(ColourTextBrightOrange "${success_count}/${groups_max}")"
-			fi
-		else
-			progress_message="${success_count}/${groups_max}"
-		fi
-
-		progress_message+=" result groups downloaded."
-
-		ProgressUpdater "${progress_message}"
-	fi
-
-	}
-
-function ShowImageDownloadProgress
-	{
-
-	if [ "$verbose" == "true" ] ; then
-		# number of image downloads that are OK
-		if [ "$colour" == "true" ] ; then
-			progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
-		else
-			progress_message="${success_count}/${images_required}"
-		fi
-
-		progress_message+=" downloaded"
-
-		# show the number of files currently downloading (if any)
-		if [ "$parallel_count" -gt "0" ] ; then
-			progress_message+=", "
-
-			if [ "$colour" == "true" ] ; then
-				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
-			else
-				progress_message+="${parallel_count}/${parallel_limit}"
-			fi
-
-			progress_message+=" are in progress"
-		fi
-
-		# include failures (if any)
-		if [ "$fail_count" -gt "0" ] ; then
-			progress_message+=" and "
-
-			if [ "$colour" == "true" ] ; then
-				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
-			else
-				progress_message+="${fail_count}/${fail_limit}"
-			fi
-
-			progress_message+=" failed"
-		fi
-
- 		progress_message+="."
-
-		ProgressUpdater "${progress_message}"
-	fi
-
-	}
-
-function RefreshActiveDownloadCounts
-	{
-
-	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
-	success_count=$(ls -I . -I .. "$download_success_count_path" | wc -l)
-	fail_count=$(ls -I . -I .. "$download_fail_count_path" | wc -l)
 
 	}
 
