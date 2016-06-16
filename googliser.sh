@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.18"
-	local script_date="2016-06-16"
+	local script_date="2016-06-17"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 

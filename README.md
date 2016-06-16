@@ -24,7 +24,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If the ImageMagic is not available, then no type checking occurs.
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If ImageMagic is not available, then no type checking occurs.
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
@@ -170,6 +170,7 @@ These images have been scaled down for easier distribution.
 ###**Known Issues:**
 
 - (2016-06-17) - If script is cancelled (CTRL+C), background downloads will continue to run. 
+- (2016-06-17) - If requested number of images and allowable failures is near a result group boundary (like 100, 200, 300) and some of those results are removed as invalid, can end up with less than the *optimum* number of images. Hmmm... maybe grab next result group too? 
 
 ---
 ###**Work-in-Progress:**
