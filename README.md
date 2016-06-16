@@ -22,21 +22,21 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 ---
 ###**Notes:**
 
-- To download 1,000 images, you need to be lucky enough to have Google find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
+- To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If the ImageMagic package is not available, then no type checking occurs.
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If the ImageMagic is not available, then no type checking occurs.
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
 - The search results count is determined by adding together the number of images required (default of 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
 
-- Thumbnail gallery building can be disabled if not required (by using `-g --no-gallery`). As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
-- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running. Sometimes though, downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
+- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
-- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps hitting a series of problems (as mentioned above) and so it can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
+- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
 
 - I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. 
 
@@ -44,7 +44,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - The temporary build directory is `/dev/shm/googliser.sh.PID.UNIQ` where PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and is any 3 alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-16. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-17. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -104,13 +104,13 @@ Specify a custom title for the gallery. Default is to use the search-phrase. Enc
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
 `-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000.
 
 `-p` or `--parallel [INTEGER]`  
-How many parallel image downloads? Default is 8. Maximum is 40. **More is not necessarily quicker!**
+How many parallel image downloads? Default is 8. Maximum is 40. **More is not necessarily better!**
 
 `-q` or `--quiet`  
 Suppress standard display output. Error messages are still shown.
@@ -125,7 +125,7 @@ Put the URL results file into the image sub-directory afterward. If selected, th
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
 
 `-u` or `--upper-size [INTEGER]`  
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-v` or `--version`  
 Show script version then exit.
@@ -136,7 +136,7 @@ Show script version then exit.
 This will download the first 25 available images for the search-phrase *"cows"*
 
     $ ./googliser.sh --number 250 --phrase "kittens" --parallel 12 --failures 0
-This will download the first 250 available images for the search-phrase *"kittens"* and download up to 12 images at once and ignore the failures limit.
+This will download the first 250 available images for the search-phrase *"kittens"*, download up to 12 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
@@ -169,12 +169,12 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-16) - If script is cancelled (CTRL+C), background downloads will continue to run. 
+- (2016-06-17) - If script is cancelled (CTRL+C), background downloads will continue to run. 
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-16) - stuff... :)
+- (2016-06-17) - stuff... :)
  
 ---
 ###**To-Do List:**
