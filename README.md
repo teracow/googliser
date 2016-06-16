@@ -42,7 +42,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
-- The temporary build directory is made in `/dev/shm/googliser.sh.PID.UNIQ` where the PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and can be any 3 alpha-numeric characters. 
+- The temporary build directory is `/dev/shm/googliser.sh.PID.UNIQ` where PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and is any 3 alpha-numeric characters. 
 
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-16. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
