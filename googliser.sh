@@ -783,6 +783,17 @@ function DownloadImages
 	RefreshActiveDownloadCounts
 	ShowImageDownloadProgress
 
+	if [ "$fail_count" -gt "0" ] ; then
+		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
+		percent="$((200*($fail_count)/($success_count+$fail_count) % 2 + 100*($fail_count)/($success_count+$fail_count)))%"
+
+		if [ "$colour" == "true" ] ; then
+			echo -n "($(ColourTextBrightRed "$percent")) "
+		else
+			echo -n "($percent) "
+		fi
+	fi
+
 	if [ "$result" -eq "1" ] ; then
 		if [ "$colour" == "true" ] ; then
 			echo "$(ColourTextBrightRed "Too many failures!")"
@@ -791,7 +802,7 @@ function DownloadImages
 		fi
 	else
 		if [ "$result_index" -eq "$result_count" ] ; then
-			DebugThis "! ran out of links to download!" "$result_index/$result_count"
+			DebugThis "! ran out of images to download!" "$result_index/$result_count"
 
 			if [ "$colour" == "true" ] ; then
 				echo "$(ColourTextBrightRed "Ran out of images to download!")"
