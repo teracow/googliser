@@ -126,8 +126,8 @@ Show script version then exit.
     $ ./googliser.sh -p "cows"
 This will download the first 25 available images for the search-phrase *"cows"*
 
-    $ ./googliser.sh --number 250 --phrase "kittens" -p 12 -f 0
-This will download the first 250 available images for the search-phrase *"kittens"* and download up to 10 images at once, ignore the failures limit.
+    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 12 --failures 0
+This will download the first 250 available images for the search-phrase *"kittens"* and download up to 10 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
@@ -173,4 +173,3 @@ These images have been scaled down for easier distribution.
 - read defaults from file (.defaults)?
 - test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
-- ignore .php results in list?
