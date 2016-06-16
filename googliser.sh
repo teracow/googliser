@@ -555,7 +555,7 @@ function DownloadImage_auto
 		result=$?
 
 		if [ "$result" -eq "0" ] ; then
-			estimated_size=$(grep -v "Access-Control-Expose-Headers:" <<< "$response" | sed -ne '/Content-Length/{s/.*: //;p}')
+			estimated_size=$(grep "Content-Length:" <<< "$response" | sed 's|^.*: ||' )
 
 			if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ] ; then
 				estimated_size="unknown"
