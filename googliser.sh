@@ -18,7 +18,7 @@
 #	2	required parameter unspecified or wrong
 #	3	could not create subdirectory for 'search phrase'
 #	4	could not get a list of search results from Google
-#	5	image download aborted as failure limit was reached
+#	5	image download aborted as failure limit was reached or ran out of images
 #	6	thumbnail gallery build failed
 #	7	unable to create a temporary working directory
 
@@ -791,10 +791,12 @@ function DownloadImages
 			DebugThis "! ran out of links to download!" "$result_index/$result_count"
 
 			if [ "$colour" == "true" ] ; then
-				echo "$(ColourTextBrightRed "Ran out of links to download!")"
+				echo "$(ColourTextBrightRed "Ran out of images to download!")"
 			else
-				echo "Ran out of links to download!"
+				echo "Ran out of images to download!"
 			fi
+
+			result=1
 		else
 			[ "$verbose" == "true" ] && echo
 		fi

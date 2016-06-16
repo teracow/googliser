@@ -95,7 +95,7 @@ Display this help then exit.
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
 `-k` or `--skip-no-size`  
-Don't download images if the file size cannot be determined up-front. Specifying this will speed up downloading but will generate more failures.
+Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
 `-l` or `--lower-size [INTEGER]`  
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
@@ -157,7 +157,7 @@ These images have been scaled down for easier distribution.
 2 : specified parameter incorrect - help shown.  
 3 : unable to create sub-directory for 'search-phrase'.  
 4 : could not get a list of search results from Google.  
-5 : image download aborted as failure-limit was reached.  
+5 : image download aborted as failure-limit was reached or ran out of images.  
 6 : thumbnail gallery build failed.
 
 ---
@@ -174,5 +174,4 @@ These images have been scaled down for easier distribution.
 ###**To-Do List:**
 
 - read defaults from file (.defaults)?
-- test all downloaded image files are really images (identify -format "%m").
 - need way to cancel background procs when user cancels. Trap user cancel?
