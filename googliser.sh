@@ -146,13 +146,13 @@ function Init
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
 
-	IsProgramAvailable "wget" || exitcode=1
-	IsProgramAvailable "perl" || exitcode=1
-	IsProgramAvailable "identify" || exitcode=1
+	IsReqProgAvail "wget" || exitcode=1
+	IsReqProgAvail "perl" || exitcode=1
+	IsOptProgAvail "identify" && ident=true || ident=false
 
 	if [ "$create_gallery" == "true" ] ; then
-		IsProgramAvailable "montage" || exitcode=1
-		IsProgramAvailable "convert" || exitcode=1
+		IsReqProgAvail "montage" || exitcode=1
+		IsReqProgAvail "convert" || exitcode=1
 	fi
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
@@ -539,9 +539,9 @@ function DownloadImage_auto
 	DebugThis "- link ($debug_index) download" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
-	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
+	local ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
 
-	[[ "$ext" =~ "." ]] || ext=".jpg"	# if URL did not have a file extension then choose jpg as default
+	[[ ! "$ext" =~ "." ]] && ext=".jpg"	# if URL did not have a file extension then choose jpg as default
 
 	targetimage_pathfileext="${targetimage_pathfile}($2)${ext}"
 
@@ -620,7 +620,7 @@ function DownloadImage_auto
 			fi
 
 			if [ "$size_ok" == "true" ] ; then
-				IsImageValid "$targetimage_pathfileext"
+				RenameExtAsType "$targetimage_pathfileext"
 
 				if [ "$?" -eq "0" ] ; then
 					DebugThis "$ link ($debug_index) image type validation" "success!"
@@ -988,7 +988,7 @@ function ProgressUpdater
 
 	}
 
-function IsProgramAvailable
+function IsReqProgAvail
 	{
 
 	# $1 = name of program to search for with 'which'
@@ -996,16 +996,38 @@ function IsProgramAvailable
 
 	which "$1" > /dev/null 2>&1
 
-	if [ "$?" -gt "0" ] ; then
+	local result=$?
+
+	if [ "$result" -gt "0" ] ; then
 		echo " !! required program [$1] is unavailable ... unable to continue."
 		echo
 		DebugThis "! required program is unavailable" "$1"
 		DisplayHelp
-		return 1
 	else
 		DebugThis "$ required program is available" "$1"
-		return 0
 	fi
+
+	return $result
+
+	}
+
+function IsOptProgAvail
+	{
+
+	# $1 = name of program to search for with 'which'
+	# $? = 0 if 'which' found it, 1 if not
+
+	which "$1" > /dev/null 2>&1
+
+	local result=$?
+
+	if [ "$result" -gt "0" ] ; then
+		DebugThis "! optional program is unavailable" "$1"
+	else
+		DebugThis "$ optional program is available" "$1"
+	fi
+
+	return $result
 
 	}
 
@@ -1027,38 +1049,46 @@ function HelpParameterFormat
 
 	}
 
-function IsImageValid
+function RenameExtAsType
 	{
 
-	# checks output of 'identify -format "%m"'
-	# is $1 an image file? Is it valid?
-	# $? = 0 if so, 1 if not
+	# checks output of 'identify -format "%m"' and ensures provided file extension matches
+	# $1 = image filename. Is it actually a valid image?
+	# $? = 0 if it IS an image, 1 if not an image
 
 	local returncode=0
-	local result=0
 
-	return		# not ready yet!
+	if [ "$ident" == "true" ] ; then
+		[ -z "$1" ] && returncode=1
+		[ ! -e "$1" ] && returncode=1
 
-	[ -z "$1" ] && returncode=1
-	[ ! -e "$1" ] && returncode=1
+		if [ "$returncode" -eq "0" ] ; then
+			rawtype=$(identify -format "%m" "$1")
+			returncode=$?
+		fi
 
-	if [ "$returncode" -eq "0" ] ; then
-		output=$(identify -format "%m" "$1")
-		result=$?
+		if [ "$returncode" -eq "0" ] ; then
+			# only want first 4 chars
+			imagetype="${rawtype:0:4}"
 
-		[ "$result" -gt "0" ] && return 1
+			# have to add exception here to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
+			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
 
-		# check first 4 characters of returned value
-		case ${output:0:4} in
-			PNG | JPEG | GIF | GIFG )
-				# valid image type
-				returncode=0
-				;;
-			* )
-				# not a valid image
-				returncode=1
-				;;
-		esac
+			# check first 4 characters of returned value
+			case "$imagetype" in
+				PNG | JPEG | GIF )
+					# move file into temp file
+					mv "$1" "$1".tmp
+
+					# then back but with new extension created from $imagetype
+					mv "$1".tmp "${1%.*}.$(Lowercase "$imagetype")"
+					;;
+				* )
+					# not a valid image
+					returncode=1
+					;;
+			esac
+		fi
 	fi
 
 	return $returncode
