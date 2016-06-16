@@ -1242,15 +1242,16 @@ function CTRL_C_Captured
 	echo
 
 	if [ "$colour" == "true" ] ; then
-		echo " -> $(ColourTextBrightRed "[SIGINT]") - let me perform some cleanup here..."
+		echo " -> $(ColourTextBrightRed "[SIGINT]") - let's cleanup now ..."
 	else
-		echo " -> [SIGINT] - let me perform some cleanup here..."
+		echo " -> [SIGINT] - let's cleanup now ..."
 	fi
 
-        # kill all processes who are children of THIS script (won't kill grandchildren, though)
-	pkill -P $$
+	# http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
+	kill $(jobs -p) 2>/dev/null
+	wait $(jobs -p) 2>/dev/null
 
-	# need to remove any leftover running download files
+	# only want to remove partial downloads if they exist
 	RefreshDownloadCounts
 
 	if [ "$parallel_count" -gt "0" ] ; then

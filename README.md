@@ -169,7 +169,7 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-17) - Sometimes shows 'Terminated' msg when cancelling downloads.
+- (2016-06-17) - None.
 
 ---
 ###**Work-in-Progress:**
