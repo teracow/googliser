@@ -507,7 +507,7 @@ function DownloadResultGroups
 		RefreshActiveResultsCounts
 		ShowResultDownloadProgress
 
-		[ "$(($group*100))" -ge "$max_results_required" ] && break
+		[ "$(($group*100))" -gt "$max_results_required" ] && break
 	done
 
 	# wait here while all running downloads finish

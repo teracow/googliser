@@ -170,7 +170,6 @@ These images have been scaled down for easier distribution.
 ###**Known Issues:**
 
 - (2016-06-17) - If script is cancelled (CTRL+C), background downloads will continue to run. 
-- (2016-06-17) - If requested number of images and allowable failures is near a result group boundary (like 100, 200, 300) and some of those results are removed as invalid, can end up with less than the *optimum* number of images. Hmmm... maybe grab next result group too? 
 
 ---
 ###**Work-in-Progress:**
