@@ -77,7 +77,7 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown c
 Display with ANSI coloured text. Pretty! :)
 
 `-d` or `--debug`  
-Put the debug log file into sub-directory. If selected, debugging output is appended to '**debug.log**' in the created sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+Put the debug log file into the image sub-directory. If selected, debugging output is appended to '**debug.log**' in the created image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 `-e` or `--delete-after`  
 Delete the downloaded images after building the thumbnail gallery.

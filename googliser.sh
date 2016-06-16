@@ -58,7 +58,17 @@ function Init
 	server="www.google.com.au"
 
 	# http://whatsmyuseragent.com
+
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
+
+	# parameter defaults
+	images_required_default=25
+	parallel_limit_default=8
+	fail_limit_default=40
+	upper_size_limit_default=0
+	lower_size_limit_default=1000
+	timeout_default=15
+	retries_default=3
 
 	# internals
 	script_starttime=$(date)
@@ -72,16 +82,7 @@ function Init
 	parallel_max=40
 	timeout_max=600
 	retries_max=100
-
-	# parameter defaults
-	images_required_default=25
-	parallel_limit_default=8
-	fail_limit_default=40
-	upper_size_limit_default=0
-	lower_size_limit_default=1000
-	timeout_default=15
-	retries_default=3
-	max_results_required_default=100
+	max_results_required=100
 
 	# user changable parameters
 	user_query=""
@@ -99,7 +100,6 @@ function Init
 	verbose=true
 	remove_after=false
 	debug=false
-	max_results_required=$max_results_required_default
 
 	WhatAreMyOptions
 
@@ -142,7 +142,6 @@ function Init
 	DebugThis "? \$verbose" "$verbose"
 	DebugThis "? \$debug" "$debug"
 	DebugThis "? \$remove_after" "$remove_after"
-	DebugThis "? \$max_results_required" "$max_results_required"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -269,7 +268,6 @@ function DisplayHelp
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
-	HelpParameterFormat "m" "max-results [INTEGER] <$max_results_required_default>" "Maximum search results returned. Maximum(?) of $google_max."
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
 	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
@@ -331,10 +329,6 @@ function WhatAreMyOptions
 				;;
 			-u | --upper-size )
 				upper_size_limit="$2"
-				shift 2		# shift to next parameter in $1
-				;;
-			-m | --max-results )
-				max_results_required="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-l | --lower-size )
@@ -929,13 +923,13 @@ function ParseResults
 
 		# if too many results then trim
 		if [ "$result_count" -gt "$max_results_required" ] ; then
-			DebugThis "= received more results than required" "$result_count/$max_results_required"
+			DebugThis "! received more results than required" "$result_count/$max_results_required"
 
 			head --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
 			mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
 			result_count=$max_results_required
 
-			DebugThis "= trimmed results back to \$max_results_required" "$max_results_required"
+			DebugThis "~ trimmed results back to \$max_results_required" "$max_results_required"
 		fi
 
 		if [ "$verbose" == "true" ] ; then
@@ -1282,7 +1276,7 @@ function Lowercase
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,m:,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,max-results:,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1310,29 +1304,6 @@ if [ "$exitcode" -eq "0" ] ; then
 			fi
 			;;
 	esac
-
-	if [ "$exitcode" -eq "0" ] ; then
-		case ${max_results_required#[-+]} in
-			*[!0-9]* )
-				DebugThis "! specified \$max_results_required" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-m --max-results) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-			* )
-				if [ "$max_results_required" -le "$max_results_required_default" ] ; then
-					max_results_required=$max_results_required_default
-					DebugThis "~ \$max_results_required too small so set as \$max_results_required_default" "$max_results_required"
-				fi
-
-				if [ "$max_results_required" -gt "$google_max" ] ; then
-					max_results_required=$google_max
-					DebugThis "~ \$max_results_required too large so set as \$google_max" "$max_results_required"
-				fi
-				;;
-		esac
-	fi
 
 	if [ "$exitcode" -eq "0" ] ; then
 		case ${fail_limit#[-+]} in
@@ -1516,6 +1487,11 @@ fi
 
 # get list of search results
 if [ "$exitcode" -eq "0" ] ; then
+	if [ "$max_results_required" -lt "$(($images_required+$fail_limit))" ] ; then
+		max_results_required=$(($images_required+$fail_limit))
+		DebugThis "~ \$max_results_required too low so set as \$images_required + \$fail_limit" "$max_results_required"
+	fi
+
 	DownloadResultGroups
 
 	if [ "$?" -gt "0" ] ; then
