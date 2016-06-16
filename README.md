@@ -26,6 +26,8 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 - Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)) and [GIF](https://en.wikipedia.org/wiki/GIF) files are available for download (at the moment).
 
+- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range e.g. `--lower-size 12000 --upper-size 13000`.
+
 - Thumbnail gallery building can be disabled if not required. As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
@@ -116,7 +118,7 @@ Put the URL results file into sub-directory. If selected, the URL list will be f
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
 
 `-u` or `--upper-size [INTEGER]`  
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-v` or `--version`  
 Show script version then exit.

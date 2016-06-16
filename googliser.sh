@@ -395,30 +395,31 @@ function DownloadResultGroup_auto
 	# *** This function runs as a background process ***
 	# $1 = page group to load:		(0, 1, 2, 3, etc...)
 	# $2 = pointer starts at result:	(0, 100, 200, 300, etc...)
+	# $3 = debug index identifier e.g. "02"
 
 	local result=0
 	local search_group="&ijn=$1"
 	local search_start="&start=$2"
 	local response=""
-	local debug_number=$(printf "%02d" $1)
+	local debug_index="$3"
 
-	local run_pathfile="$results_run_count_path/$debug_number"
-	local success_pathfile="$results_success_count_path/$debug_number"
-	local fail_pathfile="$results_fail_count_path/$debug_number"
+	local run_pathfile="$results_run_count_path/$debug_index"
+	local success_pathfile="$results_success_count_path/$debug_index"
+	local fail_pathfile="$results_fail_count_path/$debug_index"
 
-	DebugThis "- result group ($debug_number) download" "start"
+	DebugThis "- result group ($debug_index) download" "start"
 
 	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
-	DebugThis "? result group ($debug_number) \$wget_list_cmd" "$wget_list_cmd"
+	DebugThis "? result group ($debug_index) \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
 	result=$?
 
 	if [ "$result" -eq "0" ] ; then
-		DebugThis "$ result group ($debug_number) download" "success!"
+		DebugThis "$ result group ($debug_index) download" "success!"
 		mv "$run_pathfile" "$success_pathfile"
 	else
-		DebugThis "! result group ($debug_number) download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		DebugThis "! result group ($debug_index) download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
 		mv "$run_pathfile" "$fail_pathfile"
 	fi
 
@@ -491,11 +492,11 @@ function DownloadResultGroups
 # 		percent="$((200*($group-1)/$groups_max % 2 + 100*($group-1)/$groups_max))% "
 
 		pointer=$((($group-1)*100))
+		debug_index=$(printf "%02d" $(($group-1)))
 
-		DownloadResultGroup_auto $(($group-1)) "$pointer" &
-
-		# create run file here as it takes too long to happen in function above.
-		touch "$results_run_count_path/$(printf "%02d" $(($group-1)))"
+		# create run file here as it takes too long to happen in background function
+		touch "$results_run_count_path/$debug_index"
+		DownloadResultGroup_auto "$(($group-1))" "$pointer" "$debug_index" &
 
 		RefreshActiveResultsCounts
 		ShowResultDownloadProgress
@@ -529,18 +530,19 @@ function DownloadImage_auto
 	# *** This function runs as a background process ***
 	# $1 = URL to download
 	# $2 = current counter relative to main list
+	# $3 = debug index identifier e.g. "0026"
 
 	local result=0
 	local size_ok=true
 	local get_download=true
 	local response=""
-	local debug_number=$(printf "%04d" $2)
+	local debug_index="$3"
 
-	local run_pathfile="$download_run_count_path/$debug_number"
-	local success_pathfile="$download_success_count_path/$debug_number"
-	local fail_pathfile="$download_fail_count_path/$debug_number"
+	local run_pathfile="$download_run_count_path/$debug_index"
+	local success_pathfile="$download_success_count_path/$debug_index"
+	local fail_pathfile="$download_fail_count_path/$debug_index"
 
-	DebugThis "- link ($debug_number) download" "start"
+	DebugThis "- link ($debug_index) download" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
@@ -553,7 +555,7 @@ function DownloadImage_auto
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
 		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"$1\" 2>&1"
-		DebugThis "? link ($debug_number) \$wget_server_response_cmd" "$wget_server_response_cmd"
+		DebugThis "? link ($debug_index) \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
 		result=$?
@@ -565,23 +567,23 @@ function DownloadImage_auto
 				estimated_size="unknown"
 			fi
 
-			DebugThis "? link ($debug_number) \$estimated_size" "$estimated_size bytes"
+			DebugThis "? link ($debug_index) \$estimated_size" "$estimated_size bytes"
 
 			if [ "$estimated_size" != "unknown" ] ; then
 				if [ "$estimated_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link ($debug_number) (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+					DebugThis "! link ($debug_index) (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$estimated_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link ($debug_number) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+					DebugThis "! link ($debug_index) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 			fi
 		else
-			DebugThis "! link ($debug_number) (before download) server-response" "failed!"
+			DebugThis "! link ($debug_index) (before download) server-response" "failed!"
 			estimated_size="unknown"
 		fi
 	fi
@@ -589,7 +591,7 @@ function DownloadImage_auto
 	# perform actual image download
 	if [ "$get_download" == "true" ] ; then
 		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"$1\" 2>&1"
-		DebugThis "? link ($debug_number) \$wget_download_cmd" "$wget_download_cmd"
+		DebugThis "? link ($debug_index) \$wget_download_cmd" "$wget_download_cmd"
 
 		response=$(eval "$wget_download_cmd")
 		result=$?
@@ -602,19 +604,19 @@ function DownloadImage_auto
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
 				if [ "$actual_size" == "$estimated_size" ] ; then
-					DebugThis "? link ($debug_number) \$actual_size" "$actual_size bytes (estimate was correct)"
+					DebugThis "? link ($debug_index) \$actual_size" "$actual_size bytes (estimate was correct)"
 				else
-					DebugThis "? link ($debug_number) \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
+					DebugThis "? link ($debug_index) \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
 				fi
 
 				if [ "$actual_size" -lt "$lower_size_limit" ] ; then
-					DebugThis "! link ($debug_number) \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
+					DebugThis "! link ($debug_index) \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
 				if [ "$upper_size_limit" -gt "0" ] && [ "$actual_size" -gt "$upper_size_limit" ] ; then
-					DebugThis "! link ($debug_number) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
+					DebugThis "! link ($debug_index) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
@@ -627,19 +629,19 @@ function DownloadImage_auto
 				IsImageValid "$targetimage_pathfileext"
 
 				if [ "$?" -eq "0" ] ; then
-					DebugThis "$ link ($debug_number) image type validation" "success!"
-					DebugThis "$ link ($debug_number) download" "success!"
+					DebugThis "$ link ($debug_index) image type validation" "success!"
+					DebugThis "$ link ($debug_index) download" "success!"
 					mv "$run_pathfile" "$success_pathfile"
-					DebugThis "? link ($debug_number) \$download_speed" "$download_speed"
+					DebugThis "? link ($debug_index) \$download_speed" "$download_speed"
 				else
-					DebugThis "! link ($debug_number) image type validation" "failed!"
+					DebugThis "! link ($debug_index) image type validation" "failed!"
 				fi
 			else
 				# files that were outside size limits still count as failures
 				mv "$run_pathfile" "$fail_pathfile"
 			fi
 		else
-			DebugThis "! link ($debug_number) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
+			DebugThis "! link ($debug_index) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
 			mv "$run_pathfile" "$fail_pathfile"
 
 			# delete temp file if one was created
@@ -755,11 +757,11 @@ function DownloadImages
 
 			if [ "$(($success_count+$parallel_count))" -lt "$images_required" ] ; then
 				((result_index++))
+				debug_index=$(printf "%04d" $result_index)
 
-				DownloadImage_auto "$imagelink" "$result_index" &
-
-				# create run file here as it takes too long to happen in function above.
-				touch "$download_run_count_path/$(printf "%04d" $result_index)"
+				# create run file here as it takes too long to happen in background function
+				touch "$download_run_count_path/$debug_index"
+				DownloadImage_auto "$imagelink" "$result_index" "$debug_index" &
 
 				break
 			fi
@@ -1054,7 +1056,7 @@ function IsImageValid
 
 		# check first 4 characters of returned value
 		case ${output:0:4} in
-			"PNG" | "JPEG" | "GIF" | "GIFG" )
+			PNG | JPEG | GIF | GIFG )
 				# valid image type
 				returncode=0
 				;;
