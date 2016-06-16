@@ -169,12 +169,12 @@ These images have been scaled down for easier distribution.
 ---
 ###**Known Issues:**
 
-- (2016-06-17) - None at the moment. 
+- (2016-06-17) - Sometimes shows 'Terminated' msg when cancelling downloads.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-17) - stuff... :)
+- (2016-06-17) - Working on CTRL+C code...
  
 ---
 ###**To-Do List:**

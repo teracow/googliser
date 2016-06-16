@@ -435,7 +435,7 @@ function DownloadResultGroup_auto
 
 	}
 
-function RefreshActiveResultsCounts
+function RefreshResultsCounts
 	{
 
 	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
@@ -492,7 +492,7 @@ function DownloadResultGroups
 		while [ "$parallel_count" -eq "$parallel_limit" ] ; do
 			sleep 0.5
 
-			RefreshActiveResultsCounts
+			RefreshResultsCounts
 			ShowResultDownloadProgress
 		done
 
@@ -504,18 +504,18 @@ function DownloadResultGroups
 
 		# create run file here as it takes too long to happen in background function
 		touch "$results_run_count_path/$link_index"
-		DownloadResultGroup_auto "$(($group-1))" "$pointer" "$link_index" &
+		{ DownloadResultGroup_auto "$(($group-1))" "$pointer" "$link_index" & } 2>/dev/null
 
-		RefreshActiveResultsCounts
+		RefreshResultsCounts
 		ShowResultDownloadProgress
 
 		[ "$(($group*100))" -gt "$max_results_required" ] && break
 	done
 
 	# wait here while all running downloads finish
-	wait
+	wait 2>/dev/null
 
-	RefreshActiveResultsCounts
+	RefreshResultsCounts
 	ShowResultDownloadProgress
 
 	# build all groups into a single file
@@ -668,7 +668,7 @@ function DownloadImage_auto
 
 	}
 
-function RefreshActiveDownloadCounts
+function RefreshDownloadCounts
 	{
 
 	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
@@ -743,7 +743,7 @@ function DownloadImages
 
 	while read imagelink ; do
 		while true ; do
-			RefreshActiveDownloadCounts
+			RefreshDownloadCounts
 			ShowImageDownloadProgress
 
 			# abort downloading if too many failures
@@ -752,7 +752,7 @@ function DownloadImages
 
 				result=1
 
-				wait
+				wait 2>/dev/null
 
 				break 2
 			fi
@@ -761,7 +761,7 @@ function DownloadImages
 			while [ "$parallel_count" -eq "$parallel_limit" ] ; do
 				sleep 0.5
 
-				RefreshActiveDownloadCounts
+				RefreshDownloadCounts
 			done
 
 			# have enough images now so exit loop
@@ -773,16 +773,16 @@ function DownloadImages
 
 				# create run file here as it takes too long to happen in background function
 				touch "$download_run_count_path/$link_index"
-				DownloadImage_auto "$imagelink" "$link_index" &
+				{ DownloadImage_auto "$imagelink" "$link_index" & } 2>/dev/null
 
 				break
 			fi
 		done
 	done < "${imagelinks_pathfile}"
 
-	wait
+	wait 2>/dev/null
 
-	RefreshActiveDownloadCounts
+	RefreshDownloadCounts
 	ShowImageDownloadProgress
 
 	if [ "$fail_count" -gt "0" ] ; then
@@ -1251,7 +1251,7 @@ function CTRL_C_Captured
 	pkill -P $$
 
 	# need to remove any leftover running download files
-	RefreshActiveDownloadCounts
+	RefreshDownloadCounts
 
 	if [ "$parallel_count" -gt "0" ] ; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
