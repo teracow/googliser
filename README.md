@@ -22,7 +22,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 ---
 ###**Notes:**
 
-- To potentially download 1,000 images, the (*-m --max-results*) parameter must be selected with 1000 as its argument. (e.g. *-m 1000*). You would also need to be lucky enough to have Google actually find at least 1,000 results for your search term, and for those images to be available for download. I sometimes get around 5 failures for every 25 images I download (depending on what I'm searching for).
+- To download 1,000 images, you would need to be lucky enough to have Google actually find at least 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for).
 
 - Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)) and [GIF](https://en.wikipedia.org/wiki/GIF) files are available for download (at the moment).
 
@@ -96,9 +96,6 @@ Specify a custom title for the gallery. Default is to use the search-phrase. Enc
 
 `-l` or `--lower-size [INTEGER]`  
 Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
-
-`-m` or `--max-results [INTEGER]`  
-Maximum number of search results to acquire from Google Images. Increasing this will involve more Google searches (which takes time). Default is 100. Maximum is 1,000. If you only need 25 images, then you probably don't need to download 1,000 results. ;)
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000. Requesting more than 100 will require (-m --max-results) to be increased to allow more results to be downloaded.
