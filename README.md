@@ -94,8 +94,11 @@ Display this help then exit.
 `-i` or `--title [STRING]`  
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
+`-k` or `--skip-no-size`  
+Don't download images if the file size cannot be determined up-front. Specifying this will speed up downloading but will generate more failures.
+
 `-l` or `--lower-size [INTEGER]`  
-Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward. Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
+Only download image files that are reported by the server to be larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for ignoring files sent by servers that give me HTML instead of the JPG I requested. :)
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000. Requesting more than 100 will require (-m --max-results) to be increased to allow more results to be downloaded.
@@ -116,7 +119,7 @@ Put the URL results file into sub-directory. If selected, the URL list will be f
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
 
 `-u` or `--upper-size [INTEGER]`  
-Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward. Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files that are reported by the server to be smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Enter 0 for unlimited size. Default is 0 (unlimited).
 
 `-v` or `--version`  
 Show script version then exit.
