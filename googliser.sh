@@ -51,7 +51,8 @@ function Init
 
 	if [ "$?" -gt "0" ] ; then
 		echo "! Unable to create a temporary directory! Exiting."
-		# ugly - need to get this to exit at the end of the script instead of bailing-out here
+
+		# oh, the ugliness! - need to change this to exit at the end of the script instead of bailing-out here
 		exit 7
 	fi
 
@@ -81,7 +82,7 @@ function Init
 	parallel_max=40
 	timeout_max=600
 	retries_max=100
-	max_results_required=100
+	max_results_required=$images_required_default
 
 	# user changable parameters
 	user_query=""

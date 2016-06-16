@@ -22,11 +22,13 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 ---
 ###**Notes:**
 
-- To download 1,000 images, you need to be lucky enough to have Google actually find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for).
+- To download 1,000 images, you need to be lucky enough to have Google actually find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
 
 - Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment). If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If the ImageMagic package is not available, then no type checking occurs.
 
-- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range e.g. `--lower-size 12000 --upper-size 13000`.
+- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
+
+- The search results count is determined by adding together the number of images required (default of 25) with the number of allowable failures (default is 40). But search results actually download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The results are only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
 
 - Thumbnail gallery building can be disabled if not required (by using `-g --no-gallery`). As a guide, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
 
