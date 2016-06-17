@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.18"
-	local script_date="2016-06-17"
+	local script_date="2016-06-18"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -826,7 +826,7 @@ function DownloadImages
 function BuildGallery
 	{
 
-	local title_font="Century-Schoolbook-L-Bold-Italic"
+	local title_font="$(FirstPreferredFont)"
 	local title_colour="goldenrod1"
 	local thumbnail_dimensions="400x400"
 
@@ -1424,6 +1424,50 @@ function Lowercase
 	# $1 = some text to convert to lowercase
 
 	echo "$1" | tr "[A-Z]" "[a-z]"
+
+	}
+
+function WantedFonts
+	{
+
+	local font_list=""
+
+	font_list+="Century-Schoolbook-L-Bold-Italic "
+	font_list+="Droid-Serif-Bold-Italic "
+	font_list+="FreeSerif-Bold-Italic "
+	font_list+="Nimbus-Roman-No9-L-Medium-Italic "
+	font_list+="Times-BoldItalic "
+	font_list+="URW-Palladio-L-Bold-Italic"
+	font_list+="Utopia-Bold-Italic"
+	font_list+="Bitstream-Charter-Bold-Italic "
+
+	echo "$font_list"
+
+	}
+
+function FirstPreferredFont
+	{
+
+	local preferred_fonts=$(WantedFonts)
+	local available_fonts=$(convert -list font | grep "Font:" | sed 's| Font: ||')
+	local first_available_font=""
+
+	while read -d' ' preferred_font ; do
+		while read available_font ; do
+			[ "$preferred_font" == "$available_font" ] && break 2
+		done <<< "$available_fonts"
+	done <<< "$preferred_fonts"
+
+	if [ ! -z "$preferred_font" ] ; then
+		echo "$preferred_font"
+	else
+		# uncomment 2nd line down to return first installed font if no preferred fonts could be found.
+		# for 'convert -font' this isn't needed as it will use a default font if specified font is "".
+
+		#read first_available_font others <<< $available_fonts
+
+		echo "$first_available_font"
+	fi
 
 	}
 
