@@ -832,6 +832,7 @@ function BuildGallery
 
 	local title_font="Century-Schoolbook-L-Bold-Italic"
 	local title_colour="goldenrod1"
+	local thumbnail_dimensions="400x400"
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
@@ -854,7 +855,7 @@ function BuildGallery
 	fi
 
 	# build gallery
-	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry 400x400 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
 
 	DebugThis "? \$build_foreground_cmd" "$build_foreground_cmd"
 
