@@ -243,8 +243,8 @@ function DisplayHelp
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
-	echo " - Requirements: Wget, Perl & identify (from ImageMagick)"
-	echo " - Optional: montage & convert (also from ImageMagick)"
+	echo " - Requirements: Wget & Perl"
+	echo " - Optional: identify, montage & convert (from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
 	echo
