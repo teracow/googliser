@@ -20,7 +20,7 @@
 #	4	could not get a list of search results from Google
 #	5	image download aborted as failure limit was reached or ran out of images
 #	6	thumbnail gallery build failed
-#	7	unable to create a temporary working directory
+#	7	unable to create a temporary build directory
 
 # debug log first character notation:
 #	>	script entry
@@ -42,15 +42,10 @@ function Init
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
-	image_file="google-image"
-	imagelinks_file="download.links.list"
-	debug_file="debug.log"
-	gallery_name="googliser-gallery"
-
 	BuildEnviron
 
 	if [ "$?" -gt "0" ] ; then
-		echo "! Unable to create a temporary directory! Exiting."
+		echo "! Unable to create a temporary build directory! Exiting."
 
 		# oh, the ugliness! - need to change this to exit at the end of the script instead of bailing-out here
 		exit 7
@@ -59,7 +54,6 @@ function Init
 	server="www.google.com.au"
 
 	# http://whatsmyuseragent.com
-
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
 
 	# parameter defaults
@@ -155,12 +149,13 @@ function Init
 
 	IsReqProgAvail "wget" || exitcode=1
 	IsReqProgAvail "perl" || exitcode=1
-	IsOptProgAvail "identify" && ident=true || ident=false
 
 	if [ "$create_gallery" == "true" ] ; then
 		IsReqProgAvail "montage" || exitcode=1
 		IsReqProgAvail "convert" || exitcode=1
 	fi
+
+	IsOptProgAvail "identify" && ident=true || ident=false
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -184,6 +179,10 @@ function Init
 function BuildEnviron
 	{
 
+	image_file="google-image"
+	imagelinks_file="download.links.list"
+	debug_file="debug.log"
+	gallery_name="googliser-gallery"
 	current_path="$PWD"
 
 	local temp_root="/dev/shm"
@@ -495,9 +494,6 @@ function DownloadResultGroups
 			RefreshResultsCounts
 			ShowResultDownloadProgress
 		done
-
-		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-# 		percent="$((200*($group-1)/$groups_max % 2 + 100*($group-1)/$groups_max))% "
 
 		pointer=$((($group-1)*100))
 		link_index=$(printf "%02d" $(($group-1)))
@@ -1056,7 +1052,7 @@ function InitProgress
 function ProgressUpdater
 	{
 
-	# $1 = message to display.
+	# $1 = message to display
 
 	if [ "$1" != "$previous_msg" ] ; then
 		temp=$(RemoveColourCodes "$1")
@@ -1087,13 +1083,13 @@ function IsReqProgAvail
 
 	local result=$?
 
-	if [ "$result" -gt "0" ] ; then
+	if [ "$result" -eq "0" ] ; then
+		DebugThis "$ required program is available" "$1"
+	else
 		echo " !! required program [$1] is unavailable ... unable to continue."
 		echo
 		DebugThis "! required program is unavailable" "$1"
 		DisplayHelp
-	else
-		DebugThis "$ required program is available" "$1"
 	fi
 
 	return $result
@@ -1110,10 +1106,10 @@ function IsOptProgAvail
 
 	local result=$?
 
-	if [ "$result" -gt "0" ] ; then
-		DebugThis "! optional program is unavailable" "$1"
-	else
+	if [ "$result" -eq "0" ] ; then
 		DebugThis "$ optional program is available" "$1"
+	else
+		DebugThis "! optional program is unavailable" "$1"
 	fi
 
 	return $result
@@ -1163,7 +1159,6 @@ function RenameExtAsType
 			# have to add exception here to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
 			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
 
-			# check first 4 characters of returned value
 			case "$imagetype" in
 				PNG | JPEG | GIF )
 					# move file into temp file
@@ -1225,11 +1220,11 @@ function PageScraper
 	#       5. remove everything including and after '","ow"' on each line
 	#       6. remove everything including and after '?' on each line
 
-	cat "${results_pathfile}" |\
-	sed 's|<div|\n\n<div|g' |\
-	grep '<div class=\"rg_meta\">.*http' |\
-	grep -ivE 'youtube|vimeo' |\
-	perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
+	cat "${results_pathfile}" \
+	| sed 's|<div|\n\n<div|g' \
+	| grep '<div class=\"rg_meta\">.*http' \
+	| grep -ivE 'youtube|vimeo' \
+	| perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
 	> "${imagelinks_pathfile}"
 	#---------------------------------------------------------------------------------------------------------------
 
