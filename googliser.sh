@@ -309,8 +309,7 @@ function WhatAreMyOptions
 
 	eval set -- "$user_parameters"
 
-	while true
-	do
+	while true ; do
 		case "$1" in
 			-n | --number )
 				images_required="$2"
@@ -638,9 +637,9 @@ function DownloadImage_auto
 				RenameExtAsType "$targetimage_pathfileext"
 
 				if [ "$?" -eq "0" ] ; then
+					mv "$run_pathfile" "$success_pathfile"
 					DebugThis "$ link ($link_index) image type validation" "success!"
 					DebugThis "$ link ($link_index) download" "success!"
-					mv "$run_pathfile" "$success_pathfile"
 					DebugThis "? link ($link_index) \$download_speed" "$download_speed"
 				else
 					DebugThis "! link ($link_index) image type validation" "failed!"
@@ -650,8 +649,8 @@ function DownloadImage_auto
 				mv "$run_pathfile" "$fail_pathfile"
 			fi
 		else
-			DebugThis "! link ($link_index) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
 			mv "$run_pathfile" "$fail_pathfile"
+			DebugThis "! link ($link_index) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
@@ -826,7 +825,6 @@ function DownloadImages
 function BuildGallery
 	{
 
-	local title_font="$(FirstPreferredFont)"
 	local title_colour="goldenrod1"
 	local thumbnail_dimensions="400x400"
 
@@ -910,7 +908,7 @@ function BuildGallery
 
 		# create title image
 		# let's try a fixed height of 100 pixels
-		build_title_cmd="convert -size x100 -font $title_font -background none -stroke black -strokewidth 10 label:\"${gallery_title}\" -blur 0x5 -fill $title_colour -stroke none label:\"${gallery_title}\" -flatten \"${gallery_title_pathfile}\""
+		build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"${gallery_title}\" -blur 0x5 -fill $title_colour -stroke none label:\"${gallery_title}\" -flatten \"${gallery_title_pathfile}\""
 
 		DebugThis "? \$build_title_cmd" "$build_title_cmd"
 
