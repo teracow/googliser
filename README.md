@@ -20,52 +20,15 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s **montage** into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
-###**Notes:**
+###**Sample Outputs:**
 
-- To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
+These images have been scaled down for easier distribution.
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment).
+    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
+![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
 
-- If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If ImageMagic is not available, then no type checking occurs.
-
-- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
-
-- The search results count is determined by adding together the number of images required (default of 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
-
-- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
-
-- When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
-
-- The thumbnail sizes in the gallery are no larger than 400x400.
-
-- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
-
-- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
-
-- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. 
-
-- It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
-
-- The temporary build directory is `/dev/shm/googliser.sh.PID.UNIQ` where PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and is any 3 alpha-numeric characters. 
-
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-17. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
-
----
-###**Development Environment:**
-
-- [openSUSE](https://www.opensuse.org/) - *v13.2 64b*
-- GNU BASH - *v4.2.53*
-- GNU Wget - *v1.16*
-- [ImageMagick](http://www.imagemagick.org) - *v6.8.9-8 Q16 x86_64 2016-05-31*
-- Kate - *v3.14.9*
-- Dolphin - *v15.04.0*
-- [ReText](https://github.com/retext-project/retext) - *v5.0.0*
-- Gwenview - *v4.14.0*
-- [GIMP](https://www.gimp.org/) - *v2.8.14*
-- Konsole - *v2.14.2*
-- [Find Icons](http://findicons.com/icon/131388/search) - script icon
-
-Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
+    $ ./googliser.sh -n 240 -p "cows" -u 250000 -l 10000 -f 0
+![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
 ###**Usage:**
@@ -149,17 +112,6 @@ This will download the first 56 available images for the search-phrase *"fish"* 
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-###**Sample Outputs:**
-
-These images have been scaled down for easier distribution.
-
-    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
-![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
-
-    $ ./googliser.sh -n 240 -p "cows" -u 250000 -l 10000 -f 0
-![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
-
----
 ###**Return Values ($?):**  
 
 0 : success!  
@@ -170,6 +122,54 @@ These images have been scaled down for easier distribution.
 5 : image download aborted as failure-limit was reached or ran out of images.  
 6 : thumbnail gallery build failed.  
 7 : unable to create a temporary build directory.
+
+---
+###**Notes:**
+
+- To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Closest was about 986.
+
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download (at the moment).
+
+- If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If ImageMagic is not available, then no type checking occurs.
+
+- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
+
+- The search results count is determined by adding together the number of images required (default of 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
+
+- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+
+- When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
+
+- The thumbnail sizes in the gallery are no larger than 400x400.
+
+- Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
+
+- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
+
+- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. 
+
+- It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
+
+- The temporary build directory is `/dev/shm/googliser.sh.PID.UNIQ` where PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and is any 3 alpha-numeric characters. 
+
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-17. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+
+---
+###**Development Environment:**
+
+- [openSUSE](https://www.opensuse.org/) - *v13.2 64b*
+- GNU BASH - *v4.2.53*
+- GNU Wget - *v1.16*
+- [ImageMagick](http://www.imagemagick.org) - *v6.8.9-8 Q16 x86_64 2016-05-31*
+- Kate - *v3.14.9*
+- Dolphin - *v15.04.0*
+- [ReText](https://github.com/retext-project/retext) - *v5.0.0*
+- Gwenview - *v4.14.0*
+- [GIMP](https://www.gimp.org/) - *v2.8.14*
+- Konsole - *v2.14.2*
+- [Find Icons](http://findicons.com/icon/131388/search) - script icon
+
+Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
 ###**Known Issues:**
