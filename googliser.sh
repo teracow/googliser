@@ -1435,8 +1435,8 @@ function WantedFonts
 	font_list+="FreeSerif-Bold-Italic "
 	font_list+="Nimbus-Roman-No9-L-Medium-Italic "
 	font_list+="Times-BoldItalic "
-	font_list+="URW-Palladio-L-Bold-Italic"
-	font_list+="Utopia-Bold-Italic"
+	font_list+="URW-Palladio-L-Bold-Italic "
+	font_list+="Utopia-Bold-Italic "
 	font_list+="Bitstream-Charter-Bold-Italic "
 
 	echo "$font_list"
