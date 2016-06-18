@@ -71,7 +71,7 @@ Specify a custom title for the gallery. Default is to use the search-phrase. Enc
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
 `-l` or `--lower-size [INTEGER]`  
-Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. :)
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000.
@@ -136,7 +136,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The search results count is determined by adding together the number of images required (default is 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
 
-- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU :)
+- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
@@ -144,7 +144,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
-- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. **:)**
+- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
 
 - I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. 
 
