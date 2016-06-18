@@ -27,7 +27,7 @@ These images have been scaled down for easier distribution.
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
 ![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
 
-    $ ./googliser.sh -n 240 -p "cows" -u 250000 -l 10000 -f 0
+    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -k
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
@@ -134,9 +134,9 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
-- The search results count is determined by adding together the number of images required (default of 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
+- The search results count is determined by adding together the number of images required (default is 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
 
-- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 70MB) and created a single gallery image file that is 191MB with dimensions of 8,004 x 7,676 (61.4MP). This took **montage** 10 minutes to render on my old Atom D510 CPU :)
+- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU :)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
@@ -184,5 +184,6 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**To-Do List:**
 
+- add overall speed stats?
 - read defaults from file (.defaults)?
  
