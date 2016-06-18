@@ -47,8 +47,8 @@ function Init
 	if [ "$?" -gt "0" ] ; then
 		echo "! Unable to create a temporary build directory! Exiting."
 
-		# oh, the ugliness! - need to change this to exit at the end of the script instead of bailing-out here
-		exit 7
+		exitcode=7
+		return 1
 	fi
 
 	server="www.google.com.au"
