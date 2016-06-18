@@ -813,6 +813,15 @@ function DownloadImages
 		fi
 	fi
 
+	download_bytes="$(du "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
+	DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
+
+	download_seconds="$(($(date +%s )-$func_startseconds))"
+	DebugThis "= download seconds" "$(DisplayThousands "$download_seconds")"
+
+	avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
+	DebugThis "= average download speed" "${avg_download_speed}B/s"
+
 	DebugThis "? \$success_count" "$success_count"
 	DebugThis "? \$fail_count" "$fail_count"
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
@@ -1422,6 +1431,24 @@ function Lowercase
 	# $1 = some text to convert to lowercase
 
 	echo "$1" | tr "[A-Z]" "[a-z]"
+
+	}
+
+function DisplayISO
+	{
+
+	# show $1 formatted with 'k', 'M', 'G'
+
+	echo $1 | awk 'BEGIN{ u[0]=""; u[1]=" k"; u[2]=" M"; u[3]=" G"} { n = $1; i = 0; while(n > 1000) { i+=1; n= int((n/1000)+0.5) } print n u[i] } '
+
+	}
+
+function DisplayThousands
+	{
+
+	# show $1 formatted with thousands separator
+
+	printf "%'.f\n" "$1"
 
 	}
 
