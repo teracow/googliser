@@ -1516,12 +1516,12 @@ if [ "$exitcode" -eq "0" ] ; then
 		* )
 			if [ "$images_required" -lt "1" ] ; then
 				images_required=1
-				DebugThis "~ \$images_required too small so set sensible minimum" "$images_required"
+				DebugThis "~ \$images_required too low so set sensible minimum" "$images_required"
 			fi
 
 			if [ "$images_required" -gt "$google_max" ] ; then
 				images_required=$google_max
-				DebugThis "~ \$images_required too large so set as \$google_max" "$images_required"
+				DebugThis "~ \$images_required too high so set as \$google_max" "$images_required"
 			fi
 			;;
 	esac
@@ -1538,12 +1538,12 @@ if [ "$exitcode" -eq "0" ] ; then
 			* )
 				if [ "$fail_limit" -le "0" ] ; then
 					fail_limit=$google_max
-					DebugThis "~ \$fail_limit too small so set as \$google_max" "$fail_limit"
+					DebugThis "~ \$fail_limit too low so set as \$google_max" "$fail_limit"
 				fi
 
 				if [ "$fail_limit" -gt "$google_max" ] ; then
 					fail_limit=$google_max
-					DebugThis "~ \$fail_limit too large so set as \$google_max" "$fail_limit"
+					DebugThis "~ \$fail_limit too high so set as \$google_max" "$fail_limit"
 				fi
 				;;
 		esac
@@ -1561,12 +1561,12 @@ if [ "$exitcode" -eq "0" ] ; then
 			* )
 				if [ "$parallel_limit" -lt "1" ] ; then
 					parallel_limit=1
-					DebugThis "~ \$parallel_limit too small so set as" "$parallel_limit"
+					DebugThis "~ \$parallel_limit too low so set as" "$parallel_limit"
 				fi
 
 				if [ "$parallel_limit" -gt "$parallel_max" ] ; then
 					parallel_limit=$parallel_max
-					DebugThis "~ \$parallel_limit too large so set as" "$parallel_limit"
+					DebugThis "~ \$parallel_limit too high so set as" "$parallel_limit"
 				fi
 				;;
 		esac
@@ -1584,12 +1584,12 @@ if [ "$exitcode" -eq "0" ] ; then
 			* )
 				if [ "$timeout" -lt "1" ] ; then
 					timeout=1
-					DebugThis "~ \$timeout too small so set as" "$timeout"
+					DebugThis "~ \$timeout too low so set as" "$timeout"
 				fi
 
 				if [ "$timeout" -gt "$timeout_max" ] ; then
 					timeout=$timeout_max
-					DebugThis "~ \$timeout too large so set as" "$timeout"
+					DebugThis "~ \$timeout too high so set as" "$timeout"
 				fi
 				;;
 		esac
@@ -1607,12 +1607,12 @@ if [ "$exitcode" -eq "0" ] ; then
 			* )
 				if [ "$retries" -lt "1" ] ; then
 					retries=1
-					DebugThis "~ \$retries too small so set as" "$retries"
+					DebugThis "~ \$retries too low so set as" "$retries"
 				fi
 
 				if [ "$retries" -gt "$retries_max" ] ; then
 					retries=$retries_max
-					DebugThis "~ \$retries too large so set as" "$retries"
+					DebugThis "~ \$retries too high so set as" "$retries"
 				fi
 				;;
 		esac
@@ -1726,7 +1726,7 @@ if [ "$exitcode" -eq "0" ] ; then
 
 		if [ "$images_required" -gt "$result_count" ] ; then
 			images_required=$result_count
-			DebugThis "~ \$images_required too large so set as \$result_count" "$result_count"
+			DebugThis "~ \$images_required too high so set as \$result_count" "$result_count"
 		fi
 	fi
 fi
