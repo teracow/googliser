@@ -37,8 +37,8 @@
 function Init
 	{
 
-	local script_version="1.18"
-	local script_date="2016-06-18"
+	local script_version="1.19"
+	local script_date="2016-06-19"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -1722,6 +1722,11 @@ if [ "$exitcode" -eq "0" ] ; then
 		if [ "$fail_limit" -gt "$result_count" ] ; then
 			fail_limit=$result_count
 			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
+		fi
+
+		if [ "$images_required" -gt "$result_count" ] ; then
+			images_required=$result_count
+			DebugThis "~ \$images_required too large so set as \$result_count" "$result_count"
 		fi
 	fi
 fi
