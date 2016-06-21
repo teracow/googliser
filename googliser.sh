@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.19"
-	local script_date="2016-06-19"
+	local script_date="2016-06-22"
 	script_name="googliser.sh"
 	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
 
@@ -1457,16 +1457,16 @@ function WantedFonts
 
 	local font_list=""
 
-	font_list+="Century-Schoolbook-L-Bold-Italic "
-	font_list+="Droid-Serif-Bold-Italic "
-	font_list+="FreeSerif-Bold-Italic "
-	font_list+="Nimbus-Roman-No9-L-Medium-Italic "
-	font_list+="Times-BoldItalic "
-	font_list+="URW-Palladio-L-Bold-Italic "
-	font_list+="Utopia-Bold-Italic "
-	font_list+="Bitstream-Charter-Bold-Italic "
+	font_list+="Century-Schoolbook-L-Bold-Italic\n"
+	font_list+="Droid-Serif-Bold-Italic\n"
+	font_list+="FreeSerif-Bold-Italic\n"
+	font_list+="Nimbus-Roman-No9-L-Medium-Italic\n"
+	font_list+="Times-BoldItalic\n"
+	font_list+="URW-Palladio-L-Bold-Italic\n"
+	font_list+="Utopia-Bold-Italic\n"
+	font_list+="Bitstream-Charter-Bold-Italic\n"
 
-	echo "$font_list"
+	echo -e "$font_list"
 
 	}
 
@@ -1477,7 +1477,7 @@ function FirstPreferredFont
 	local available_fonts=$(convert -list font | grep "Font:" | sed 's| Font: ||')
 	local first_available_font=""
 
-	while read -d' ' preferred_font ; do
+	while read preferred_font ; do
 		while read available_font ; do
 			[ "$preferred_font" == "$available_font" ] && break 2
 		done <<< "$available_fonts"
