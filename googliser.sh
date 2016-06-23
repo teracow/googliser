@@ -1024,16 +1024,26 @@ function ParseResults
 
 			DebugThis "~ trimmed results back to \$max_results_required" "$max_results_required"
 		fi
+	fi
 
-		if [ "$verbose" == "true" ] ; then
+	if [ "$verbose" == "true" ] ; then
+		if [ "$result_count" -gt "0" ] ; then
 			if [ "$colour" == "true" ] ; then
-				echo "$(ColourTextBrightWhite "${result_count}") results!"
+				if [ "$result_count" -ge "$(($max_results_required))" ] ; then
+					echo "$(ColourTextBrightGreen "${result_count}") results!"
+				fi
+
+				if [ "$result_count" -ge "$images_required" ] && [ "$result_count" -lt "$(($max_results_required))" ] ; then
+					echo "$(ColourTextBrightOrange "${result_count}") results!"
+				fi
+
+				if [ "$result_count" -lt "$images_required" ] ; then
+					echo "$(ColourTextBrightRed "${result_count}") results!"
+				fi
 			else
 				echo "${result_count} results!"
 			fi
-		fi
-	else
-		if [ "$verbose" == "true" ] ; then
+		else
 			if [ "$colour" == "true" ] ; then
 				echo "$(ColourTextBrightRed "No results!")"
 			else
