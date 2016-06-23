@@ -38,9 +38,12 @@ function Init
 	{
 
 	local script_version="1.19"
-	local script_date="2016-06-22"
-	script_name="googliser.sh"
-	local script_details="$(ColourTextBrightWhite "${script_name}") - v${script_version} (${script_date}) PID:[$$]"
+	local script_date="2016-06-24"
+	script_file="googliser.sh"
+
+	script_name="${script_file%.*}"
+
+	local script_details="$(ColourTextBrightWhite "${script_file}") - v${script_version} (${script_date}) PID:[$$]"
 
 	BuildEnviron
 
@@ -250,9 +253,9 @@ function DisplayHelp
 	echo
 
 	if [ "$colour" == "true" ] ; then
-		echo " - Usage: $(ColourTextBrightWhite "./$script_name") [PARAMETERS] ..."
+		echo " - Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
 	else
-		echo " - Usage: ./$script_name [PARAMETERS] ..."
+		echo " - Usage: ./$script_file [PARAMETERS] ..."
 	fi
 
 	echo
@@ -289,9 +292,9 @@ function DisplayHelp
 	echo " - Example:"
 
 	if [ "$colour" == "true" ] ; then
-		echo "$(ColourTextBrightWhite " $ ./$script_name -p \"${sample_user_query}\"")"
+		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
 	else
-		echo " $ ./$script_name -p \"${sample_user_query}\""
+		echo " $ ./$script_file -p \"${sample_user_query}\""
 	fi
 
 	echo
@@ -586,7 +589,6 @@ function DownloadImage_auto
 			else
 				if [ "$skip_no_size" == "true" ] ; then
 					DebugThis "! link ($link_index) unknown image size so" "failed!"
-
 					get_download=false
 				fi
 			fi
@@ -1221,11 +1223,13 @@ function PageScraper
 	#
 	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
 	#
-	# grep  3. only list lines without 'youtube' or 'vimeo' (case insenstive)
+	# grep  3. only list lines without 'youtube' or 'vimeo' (case insensitive)
 	#
 	# perl  4. remove everything from '<div class="rg_meta">' up to 'http' on each line
 	#       5. remove everything including and after '","ow"' on each line
 	#       6. remove everything including and after '?' on each line
+	#
+	#---------------------------------------------------------------------------------------------------------------
 
 	cat "${results_pathfile}" \
 	| sed 's|<div|\n\n<div|g' \
@@ -1233,7 +1237,6 @@ function PageScraper
 	| grep -ivE 'youtube|vimeo' \
 	| perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
 	> "${imagelinks_pathfile}"
-	#---------------------------------------------------------------------------------------------------------------
 
 	}
 
@@ -1729,6 +1732,11 @@ if [ "$exitcode" -eq "0" ] ; then
 			DebugThis "~ \$images_required too high so set as \$result_count" "$result_count"
 		fi
 	fi
+
+	if [ "$result_count" -eq "0" ] ; then
+		DebugThis "= zero results returned? Wow..." "can't continue"
+		exitcode=4
+	fi
 fi
 
 # download images
@@ -1767,7 +1775,7 @@ if [ "$exitcode" -eq "0" ] ; then
 fi
 
 # write results into debug file
-DebugThis "T [$script_name] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+DebugThis "T [$script_file] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
 DebugThis "< finished" "$(date)"
 
 # copy debug file into target directory if possible. If not, then copy to current directory.

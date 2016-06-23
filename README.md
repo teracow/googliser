@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. In short - it's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel. The idea is to build a picture of a phrase. 
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel and then combine them into a gallery image. The idea is to build a picture of a phrase. 
 
 (This is an expansion upon a [solution provided by ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
@@ -150,9 +150,9 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
-- The temporary build directory is `/dev/shm/googliser.sh.PID.UNIQ` where PID is shown in the title of the script when it runs. UNIQ is to keep every instance separate and is any 3 alpha-numeric characters. 
+- The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ can be any 3 alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-19. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-24. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -174,14 +174,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**Known Issues:**
 
-- (2016-06-19) - None.
+- (2016-06-24) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-19) - Might take a break now. ![smiley](images/smiley.png)
+- (2016-06-24) - Might take a break now. ![smiley](images/smiley.png)
  
 ---
 ###**To-Do List:**
 
-- (2016-06-19) - None.
+- (2016-06-24) - None.
