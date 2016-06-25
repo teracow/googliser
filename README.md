@@ -11,7 +11,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
-3. [Google Images](https://www.google.com/imghp?hl=en) is then queried and the results saved.
+3. [Google Images](https://www.google.com.au/imghp?hl=en) is then queried and the results saved.
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
@@ -56,7 +56,7 @@ Put the debug log into the image sub-directory afterward. If selected, debugging
 Delete the downloaded images after building the thumbnail gallery. Umm, don't specify this and `--no-gallery` at the same time.
 
 `-f` or `--failures [INTEGER]`  
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download all results - so only use if there are many failures).
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if there are many failures).
 
 `-g` or `--no-gallery`  
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
@@ -92,7 +92,7 @@ Put the URL results file into the image sub-directory afterward. If selected, th
 Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
 
 `-u` or `--upper-size [INTEGER]`  
-Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Enter 0 for unlimited size. Default is 0 (unlimited).
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 0 (unlimited).
 
 `-v` or `--version`  
 Show script version then exit.
@@ -134,25 +134,25 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
-- The search results count is determined by adding together the number of images required (default is 25) with the number of allowable failures (default is 40). But search results download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results are left. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
+- The final search results count is determined by adding together the number of images required (default is 25) with the number of allowable failures (default is 40). Search results initially download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results remain. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. It can also change between searches as Google don't always return the same results - even for identical searches.
 
 - Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
 
 - When the gallery is being built, it will only create a thumbnail from the first image of a multi-image file (like an animated **GIF**).
 
-- The thumbnail sizes in the gallery are no larger than 400x400.
+- The thumbnail sizes in the gallery are no larger than 400 x 400 pixels. At least one dimension will be 400 pixels, though. So, requesting more images will result in a gallery image with larger dimensions.
 
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Please be patient. Grab a coffee.
 
-- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problems links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
+- Another case that I have seen several times is when something like 24 out of 25 images have downloaded without issue. This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Please be patient. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
 
 - I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images. 
 
 - It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
-- The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ can be any 3 alpha-numeric characters. 
+- The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-24. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-26. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -174,14 +174,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**Known Issues:**
 
-- (2016-06-24) - None.
+- (2016-06-26) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-24) - Might take a break now. ![smiley](images/smiley.png)
+- (2016-06-26) - Might take a break now. ![smiley](images/smiley.png)
  
 ---
 ###**To-Do List:**
 
-- (2016-06-24) - None.
+- (2016-06-26) - None.

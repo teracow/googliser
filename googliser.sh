@@ -38,11 +38,10 @@ function Init
 	{
 
 	local script_version="1.19"
-	local script_date="2016-06-24"
+	local script_date="2016-06-26"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
-
 	local script_details="$(ColourTextBrightWhite "${script_file}") - v${script_version} (${script_date}) PID:[$$]"
 
 	BuildEnviron
@@ -274,7 +273,7 @@ function DisplayHelp
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
 	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for maximum ($google_max)."
+	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
