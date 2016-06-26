@@ -14,7 +14,7 @@
 
 # return values ($?):
 #	0	completed successfully
-#	1	required program unavailable (wget, perl, montage)
+#	1	required program unavailable (wget, montage)
 #	2	required parameter unspecified or wrong
 #	3	could not create subdirectory for 'search phrase'
 #	4	could not get a list of search results from Google
@@ -37,7 +37,7 @@
 function Init
 	{
 
-	local script_version="1.19"
+	local script_version="1.20"
 	local script_date="2016-06-26"
 	script_file="googliser.sh"
 
@@ -150,7 +150,6 @@ function Init
 	DebugThis "? \$temp_path" "$temp_path"
 
 	IsReqProgAvail "wget" || exitcode=1
-	IsReqProgAvail "perl" || exitcode=1
 
 	if [ "$create_gallery" == "true" ] ; then
 		IsReqProgAvail "montage" || exitcode=1
@@ -245,7 +244,7 @@ function DisplayHelp
 	echo " - This is an expansion upon a solution provided by ShellFish on:"
 	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
 	echo
-	echo " - Requirements: Wget & Perl"
+	echo " - Requirements: Wget"
 	echo " - Optional: identify, montage & convert (from ImageMagick)"
 	echo
 	echo " - Questions or comments? teracow@gmail.com"
@@ -1234,9 +1233,10 @@ function PageScraper
 	#
 	# grep  3. only list lines without 'youtube' or 'vimeo' (case insensitive)
 	#
-	# perl  4. remove everything from '<div class="rg_meta">' up to 'http' on each line
-	#       5. remove everything including and after '","ow"' on each line
-	#       6. remove everything including and after '?' on each line
+	# sed   4. add newline char before first occurence of 'http'
+	#       5. remove from '<div' to end of line
+	#       6. remove everything including and after '","ow"' on each line
+	#       7. remove everything including and after '?' on each line
 	#
 	#---------------------------------------------------------------------------------------------------------------
 
@@ -1244,7 +1244,7 @@ function PageScraper
 	| sed 's|<div|\n\n<div|g' \
 	| grep '<div class=\"rg_meta\">.*http' \
 	| grep -ivE 'youtube|vimeo' \
-	| perl -pe 's|(<div class="rg_meta">)(.*?)(http)|\3|; s|","ow".*||; s|\?.*||' \
+	| sed 's|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
 
 	}
