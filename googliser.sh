@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.20"
-	local script_date="2016-06-26"
+	local script_date="2016-06-27"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -1227,24 +1227,23 @@ function PageScraper
 
 	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
 	#
-	# sed   1. look for lines with '<div' and insert 2 linefeeds before them
+	# sed   1. add 2 x newline chars before each occurence of '<div',
 	#
-	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http'
+	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http',
 	#
-	# grep  3. only list lines without 'youtube' or 'vimeo' (case insensitive)
-	#
-	# sed   4. add newline char before first occurence of 'http'
-	#       5. remove from '<div' to end of line
-	#       6. remove everything including and after '","ow"' on each line
-	#       7. remove everything including and after '?' on each line
+	# sed   3. remove lines with 'Youtube',
+	#       4. remove lines with 'Vimeo',
+	#       5. add newline char before first occurence of 'http',
+	#       6. remove from '<div' to end of line,
+	#       7. remove from '","ow"' to end of line,
+	#       8. remove from '?' to end of line.
 	#
 	#---------------------------------------------------------------------------------------------------------------
 
 	cat "${results_pathfile}" \
-	| sed 's|<div|\n\n<div|g' \
+	| sed 's|<div|\n\n&|g' \
 	| grep '<div class=\"rg_meta\">.*http' \
-	| grep -ivE 'youtube|vimeo' \
-	| sed 's|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
+	| sed '/[yY]ou[tT]ube/d;/[vV]imeo/d;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
 
 	}
