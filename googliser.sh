@@ -38,7 +38,7 @@ function Init
 	{
 
 	local script_version="1.20"
-	local script_date="2016-06-27"
+	local script_date="2016-06-29"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -813,14 +813,16 @@ function DownloadImages
 		fi
 	fi
 
-	download_bytes="$(du "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
-	DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
+	if [ ! "$result" -eq "1" ] ; then
+		download_bytes="$(du "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
+		DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
 
-	download_seconds="$(($(date +%s )-$func_startseconds))"
-	DebugThis "= download seconds" "$(DisplayThousands "$download_seconds")"
+		download_seconds="$(($(date +%s )-$func_startseconds))"
+		DebugThis "= download seconds" "$(DisplayThousands "$download_seconds")"
 
-	avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
-	DebugThis "= average download speed" "${avg_download_speed}B/s"
+		avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
+		DebugThis "= average download speed" "${avg_download_speed}B/s"
+	fi
 
 	DebugThis "? \$success_count" "$success_count"
 	DebugThis "? \$fail_count" "$fail_count"
@@ -1231,10 +1233,10 @@ function PageScraper
 	#
 	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http',
 	#
-	# sed   3. remove lines with 'Youtube',
-	#       4. remove lines with 'Vimeo',
+	# sed   3. remove lines with 'YouTube' (case insensitive),
+	#       4. remove lines with 'Vimeo' (case insensitive),
 	#       5. add newline char before first occurence of 'http',
-	#       6. remove from '<div' to end of line,
+	#       6. remove from '<div' to newline,
 	#       7. remove from '","ow"' to end of line,
 	#       8. remove from '?' to end of line.
 	#
@@ -1243,7 +1245,7 @@ function PageScraper
 	cat "${results_pathfile}" \
 	| sed 's|<div|\n\n&|g' \
 	| grep '<div class=\"rg_meta\">.*http' \
-	| sed '/[yY]ou[tT]ube/d;/[vV]imeo/d;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
+	| sed '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
 
 	}
