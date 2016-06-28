@@ -15,7 +15,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has obtained the required amount of images or its [**f**]ailures limit is reached. 
+5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has acquired the required number of images or the [**f**]ailure limit is reached. 
 
 6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s **montage** into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
@@ -134,6 +134,8 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
+- The failures percentage shown after download is the number of failed downloads as a percentage of the total number of image downloads attempted - this includes successful downloads. e.g. 25 images downloaded OK with 8 download failures yields a total of 33 downloads attempted. And 8 / 33 = **24%**.
+
 - The final search results count is determined by adding together the number of images required (default is 25) with the number of allowable failures (default is 40). Search results initially download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 65 results remain. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. The count can also change between searches as Google don't always return the same results - even for identical searches.
 
 - Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
@@ -152,7 +154,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-27. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-06-28. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -174,14 +176,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**Known Issues:**
 
-- (2016-06-27) - None.
+- (2016-06-28) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-06-27) - Might take a break now. ![smiley](images/smiley.png)
+- (2016-06-28) - Might take a break now. ![smiley](images/smiley.png)
  
 ---
 ###**To-Do List:**
 
-- (2016-06-27) - None.
+- (2016-06-28) - None.
