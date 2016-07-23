@@ -46,6 +46,9 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown c
 
 ***Optional***
 
+`-a` or `--parallel [INTEGER]`  
+How many parallel image downloads? Default is 8. Maximum is 40.
+
 `-c` or `--colour`  
 Display with nice ANSI coloured text. 
 
@@ -75,9 +78,6 @@ Only download image files larger than this many bytes. Some servers do not repor
 
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000.
-
-`-p` or `--parallel [INTEGER]`  
-How many parallel image downloads? Default is 8. Maximum is 40.
 
 `-q` or `--quiet`  
 Suppress standard display output. Error messages are still shown.
@@ -154,7 +154,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-07-10. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-07-24. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -182,14 +182,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**Known Issues:**
 
-- (2016-07-10) - None.
+- (2016-07-24) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-07-10) - Taking a break now. ![smiley](images/smiley.png)
+- (2016-07-24) - Taking a break now. ![smiley](images/smiley.png)
  
 ---
 ###**To-Do List:**
 
-- (2016-07-10) - None.
+- (2016-07-24) - None.

@@ -37,8 +37,8 @@
 function Init
 	{
 
-	local script_version="1.20"
-	local script_date="2016-06-29"
+	local script_version="1.21"
+	local script_date="2016-07-24"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -269,6 +269,7 @@ function DisplayHelp
 	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory will be created with this name."
 	echo
 	echo " Optional"
+	HelpParameterFormat "a" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
 	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
@@ -279,7 +280,6 @@ function DisplayHelp
 	HelpParameterFormat "k" "skip-no-size" "Don't download any image if its size cannot be determined."
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
-	HelpParameterFormat "p" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] in target directory."
@@ -324,7 +324,7 @@ function WhatAreMyOptions
 				user_query="$2"
 				shift 2		# shift to next parameter in $1
 				;;
-			-p | --parallel )
+			-a | --parallel )
 				parallel_limit="$2"
 				shift 2		# shift to next parameter in $1
 				;;
@@ -1510,7 +1510,7 @@ function FirstPreferredFont
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,i:,l:,u:,r:,t:,p:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1568,7 +1568,7 @@ if [ "$exitcode" -eq "0" ] ; then
 				DebugThis "! specified \$parallel_limit" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-p --parallel) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-a --parallel) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 			* )
