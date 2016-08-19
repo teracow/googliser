@@ -37,8 +37,8 @@
 function Init
 	{
 
-	local script_version="1.21"
-	local script_date="2016-07-24"
+	local script_version="1.22"
+	local script_date="2016-08-19"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -181,6 +181,7 @@ function BuildEnviron
 	{
 
 	image_file="google-image"
+	test_file="test-image"			# this is used during size testing
 	imagelinks_file="download.links.list"
 	debug_file="debug.log"
 	gallery_name="googliser-gallery"
@@ -214,6 +215,7 @@ function BuildEnviron
 	mkdir -p "${download_fail_count_path}"
 	[ "$?" -gt "0" ] && return 1
 
+	testimage_pathfile="${temp_path}/${test_file}"
 	results_pathfile="${temp_path}/results.page.html"
 	gallery_title_pathfile="${temp_path}/gallery.title.png"
 	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
@@ -552,12 +554,13 @@ function DownloadImage_auto
 
 	[[ ! "$ext" =~ "." ]] && ext=".jpg"	# if URL did not have a file extension then choose jpg as default
 
+	testimage_pathfileext="${testimage_pathfile}($link_index)${ext}"
 	targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
 
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ] ; then
 		# try to get file size from server
-		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" \"$1\" 2>&1"
+		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
 		DebugThis "? link ($link_index) \$wget_server_response_cmd" "$wget_server_response_cmd"
 
 		response=$(eval "$wget_server_response_cmd")
