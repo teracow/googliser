@@ -154,7 +154,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-08-19. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-09-12. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -175,21 +175,21 @@ This will download the first 80 available images for the search-phrase *"storm c
 **Also tested on:**
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
-- [Ubuntu](http://www.ubuntu.com/) - *14.04.03 LTS 64b*
+- [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
 ###**Known Issues:**
 
-- (2016-08-19) - None.
+- (2016-09-12) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-08-19) - Taking a break now. ![smiley](images/smiley.png)
+- (2016-09-12) - Taking a break now. ![smiley](images/smiley.png)
  
 ---
 ###**To-Do List:**
 
-- (2016-08-19) - None.
+- (2016-09-12) - None.

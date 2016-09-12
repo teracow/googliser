@@ -37,8 +37,8 @@
 function Init
 	{
 
-	local script_version="1.22"
-	local script_date="2016-08-19"
+	local script_version="1.23"
+	local script_date="2016-09-12"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -418,7 +418,7 @@ function DownloadResultGroup_auto
 
 	DebugThis "- result group ($link_index) download" "start"
 
-	local wget_list_cmd="wget --quiet 'https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}' --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local wget_list_cmd="wget --quiet \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? result group ($link_index) \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
