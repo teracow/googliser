@@ -53,10 +53,10 @@ function Init
 		return 1
 	fi
 
-	server="www.google.com.au"
+	server="www.google.com"
 
 	# http://whatsmyuseragent.com
-	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0'
+	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0'
 
 	# parameter defaults
 	images_required_default=25
