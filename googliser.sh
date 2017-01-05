@@ -37,8 +37,8 @@
 function Init
 	{
 
-	local script_version="1.23"
-	local script_date="2016-09-12"
+	local script_version="1.24"
+	local script_date="2017-01-05"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -97,6 +97,7 @@ function Init
 	remove_after=false
 	debug=false
 	skip_no_size=false
+	lightning=false
 
 	WhatAreMyOptions
 
@@ -145,6 +146,7 @@ function Init
 	DebugThis "? \$debug" "$debug"
 	DebugThis "? \$skip_no_size" "$skip_no_size"
 	DebugThis "? \$remove_after" "$remove_after"
+	DebugThis "? \$lightning" "$lightning"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -233,7 +235,7 @@ function DisplayHelp
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
-	local message=" - search '"
+	local message=" search '"
 
 	if [ "$colour" == "true" ] ; then
 		message+="$(ShowGoogle) $(ColourTextBrightBlue "images")"
@@ -243,13 +245,10 @@ function DisplayHelp
 
 	echo "${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
 	echo
-	echo " - This is an expansion upon a solution provided by ShellFish on:"
-	echo " [https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line]"
+	echo " Requirements: Wget"
+	echo " Optional: identify, montage & convert (from ImageMagick)"
 	echo
-	echo " - Requirements: Wget"
-	echo " - Optional: identify, montage & convert (from ImageMagick)"
-	echo
-	echo " - Questions or comments? teracow@gmail.com"
+	echo " Questions or comments? teracow@gmail.com"
 	echo
 
 	if [ "$colour" == "true" ] ; then
@@ -288,6 +287,7 @@ function DisplayHelp
 	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
 	HelpParameterFormat "v" "version " "Show script version then exit."
+	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	echo
 	echo " - Example:"
 
@@ -360,6 +360,10 @@ function WhatAreMyOptions
 				;;
 			-e | --delete-after )
 				remove_after=true
+				shift
+				;;
+			-z | --lightning )
+				lightning=true
 				shift
 				;;
 			-h | --help )
@@ -1513,7 +1517,7 @@ function FirstPreferredFont
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 

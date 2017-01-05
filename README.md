@@ -97,6 +97,9 @@ Only download image files smaller than this many bytes. Some servers do not repo
 `-v` or `--version`  
 Show script version then exit.
 
+`-z` or `--lightning`  * in development - non-functional in this release *  
+Lightning mode! This cancels slow downloads which really speeds things up!
+
 **Usage Examples:**
 
     $ ./googliser.sh -p "cows"
@@ -154,7 +157,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2016-09-12. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2017-01-05. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
 ###**Development Environment:**
@@ -164,12 +167,12 @@ This will download the first 80 available images for the search-phrase *"storm c
 - GNU sed - *v4.2.2*
 - GNU grep - *v2.20*
 - GNU Wget - *v1.16*
-- [ImageMagick](http://www.imagemagick.org) - *v6.8.9-8 Q16 x86_64 2016-06-29*
+- [ImageMagick](http://www.imagemagick.org) - *v6.9.6-6 Q16 x86_64 2016-12-02*
 - Kate - *v3.14.9*
 - [ReText](https://github.com/retext-project/retext) - *v5.0.0*
 - Konsole - *v2.14.2*
 - KDE Development Platform - *v4.14.9*
-- QT - *v4.8.6*
+- QT - *v5.4.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
 **Also tested on:**
@@ -182,14 +185,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ###**Known Issues:**
 
-- (2016-09-12) - None.
+- (2017-01-05) - None.
 
 ---
 ###**Work-in-Progress:**
 
-- (2016-09-12) - Taking a break now. ![smiley](images/smiley.png)
+- (2017-01-05) - working on new 'lightning' mode.
  
 ---
 ###**To-Do List:**
 
-- (2016-09-12) - None.
+- (2017-01-05) - None.
