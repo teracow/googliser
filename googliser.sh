@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2016 Teracow Software
+# Copyright (C) 2016-2017 Teracow Software
 
 # This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -34,11 +34,11 @@
 #	!	failure
 #	T	elapsed time
 
-function Init
+Init()
 	{
 
-	local script_version="1.24"
-	local script_date="2017-01-05"
+	local script_version="1.25"
+	local script_date="2017-06-10"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -179,7 +179,7 @@ function Init
 
 	}
 
-function BuildEnviron
+BuildEnviron()
 	{
 
 	image_file="google-image"
@@ -229,7 +229,7 @@ function BuildEnviron
 
 	}
 
-function DisplayHelp
+DisplayHelp()
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
@@ -288,6 +288,7 @@ function DisplayHelp
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
+	#HelpParameterFormat "?" "random" "Download a single random image only"
 	echo
 	echo " - Example:"
 
@@ -304,7 +305,7 @@ function DisplayHelp
 
 	}
 
-function WhatAreMyOptions
+WhatAreMyOptions()
 	{
 
 	# if getopt exited with an error then show help to user
@@ -402,7 +403,7 @@ function WhatAreMyOptions
 
 	}
 
-function DownloadResultGroup_auto
+DownloadResultGroup_auto()
 	{
 
 	# *** This function runs as a background process ***
@@ -440,7 +441,7 @@ function DownloadResultGroup_auto
 
 	}
 
-function RefreshResultsCounts
+RefreshResultsCounts()
 	{
 
 	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
@@ -449,7 +450,7 @@ function RefreshResultsCounts
 
 	}
 
-function ShowResultDownloadProgress
+ShowResultDownloadProgress()
 	{
 
 	if [ "$verbose" == "true" ] ; then
@@ -470,7 +471,7 @@ function ShowResultDownloadProgress
 
 	}
 
-function DownloadResultGroups
+DownloadResultGroups()
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
@@ -534,7 +535,7 @@ function DownloadResultGroups
 
 	}
 
-function DownloadImage_auto
+DownloadImage_auto()
 	{
 
 	# *** This function runs as a background process ***
@@ -670,7 +671,7 @@ function DownloadImage_auto
 
 	}
 
-function RefreshDownloadCounts
+RefreshDownloadCounts()
 	{
 
 	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
@@ -679,7 +680,7 @@ function RefreshDownloadCounts
 
 	}
 
-function ShowImageDownloadProgress
+ShowImageDownloadProgress()
 	{
 
 	if [ "$verbose" == "true" ] ; then
@@ -725,7 +726,7 @@ function ShowImageDownloadProgress
 
 	}
 
-function DownloadImages
+DownloadImages()
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
@@ -840,7 +841,7 @@ function DownloadImages
 
 	}
 
-function BuildGallery
+BuildGallery()
 	{
 
 	local title_colour="goldenrod1"
@@ -1000,7 +1001,7 @@ function BuildGallery
 
 	}
 
-function ParseResults
+ParseResults()
 	{
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
@@ -1064,7 +1065,7 @@ function ParseResults
 
 	}
 
-function InitProgress
+InitProgress()
 	{
 
 	# needs to be called prior to first call of ProgressUpdater
@@ -1075,7 +1076,7 @@ function InitProgress
 
 	}
 
-function ProgressUpdater
+ProgressUpdater()
 	{
 
 	# $1 = message to display
@@ -1099,7 +1100,7 @@ function ProgressUpdater
 
 	}
 
-function IsReqProgAvail
+IsReqProgAvail()
 	{
 
 	# $1 = name of program to search for with 'which'
@@ -1122,7 +1123,7 @@ function IsReqProgAvail
 
 	}
 
-function IsOptProgAvail
+IsOptProgAvail()
 	{
 
 	# $1 = name of program to search for with 'which'
@@ -1142,14 +1143,14 @@ function IsOptProgAvail
 
 	}
 
-function ShowGoogle
+ShowGoogle()
 	{
 
 	echo -n "$(ColourTextBrightBlue "G")$(ColourTextBrightRed "o")$(ColourTextBrightOrange "o")$(ColourTextBrightBlue "g")$(ColourTextBrightGreen "l")$(ColourTextBrightRed "e")"
 
 	}
 
-function HelpParameterFormat
+HelpParameterFormat()
 	{
 
 	# $1 = short parameter
@@ -1160,7 +1161,7 @@ function HelpParameterFormat
 
 	}
 
-function RenameExtAsType
+RenameExtAsType()
 	{
 
 	# checks output of 'identify -format "%m"' and ensures provided file extension matches
@@ -1205,7 +1206,7 @@ function RenameExtAsType
 
 	}
 
-function AllowableFileType
+AllowableFileType()
 	{
 
 	# only these image types are considered acceptable
@@ -1231,7 +1232,7 @@ function AllowableFileType
 
 	}
 
-function PageScraper
+PageScraper()
 	{
 
 	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
@@ -1257,7 +1258,7 @@ function PageScraper
 
 	}
 
-function CTRL_C_Captured
+CTRL_C_Captured()
 	{
 
 	DebugThis "! [SIGINT]" "detected"
@@ -1295,7 +1296,7 @@ function CTRL_C_Captured
 
 	}
 
-function DebugThis
+DebugThis()
 	{
 
 	# $1 = item
@@ -1305,7 +1306,7 @@ function DebugThis
 
 	}
 
-function WgetReturnCodes
+WgetReturnCodes()
 	{
 
 	# converts a return code from wget into a text string explanation of the code
@@ -1346,7 +1347,7 @@ function WgetReturnCodes
 
 	}
 
-function ConvertSecs
+ConvertSecs()
 	{
 
 	# http://stackoverflow.com/questions/12199631/convert-seconds-to-hours-minutes-seconds
@@ -1360,49 +1361,49 @@ function ConvertSecs
 
 	}
 
-function ColourTextBrightWhite
+ColourTextBrightWhite()
 	{
 
 	echo -en '\E[1;97m'"$(PrintResetColours "$1")"
 
 	}
 
-function ColourTextBrightGreen
+ColourTextBrightGreen()
 	{
 
 	echo -en '\E[1;32m'"$(PrintResetColours "$1")"
 
 	}
 
-function ColourTextBrightOrange
+ColourTextBrightOrange()
 	{
 
 	echo -en '\E[1;38;5;214m'"$(PrintResetColours "$1")"
 
 	}
 
-function ColourTextBrightRed
+ColourTextBrightRed()
 	{
 
 	echo -en '\E[1;31m'"$(PrintResetColours "$1")"
 
 	}
 
-function ColourTextBrightBlue
+ColourTextBrightBlue()
 	{
 
 	echo -en '\E[1;94m'"$(PrintResetColours "$1")"
 
 	}
 
-function PrintResetColours
+PrintResetColours()
 	{
 
 	echo -en "$1"'\E[0m'
 
 	}
 
-function RemoveColourCodes
+RemoveColourCodes()
 	{
 
 	# http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
@@ -1410,7 +1411,7 @@ function RemoveColourCodes
 
 	}
 
-function ShowAsFailed
+ShowAsFailed()
 	{
 
 	# $1 = message to show in colour if colour is set
@@ -1423,7 +1424,7 @@ function ShowAsFailed
 
 	}
 
-function ShowAsSucceed
+ShowAsSucceed()
 	{
 
 	# $1 = message to show in colour if colour is set
@@ -1436,7 +1437,7 @@ function ShowAsSucceed
 
 	}
 
-function Uppercase
+Uppercase()
 	{
 
 	# $1 = some text to convert to uppercase
@@ -1445,7 +1446,7 @@ function Uppercase
 
 	}
 
-function Lowercase
+Lowercase()
 	{
 
 	# $1 = some text to convert to lowercase
@@ -1454,7 +1455,7 @@ function Lowercase
 
 	}
 
-function DisplayISO
+DisplayISO()
 	{
 
 	# show $1 formatted with 'k', 'M', 'G'
@@ -1463,7 +1464,7 @@ function DisplayISO
 
 	}
 
-function DisplayThousands
+DisplayThousands()
 	{
 
 	# show $1 formatted with thousands separator
@@ -1472,7 +1473,7 @@ function DisplayThousands
 
 	}
 
-function WantedFonts
+WantedFonts()
 	{
 
 	local font_list=""
@@ -1490,7 +1491,7 @@ function WantedFonts
 
 	}
 
-function FirstPreferredFont
+FirstPreferredFont()
 	{
 
 	local preferred_fonts=$(WantedFonts)
