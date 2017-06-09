@@ -5,7 +5,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 (This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
 
 ---
-###**Description:**
+## Description:
 
 1. The user supplies a search-phrase and some other optional parameters on the command line. 
 
@@ -20,7 +20,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s **montage** into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
-###**Sample Outputs:**
+## Sample Outputs:
 
 These images have been scaled down for easier distribution.
 
@@ -31,7 +31,7 @@ These images have been scaled down for easier distribution.
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
-###**Usage:**
+## Usage:
 
     $ ./googliser.sh [PARAMETERS] ...
 
@@ -115,7 +115,7 @@ This will download the first 56 available images for the search-phrase *"fish"* 
 This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-###**Return Values ($?):**  
+## Return Values ($?):
 
 0 : success!  
 1 : required external program unavailable.  
@@ -127,7 +127,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 7 : unable to create a temporary build directory.
 
 ---
-###**Notes:**
+## Notes:
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
@@ -160,19 +160,19 @@ This will download the first 80 available images for the search-phrase *"storm c
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2017-01-05. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
 
 ---
-###**Development Environment:**
+## Development Environment:
 
-- [openSUSE](https://www.opensuse.org/) - *13.2 64b*
+- [Debian](https://www.debian.org/) - *8 "Jessie" 64b*
 - GNU BASH - *v4.2.53*
 - GNU sed - *v4.2.2*
 - GNU grep - *v2.20*
 - GNU Wget - *v1.16*
 - [ImageMagick](http://www.imagemagick.org) - *v6.9.6-6 Q16 x86_64 2016-12-02*
-- Kate - *v3.14.9*
-- [ReText](https://github.com/retext-project/retext) - *v5.0.0*
+- Kate - *v3.14.2*
+- [ReText](https://github.com/retext-project/retext) - *v5.0.1*
 - Konsole - *v2.14.2*
-- KDE Development Platform - *v4.14.9*
-- QT - *v5.4.2*
+- KDE Development Platform - *v4.14.2*
+- QT - *v5.3.2*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
 **Also tested on:**
@@ -183,16 +183,16 @@ This will download the first 80 available images for the search-phrase *"storm c
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-###**Known Issues:**
+## Known Issues:
 
-- (2017-01-05) - None.
+- (2017-06-10) - None.
 
 ---
-###**Work-in-Progress:**
+## Work-in-Progress:
 
-- (2017-01-05) - working on new 'lightning' mode.
+- (2017-06-10) - adding new parameter to specify image dimensions.
  
 ---
-###**To-Do List:**
+## To-Do List:
 
-- (2017-01-05) - None.
+- (2017-06-10) - 'lightning' mode.
