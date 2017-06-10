@@ -1238,20 +1238,21 @@ PageScraper()
 	#------------- when Google change their web-code again, these regexes will need to be changed too --------------
 	#
 	# sed   1. add 2 x newline chars before each occurence of '<div',
+	#       2. remove ' notranslate' (if this is one of the odd times Google have added it),
 	#
-	# grep  2. only list lines with '<div class="rg_meta">' and eventually followed by 'http',
+	# grep  3. only list lines with '<div class="rg_meta">' and eventually followed by 'http',
 	#
-	# sed   3. remove lines with 'YouTube' (case insensitive),
-	#       4. remove lines with 'Vimeo' (case insensitive),
-	#       5. add newline char before first occurence of 'http',
-	#       6. remove from '<div' to newline,
-	#       7. remove from '","ow"' to end of line,
-	#       8. remove from '?' to end of line.
+	# sed   4. remove lines with 'YouTube' (case insensitive),
+	#       5. remove lines with 'Vimeo' (case insensitive),
+	#       6. add newline char before first occurence of 'http',
+	#       7. remove from '<div' to newline,
+	#       8. remove from '","ow"' to end of line,
+	#       9. remove from '?' to end of line.
 	#
 	#---------------------------------------------------------------------------------------------------------------
 
 	cat "${results_pathfile}" \
-	| sed 's|<div|\n\n&|g' \
+	| sed 's|<div|\n\n&|g;s| notranslate||g' \
 	| grep '<div class=\"rg_meta\">.*http' \
 	| sed '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
