@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ###############################################################################
 # googliser.sh
 #
@@ -45,11 +45,19 @@
 #	!	failure
 #	T	elapsed time
 
+# for macOS, also need to change [/dev/shm] to [/tmp]
+CMD_READLINK="readlink"
+CMD_MKTEMP="mktemp"
+CMD_HEAD="head"
+CMD_SED="sed"
+CMD_DU="du"
+CMD_LS="ls"
+
 Init()
 	{
 
 	local script_version="1.26"
-	local script_date="2017-06-11"
+	local script_date="2017-06-12"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -111,6 +119,7 @@ Init()
 	skip_no_size=false
 	lightning=false
 	min_pixels=$min_pixels_default
+
 
 	WhatAreMyOptions
 
@@ -203,7 +212,7 @@ BuildEnviron()
 	current_path="$PWD"
 
 	local temp_root="/dev/shm"
-	temp_path=$(mktemp -p "${temp_root}" -d "$script_name.$$.XXX")
+	temp_path=$($CMD_MKTEMP -p "${temp_root}" -d "$script_name.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
 
 	results_run_count_path="${temp_path}/results.running.count"
@@ -462,9 +471,9 @@ DownloadResultGroup_auto()
 RefreshResultsCounts()
 	{
 
-	parallel_count=$(ls -I . -I .. "$results_run_count_path" | wc -l)
-	success_count=$(ls -I . -I .. "$results_success_count_path" | wc -l)
-	fail_count=$(ls -I . -I .. "$results_fail_count_path" | wc -l)
+	parallel_count=$($CMD_LS -I . -I .. "$results_run_count_path" | wc -l)
+	success_count=$($CMD_LS -I . -I .. "$results_success_count_path" | wc -l)
+	fail_count=$($CMD_LS -I . -I .. "$results_fail_count_path" | wc -l)
 
 	}
 
@@ -573,7 +582,7 @@ DownloadImage_auto()
 	DebugThis "- link ($link_index) download" "start"
 
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
-	local ext=$(echo ${1:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
+	local ext=$(echo ${1:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
 
 	[[ ! "$ext" =~ "." ]] && ext=".jpg"	# if URL did not have a file extension then choose jpg as default
 
@@ -590,7 +599,7 @@ DownloadImage_auto()
 		result=$?
 
 		if [ "$result" -eq "0" ]; then
-			estimated_size=$(grep "Content-Length:" <<< "$response" | sed 's|^.*: ||' )
+			estimated_size=$(grep "Content-Length:" <<< "$response" | $CMD_SED 's|^.*: ||' )
 
 			if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ]; then
 				estimated_size="unknown"
@@ -692,9 +701,9 @@ DownloadImage_auto()
 RefreshDownloadCounts()
 	{
 
-	parallel_count=$(ls -I . -I .. "$download_run_count_path" | wc -l)
-	success_count=$(ls -I . -I .. "$download_success_count_path" | wc -l)
-	fail_count=$(ls -I . -I .. "$download_fail_count_path" | wc -l)
+	parallel_count=$($CMD_LS -I . -I .. "$download_run_count_path" | wc -l)
+	success_count=$($CMD_LS -I . -I .. "$download_success_count_path" | wc -l)
+	fail_count=$($CMD_LS -I . -I .. "$download_fail_count_path" | wc -l)
 
 	}
 
@@ -840,7 +849,7 @@ DownloadImages()
 	fi
 
 	if [ ! "$result" -eq "1" ]; then
-		download_bytes="$(du "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
+		download_bytes="$($CMD_DU "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
 		DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
 
 		download_seconds="$(($(date +%s )-$func_startseconds))"
@@ -1044,7 +1053,7 @@ ParseResults()
 		if [ "$result_count" -gt "$max_results_required" ]; then
 			DebugThis "! received more results than required" "$result_count/$max_results_required"
 
-			head --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
+			$CMD_HEAD --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
 			mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
 			result_count=$max_results_required
 
@@ -1236,7 +1245,7 @@ AllowableFileType()
 	# $? = 0 if OK, 1 if not
 
 	local lcase=$(Lowercase "$1")
-	local ext=$(echo ${lcase:(-5)} | sed "s/.*\(\.[^\.]*\)$/\1/")
+	local ext=$(echo ${lcase:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
 
 	# if string does not have a '.' then assume no extension present
 	[[ ! "$ext" =~ "." ]] && ext=""
@@ -1274,9 +1283,9 @@ PageScraper()
 	#---------------------------------------------------------------------------------------------------------------
 
 	cat "${results_pathfile}" \
-	| sed 's|<div|\n\n&|g;s| notranslate||g' \
+	| $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
 	| grep '<div class=\"rg_meta\">.*http' \
-	| sed '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
+	| $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
 
 	}
@@ -1303,7 +1312,7 @@ CTRL_C_Captured()
 
 	if [ "$parallel_count" -gt "0" ]; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
-		for currentfile in `ls -I . -I .. $download_run_count_path` ; do
+		for currentfile in `$CMD_LS -I . -I .. $download_run_count_path` ; do
 			DebugThis "= link ($currentfile) was partially processed" "deleted!"
 
  			rm -f "${target_path}/${image_file}($currentfile)".*
@@ -1430,7 +1439,7 @@ RemoveColourCodes()
 	{
 
 	# http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
-	echo -n "$1" | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g"
+	echo -n "$1" | $CMD_SED "s,\x1B\[[0-9;]*[a-zA-Z],,g"
 
 	}
 
@@ -1518,7 +1527,7 @@ FirstPreferredFont()
 	{
 
 	local preferred_fonts=$(WantedFonts)
-	local available_fonts=$(convert -list font | grep "Font:" | sed 's| Font: ||')
+	local available_fonts=$(convert -list font | grep "Font:" | $CMD_SED 's| Font: ||')
 	local first_available_font=""
 
 	while read preferred_font ; do
@@ -1541,7 +1550,7 @@ FirstPreferredFont()
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
