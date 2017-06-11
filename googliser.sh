@@ -37,8 +37,8 @@
 Init()
 	{
 
-	local script_version="1.25"
-	local script_date="2017-06-10"
+	local script_version="1.26"
+	local script_date="2017-06-11"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -66,6 +66,7 @@ Init()
 	lower_size_limit_default=1000
 	timeout_default=15
 	retries_default=3
+	min_pixels_default=""
 
 	# internals
 	script_starttime=$(date)
@@ -98,6 +99,7 @@ Init()
 	debug=false
 	skip_no_size=false
 	lightning=false
+	min_pixels=$min_pixels_default
 
 	WhatAreMyOptions
 
@@ -289,6 +291,7 @@ DisplayHelp()
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
+	HelpParameterFormat "" "minimum-pixels [STRING]" "Only download images containing at least this many pixels. Preset values only!"
 	echo
 	echo " - Example:"
 
@@ -349,6 +352,10 @@ WhatAreMyOptions()
 				;;
 			-i | --title )
 				gallery_title="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			--minimum-pixels )
+				min_pixels="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-k | --skip-no-size )
@@ -423,7 +430,7 @@ DownloadResultGroup_auto()
 
 	DebugThis "- result group ($link_index) download" "start"
 
-	local wget_list_cmd="wget --quiet --timeout=${timeout} --tries=${retries} \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local wget_list_cmd="wget --quiet --timeout=${timeout} --tries=${retries} \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${min_dimension_string}${search_group}${search_start}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 	DebugThis "? result group ($link_index) \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
@@ -1157,7 +1164,11 @@ HelpParameterFormat()
 	# $2 = long parameter
 	# $3 = description
 
-	printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
+	if [ ! -z "$1" ]; then
+		printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
+	else
+		printf "   %-1s   --%-28s %s\n" "" "$2" "$3"
+	fi
 
 	}
 
@@ -1519,7 +1530,7 @@ FirstPreferredFont()
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase: -n $(readlink -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels: -n $(readlink -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1701,6 +1712,20 @@ if [ "$exitcode" -eq "0" ] ; then
 		if [ ! "$gallery_title" ] ; then
 			gallery_title=$user_query
 			DebugThis "~ \$gallery_title was unspecified so set as" "$gallery_title"
+		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ] ; then
+		min_dimension_string=""
+		if [ "$min_pixels" ] ; then
+			case "$min_pixels" in
+				qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp )
+					min_dimension_string="&tbs=isz:lt,islt:${min_pixels}"
+				;;
+				* )
+					echo "unknown size"
+				;;
+			esac
 		fi
 	fi
 fi
