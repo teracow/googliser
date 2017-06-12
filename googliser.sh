@@ -56,8 +56,8 @@ CMD_LS="ls"
 Init()
 	{
 
-	local script_version="1.26"
-	local script_date="2017-06-12"
+	local script_version="1.27"
+	local script_date="2017-06-13"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -119,7 +119,6 @@ Init()
 	skip_no_size=false
 	lightning=false
 	min_pixels=$min_pixels_default
-
 
 	WhatAreMyOptions
 
@@ -311,7 +310,22 @@ DisplayHelp()
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
-	HelpParameterFormat "" "minimum-pixels [STRING]" "Only download images containing at least this many pixels. Preset values only!"
+	HelpParameterFormat "" "minimum-pixels [PRESET]" "Only download images containing at least this many pixels. Preset strings only!"
+	HelpParameterFormat "" "" "Current presets are:"
+	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
+	HelpParameterFormat "" "" "'vga'   (640 x 480)"
+	HelpParameterFormat "" "" "'svga'  (800 x 600)"
+	HelpParameterFormat "" "" "'xga'   (1024 x 768)"
+	HelpParameterFormat "" "" "'2mp'   (1600 x 1200)"
+	HelpParameterFormat "" "" "'4mp'   (2272 x 1704)"
+	HelpParameterFormat "" "" "'6mp'   (2816 x 2112)"
+	HelpParameterFormat "" "" "'8mp'   (3264 x 2448)"
+	HelpParameterFormat "" "" "'10mp'  (3648 x 2736)"
+	HelpParameterFormat "" "" "'12mp'  (4096 x 3072)"
+	HelpParameterFormat "" "" "'15mp'  (4480 x 3360)"
+	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
+	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
+	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
 	echo
 	echo " - Example:"
 
@@ -1184,10 +1198,12 @@ HelpParameterFormat()
 	# $2 = long parameter
 	# $3 = description
 
-	if [ ! -z "$1" ]; then
+	if [ ! -z "$1" ] && [ ! -z "$2" ]; then
 		printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
-	else
+	elif [ -z "$1" ] && [ ! -z "$2" ]; then
 		printf "   %-1s   --%-28s %s\n" "" "$2" "$3"
+	else
+		printf "   %-1s     %-28s %s\n" "" "" "$3"
 	fi
 
 	}
