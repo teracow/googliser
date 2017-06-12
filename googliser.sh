@@ -168,6 +168,7 @@ Init()
 	DebugThis "? \$skip_no_size" "$skip_no_size"
 	DebugThis "? \$remove_after" "$remove_after"
 	DebugThis "? \$lightning" "$lightning"
+	DebugThis "? \$min_pixels" "$min_pixels"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -1759,7 +1760,8 @@ if [ "$exitcode" -eq "0" ]; then
 					min_dimension_string="&tbs=isz:lt,islt:${min_pixels}"
 					;;
 				* )
-					echo "unknown size"
+					echo "$(ShowAsFailed " !! (--minimum-pixels) preset invalid ... unable to continue.")"
+					exitcode=2
 					;;
 			esac
 		fi
