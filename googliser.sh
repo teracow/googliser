@@ -86,6 +86,7 @@ Init()
 	timeout_default=15
 	retries_default=3
 	min_pixels_default=""
+	aspect_ratio_default=""
 
 	# internals
 	script_starttime=$(date)
@@ -119,6 +120,7 @@ Init()
 	skip_no_size=false
 	lightning=false
 	min_pixels=$min_pixels_default
+	aspect_ratio=$aspect_ratio_default
 
 	WhatAreMyOptions
 
@@ -169,6 +171,7 @@ Init()
 	DebugThis "? \$remove_after" "$remove_after"
 	DebugThis "? \$lightning" "$lightning"
 	DebugThis "? \$min_pixels" "$min_pixels"
+	DebugThis "? \$aspect_ratio" "$aspect_ratio"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -293,24 +296,43 @@ DisplayHelp()
 	echo
 	echo " Optional"
 	HelpParameterFormat "a" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
+	echo
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
+	echo
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
+	echo
 	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
+	echo
 	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for unlimited ($google_max)."
+	echo
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
+	echo
 	HelpParameterFormat "h" "help" "Display this help then exit."
+	echo
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
+	echo
 	HelpParameterFormat "k" "skip-no-size" "Don't download any image if its size cannot be determined."
+	echo
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
+	echo
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
+	echo
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
+	echo
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
+	echo
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] in target directory."
+	echo
 	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
+	echo
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
+	echo
 	HelpParameterFormat "v" "version " "Show script version then exit."
+	echo
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
+	echo
 	#HelpParameterFormat "?" "random" "Download a single random image only"
+	echo
 	HelpParameterFormat "" "minimum-pixels [PRESET]" "Only download images containing at least this many pixels. Preset strings only!"
 	HelpParameterFormat "" "" "Current presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
@@ -327,6 +349,13 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
+	echo
+	HelpParameterFormat "" "aspect-ratio [PRESET]" "Image aspect ratio. Preset strings only!"
+	HelpParameterFormat "" "" "Current presets are:"
+	HelpParameterFormat "" "" "'t'  (Tall)"
+	HelpParameterFormat "" "" "'s'  (Square)"
+	HelpParameterFormat "" "" "'w'  (Wide)"
+	HelpParameterFormat "" "" "'xw' (Panoramic)"
 	echo
 	echo " - Example:"
 
@@ -391,6 +420,10 @@ WhatAreMyOptions()
 				;;
 			--minimum-pixels )
 				min_pixels="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			--aspect-ratio )
+				aspect_ratio="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-k | --skip-no-size )
@@ -465,7 +498,8 @@ DownloadResultGroup_auto()
 
 	DebugThis "- result group ($link_index) download" "start"
 
-	local wget_list_cmd="wget --quiet --timeout=${timeout} --tries=${retries} \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${min_dimension_string}${search_group}${search_start}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local wget_list_cmd="wget --quiet --timeout=${timeout} --tries=${retries} \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+
 	DebugThis "? result group ($link_index) \$wget_list_cmd" "$wget_list_cmd"
 
 	response=$(eval "$wget_list_cmd")
@@ -1567,7 +1601,7 @@ FirstPreferredFont()
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1753,17 +1787,38 @@ if [ "$exitcode" -eq "0" ]; then
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
-		min_dimension_string=""
+		min_pixels_search=""
 		if [ "$min_pixels" ]; then
 			case "$min_pixels" in
 				qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp )
-					min_dimension_string="&tbs=isz:lt,islt:${min_pixels}"
+					min_pixels_search="isz:lt,islt:${min_pixels}"
 					;;
 				* )
 					echo "$(ShowAsFailed " !! (--minimum-pixels) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
 			esac
+		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		aspect_ratio_search=""
+		if [ "$aspect_ratio" ]; then
+			case "$aspect_ratio" in
+				t|s|w|xw )
+					aspect_ratio_search="iar:${aspect_ratio}"
+					;;
+				* )
+					echo "$(ShowAsFailed " !! (--aspect-ratio) preset invalid ... unable to continue.")"
+					exitcode=2
+					;;
+			esac
+		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ]; then
+			advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search}"
 		fi
 	fi
 fi
