@@ -46,12 +46,25 @@
 #	T	elapsed time
 
 # for macOS, also need to change [/dev/shm] to [/tmp]
-CMD_READLINK="readlink"
-CMD_MKTEMP="mktemp"
-CMD_HEAD="head"
-CMD_SED="sed"
-CMD_DU="du"
-CMD_LS="ls"
+
+case "$OSTYPE" in
+	"darwin"* )
+		CMD_READLINK="greadlink"
+		CMD_MKTEMP="gmktemp"
+		CMD_HEAD="ghead"
+		CMD_SED="gsed"
+		CMD_DU="gdu"
+		CMD_LS="gls"
+		;;
+	* )
+		CMD_READLINK="readlink"
+		CMD_MKTEMP="mktemp"
+		CMD_HEAD="head"
+		CMD_SED="sed"
+		CMD_DU="du"
+		CMD_LS="ls"
+		;;
+esac
 
 Init()
 	{
@@ -213,8 +226,8 @@ BuildEnviron()
 	debug_file="debug.log"
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
+	[ "$OSTYPE" == "darwin"* ] && local temp_root="/tmp" || local temp_root="/dev/shm"
 
-	local temp_root="/dev/shm"
 	temp_path=$($CMD_MKTEMP -p "${temp_root}" -d "$script_name.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
 
