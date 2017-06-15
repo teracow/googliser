@@ -2,7 +2,7 @@
 ---
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them into a gallery image. The idea is to build a picture of a phrase. 
 
-(This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016.)
+(This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016 and again in June 2017.)
 
 ---
 ## Description:
@@ -100,6 +100,42 @@ Show script version then exit.
 `-z` or `--lightning`  * in development - non-functional in this release *  
 Lightning mode! This cancels slow downloads which really speeds things up!
 
+`--minimum-pixels [PRESET]`
+Only download images with at least this many pixels. Preset values are:
+
+- `qsvga` (400 x 300)
+- `vga`   (640 x 480)
+- `svga`  (800 x 600)
+- `xga`  (1024 x 768)
+- `2mp`   (1600 x 1200)
+- `4mp`   (2272 x 1704)
+- `6mp`   (2816 x 2112)
+- `8mp`   (3264 x 2448)
+- `10mp`  (3648 x 2736)
+- `12mp`  (4096 x 3072)
+- `15mp`  (4480 x 3360)
+- `20mp`  (5120 x 3840)
+- `40mp`  (7216 x 5412)
+- `70mp`  (9600 x 7200)
+
+`--aspect-ratio [PRESET]`
+The shape of the image to download. Preset values are:
+
+- `tall`
+- `square`
+- `wide`
+- `panoramic`
+
+`--type [PRESET]`
+Image type to download. Preset values are:
+
+- `face`
+- `photo`
+- `clipart`
+- `lineart`
+- `animated`
+
+
 **Usage Examples:**
 
     $ ./googliser.sh -p "cows"
@@ -157,7 +193,7 @@ This will download the first 80 available images for the search-phrase *"storm c
 
 - The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
-- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The last functional check of this script by me was on 2017-06-10. The latest copy can be found **[here](https://github.com/teracow/googliser)**.  
+- This script will need to be updated from time-to-time as Google periodically change their search results page-code. The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 
 ---
 ## Development Environment:
@@ -185,14 +221,14 @@ Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email m
 ---
 ## Known Issues:
 
-- (2017-06-10) - None.
+- (2017-06-16) - none.
 
 ---
 ## Work-in-Progress:
 
-- (2017-06-10) - adding new parameter to specify image dimensions.
+- (2017-06-16) - code rationalisation.
  
 ---
 ## To-Do List:
 
-- (2017-06-10) - 'lightning' mode.
+- (2017-06-16) - add new parameter to specify output directory.
