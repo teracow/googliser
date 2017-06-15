@@ -45,8 +45,6 @@
 #	!	failure
 #	T	elapsed time
 
-# for macOS, also need to change [/dev/shm] to [/tmp]
-
 case "$OSTYPE" in
 	"darwin"* )
 		CMD_READLINK="greadlink"
@@ -55,6 +53,7 @@ case "$OSTYPE" in
 		CMD_SED="gsed"
 		CMD_DU="gdu"
 		CMD_LS="gls"
+		temp_root="/tmp"
 		;;
 	* )
 		CMD_READLINK="readlink"
@@ -63,6 +62,7 @@ case "$OSTYPE" in
 		CMD_SED="sed"
 		CMD_DU="du"
 		CMD_LS="ls"
+		temp_root="/dev/shm"
 		;;
 esac
 
@@ -226,7 +226,6 @@ BuildEnviron()
 	debug_file="debug.log"
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
-	[ "$OSTYPE" == "darwin"* ] && local temp_root="/tmp" || local temp_root="/dev/shm"
 
 	temp_path=$($CMD_MKTEMP -p "${temp_root}" -d "$script_name.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
@@ -343,9 +342,9 @@ DisplayHelp()
 	HelpParameterFormat "v" "version " "Show script version then exit."
 	echo
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
-	echo
+	#echo
 	#HelpParameterFormat "?" "random" "Download a single random image only"
-	echo
+	#echo
 	HelpParameterFormat "" "minimum-pixels [PRESET]" "Only download images containing at least this many pixels. Preset strings only!"
 	HelpParameterFormat "" "" "Current presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
@@ -1247,7 +1246,7 @@ HelpParameterFormat()
 	# $3 = description
 
 	if [ ! -z "$1" ] && [ ! -z "$2" ]; then
-		printf "  -%-1s   --%-28s %s\n" "$1" "$2" "$3"
+		printf "  -%-1s | --%-28s %s\n" "$1" "$2" "$3"
 	elif [ -z "$1" ] && [ ! -z "$2" ]; then
 		printf "   %-1s   --%-28s %s\n" "" "$2" "$3"
 	else
