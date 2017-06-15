@@ -69,8 +69,8 @@ esac
 Init()
 	{
 
-	local script_version="1.27"
-	local script_date="2017-06-13"
+	local script_version="1.28"
+	local script_date="2017-06-16"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -100,6 +100,7 @@ Init()
 	retries_default=3
 	min_pixels_default=""
 	aspect_ratio_default=""
+	image_type_default=""
 
 	# internals
 	script_starttime=$(date)
@@ -134,6 +135,7 @@ Init()
 	lightning=false
 	min_pixels=$min_pixels_default
 	aspect_ratio=$aspect_ratio_default
+	image_type=$image_type_default
 
 	WhatAreMyOptions
 
@@ -185,6 +187,7 @@ Init()
 	DebugThis "? \$lightning" "$lightning"
 	DebugThis "? \$min_pixels" "$min_pixels"
 	DebugThis "? \$aspect_ratio" "$aspect_ratio"
+	DebugThis "? \$image_type" "$image_type"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -369,6 +372,14 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'w'  (Wide)"
 	HelpParameterFormat "" "" "'xw' (Panoramic)"
 	echo
+	HelpParameterFormat "" "type [PRESET]" "Image type. Preset strings only!"
+	HelpParameterFormat "" "" "Current presets are:"
+	HelpParameterFormat "" "" "'face'"
+	HelpParameterFormat "" "" "'photo'"
+	HelpParameterFormat "" "" "'clipart'"
+	HelpParameterFormat "" "" "'lineart'"
+	HelpParameterFormat "" "" "'animated'"
+	echo
 	echo " - Example:"
 
 	if [ "$colour" == "true" ]; then
@@ -436,6 +447,10 @@ WhatAreMyOptions()
 				;;
 			--aspect-ratio )
 				aspect_ratio="$2"
+				shift 2		# shift to next parameter in $1
+				;;
+			--type )
+				image_type="$2"
 				shift 2		# shift to next parameter in $1
 				;;
 			-k | --skip-no-size )
@@ -1613,7 +1628,7 @@ FirstPreferredFont()
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1829,8 +1844,23 @@ if [ "$exitcode" -eq "0" ]; then
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
-		if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ]; then
-			advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search}"
+		image_type_search=""
+		if [ "$image_type" ]; then
+			case "$image_type" in
+				face|photo|clipart|lineart|animated )
+					image_type_search="itp:${image_type}"
+					;;
+				* )
+					echo "$(ShowAsFailed " !! (--type) preset invalid ... unable to continue.")"
+					exitcode=2
+					;;
+			esac
+		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ] || [ "$image_type_search" ]; then
+			advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
 		fi
 	fi
 fi
