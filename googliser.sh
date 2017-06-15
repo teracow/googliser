@@ -348,8 +348,7 @@ DisplayHelp()
 	#echo
 	#HelpParameterFormat "?" "random" "Download a single random image only"
 	#echo
-	HelpParameterFormat "" "minimum-pixels [PRESET]" "Only download images containing at least this many pixels. Preset strings only!"
-	HelpParameterFormat "" "" "Current presets are:"
+	HelpParameterFormat "" "minimum-pixels [PRESET]" "Images must contain at least this many pixels. Current presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
 	HelpParameterFormat "" "" "'vga'   (640 x 480)"
 	HelpParameterFormat "" "" "'svga'  (800 x 600)"
@@ -365,15 +364,13 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
 	echo
-	HelpParameterFormat "" "aspect-ratio [PRESET]" "Image aspect ratio. Preset strings only!"
-	HelpParameterFormat "" "" "Current presets are:"
-	HelpParameterFormat "" "" "'t'  (Tall)"
-	HelpParameterFormat "" "" "'s'  (Square)"
-	HelpParameterFormat "" "" "'w'  (Wide)"
-	HelpParameterFormat "" "" "'xw' (Panoramic)"
+	HelpParameterFormat "" "aspect-ratio [PRESET]" "Image aspect ratio. Current presets are:"
+	HelpParameterFormat "" "" "'tall'"
+	HelpParameterFormat "" "" "'square'"
+	HelpParameterFormat "" "" "'wide'"
+	HelpParameterFormat "" "" "'panoramic'"
 	echo
-	HelpParameterFormat "" "type [PRESET]" "Image type. Preset strings only!"
-	HelpParameterFormat "" "" "Current presets are:"
+	HelpParameterFormat "" "type [PRESET]" "Image type. Current presets are:"
 	HelpParameterFormat "" "" "'face'"
 	HelpParameterFormat "" "" "'photo'"
 	HelpParameterFormat "" "" "'clipart'"
@@ -1832,14 +1829,24 @@ if [ "$exitcode" -eq "0" ]; then
 		aspect_ratio_search=""
 		if [ "$aspect_ratio" ]; then
 			case "$aspect_ratio" in
-				t|s|w|xw )
-					aspect_ratio_search="iar:${aspect_ratio}"
+				tall )
+					ar_type="t"
+					;;
+				square )
+					ar_type="s"
+					;;
+				wide )
+					ar_type="w"
+					;;
+				panoramic )
+					ar_type="xw"
 					;;
 				* )
 					echo "$(ShowAsFailed " !! (--aspect-ratio) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
 			esac
+			[ "$ar_type" ] && aspect_ratio_search="iar:${ar_type}"
 		fi
 	fi
 
