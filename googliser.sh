@@ -66,15 +66,19 @@ case "$OSTYPE" in
 		;;
 esac
 
+# check for command-line parameters
+user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters_result=$?
+user_parameters_raw="$@"
+
 Init()
 	{
 
-	local script_version="1.29"
-	local script_date="2017-06-16"
+	local script_date="2017-06-17"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
-	local script_details="$(ColourTextBrightWhite "${script_file}") - v${script_version} (${script_date}) PID:[$$]"
+	local script_details="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
 
 	BuildEnviron
 
@@ -104,7 +108,6 @@ Init()
 	script_startseconds=$(date +%s)
 	target_path_created=false
 	helpme=false
-	show_version_only=false
 	show_help_only=false
 	google_max=1000
 	parallel_max=40
@@ -140,11 +143,6 @@ Init()
 	exitcode=$?
 
 	# display start
-	if [ "$show_version_only" == "true" ]; then
-		echo "v${script_version} (${script_date})"
-		verbose=false
-	fi
-
 	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ]; then
 		echo "Huh?"
 		exit 2
@@ -152,9 +150,9 @@ Init()
 
 	if [ "$verbose" == "true" ]; then
 		if [ "$colour" == "true" ]; then
-			echo " ${script_details}"
+			echo " $script_details"
 		else
-			echo " $(RemoveColourCodes "${script_details}")"
+			echo " $(RemoveColourCodes "$script_details")"
 		fi
 
 		echo
@@ -343,8 +341,6 @@ DisplayHelp()
 	echo
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
 	echo
-	HelpParameterFormat "v" "version " "Show script version then exit."
-	echo
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#echo
 	#HelpParameterFormat "?" "random" "Download a single random image only"
@@ -478,10 +474,6 @@ WhatAreMyOptions()
 			-d | --debug )
 				debug=true
 				shift
-				;;
-			-v | --version )
-				show_version_only=true
-				return 7
 				;;
 			--minimum-pixels )
 				min_pixels="$2"
@@ -1629,11 +1621,6 @@ FirstPreferredFont()
 
 	}
 
-# check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
-user_parameters_result=$?
-user_parameters_raw="$@"
-
 Init
 
 # user parameter validation and bounds checks
@@ -2013,7 +2000,7 @@ if [ "$verbose" == "true" ]; then
 fi
 
 # reset exitcode if only displaying info
-if [ "$show_version_only" == "true" ] || [ "$show_help_only" == "true" ]; then
+if [ "$show_help_only" == "true" ]; then
 	exitcode=0
 fi
 

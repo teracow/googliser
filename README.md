@@ -79,6 +79,9 @@ Only download image files larger than this many bytes. Some servers do not repor
 `-n` or `--number [INTEGER]`  
 Number of images to download. Default is 25. Maximum is 1,000.
 
+`-o` or `--output [PATH]`  
+The output directory. If unspecified, the search phrase is used.
+
 `-q` or `--quiet`  
 Suppress standard display output. Error messages are still shown.
 
@@ -93,9 +96,6 @@ Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minute
 
 `-u` or `--upper-size [INTEGER]`  
 Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 0 (unlimited).
-
-`-v` or `--version`  
-Show script version then exit.
 
 `-z` or `--lightning`  * in development - non-functional in this release *  
 Lightning mode! This cancels slow downloads which really speeds things up!
@@ -219,16 +219,16 @@ This will download the first 80 available images for the search-phrase *"storm c
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-## Known Issues:
+## Known Issues (2017-06-17):
 
-- (2017-06-16) - none.
+- none.
 
 ---
 ## Work-in-Progress:
 
-- (2017-06-16) - code rationalisation.
+- code rationalisation.
  
 ---
 ## To-Do List:
 
-- (2017-06-16) - add new parameter to specify output directory.
+- add new parameter to only generate links `--links-only`.
