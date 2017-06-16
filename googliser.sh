@@ -69,7 +69,7 @@ esac
 Init()
 	{
 
-	local script_version="1.28"
+	local script_version="1.29"
 	local script_date="2017-06-16"
 	script_file="googliser.sh"
 
@@ -98,9 +98,6 @@ Init()
 	lower_size_limit_default=1000
 	timeout_default=15
 	retries_default=3
-	min_pixels_default=""
-	aspect_ratio_default=""
-	image_type_default=""
 
 	# internals
 	script_starttime=$(date)
@@ -133,9 +130,10 @@ Init()
 	debug=false
 	skip_no_size=false
 	lightning=false
-	min_pixels=$min_pixels_default
-	aspect_ratio=$aspect_ratio_default
-	image_type=$image_type_default
+	min_pixels=""
+	aspect_ratio=""
+	image_type=""
+	output_path=""
 
 	WhatAreMyOptions
 
@@ -188,6 +186,7 @@ Init()
 	DebugThis "? \$min_pixels" "$min_pixels"
 	DebugThis "? \$aspect_ratio" "$aspect_ratio"
 	DebugThis "? \$image_type" "$image_type"
+	DebugThis "? \$output_path" "$output_path"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -307,14 +306,14 @@ DisplayHelp()
 		echo " * Required *"
 	fi
 
-	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory will be created with this name."
+	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory is created with this name unless --output is specified."
 	echo
 	echo " Optional"
 	HelpParameterFormat "a" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
 	echo
 	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
 	echo
-	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] in target directory."
+	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] into the output directory."
 	echo
 	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
 	echo
@@ -332,11 +331,13 @@ DisplayHelp()
 	echo
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
 	echo
+	HelpParameterFormat "o" "output [PATH] <phrase>" "The output directory. If unspecified, the search phrase is used."
+	echo
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
 	echo
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
 	echo
-	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] in target directory."
+	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
 	echo
 	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
 	echo
@@ -400,55 +401,47 @@ WhatAreMyOptions()
 
 	eval set -- "$user_parameters"
 
-	while true ; do
+	while true; do
 		case "$1" in
 			-n | --number )
 				images_required="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-f | --failures )
 				fail_limit="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-p | --phrase )
 				user_query="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-a | --parallel )
 				parallel_limit="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-t | --timeout )
 				timeout="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-r | --retries )
 				retries="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-u | --upper-size )
 				upper_size_limit="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-l | --lower-size )
 				lower_size_limit="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
 			-i | --title )
 				gallery_title="$2"
-				shift 2		# shift to next parameter in $1
+				shift 2
 				;;
-			--minimum-pixels )
-				min_pixels="$2"
-				shift 2		# shift to next parameter in $1
-				;;
-			--aspect-ratio )
-				aspect_ratio="$2"
-				shift 2		# shift to next parameter in $1
-				;;
-			--type )
-				image_type="$2"
-				shift 2		# shift to next parameter in $1
+			-o | --output )
+				output_path="$2"
+				shift 2
 				;;
 			-k | --skip-no-size )
 				skip_no_size=true
@@ -489,6 +482,18 @@ WhatAreMyOptions()
 			-v | --version )
 				show_version_only=true
 				return 7
+				;;
+			--minimum-pixels )
+				min_pixels="$2"
+				shift 2
+				;;
+			--aspect-ratio )
+				aspect_ratio="$2"
+				shift 2
+				;;
+			--type )
+				image_type="$2"
+				shift 2
 				;;
 			-- )
 				shift		# shift to next parameter in $1
@@ -1625,7 +1630,7 @@ FirstPreferredFont()
 	}
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,v,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,version,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -1797,10 +1802,23 @@ if [ "$exitcode" -eq "0" ]; then
 		else
 			safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
 			DebugThis "? \$safe_query" "$safe_query"
-			target_path="${current_path}/${safe_query}"
-			DebugThis "? \$target_path" "$target_path"
-			targetimage_pathfile="${target_path}/${image_file}"
 		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		if [ "$output_path" ]; then
+			safe_path="$(echo $output_path | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
+			DebugThis "? \$safe_path" "$safe_path"
+		fi
+
+		if [ "$safe_path" ]; then
+			target_path="$safe_path"
+			targetimage_pathfile="${target_path}/${image_file}"
+		else
+ 			target_path="${current_path}/${safe_query}"
+ 			targetimage_pathfile="${target_path}/${image_file}"
+		fi
+		DebugThis "? \$target_path" "$target_path"
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
@@ -1874,22 +1892,22 @@ fi
 
 # create directory for search phrase
 if [ "$exitcode" -eq "0" ]; then
-	if [ -e "${target_path}" ]; then
-		DebugThis "! create sub-directory [${target_path}]" "failed! Sub-directory already exists!"
-		echo "$(ShowAsFailed " !! sub-directory [${target_path}] already exists ... unable to continue.")"
+	if [ -e "$target_path" ]; then
+		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
+		echo "$(ShowAsFailed " !! output directory [$target_path] already exists ... unable to continue.")"
 		exitcode=3
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
-		mkdir -p "${target_path}"
+		mkdir -p "$target_path"
 		result=$?
 
 		if [ "$result" -gt "0" ]; then
-			DebugThis "! create sub-directory [${target_path}]" "failed! mkdir returned: ($result)"
-			echo "$(ShowAsFailed " !! couldn't create sub-directory [${target_path}] ... unable to continue.")"
+			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
+			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path] ... unable to continue.")"
 			exitcode=3
 		else
-			DebugThis "$ create sub-directory [${target_path}]" "success!"
+			DebugThis "$ create output directory [$target_path]" "success!"
 			target_path_created=true
 		fi
 	fi
