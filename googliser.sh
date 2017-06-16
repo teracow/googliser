@@ -46,7 +46,7 @@
 #	T	elapsed time
 
 case "$OSTYPE" in
-	"darwin"* )
+	"darwin"*)
 		CMD_READLINK="greadlink"
 		CMD_MKTEMP="gmktemp"
 		CMD_HEAD="ghead"
@@ -55,7 +55,8 @@ case "$OSTYPE" in
 		CMD_LS="gls"
 		temp_root="/tmp"
 		;;
-	* )
+
+	*)
 		CMD_READLINK="readlink"
 		CMD_MKTEMP="mktemp"
 		CMD_HEAD="head"
@@ -399,99 +400,122 @@ WhatAreMyOptions()
 
 	while true; do
 		case "$1" in
-			-n | --number )
+			-n|--number)
 				images_required="$2"
 				shift 2
 				;;
-			-f | --failures )
+
+			-f|--failures)
 				fail_limit="$2"
 				shift 2
 				;;
-			-p | --phrase )
+
+			-p|--phrase)
 				user_query="$2"
 				shift 2
 				;;
-			-a | --parallel )
+
+			-a|--parallel)
 				parallel_limit="$2"
 				shift 2
 				;;
-			-t | --timeout )
+
+			-t|--timeout)
 				timeout="$2"
 				shift 2
 				;;
-			-r | --retries )
+
+			-r|--retries)
 				retries="$2"
 				shift 2
 				;;
-			-u | --upper-size )
+
+			-u|--upper-size)
 				upper_size_limit="$2"
 				shift 2
 				;;
-			-l | --lower-size )
+
+			-l|--lower-size)
 				lower_size_limit="$2"
 				shift 2
 				;;
-			-i | --title )
+
+			-i|--title)
 				gallery_title="$2"
 				shift 2
 				;;
-			-o | --output )
+
+			-o|--output)
 				output_path="$2"
 				shift 2
 				;;
-			-k | --skip-no-size )
+
+			-k|--skip-no-size)
 				skip_no_size=true
 				shift
 				;;
-			-s | --save-links )
+
+			-s|--save-links)
 				links=true
 				shift
 				;;
-			-e | --delete-after )
+
+			-e|--delete-after)
 				remove_after=true
 				shift
 				;;
-			-z | --lightning )
+
+			-z|--lightning)
 				lightning=true
 				shift
 				;;
-			-h | --help )
+
+			-h|--help)
 				show_help_only=true
 				return 7
 				;;
-			-c | --colour )
+
+			-c|--colour)
 				colour=true
 				shift
 				;;
-			-g | --no-gallery )
+
+			-g|--no-gallery)
 				create_gallery=false
 				shift
 				;;
-			-q | --quiet )
+
+			-q|--quiet)
 				verbose=false
 				shift
 				;;
-			-d | --debug )
+
+			-d|--debug)
 				debug=true
 				shift
 				;;
-			--minimum-pixels )
+
+			--minimum-pixels)
 				min_pixels="$2"
 				shift 2
 				;;
-			--aspect-ratio )
+
+			--aspect-ratio)
 				aspect_ratio="$2"
 				shift 2
 				;;
-			--type )
+
+			--type)
 				image_type="$2"
 				shift 2
 				;;
-			-- )
+
+			--)
 				shift		# shift to next parameter in $1
 				break
 				;;
-			* )
+
+			*)
 				break		# there are no more matching parameters
 				;;
 		esac
@@ -1290,14 +1314,15 @@ RenameExtAsType()
 			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
 
 			case "$imagetype" in
-				PNG | JPEG | GIF )
+				PNG|JPEG|GIF)
 					# move file into temp file
 					mv "$1" "$1".tmp
 
 					# then back but with new extension created from $imagetype
 					mv "$1".tmp "${1%.*}.$(Lowercase "$imagetype")"
 					;;
-				* )
+
+				*)
 					# not a valid image
 					returncode=1
 					;;
@@ -1323,11 +1348,12 @@ AllowableFileType()
 	[[ ! "$ext" =~ "." ]] && ext=""
 
 	case "$ext" in
-		.png | .jpg | .jpeg | .gif | .php )
+		.png|.jpg|.jpeg|.gif|.php)
 			# valid image type
 			return 0
 			;;
-		* )
+
+		*)
 			# not a valid image
 			return 1
 			;;
@@ -1420,31 +1446,39 @@ WgetReturnCodes()
 	# echo = text string
 
 	case "$1" in
-		0 )
+		0)
 			echo "No problems occurred"
 			;;
-		2 )
+
+		2)
 			echo "Parse error — for instance, when parsing command-line options, the .wgetrc or .netrc…"
 			;;
-		3 )
+
+		3)
 			echo "File I/O error"
 			;;
-		4 )
+
+		4)
 			echo "Network failure"
 			;;
-		5 )
+
+		5)
 			echo "SSL verification failure"
 			;;
-		6 )
+
+		6)
 			echo "Username/password authentication failure"
 			;;
-		7 )
+
+		7)
 			echo "Protocol errors"
 			;;
-		8 )
+
+		8)
 			echo "Server issued an error response"
 			;;
-		* )
+
+		*)
 			echo "Generic error code"
 			;;
 	esac
@@ -1626,14 +1660,15 @@ Init
 # user parameter validation and bounds checks
 if [ "$exitcode" -eq "0" ]; then
 	case ${images_required#[-+]} in
-		*[!0-9]* )
+		*[!0-9]*)
 			DebugThis "! specified \$images_required" "invalid"
 			DisplayHelp
 			echo
-			echo "$(ShowAsFailed " !! number specified after (-n --number) must be a valid integer ... unable to continue.")"
+			echo "$(ShowAsFailed " !! number specified after (-n|--number) must be a valid integer ... unable to continue.")"
 			exitcode=2
 			;;
-		* )
+
+		*)
 			if [ "$images_required" -lt "1" ]; then
 				images_required=1
 				DebugThis "~ \$images_required too low so set sensible minimum" "$images_required"
@@ -1648,14 +1683,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${fail_limit#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$fail_limit" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-f --failures) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-f|--failures) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$fail_limit" -le "0" ]; then
 					fail_limit=$google_max
 					DebugThis "~ \$fail_limit too low so set as \$google_max" "$fail_limit"
@@ -1671,14 +1707,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${parallel_limit#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$parallel_limit" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-a --parallel) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-a|--parallel) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$parallel_limit" -lt "1" ]; then
 					parallel_limit=1
 					DebugThis "~ \$parallel_limit too low so set as" "$parallel_limit"
@@ -1694,14 +1731,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${timeout#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$timeout" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-t --timeout) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-t|--timeout) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$timeout" -lt "1" ]; then
 					timeout=1
 					DebugThis "~ \$timeout too low so set as" "$timeout"
@@ -1717,14 +1755,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${retries#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$retries" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-r --retries) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-r|--retries) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$retries" -lt "1" ]; then
 					retries=1
 					DebugThis "~ \$retries too low so set as" "$retries"
@@ -1740,14 +1779,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${upper_size_limit#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$upper_size_limit" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-u --upper-size) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-u|--upper-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$upper_size_limit" -lt "0" ]; then
 					upper_size_limit=0
 					DebugThis "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
@@ -1758,14 +1798,15 @@ if [ "$exitcode" -eq "0" ]; then
 
 	if [ "$exitcode" -eq "0" ]; then
 		case ${lower_size_limit#[-+]} in
-			*[!0-9]* )
+			*[!0-9]*)
 				DebugThis "! specified \$lower_size_limit" "invalid"
 				DisplayHelp
 				echo
-				echo "$(ShowAsFailed " !! number specified after (-l --lower-size) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-l|--lower-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
-			* )
+
+			*)
 				if [ "$lower_size_limit" -lt "0" ]; then
 					lower_size_limit=0
 					DebugThis "~ \$lower_size_limit too small so set as" "$lower_size_limit"
@@ -1784,7 +1825,7 @@ if [ "$exitcode" -eq "0" ]; then
 			DebugThis "! \$user_query" "unspecified"
 			DisplayHelp
 			echo
-			echo "$(ShowAsFailed " !! search phrase (-p --phrase) was unspecified ... unable to continue.")"
+			echo "$(ShowAsFailed " !! search phrase (-p|--phrase) was unspecified ... unable to continue.")"
 			exitcode=2
 		else
 			safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
@@ -1819,10 +1860,11 @@ if [ "$exitcode" -eq "0" ]; then
 		min_pixels_search=""
 		if [ "$min_pixels" ]; then
 			case "$min_pixels" in
-				qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp )
+				qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
 					min_pixels_search="isz:lt,islt:${min_pixels}"
 					;;
-				* )
+
+				*)
 					echo "$(ShowAsFailed " !! (--minimum-pixels) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
@@ -1834,19 +1876,23 @@ if [ "$exitcode" -eq "0" ]; then
 		aspect_ratio_search=""
 		if [ "$aspect_ratio" ]; then
 			case "$aspect_ratio" in
-				tall )
+				tall)
 					ar_type="t"
 					;;
-				square )
+
+				square)
 					ar_type="s"
 					;;
-				wide )
+
+				wide)
 					ar_type="w"
 					;;
-				panoramic )
+
+				panoramic)
 					ar_type="xw"
 					;;
-				* )
+
+				*)
 					echo "$(ShowAsFailed " !! (--aspect-ratio) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
@@ -1859,10 +1905,11 @@ if [ "$exitcode" -eq "0" ]; then
 		image_type_search=""
 		if [ "$image_type" ]; then
 			case "$image_type" in
-				face|photo|clipart|lineart|animated )
+				face|photo|clipart|lineart|animated)
 					image_type_search="itp:${image_type}"
 					;;
-				* )
+
+				*)
 					echo "$(ShowAsFailed " !! (--type) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
@@ -1986,15 +2033,17 @@ fi
 # display end
 if [ "$verbose" == "true" ]; then
 	case "$exitcode" in
-		0 )
+		0)
 			echo
 			echo " -> $(ShowAsSucceed "All done!")"
 			;;
-		[1-6] )
+
+		[1-6])
 			echo
 			echo " -> $(ShowAsFailed "All done! (with errors)")"
 			;;
-		* )
+
+		*)
 			;;
 	esac
 fi
