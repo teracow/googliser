@@ -127,7 +127,7 @@ Init()
 	lower_size_limit=$lower_size_limit_default
 	create_gallery=true
 	gallery_title=""
-	links=false
+	save_links=false
 	colour=false
 	verbose=true
 	remove_after=false
@@ -176,7 +176,7 @@ Init()
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
 	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
-	DebugThis "? \$links" "$links"
+	DebugThis "? \$save_links" "$save_links"
 	DebugThis "? \$colour" "$colour"
 	DebugThis "? \$verbose" "$verbose"
 	DebugThis "? \$debug" "$debug"
@@ -460,7 +460,7 @@ WhatAreMyOptions()
 				;;
 
 			-s|--save-links)
-				links=true
+				save_links=true
 				shift
 				;;
 
@@ -1935,7 +1935,7 @@ if [ "$exitcode" -eq "0" ]; then
 	if [ "$exitcode" -eq "0" ]; then
 		if [ "$links_only" == "true" ]; then
 			create_gallery=false
-			links=true
+			save_links=true
 			fail_limit=0
 		fi
 	fi
@@ -2022,7 +2022,7 @@ fi
 
 # copy links file into target directory if possible. If not, then copy to current directory.
 if [ "$exitcode" -eq "0" ]; then
-	if [ "$links" == "true" ]; then
+	if [ "$save_links" == "true" ]; then
 		if [ "$target_path_created" == "true" ]; then
 			cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
 		else
