@@ -68,7 +68,7 @@ case "$OSTYPE" in
 esac
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -138,13 +138,14 @@ Init()
 	aspect_ratio=""
 	image_type=""
 	output_path=""
+	links_only=false
 
 	WhatAreMyOptions
 
 	exitcode=$?
 
 	# display start
-	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ]; then
+	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
 		echo "Huh?"
 		exit 2
 	fi
@@ -186,6 +187,7 @@ Init()
 	DebugThis "? \$aspect_ratio" "$aspect_ratio"
 	DebugThis "? \$image_type" "$image_type"
 	DebugThis "? \$output_path" "$output_path"
+	DebugThis "? \$links_only" "$links_only"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -375,6 +377,8 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'lineart'"
 	HelpParameterFormat "" "" "'animated'"
 	echo
+	HelpParameterFormat "" "links-only" "Only get image links. Don't download any images."
+	echo
 	echo " - Example:"
 
 	if [ "$colour" == "true" ]; then
@@ -492,6 +496,11 @@ WhatAreMyOptions()
 
 			-d|--debug)
 				debug=true
+				shift
+				;;
+
+			--links-only)
+				links_only=true
 				shift
 				;;
 
@@ -1922,6 +1931,14 @@ if [ "$exitcode" -eq "0" ]; then
 			advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
 		fi
 	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		if [ "$links_only" == "true" ]; then
+			create_gallery=false
+			links=true
+			fail_limit=0
+		fi
+	fi
 fi
 
 # create directory for search phrase
@@ -1979,9 +1996,11 @@ fi
 
 # download images
 if [ "$exitcode" -eq "0" ]; then
-	DownloadImages
+	if [ $links_only == "false" ]; then
+		DownloadImages
 
-	[ "$?" -gt "0" ] && exitcode=5
+		[ "$?" -gt "0" ] && exitcode=5
+	fi
 fi
 
 # build thumbnail gallery even if fail_limit was reached
