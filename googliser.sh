@@ -75,7 +75,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-06-17"
+	local script_date="2017-06-19"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -223,7 +223,7 @@ Init()
 BuildEnviron()
 	{
 
-	image_file="google-image"
+	image_file_prefix="google-image"
 	test_file="test-image"			# this is used during size testing
 	imagelinks_file="download.links.list"
 	debug_file="debug.log"
@@ -689,8 +689,9 @@ DownloadImage_auto()
 
 	[[ ! "$ext" =~ "." ]] && ext=".jpg"	# if URL did not have a file extension then choose jpg as default
 
-	testimage_pathfileext="${testimage_pathfile}($link_index)${ext}"
-	targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
+	local testimage_pathfileext="${testimage_pathfile}($link_index)${ext}"
+	local targetimage_pathfile="${target_path}/${image_file_prefix}"
+	local targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
 
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ]; then
@@ -952,7 +953,7 @@ DownloadImages()
 	fi
 
 	if [ ! "$result" -eq "1" ]; then
-		download_bytes="$($CMD_DU "${target_path}/${image_file}"* -cb | tail -n1 | cut -f1)"
+		download_bytes="$($CMD_DU "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
 		DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
 
 		download_seconds="$(($(date +%s )-$func_startseconds))"
@@ -1422,7 +1423,7 @@ CTRL_C_Captured()
 		for currentfile in `$CMD_LS -I . -I .. $download_run_count_path` ; do
 			DebugThis "= link ($currentfile) was partially processed" "deleted!"
 
- 			rm -f "${target_path}/${image_file}($currentfile)".*
+ 			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
 		done
 	fi
 
@@ -1850,10 +1851,8 @@ if [ "$exitcode" -eq "0" ]; then
 
 		if [ "$safe_path" ]; then
 			target_path="$safe_path"
-			targetimage_pathfile="${target_path}/${image_file}"
 		else
  			target_path="${current_path}/${safe_query}"
- 			targetimage_pathfile="${target_path}/${image_file}"
 		fi
 		DebugThis "? \$target_path" "$target_path"
 	fi
@@ -2013,7 +2012,7 @@ if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ]; then
 			exitcode=6
 		else
 			if [ "$remove_after" == "true" ]; then
-				rm -f "${target_path}/${image_file}"*
+				rm -f "${target_path}/${image_file_prefix}"*
 				DebugThis "= remove all downloaded images from" "[${target_path}]"
 			fi
 		fi
