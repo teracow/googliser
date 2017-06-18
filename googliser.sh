@@ -574,9 +574,9 @@ DownloadResultGroup_auto()
 RefreshResultsCounts()
 	{
 
-	parallel_count=$($CMD_LS -I . -I .. "$results_run_count_path" | wc -l)
-	success_count=$($CMD_LS -I . -I .. "$results_success_count_path" | wc -l)
-	fail_count=$($CMD_LS -I . -I .. "$results_fail_count_path" | wc -l)
+	parallel_count=$($CMD_LS -1 "$results_run_count_path" | wc -l)
+	success_count=$($CMD_LS -1 "$results_success_count_path" | wc -l)
+	fail_count=$($CMD_LS -1 "$results_fail_count_path" | wc -l)
 
 	}
 
@@ -805,9 +805,9 @@ DownloadImage_auto()
 RefreshDownloadCounts()
 	{
 
-	parallel_count=$($CMD_LS -I . -I .. "$download_run_count_path" | wc -l)
-	success_count=$($CMD_LS -I . -I .. "$download_success_count_path" | wc -l)
-	fail_count=$($CMD_LS -I . -I .. "$download_fail_count_path" | wc -l)
+	parallel_count=$($CMD_LS -1 "$download_run_count_path" | wc -l)
+	success_count=$($CMD_LS -1 "$download_success_count_path" | wc -l)
+	fail_count=$($CMD_LS -1 "$download_fail_count_path" | wc -l)
 
 	}
 
@@ -1420,7 +1420,7 @@ CTRL_C_Captured()
 
 	if [ "$parallel_count" -gt "0" ]; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
-		for currentfile in `$CMD_LS -I . -I .. $download_run_count_path` ; do
+		for currentfile in `$CMD_LS -1 $download_run_count_path` ; do
 			DebugThis "= link ($currentfile) was partially processed" "deleted!"
 
  			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
