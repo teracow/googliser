@@ -1420,7 +1420,7 @@ CTRL_C_Captured()
 
 	if [ "$parallel_count" -gt "0" ]; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
-		for currentfile in `$CMD_LS -1 $download_run_count_path` ; do
+  		for currentfile in $($CMD_LS -1 "$download_run_count_path"); do
 			DebugThis "= link ($currentfile) was partially processed" "deleted!"
 
  			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
