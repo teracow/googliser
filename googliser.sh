@@ -68,14 +68,14 @@ case "$OSTYPE" in
 esac
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
 	{
 
-	local script_date="2017-06-19"
+	local script_date="2017-09-01"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -139,6 +139,7 @@ Init()
 	image_type=""
 	output_path=""
 	links_only=false
+	dimensions=""
 
 	WhatAreMyOptions
 
@@ -188,6 +189,7 @@ Init()
 	DebugThis "? \$image_type" "$image_type"
 	DebugThis "? \$output_path" "$output_path"
 	DebugThis "? \$links_only" "$links_only"
+	DebugThis "? \$dimensions" "$dimensions"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -453,6 +455,11 @@ WhatAreMyOptions()
 				output_path="$2"
 				shift 2
 				;;
+
+			#--dimensions)
+			#	dimensions="$2"
+			#	shift 2
+			#	;;
 
 			-k|--skip-no-size)
 				skip_no_size=true
@@ -1862,6 +1869,38 @@ if [ "$exitcode" -eq "0" ]; then
 			gallery_title=$user_query
 			DebugThis "~ \$gallery_title was unspecified so set as" "$gallery_title"
 		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		dimensions_search=""
+		if [ "$dimensions" ]; then
+			# parse dimensions strings like '1920x1080' or '1920' or 'x1080'
+			echo "dimensions: [$dimensions]"
+
+			if grep -q "x" <<< $dimensions; then
+				echo "found a separator"
+				image_width=${dimensions%x*}
+				image_height=${dimensions#*x}
+			else
+				image_width=$dimensions
+			fi
+
+			[[ $image_width =~ ^-?[0-9]+$ ]] && echo "image_width is a number" || echo "image_width is NOT a number"
+			[[ $image_height =~ ^-?[0-9]+$ ]] && echo "image_height is a number" || echo "image_height is NOT a number"
+
+
+			echo "image_width: [$image_width]"
+			echo "image_height: [$image_height]"
+			echo "dimensions_search: [$dimensions_search]"
+
+			# only while debugging - remove for release
+			exitcode=2
+		fi
+	fi
+
+	if [ "$dimensions" ] && [ "$min_pixels" ]; then
+		min_pixels=""
+		DebugThis "~ \$dimensions was specified so cleared \$min_pixels"
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
