@@ -1386,7 +1386,7 @@ PageScraper()
 	# sed   1. add 2 x newline chars before each occurence of '<div',
 	#       2. remove ' notranslate' (if this is one of the odd times Google have added it),
 	#
-	# grep  3. only list lines with '<div class="rg_meta">' and eventually followed by 'http',
+	# grep  3. only list lines with '<div jsname=' and eventually followed by 'http',
 	#
 	# sed   4. remove lines with 'YouTube' (case insensitive),
 	#       5. remove lines with 'Vimeo' (case insensitive),
@@ -1399,7 +1399,7 @@ PageScraper()
 
 	cat "${results_pathfile}" \
 	| $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
-	| grep '<div class=\"rg_meta\">.*http' \
+	| grep '<div jsname=.*http' \
 	| $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
 	> "${imagelinks_pathfile}"
 
