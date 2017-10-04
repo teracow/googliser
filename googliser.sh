@@ -75,7 +75,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-09-01"
+	local script_date="2017-10-04"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -313,43 +313,24 @@ DisplayHelp()
 	echo
 	echo " Optional"
 	HelpParameterFormat "a" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
-	echo
-	HelpParameterFormat "c" "colour" "Output with ANSI coloured text."
-	echo
+	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
 	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] into the output directory."
-	echo
 	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
-	echo
 	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for unlimited ($google_max)."
-	echo
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
-	echo
 	HelpParameterFormat "h" "help" "Display this help then exit."
-	echo
 	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
-	echo
 	HelpParameterFormat "k" "skip-no-size" "Don't download any image if its size cannot be determined."
-	echo
 	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
-	echo
 	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
-	echo
 	HelpParameterFormat "o" "output [PATH] <phrase>" "The output directory. If unspecified, the search phrase is used."
-	echo
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	echo
 	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
-	echo
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
-	echo
 	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
-	echo
 	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
-	echo
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
-	#echo
 	#HelpParameterFormat "?" "random" "Download a single random image only"
-	#echo
 	HelpParameterFormat "" "minimum-pixels [PRESET]" "Images must contain at least this many pixels. Current presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
 	HelpParameterFormat "" "" "'vga'   (640 x 480)"
@@ -365,21 +346,18 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-	echo
 	HelpParameterFormat "" "aspect-ratio [PRESET]" "Image aspect ratio. Current presets are:"
 	HelpParameterFormat "" "" "'tall'"
 	HelpParameterFormat "" "" "'square'"
 	HelpParameterFormat "" "" "'wide'"
 	HelpParameterFormat "" "" "'panoramic'"
-	echo
 	HelpParameterFormat "" "type [PRESET]" "Image type. Current presets are:"
 	HelpParameterFormat "" "" "'face'"
 	HelpParameterFormat "" "" "'photo'"
 	HelpParameterFormat "" "" "'clipart'"
 	HelpParameterFormat "" "" "'lineart'"
 	HelpParameterFormat "" "" "'animated'"
-	echo
-	HelpParameterFormat "" "links-only" "Only get image links. Don't download any images."
+	HelpParameterFormat "" "links-only" "Only get image file URLs. Don't download any images."
 	echo
 	echo " - Example:"
 
@@ -1296,11 +1274,11 @@ HelpParameterFormat()
 	# $3 = description
 
 	if [ ! -z "$1" ] && [ ! -z "$2" ]; then
-		printf "  -%-1s | --%-28s %s\n" "$1" "$2" "$3"
+		printf "  -%-1s, --%-28s %s\n" "$1" "$2" "$3"
 	elif [ -z "$1" ] && [ ! -z "$2" ]; then
-		printf "   %-1s   --%-28s %s\n" "" "$2" "$3"
+		printf "   %-1s  --%-28s %s\n" "" "$2" "$3"
 	else
-		printf "   %-1s     %-28s %s\n" "" "" "$3"
+		printf "   %-1s    %-28s %s\n" "" "" "$3"
 	fi
 
 	}
@@ -1679,9 +1657,7 @@ if [ "$exitcode" -eq "0" ]; then
 	case ${images_required#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$images_required" "invalid"
-			DisplayHelp
-			echo
-			echo "$(ShowAsFailed " !! number specified after (-n|--number) must be a valid integer ... unable to continue.")"
+			echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer ... unable to continue.")"
 			exitcode=2
 			;;
 
@@ -1702,9 +1678,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${fail_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$fail_limit" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-f|--failures) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1726,9 +1700,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${parallel_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$parallel_limit" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-a|--parallel) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-a, --parallel) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1750,9 +1722,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${timeout#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$timeout" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-t|--timeout) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-t, --timeout) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1774,9 +1744,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${retries#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$retries" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-r|--retries) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-r, --retries) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1798,9 +1766,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${upper_size_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$upper_size_limit" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-u|--upper-size) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-u, --upper-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1817,9 +1783,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${lower_size_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$lower_size_limit" "invalid"
-				DisplayHelp
-				echo
-				echo "$(ShowAsFailed " !! number specified after (-l|--lower-size) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-l, --lower-size) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1840,9 +1804,7 @@ if [ "$exitcode" -eq "0" ]; then
 	if [ "$exitcode" -eq "0" ]; then
 		if [ ! "$user_query" ]; then
 			DebugThis "! \$user_query" "unspecified"
-			DisplayHelp
-			echo
-			echo "$(ShowAsFailed " !! search phrase (-p|--phrase) was unspecified ... unable to continue.")"
+			echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified ... unable to continue.")"
 			exitcode=2
 		else
 			safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!

@@ -1,4 +1,0 @@
-- redo built-in help and remove pipe chars and line spacing.
-- use commas between shortcodes and full param names.
-- use capital letter shortcodes for new params.
-- support for OpenBSD
