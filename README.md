@@ -2,7 +2,7 @@
 ---
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them into a gallery image. The idea is to build a picture of a phrase. 
 
-(This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016 and again in June 2017.)
+(This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016, June 2017 & August 2017.)
 
 ---
 ## Description:
@@ -198,17 +198,17 @@ This will download the first 80 available images for the search-phrase *"storm c
 ---
 ## Development Environment:
 
-- [Debian](https://www.debian.org/) - *8 "Jessie" 64b*
-- GNU BASH - *v4.2.53*
-- GNU sed - *v4.2.2*
-- GNU grep - *v2.20*
-- GNU Wget - *v1.16*
-- [ImageMagick](http://www.imagemagick.org) - *v6.9.6-6 Q16 x86_64 2016-12-02*
-- Kate - *v3.14.2*
-- [ReText](https://github.com/retext-project/retext) - *v5.0.1*
-- Konsole - *v2.14.2*
+- [Debian](https://www.debian.org/) - *9 "Stretch" 64b*
+- GNU BASH - *v4.4.12*
+- GNU sed - *v4.4*
+- GNU grep - *v2.27*
+- GNU Wget - *v1.18*
+- [ImageMagick](http://www.imagemagick.org) - *v6.9.7-4 Q16 x86_64 20170114*
+- Geany - *v1.29*
+- [ReText](https://github.com/retext-project/retext) - *v6.0.2*
+- Konsole - *v16.12.0*
 - KDE Development Platform - *v4.14.2*
-- QT - *v5.3.2*
+- QT - *v5.7.1*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
 **Also tested on:**
@@ -219,16 +219,6 @@ This will download the first 80 available images for the search-phrase *"storm c
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-## Known Issues (2017-06-17):
+## Known Issues:
 
 - none.
-
----
-## Work-in-Progress:
-
-- code rationalisation.
- 
----
-## To-Do List:
-
-- add new parameter to only generate links `--links-only`.
