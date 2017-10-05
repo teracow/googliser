@@ -27,7 +27,7 @@ These images have been scaled down for easier distribution.
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
 ![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
 
-    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -k
+    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
 
 ---
@@ -40,67 +40,45 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 ***Required***
 
-`-p` or `--phrase [STRING]`  
-The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*  
+`-p` or `--phrase [STRING]`
+The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
 
 
 ***Optional***
 
-`-a` or `--parallel [INTEGER]`  
-How many parallel image downloads? Default is 8. Maximum is 40.
+`-a` or `--aspect-ratio [PRESET]`
+The shape of the image to download. Preset values are:
 
-`-c` or `--colour`  
-Display with nice ANSI coloured text. 
+- `tall`
+- `square`
+- `wide`
+- `panoramic`
 
-`-d` or `--debug`  
+`-c` or `--colour`
+Display with nice ANSI coloured text.
+
+`--debug`
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
-`-e` or `--delete-after`  
+`-D` or `--delete-after`
 Delete the downloaded images after building the thumbnail gallery. Umm, don't specify this and `--no-gallery` at the same time.
 
-`-f` or `--failures [INTEGER]`  
+`-f` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if there are many failures).
 
-`-g` or `--no-gallery`  
+`-g` or `--no-gallery`
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
-`-h` or `--help`  
+`-h` or `--help`
 Display this help then exit.
 
-`-i` or `--title [STRING]`  
-Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
-
-`-k` or `--skip-no-size`  
-Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
-
-`-l` or `--lower-size [INTEGER]`  
+`-l` or `--lower-size [INTEGER]`
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
 
-`-n` or `--number [INTEGER]`  
-Number of images to download. Default is 25. Maximum is 1,000.
+`-L` or `--links-only`
+Only get image file URLs. Don't download any images.
 
-`-o` or `--output [PATH]`  
-The output directory. If unspecified, the search phrase is used.
-
-`-q` or `--quiet`  
-Suppress standard display output. Error messages are still shown.
-
-`-r` or `--retries [INTEGER]`  
-Number of download retries for each image. Default is 3. Maximum is 100.
-
-`-s` or `--save-links`  
-Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
-
-`-t` or `--timeout [INTEGER]`  
-Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
-
-`-u` or `--upper-size [INTEGER]`  
-Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 0 (unlimited).
-
-`-z` or `--lightning`  * in development - non-functional in this release *  
-Lightning mode! This cancels slow downloads which really speeds things up!
-
-`--minimum-pixels [PRESET]`
+`-m` or `--minimum-pixels [PRESET]`
 Only download images with at least this many pixels. Preset values are:
 
 - `qsvga` (400 x 300)
@@ -118,13 +96,35 @@ Only download images with at least this many pixels. Preset values are:
 - `40mp`  (7216 x 5412)
 - `70mp`  (9600 x 7200)
 
-`--aspect-ratio [PRESET]`
-The shape of the image to download. Preset values are:
+`-n` or `--number [INTEGER]`
+Number of images to download. Default is 25. Maximum is 1,000.
 
-- `tall`
-- `square`
-- `wide`
-- `panoramic`
+`-o` or `--output [PATH]`
+The output directory. If unspecified, the search phrase is used.
+
+`-P` or `--parallel [INTEGER]`
+How many parallel image downloads? Default is 8. Maximum is 40.
+
+`-q` or `--quiet`
+Suppress standard display output. Error messages are still shown.
+
+`-r` or `--retries [INTEGER]`
+Number of download retries for each image. Default is 3. Maximum is 100.
+
+`-s` or `--save-links`
+Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
+
+`-S` or `--skip-no-size`
+Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
+
+`-t` or `--timeout [INTEGER]`
+Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
+
+`-T` or `--title [STRING]`
+Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
+
+`-u` or `--upper-size [INTEGER]`
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 0 (unlimited).
 
 `--type [PRESET]`
 Image type to download. Preset values are:
@@ -145,10 +145,11 @@ This will download the first 25 available images for the search-phrase *"cows"*
 This will download the first 250 available images for the search-phrase *"kittens"*, download up to 12 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
+
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
-    $ ./googliser.sh -n 80 -p "storm clouds" -dscg
-This will download the first 80 available images for the search-phrase *"storm clouds"*, ensure that both the debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
+    $ ./googliser.sh -n 80 -p "storm clouds" -scg --debug
+This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
 ## Return Values ($?):
