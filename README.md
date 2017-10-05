@@ -28,14 +28,14 @@ These images have been scaled down for easier distribution.
 ![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
 
     $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
-![cows](images/googliser\-gallery\-\(cows\)\-s.png)  
+![cows](images/googliser\-gallery\-\(cows\)\-s.png)
 
 ---
 ## Usage:
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cdeghkqsv`. Parameters can be specified as follows:  
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cDghLqsSz`. Parameters can be specified as follows:
 
 
 ***Required***
