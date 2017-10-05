@@ -146,19 +146,22 @@ Init()
 	exitcode=$?
 
 	# display start
-	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
-		echo "Huh?"
-		exit 2
-	fi
-
 	if [ "$verbose" == "true" ]; then
 		if [ "$colour" == "true" ]; then
 			echo " $script_details"
 		else
 			echo " $(RemoveColourCodes "$script_details")"
 		fi
+	fi
 
+	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
 		echo
+		echo " Hmmm, so you've requested:"
+		echo " 1. don't create a gallery,"
+		echo " 2. delete the images after downloading,"
+		echo " 3. don't save the links file."
+		echo " Might be time to read-the-manual. ;)"
+		exitcode=2
 	fi
 
 	[ "$show_help_only" == "true" ] && DisplayHelp
@@ -1655,6 +1658,8 @@ Init
 
 # user parameter validation and bounds checks
 if [ "$exitcode" -eq "0" ]; then
+	[ "$verbose" == "true" ] && echo
+
 	case ${images_required#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$images_required" "invalid"
@@ -2057,8 +2062,11 @@ if [ "$verbose" == "true" ]; then
 			echo
 			echo " -> $(ShowAsSucceed "All done!")"
 			;;
-
-		[1-6])
+		2)
+			echo
+			echo " specify '--help' to display parameter list."
+			;;
+		1|[3-6])
 			echo
 			echo " -> $(ShowAsFailed "All done! (with errors)")"
 			;;
