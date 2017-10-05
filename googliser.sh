@@ -68,14 +68,14 @@ case "$OSTYPE" in
 esac
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,d,e,s,q,c,k,z,i:,l:,u:,r:,t:,a:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
 	{
 
-	local script_date="2017-10-04"
+	local script_date="2017-10-05"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -300,7 +300,7 @@ DisplayHelp()
 	fi
 
 	echo
-	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in <>"
+	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in < >"
 	echo
 
 	if [ "$colour" == "true" ]; then
@@ -309,29 +309,24 @@ DisplayHelp()
 		echo " * Required *"
 	fi
 
-	HelpParameterFormat "p" "phrase [STRING]" "Search phrase. A sub-directory is created with this name unless --output is specified."
+	HelpParameterFormat "p" "phrase" "Search phrase. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
 	echo
 	echo " Optional"
-	HelpParameterFormat "a" "parallel [INTEGER] <$parallel_limit_default>" "How many parallel image downloads? Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specified like '-a square'. Presets are:"
+	HelpParameterFormat "" "" "'tall'"
+	HelpParameterFormat "" "" "'square'"
+	HelpParameterFormat "" "" "'wide'"
+	HelpParameterFormat "" "" "'panoramic'"
 	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
-	HelpParameterFormat "d" "debug" "Save debug log to file [$debug_file] into the output directory."
-	HelpParameterFormat "e" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures [INTEGER] <$fail_limit_default>" "How many download failures before exiting? Use 0 for unlimited ($google_max)."
+	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
+	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
+	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
+	HelpParameterFormat "f" "failures" "How many download failures before exiting? <$fail_limit_default> Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
-	HelpParameterFormat "i" "title [STRING] <phrase>" "Custom title for thumbnail gallery. Enclose whitespace in quotes."
-	HelpParameterFormat "k" "skip-no-size" "Don't download any image if its size cannot be determined."
-	HelpParameterFormat "l" "lower-size [INTEGER] <$lower_size_limit_default>" "Only download images that are larger than this many bytes."
-	HelpParameterFormat "n" "number [INTEGER] <$images_required_default>" "Number of images to download. Maximum of $google_max."
-	HelpParameterFormat "o" "output [PATH] <phrase>" "The output directory. If unspecified, the search phrase is used."
-	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "r" "retries [INTEGER] <$retries_default>" "Retry image download this many times. Maximum of $retries_max."
-	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
-	HelpParameterFormat "t" "timeout [INTEGER] <$timeout_default>" "Number of seconds before aborting each attempt. Maximum of $timeout_max."
-	HelpParameterFormat "u" "upper-size [INTEGER] <$upper_size_limit_default>" "Only download images that are smaller than this many bytes. Use 0 for unlimited."
-	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
-	#HelpParameterFormat "?" "random" "Download a single random image only"
-	HelpParameterFormat "" "minimum-pixels [PRESET]" "Images must contain at least this many pixels. Current presets are:"
+	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. <$lower_size_limit_default>"
+	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
+	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specified like '-m 8mp'. Presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
 	HelpParameterFormat "" "" "'vga'   (640 x 480)"
 	HelpParameterFormat "" "" "'svga'  (800 x 600)"
@@ -346,29 +341,35 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-	HelpParameterFormat "" "aspect-ratio [PRESET]" "Image aspect ratio. Current presets are:"
-	HelpParameterFormat "" "" "'tall'"
-	HelpParameterFormat "" "" "'square'"
-	HelpParameterFormat "" "" "'wide'"
-	HelpParameterFormat "" "" "'panoramic'"
-	HelpParameterFormat "" "type [PRESET]" "Image type. Current presets are:"
+	HelpParameterFormat "n" "number" "Number of images to download. <$images_required_default> Maximum of $google_max."
+	HelpParameterFormat "o" "output" "The image output directory. <phrase>"
+	HelpParameterFormat "P" "parallel" "How many parallel image downloads? <$parallel_limit_default> Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
+	HelpParameterFormat "r" "retries" "Retry image download this many times. <$retries_default> Maximum of $retries_max."
+	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
+	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
+	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each attempt. <$timeout_default> Maximum of $timeout_max."
+	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. <phrase>"
+	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. <$upper_size_limit_default> Use 0 for unlimited."
+	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
+	#HelpParameterFormat "?" "random" "Download a single random image only"
+	HelpParameterFormat "" "type" "Image type. Specified like '--type clipart'. Presets are:"
 	HelpParameterFormat "" "" "'face'"
 	HelpParameterFormat "" "" "'photo'"
 	HelpParameterFormat "" "" "'clipart'"
 	HelpParameterFormat "" "" "'lineart'"
 	HelpParameterFormat "" "" "'animated'"
-	HelpParameterFormat "" "links-only" "Only get image file URLs. Don't download any images."
 	echo
 	echo " - Example:"
 
 	if [ "$colour" == "true" ]; then
 		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
 	else
-		echo " $ ./$script_file -p \"${sample_user_query}\""
+		echo " $ ./$script_file -p '${sample_user_query}'"
 	fi
 
 	echo
-	echo " This will download the first $images_required_default available images for the search phrase \"${sample_user_query}\" and build them into a gallery image."
+	echo " This will download the first $images_required_default available images for the phrase '${sample_user_query}' and build them into a gallery image."
 
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
@@ -399,7 +400,7 @@ WhatAreMyOptions()
 				shift 2
 				;;
 
-			-a|--parallel)
+			-P|--parallel)
 				parallel_limit="$2"
 				shift 2
 				;;
@@ -424,7 +425,7 @@ WhatAreMyOptions()
 				shift 2
 				;;
 
-			-i|--title)
+			-T|--title)
 				gallery_title="$2"
 				shift 2
 				;;
@@ -439,7 +440,7 @@ WhatAreMyOptions()
 			#	shift 2
 			#	;;
 
-			-k|--skip-no-size)
+			-S|--skip-no-size)
 				skip_no_size=true
 				shift
 				;;
@@ -449,15 +450,15 @@ WhatAreMyOptions()
 				shift
 				;;
 
-			-e|--delete-after)
+			-D|--delete-after)
 				remove_after=true
 				shift
 				;;
 
-			-z|--lightning)
-				lightning=true
-				shift
-				;;
+			#-z|--lightning)
+			#	lightning=true
+			#	shift
+			#	;;
 
 			-h|--help)
 				show_help_only=true
@@ -479,22 +480,22 @@ WhatAreMyOptions()
 				shift
 				;;
 
-			-d|--debug)
+			--debug)
 				debug=true
 				shift
 				;;
 
-			--links-only)
+			-L|--links-only)
 				links_only=true
 				shift
 				;;
 
-			--minimum-pixels)
+			-m|--minimum-pixels)
 				min_pixels="$2"
 				shift 2
 				;;
 
-			--aspect-ratio)
+			-a|--aspect-ratio)
 				aspect_ratio="$2"
 				shift 2
 				;;
@@ -1274,11 +1275,11 @@ HelpParameterFormat()
 	# $3 = description
 
 	if [ ! -z "$1" ] && [ ! -z "$2" ]; then
-		printf "  -%-1s, --%-28s %s\n" "$1" "$2" "$3"
+		printf "  -%-1s, --%-15s %s\n" "$1" "$2" "$3"
 	elif [ -z "$1" ] && [ ! -z "$2" ]; then
-		printf "   %-1s  --%-28s %s\n" "" "$2" "$3"
+		printf "   %-1s  --%-15s %s\n" "" "$2" "$3"
 	else
-		printf "   %-1s    %-28s %s\n" "" "" "$3"
+		printf "   %-1s    %-15s %s\n" "" "" "$3"
 	fi
 
 	}
@@ -1700,7 +1701,7 @@ if [ "$exitcode" -eq "0" ]; then
 		case ${parallel_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$parallel_limit" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-a, --parallel) must be a valid integer ... unable to continue.")"
+				echo "$(ShowAsFailed " !! number specified after (-P, --parallel) must be a valid integer ... unable to continue.")"
 				exitcode=2
 				;;
 
@@ -1874,7 +1875,7 @@ if [ "$exitcode" -eq "0" ]; then
 					;;
 
 				*)
-					echo "$(ShowAsFailed " !! (--minimum-pixels) preset invalid ... unable to continue.")"
+					echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
 			esac
@@ -1902,7 +1903,7 @@ if [ "$exitcode" -eq "0" ]; then
 					;;
 
 				*)
-					echo "$(ShowAsFailed " !! (--aspect-ratio) preset invalid ... unable to continue.")"
+					echo "$(ShowAsFailed " !! (-a, --aspect-ratio) preset invalid ... unable to continue.")"
 					exitcode=2
 					;;
 			esac
