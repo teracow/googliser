@@ -75,7 +75,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-05"
+	local script_date="2017-10-06"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -280,28 +280,24 @@ DisplayHelp()
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
-	local message=" search '"
+
+	echo
 
 	if [ "$colour" == "true" ]; then
-		message+="$(ShowGoogle) $(ColourTextBrightBlue "images")"
+		echo " - usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
+		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
 	else
-		message+="Google images"
+		echo " - usage: ./$script_file [PARAMETERS] ..."
+		message="Google images"
 	fi
 
-	echo "${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
+	echo
+	echo " search '${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
 	echo
 	echo " Requirements: Wget"
 	echo " Optional: identify, montage & convert (from ImageMagick)"
 	echo
 	echo " Questions or comments? teracow@gmail.com"
-	echo
-
-	if [ "$colour" == "true" ]; then
-		echo " - Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
-	else
-		echo " - Usage: ./$script_file [PARAMETERS] ..."
-	fi
-
 	echo
 	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in < >"
 	echo
@@ -315,7 +311,7 @@ DisplayHelp()
 	HelpParameterFormat "p" "phrase" "Search phrase. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
 	echo
 	echo " Optional"
-	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specified like '-a square'. Presets are:"
+	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
 	HelpParameterFormat "" "" "'tall'"
 	HelpParameterFormat "" "" "'square'"
 	HelpParameterFormat "" "" "'wide'"
@@ -324,12 +320,12 @@ DisplayHelp()
 	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures" "How many download failures before exiting? <$fail_limit_default> Use 0 for unlimited ($google_max)."
+	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. <$fail_limit_default> Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. <$lower_size_limit_default>"
 	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
-	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specified like '-m 8mp'. Presets are:"
+	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
 	HelpParameterFormat "" "" "'vga'   (640 x 480)"
 	HelpParameterFormat "" "" "'svga'  (800 x 600)"
@@ -351,12 +347,12 @@ DisplayHelp()
 	HelpParameterFormat "r" "retries" "Retry image download this many times. <$retries_default> Maximum of $retries_max."
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
 	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
-	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each attempt. <$timeout_default> Maximum of $timeout_max."
+	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. <$timeout_default> Maximum of $timeout_max."
 	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. <phrase>"
 	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. <$upper_size_limit_default> Use 0 for unlimited."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
-	HelpParameterFormat "" "type" "Image type. Specified like '--type clipart'. Presets are:"
+	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
 	HelpParameterFormat "" "" "'face'"
 	HelpParameterFormat "" "" "'photo'"
 	HelpParameterFormat "" "" "'clipart'"
