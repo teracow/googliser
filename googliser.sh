@@ -75,7 +75,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-06"
+	local script_date="2017-10-07"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -152,15 +152,15 @@ Init()
 		else
 			echo " $(RemoveColourCodes "$script_details")"
 		fi
+		echo
 	fi
 
 	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
-		echo
 		echo " Hmmm, so you've requested:"
 		echo " 1. don't create a gallery,"
 		echo " 2. delete the images after downloading,"
 		echo " 3. don't save the links file."
-		echo " Might be time to read-the-manual. ;)"
+		echo " Might be time to (R)ead-(T)he-(M)anual. ;)"
 		exitcode=2
 	fi
 
@@ -199,7 +199,7 @@ Init()
 
 	IsReqProgAvail "wget" || exitcode=1
 
-	if [ "$create_gallery" == "true" ]; then
+	if [ "$create_gallery" == "true" ] && [ "$show_help_only" == "false" ]; then
 		IsReqProgAvail "montage" || exitcode=1
 		IsReqProgAvail "convert" || exitcode=1
 	fi
@@ -280,8 +280,6 @@ DisplayHelp()
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
-
-	echo
 
 	if [ "$colour" == "true" ]; then
 		echo " - usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
@@ -1230,9 +1228,7 @@ IsReqProgAvail()
 		DebugThis "$ required program is available" "$1"
 	else
 		echo " !! required program [$1] is unavailable ... unable to continue."
-		echo
 		DebugThis "! required program is unavailable" "$1"
-		DisplayHelp
 	fi
 
 	return $result
@@ -1654,8 +1650,6 @@ Init
 
 # user parameter validation and bounds checks
 if [ "$exitcode" -eq "0" ]; then
-	[ "$verbose" == "true" ] && echo
-
 	case ${images_required#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$images_required" "invalid"
@@ -2072,9 +2066,6 @@ if [ "$verbose" == "true" ]; then
 	esac
 fi
 
-# reset exitcode if only displaying info
-if [ "$show_help_only" == "true" ]; then
-	exitcode=0
-fi
+[ "$show_help_only" == "true" ] && exitcode=0
 
 exit $exitcode
