@@ -25,7 +25,7 @@
 
 # return values ($?):
 #	0	completed successfully
-#	1	required program unavailable (wget, montage)
+#	1	required program unavailable (wget, montage, convert)
 #	2	required parameter unspecified or wrong
 #	3	could not create subdirectory for 'search phrase'
 #	4	could not get a list of search results from Google
@@ -75,7 +75,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-07"
+	local script_date="2017-10-08"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -93,7 +93,7 @@ Init()
 	server="www.google.com"
 
 	# http://whatsmyuseragent.com
-	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0'
+	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
 
 	# parameter defaults
 	images_required_default=25
@@ -205,6 +205,8 @@ Init()
 	fi
 
 	IsOptProgAvail "identify" && ident=true || ident=false
+
+	# ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
 
 	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
 	search_match_type="&nfpr=1"
@@ -1217,8 +1219,8 @@ ProgressUpdater()
 IsReqProgAvail()
 	{
 
-	# $1 = name of program to search for with 'which'
-	# $? = 0 if 'which' found it, 1 if not
+	# $1 = search $PATH for this binary with 'which'
+	# $? = 0 if found, 1 if not found
 
 	which "$1" > /dev/null 2>&1
 
@@ -1227,7 +1229,7 @@ IsReqProgAvail()
 	if [ "$result" -eq "0" ]; then
 		DebugThis "$ required program is available" "$1"
 	else
-		echo " !! required program [$1] is unavailable ... unable to continue."
+		echo " !! required program [$1] is unavailable"
 		DebugThis "! required program is unavailable" "$1"
 	fi
 
@@ -1238,8 +1240,8 @@ IsReqProgAvail()
 IsOptProgAvail()
 	{
 
-	# $1 = name of program to search for with 'which'
-	# $? = 0 if 'which' found it, 1 if not
+	# $1 = search $PATH for this binary with 'which'
+	# $? = 0 if found, 1 if not found
 
 	which "$1" > /dev/null 2>&1
 
