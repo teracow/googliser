@@ -2054,11 +2054,11 @@ if [ "$verbose" == "true" ]; then
 			echo
 			echo " -> $(ShowAsSucceed "All done!")"
 			;;
-		2)
+		[1-2])
 			echo
-			echo " specify '--help' to display parameter list."
+			echo " use '--help' to display parameter list."
 			;;
-		1|[3-6])
+		[3-6])
 			echo
 			echo " -> $(ShowAsFailed "All done! (with errors)")"
 			;;
