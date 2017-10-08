@@ -27,7 +27,7 @@
 #	0	completed successfully
 #	1	required program unavailable (wget, montage, convert)
 #	2	required parameter unspecified or wrong
-#	3	could not create subdirectory for 'search phrase'
+#	3	could not create output directory for 'phrase'
 #	4	could not get a list of search results from Google
 #	5	image download aborted as failure limit was reached or ran out of images
 #	6	thumbnail gallery build failed
@@ -55,7 +55,6 @@ case "$OSTYPE" in
 		CMD_LS="gls"
 		temp_root="/tmp"
 		;;
-
 	*)
 		CMD_READLINK="readlink"
 		CMD_MKTEMP="mktemp"
@@ -67,15 +66,14 @@ case "$OSTYPE" in
 		;;
 esac
 
-# check for command-line parameters
-user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
 	{
 
-	local script_date="2017-10-08"
+	local script_date="2017-10-09"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -140,6 +138,7 @@ Init()
 	output_path=""
 	links_only=false
 	dimensions=""
+	input_pathfile=""
 
 	WhatAreMyOptions
 
@@ -193,6 +192,7 @@ Init()
 	DebugThis "? \$output_path" "$output_path"
 	DebugThis "? \$links_only" "$links_only"
 	DebugThis "? \$dimensions" "$dimensions"
+	DebugThis "? \$input_pathfile" "$input_pathfile"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -214,9 +214,6 @@ Init()
 	# 'tbm=isch' seems to search for images
 	search_type="&tbm=isch"
 
-	# 'q=' is the user supplied search query
-	search_phrase="&q=$(echo $user_query | tr ' ' '+')"	# replace whitepace with '+' to suit curl/wget
-
 	# 'hl=en' seems to be language
 	search_language="&hl=en"
 
@@ -224,6 +221,379 @@ Init()
 	search_style="&site=imghp"
 
 	trap CTRL_C_Captured INT
+
+	ValidateParameters
+
+	}
+
+ValidateParameters()
+	{
+
+	# user parameter validation and bounds checks
+	[ "$exitcode" -gt "0" ] && return
+
+	case ${images_required#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$images_required" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$images_required" -lt "1" ]; then
+				images_required=1
+				DebugThis "~ \$images_required too low so set sensible minimum" "$images_required"
+			fi
+
+			if [ "$images_required" -gt "$google_max" ]; then
+				images_required=$google_max
+				DebugThis "~ \$images_required too high so set as \$google_max" "$images_required"
+			fi
+			;;
+	esac
+
+	if [ "$input_pathfile" ]; then
+		if [ ! -e "$input_pathfile" ]; then
+			DebugThis "! \$input_pathfile" "not found"
+			echo "$(ShowAsFailed " !! input file  (-i, --input) was not found")"
+			exitcode=2
+			return
+		fi
+	fi
+
+	case ${fail_limit#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$fail_limit" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$fail_limit" -le "0" ]; then
+				fail_limit=$google_max
+				DebugThis "~ \$fail_limit too low so set as \$google_max" "$fail_limit"
+			fi
+
+			if [ "$fail_limit" -gt "$google_max" ]; then
+				fail_limit=$google_max
+				DebugThis "~ \$fail_limit too high so set as \$google_max" "$fail_limit"
+			fi
+			;;
+	esac
+
+	case ${parallel_limit#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$parallel_limit" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-P, --parallel) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$parallel_limit" -lt "1" ]; then
+				parallel_limit=1
+				DebugThis "~ \$parallel_limit too low so set as" "$parallel_limit"
+			fi
+
+			if [ "$parallel_limit" -gt "$parallel_max" ]; then
+				parallel_limit=$parallel_max
+				DebugThis "~ \$parallel_limit too high so set as" "$parallel_limit"
+			fi
+			;;
+	esac
+
+	case ${timeout#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$timeout" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-t, --timeout) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$timeout" -lt "1" ]; then
+				timeout=1
+				DebugThis "~ \$timeout too low so set as" "$timeout"
+			fi
+
+			if [ "$timeout" -gt "$timeout_max" ]; then
+				timeout=$timeout_max
+				DebugThis "~ \$timeout too high so set as" "$timeout"
+			fi
+			;;
+	esac
+
+	case ${retries#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$retries" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-r, --retries) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$retries" -lt "1" ]; then
+				retries=1
+				DebugThis "~ \$retries too low so set as" "$retries"
+			fi
+
+			if [ "$retries" -gt "$retries_max" ]; then
+				retries=$retries_max
+				DebugThis "~ \$retries too high so set as" "$retries"
+			fi
+			;;
+	esac
+
+	case ${upper_size_limit#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$upper_size_limit" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-u, --upper-size) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$upper_size_limit" -lt "0" ]; then
+				upper_size_limit=0
+				DebugThis "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
+			fi
+			;;
+	esac
+
+	case ${lower_size_limit#[-+]} in
+		*[!0-9]*)
+			DebugThis "! specified \$lower_size_limit" "invalid"
+			echo "$(ShowAsFailed " !! number specified after (-l, --lower-size) must be a valid integer")"
+			exitcode=2
+			return
+			;;
+		*)
+			if [ "$lower_size_limit" -lt "0" ]; then
+				lower_size_limit=0
+				DebugThis "~ \$lower_size_limit too small so set as" "$lower_size_limit"
+			fi
+
+			if [ "$upper_size_limit" -gt "0" ] && [ "$lower_size_limit" -gt "$upper_size_limit" ]; then
+				lower_size_limit=$(($upper_size_limit-1))
+				DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
+			fi
+			;;
+	esac
+
+	if [ "$max_results_required" -lt "$(($images_required+$fail_limit))" ]; then
+		max_results_required=$(($images_required+$fail_limit))
+		DebugThis "~ \$max_results_required too low so set as \$images_required + \$fail_limit" "$max_results_required"
+	fi
+
+	dimensions_search=""
+	if [ "$dimensions" ]; then
+		# parse dimensions strings like '1920x1080' or '1920' or 'x1080'
+		echo "dimensions: [$dimensions]"
+
+		if grep -q "x" <<< $dimensions; then
+			echo "found a separator"
+			image_width=${dimensions%x*}
+			image_height=${dimensions#*x}
+		else
+			image_width=$dimensions
+		fi
+
+		[[ $image_width =~ ^-?[0-9]+$ ]] && echo "image_width is a number" || echo "image_width is NOT a number"
+		[[ $image_height =~ ^-?[0-9]+$ ]] && echo "image_height is a number" || echo "image_height is NOT a number"
+
+
+		echo "image_width: [$image_width]"
+		echo "image_height: [$image_height]"
+		echo "dimensions_search: [$dimensions_search]"
+
+		# only while debugging - remove for release
+		exitcode=2
+		return
+	fi
+
+	if [ "$dimensions" ] && [ "$min_pixels" ]; then
+		min_pixels=""
+		DebugThis "~ \$dimensions was specified so cleared \$min_pixels"
+	fi
+
+	min_pixels_search=""
+	if [ "$min_pixels" ]; then
+		case "$min_pixels" in
+			qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
+				min_pixels_search="isz:lt,islt:${min_pixels}"
+				;;
+			*)
+				echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid")"
+				exitcode=2
+				return
+				;;
+		esac
+	fi
+
+	aspect_ratio_search=""
+	if [ "$aspect_ratio" ]; then
+		case "$aspect_ratio" in
+			tall)
+				ar_type="t"
+				;;
+			square)
+				ar_type="s"
+				;;
+			wide)
+				ar_type="w"
+				;;
+			panoramic)
+				ar_type="xw"
+				;;
+			*)
+				echo "$(ShowAsFailed " !! (-a, --aspect-ratio) preset invalid")"
+				exitcode=2
+				return
+				;;
+		esac
+		[ "$ar_type" ] && aspect_ratio_search="iar:${ar_type}"
+	fi
+
+	image_type_search=""
+	if [ "$image_type" ]; then
+		case "$image_type" in
+			face|photo|clipart|lineart|animated)
+				image_type_search="itp:${image_type}"
+				;;
+			*)
+				echo "$(ShowAsFailed " !! (--type) preset invalid")"
+				exitcode=2
+				return
+				;;
+		esac
+	fi
+
+	if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ] || [ "$image_type_search" ]; then
+		advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
+	fi
+
+	if [ "$links_only" == "true" ]; then
+		create_gallery=false
+		save_links=true
+		fail_limit=0
+	fi
+
+	}
+
+ProcessQuery()
+	{
+
+	if [ ! "$user_query" ] && [ ! "$input_pathfile" ]; then
+		DebugThis "! \$user_query" "unspecified"
+		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
+		exitcode=2
+		return
+	fi
+
+	echo " -> processing query: \"$user_query\""
+	search_phrase="&q=$(echo $user_query | tr ' ' '+')"	# replace whitepace with '+' to suit curl/wget
+	safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
+	DebugThis "? \$safe_query" "$safe_query"
+
+	if [ -z "$output_path" ]; then
+		target_path="${current_path}/${safe_query}"
+	else
+		safe_path="$(echo $output_path | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
+		DebugThis "? \$safe_path" "$safe_path"
+		if [ ! -z "$input_pathfile" ]; then
+			target_path="${safe_path}/${safe_query}"
+		else
+			target_path="$safe_path"
+		fi
+	fi
+
+	DebugThis "? \$target_path" "$target_path"
+
+	if [ "$exitcode" -eq "0" ] && [ ! "$gallery_title" ]; then
+		gallery_title=$user_query
+		DebugThis "~ \$gallery_title was unspecified so set as" "$gallery_title"
+	fi
+
+	# create directory for search phrase
+	if [ -e "$target_path" ]; then
+		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
+		echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
+		exitcode=3
+		return
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
+		mkdir -p "$target_path"
+		result=$?
+
+		if [ "$result" -gt "0" ]; then
+			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
+			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
+			exitcode=3
+			return
+		else
+			DebugThis "$ create output directory [$target_path]" "success!"
+			target_path_created=true
+		fi
+	fi
+
+	DownloadResultGroups
+
+	if [ "$?" -gt "0" ]; then
+		echo "$(ShowAsFailed " !! couldn't download Google search results")"
+		exitcode=4
+		return
+	else
+		if [ "$fail_limit" -gt "$result_count" ]; then
+			fail_limit=$result_count
+			fail_limit=$result_count
+			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
+		fi
+
+		if [ "$images_required" -gt "$result_count" ]; then
+			images_required=$result_count
+			DebugThis "~ \$images_required too high so set as \$result_count" "$result_count"
+		fi
+	fi
+
+	if [ "$result_count" -eq "0" ]; then
+		DebugThis "= zero results returned?" "Oops..."
+		exitcode=4
+		return
+	fi
+
+	# download images
+	if [ "$exitcode" -eq "0" ]; then
+		if [ $links_only == "false" ]; then
+			DownloadImages
+
+			[ "$?" -gt "0" ] && exitcode=5
+		fi
+	fi
+
+	# build thumbnail gallery even if fail_limit was reached
+	if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ]; then
+		if [ "$create_gallery" == "true" ]; then
+			BuildGallery
+
+			if [ "$?" -gt "0" ]; then
+				echo "$(ShowAsFailed " !! unable to build thumbnail gallery")"
+				exitcode=6
+			else
+				if [ "$remove_after" == "true" ]; then
+					rm -f "${target_path}/${image_file_prefix}"*
+					DebugThis "= remove all downloaded images from" "[${target_path}]"
+				fi
+			fi
+		fi
+	fi
+
+	# copy links file into target directory if possible. If not, then copy to current directory.
+	if [ "$exitcode" -eq "0" ]; then
+		if [ "$save_links" == "true" ]; then
+			if [ "$target_path_created" == "true" ]; then
+				cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
+			else
+				cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
+			fi
+		fi
+	fi
 
 	}
 
@@ -299,7 +669,7 @@ DisplayHelp()
 	echo
 	echo " Questions or comments? teracow@gmail.com"
 	echo
-	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in < >"
+	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
 	echo
 
 	if [ "$colour" == "true" ]; then
@@ -308,7 +678,7 @@ DisplayHelp()
 		echo " * Required *"
 	fi
 
-	HelpParameterFormat "p" "phrase" "Search phrase. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
+	HelpParameterFormat "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
 	echo
 	echo " Optional"
 	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
@@ -320,10 +690,11 @@ DisplayHelp()
 	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. <$fail_limit_default> Use 0 for unlimited ($google_max)."
+	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
-	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. <$lower_size_limit_default>"
+	HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
+	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
 	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
 	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
@@ -340,16 +711,16 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-	HelpParameterFormat "n" "number" "Number of images to download. <$images_required_default> Maximum of $google_max."
-	HelpParameterFormat "o" "output" "The image output directory. <phrase>"
-	HelpParameterFormat "P" "parallel" "How many parallel image downloads? <$parallel_limit_default> Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
+	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
+	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "r" "retries" "Retry image download this many times. <$retries_default> Maximum of $retries_max."
+	HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
 	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
-	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. <$timeout_default> Maximum of $timeout_max."
-	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. <phrase>"
-	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. <$upper_size_limit_default> Use 0 for unlimited."
+	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
+	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
+	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
 	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
@@ -431,6 +802,11 @@ WhatAreMyOptions()
 
 			-o|--output)
 				output_path="$2"
+				shift 2
+				;;
+
+			-i|--input)
+				input_pathfile="$2"
 				shift 2
 				;;
 
@@ -599,6 +975,7 @@ DownloadResultGroups()
 	local fail_count=0
 
 	InitProgress
+	InitResultsCounts
 
 	if [ "$verbose" == "true" ]; then
 		if [ "$colour" == "true" ]; then
@@ -859,6 +1236,7 @@ DownloadImages()
 	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
 
 	InitProgress
+	InitDownloadsCounts
 
 	while read imagelink ; do
 		while true ; do
@@ -1189,6 +1567,26 @@ InitProgress()
 	progress_message=""
 	previous_length=0
 	previous_msg=""
+
+	}
+
+InitResultsCounts()
+	{
+
+	# clears the paths used to count the search result pages
+	[ -d "$results_run_count_path" ] && rm -f "$results_run_count_path"/*
+	[ -d "$results_success_count_path" ] && rm -f "$results_success_count_path"/*
+	[ -d "$results_fail_count_path" ] && rm -f "$results_fail_count_path"/*
+
+	}
+
+InitDownloadsCounts()
+	{
+
+	# clears the paths used to count the downloaded images
+	[ -d "$download_run_count_path" ] && rm -f "$download_run_count_path"/*
+	[ -d "$download_success_count_path" ] && rm -f "$download_success_count_path"/*
+	[ -d "$dowload_fail_count_path" ] && rm -f "$download_fail_count_path"/*
 
 	}
 
@@ -1648,426 +2046,66 @@ FirstPreferredFont()
 
 	}
 
+Finish()
+	{
+
+	# write results into debug file
+	DebugThis "T [$script_file] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+	DebugThis "< finished" "$(date)"
+
+	# copy debug file into target directory if possible. If not, then copy to current directory.
+	if [ "$debug" == "true" ]; then
+		if [ "$target_path_created" == "true" ]; then
+			[ -e "${target_path}/${debug_file}" ] && echo "" >> "${target_path}/${debug_file}"
+			cp -f "${debug_pathfile}" "${target_path}/${debug_file}"
+		else
+			# append to current path debug file (if it exists)
+			[ -e "${current_path}/${debug_file}" ] && echo "" >> "${current_path}/${debug_file}"
+			cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
+		fi
+	fi
+
+	# display end
+	if [ "$verbose" == "true" ]; then
+		case "$exitcode" in
+			0)
+				echo
+				echo " -> $(ShowAsSucceed "All done!")"
+				;;
+			[1-2])
+				echo
+				echo " use '--help' to display parameter list."
+				;;
+			[3-6])
+				echo
+				echo " -> $(ShowAsFailed "All done! (with errors)")"
+				;;
+			*)
+				;;
+		esac
+	fi
+
+	[ "$show_help_only" == "true" ] && exitcode=0
+
+	}
+
 Init
 
-# user parameter validation and bounds checks
 if [ "$exitcode" -eq "0" ]; then
-	case ${images_required#[-+]} in
-		*[!0-9]*)
-			DebugThis "! specified \$images_required" "invalid"
-			echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer ... unable to continue.")"
-			exitcode=2
-			;;
-
-		*)
-			if [ "$images_required" -lt "1" ]; then
-				images_required=1
-				DebugThis "~ \$images_required too low so set sensible minimum" "$images_required"
+	if [ ! -z "$input_pathfile" ]; then
+		while read -r file_query; do
+			if [ -n "$file_query" ]; then
+				if [[ $file_query != \#* ]]; then
+					user_query="$file_query"
+					ProcessQuery
+				fi
 			fi
-
-			if [ "$images_required" -gt "$google_max" ]; then
-				images_required=$google_max
-				DebugThis "~ \$images_required too high so set as \$google_max" "$images_required"
-			fi
-			;;
-	esac
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${fail_limit#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$fail_limit" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$fail_limit" -le "0" ]; then
-					fail_limit=$google_max
-					DebugThis "~ \$fail_limit too low so set as \$google_max" "$fail_limit"
-				fi
-
-				if [ "$fail_limit" -gt "$google_max" ]; then
-					fail_limit=$google_max
-					DebugThis "~ \$fail_limit too high so set as \$google_max" "$fail_limit"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${parallel_limit#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$parallel_limit" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-P, --parallel) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$parallel_limit" -lt "1" ]; then
-					parallel_limit=1
-					DebugThis "~ \$parallel_limit too low so set as" "$parallel_limit"
-				fi
-
-				if [ "$parallel_limit" -gt "$parallel_max" ]; then
-					parallel_limit=$parallel_max
-					DebugThis "~ \$parallel_limit too high so set as" "$parallel_limit"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${timeout#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$timeout" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-t, --timeout) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$timeout" -lt "1" ]; then
-					timeout=1
-					DebugThis "~ \$timeout too low so set as" "$timeout"
-				fi
-
-				if [ "$timeout" -gt "$timeout_max" ]; then
-					timeout=$timeout_max
-					DebugThis "~ \$timeout too high so set as" "$timeout"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${retries#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$retries" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-r, --retries) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$retries" -lt "1" ]; then
-					retries=1
-					DebugThis "~ \$retries too low so set as" "$retries"
-				fi
-
-				if [ "$retries" -gt "$retries_max" ]; then
-					retries=$retries_max
-					DebugThis "~ \$retries too high so set as" "$retries"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${upper_size_limit#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$upper_size_limit" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-u, --upper-size) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$upper_size_limit" -lt "0" ]; then
-					upper_size_limit=0
-					DebugThis "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		case ${lower_size_limit#[-+]} in
-			*[!0-9]*)
-				DebugThis "! specified \$lower_size_limit" "invalid"
-				echo "$(ShowAsFailed " !! number specified after (-l, --lower-size) must be a valid integer ... unable to continue.")"
-				exitcode=2
-				;;
-
-			*)
-				if [ "$lower_size_limit" -lt "0" ]; then
-					lower_size_limit=0
-					DebugThis "~ \$lower_size_limit too small so set as" "$lower_size_limit"
-				fi
-
-				if [ "$upper_size_limit" -gt "0" ] && [ "$lower_size_limit" -gt "$upper_size_limit" ]; then
-					lower_size_limit=$(($upper_size_limit-1))
-					DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
-				fi
-				;;
-		esac
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		if [ ! "$user_query" ]; then
-			DebugThis "! \$user_query" "unspecified"
-			echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified ... unable to continue.")"
-			exitcode=2
-		else
-			safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
-			DebugThis "? \$safe_query" "$safe_query"
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		if [ "$output_path" ]; then
-			safe_path="$(echo $output_path | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
-			DebugThis "? \$safe_path" "$safe_path"
-		fi
-
-		if [ "$safe_path" ]; then
-			target_path="$safe_path"
-		else
- 			target_path="${current_path}/${safe_query}"
-		fi
-		DebugThis "? \$target_path" "$target_path"
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		if [ ! "$gallery_title" ]; then
-			gallery_title=$user_query
-			DebugThis "~ \$gallery_title was unspecified so set as" "$gallery_title"
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		dimensions_search=""
-		if [ "$dimensions" ]; then
-			# parse dimensions strings like '1920x1080' or '1920' or 'x1080'
-			echo "dimensions: [$dimensions]"
-
-			if grep -q "x" <<< $dimensions; then
-				echo "found a separator"
-				image_width=${dimensions%x*}
-				image_height=${dimensions#*x}
-			else
-				image_width=$dimensions
-			fi
-
-			[[ $image_width =~ ^-?[0-9]+$ ]] && echo "image_width is a number" || echo "image_width is NOT a number"
-			[[ $image_height =~ ^-?[0-9]+$ ]] && echo "image_height is a number" || echo "image_height is NOT a number"
-
-
-			echo "image_width: [$image_width]"
-			echo "image_height: [$image_height]"
-			echo "dimensions_search: [$dimensions_search]"
-
-			# only while debugging - remove for release
-			exitcode=2
-		fi
-	fi
-
-	if [ "$dimensions" ] && [ "$min_pixels" ]; then
-		min_pixels=""
-		DebugThis "~ \$dimensions was specified so cleared \$min_pixels"
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		min_pixels_search=""
-		if [ "$min_pixels" ]; then
-			case "$min_pixels" in
-				qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
-					min_pixels_search="isz:lt,islt:${min_pixels}"
-					;;
-
-				*)
-					echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid ... unable to continue.")"
-					exitcode=2
-					;;
-			esac
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		aspect_ratio_search=""
-		if [ "$aspect_ratio" ]; then
-			case "$aspect_ratio" in
-				tall)
-					ar_type="t"
-					;;
-
-				square)
-					ar_type="s"
-					;;
-
-				wide)
-					ar_type="w"
-					;;
-
-				panoramic)
-					ar_type="xw"
-					;;
-
-				*)
-					echo "$(ShowAsFailed " !! (-a, --aspect-ratio) preset invalid ... unable to continue.")"
-					exitcode=2
-					;;
-			esac
-			[ "$ar_type" ] && aspect_ratio_search="iar:${ar_type}"
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		image_type_search=""
-		if [ "$image_type" ]; then
-			case "$image_type" in
-				face|photo|clipart|lineart|animated)
-					image_type_search="itp:${image_type}"
-					;;
-
-				*)
-					echo "$(ShowAsFailed " !! (--type) preset invalid ... unable to continue.")"
-					exitcode=2
-					;;
-			esac
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ] || [ "$image_type_search" ]; then
-			advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
-		fi
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		if [ "$links_only" == "true" ]; then
-			create_gallery=false
-			save_links=true
-			fail_limit=0
-		fi
-	fi
-fi
-
-# create directory for search phrase
-if [ "$exitcode" -eq "0" ]; then
-	if [ -e "$target_path" ]; then
-		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
-		echo "$(ShowAsFailed " !! output directory [$target_path] already exists ... unable to continue.")"
-		exitcode=3
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
-		mkdir -p "$target_path"
-		result=$?
-
-		if [ "$result" -gt "0" ]; then
-			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
-			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path] ... unable to continue.")"
-			exitcode=3
-		else
-			DebugThis "$ create output directory [$target_path]" "success!"
-			target_path_created=true
-		fi
-	fi
-fi
-
-# get list of search results
-if [ "$exitcode" -eq "0" ]; then
-	if [ "$max_results_required" -lt "$(($images_required+$fail_limit))" ]; then
-		max_results_required=$(($images_required+$fail_limit))
-		DebugThis "~ \$max_results_required too low so set as \$images_required + \$fail_limit" "$max_results_required"
-	fi
-
-	DownloadResultGroups
-
-	if [ "$?" -gt "0" ]; then
-		echo "$(ShowAsFailed " !! couldn't download Google search results ... unable to continue.")"
-		exitcode=4
+		done < "$input_pathfile"
 	else
-		if [ "$fail_limit" -gt "$result_count" ]; then
-			fail_limit=$result_count
-			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
-		fi
-
-		if [ "$images_required" -gt "$result_count" ]; then
-			images_required=$result_count
-			DebugThis "~ \$images_required too high so set as \$result_count" "$result_count"
-		fi
-	fi
-
-	if [ "$result_count" -eq "0" ]; then
-		DebugThis "= zero results returned? Wow..." "can't continue"
-		exitcode=4
+		ProcessQuery
 	fi
 fi
 
-# download images
-if [ "$exitcode" -eq "0" ]; then
-	if [ $links_only == "false" ]; then
-		DownloadImages
-
-		[ "$?" -gt "0" ] && exitcode=5
-	fi
-fi
-
-# build thumbnail gallery even if fail_limit was reached
-if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ]; then
-	if [ "$create_gallery" == "true" ]; then
-		BuildGallery
-
-		if [ "$?" -gt "0" ]; then
-			echo "$(ShowAsFailed " !! couldn't build thumbnail gallery ... unable to continue (but we're all done anyway).")"
-			exitcode=6
-		else
-			if [ "$remove_after" == "true" ]; then
-				rm -f "${target_path}/${image_file_prefix}"*
-				DebugThis "= remove all downloaded images from" "[${target_path}]"
-			fi
-		fi
-	fi
-fi
-
-# copy links file into target directory if possible. If not, then copy to current directory.
-if [ "$exitcode" -eq "0" ]; then
-	if [ "$save_links" == "true" ]; then
-		if [ "$target_path_created" == "true" ]; then
-			cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
-		else
-			cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
-		fi
-	fi
-fi
-
-# write results into debug file
-DebugThis "T [$script_file] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
-DebugThis "< finished" "$(date)"
-
-# copy debug file into target directory if possible. If not, then copy to current directory.
-if [ "$debug" == "true" ]; then
-	if [ "$target_path_created" == "true" ]; then
-		[ -e "${target_path}/${debug_file}" ] && echo "" >> "${target_path}/${debug_file}"
-
-		cp -f "${debug_pathfile}" "${target_path}/${debug_file}"
-	else
-		# append to current path debug file (if it exists)
-		[ -e "${current_path}/${debug_file}" ] && echo "" >> "${current_path}/${debug_file}"
-
-		cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
-	fi
-fi
-
-# display end
-if [ "$verbose" == "true" ]; then
-	case "$exitcode" in
-		0)
-			echo
-			echo " -> $(ShowAsSucceed "All done!")"
-			;;
-		[1-2])
-			echo
-			echo " use '--help' to display parameter list."
-			;;
-		[3-6])
-			echo
-			echo " -> $(ShowAsFailed "All done! (with errors)")"
-			;;
-
-		*)
-			;;
-	esac
-fi
-
-[ "$show_help_only" == "true" ] && exitcode=0
+Finish
 
 exit $exitcode
