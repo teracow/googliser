@@ -27,7 +27,7 @@
 #	0	completed successfully
 #	1	required program unavailable (wget, montage, convert)
 #	2	required parameter unspecified or wrong
-#	3	could not create subdirectory for 'search phrase'
+#	3	could not create output directory for 'phrase'
 #	4	could not get a list of search results from Google
 #	5	image download aborted as failure limit was reached or ran out of images
 #	6	thumbnail gallery build failed
@@ -484,23 +484,25 @@ ProcessQuery()
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
 		exitcode=2
 		return
-	else
-		echo " -> processing query: \"$user_query\""
-		search_phrase="&q=$(echo $user_query | tr ' ' '+')"	# replace whitepace with '+' to suit curl/wget
-		safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
-		DebugThis "? \$safe_query" "$safe_query"
 	fi
 
-	if [ "$output_path" ]; then
+	echo " -> processing query: \"$user_query\""
+	search_phrase="&q=$(echo $user_query | tr ' ' '+')"	# replace whitepace with '+' to suit curl/wget
+	safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
+	DebugThis "? \$safe_query" "$safe_query"
+
+	if [ -z "$output_path" ]; then
+		target_path="${current_path}/${safe_query}"
+	else
 		safe_path="$(echo $output_path | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
 		DebugThis "? \$safe_path" "$safe_path"
+		if [ ! -z "$input_pathfile" ]; then
+			target_path="${safe_path}/${safe_query}"
+		else
+			target_path="$safe_path"
+		fi
 	fi
 
-	if [ "$safe_path" ]; then
-		target_path="$safe_path"
-	else
-		target_path="${current_path}/${safe_query}"
-	fi
 	DebugThis "? \$target_path" "$target_path"
 
 	if [ "$exitcode" -eq "0" ] && [ ! "$gallery_title" ]; then
@@ -511,8 +513,9 @@ ProcessQuery()
 	# create directory for search phrase
 	if [ -e "$target_path" ]; then
 		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
-		echo "$(ShowAsFailed " !! output directory [$target_path] already exists ... unable to continue.")"
+		echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
 		exitcode=3
+		return
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
@@ -521,8 +524,9 @@ ProcessQuery()
 
 		if [ "$result" -gt "0" ]; then
 			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
-			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path] ... unable to continue.")"
+			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
 			exitcode=3
+			return
 		else
 			DebugThis "$ create output directory [$target_path]" "success!"
 			target_path_created=true
@@ -534,6 +538,7 @@ ProcessQuery()
 	if [ "$?" -gt "0" ]; then
 		echo "$(ShowAsFailed " !! couldn't download Google search results")"
 		exitcode=4
+		return
 	else
 		if [ "$fail_limit" -gt "$result_count" ]; then
 			fail_limit=$result_count
@@ -550,6 +555,7 @@ ProcessQuery()
 	if [ "$result_count" -eq "0" ]; then
 		DebugThis "= zero results returned?" "Oops..."
 		exitcode=4
+		return
 	fi
 
 	# download images
@@ -663,7 +669,7 @@ DisplayHelp()
 	echo
 	echo " Questions or comments? teracow@gmail.com"
 	echo
-	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in < >"
+	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
 	echo
 
 	if [ "$colour" == "true" ]; then
@@ -672,7 +678,7 @@ DisplayHelp()
 		echo " * Required *"
 	fi
 
-	HelpParameterFormat "p" "phrase" "Search phrase. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
+	HelpParameterFormat "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
 	echo
 	echo " Optional"
 	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
@@ -684,11 +690,11 @@ DisplayHelp()
 	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. <$fail_limit_default> Use 0 for unlimited ($google_max)."
+	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
-	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. <$lower_size_limit_default>"
+	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
 	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
 	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
 	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
@@ -705,16 +711,16 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-	HelpParameterFormat "n" "number" "Number of images to download. <$images_required_default> Maximum of $google_max."
-	HelpParameterFormat "o" "output" "The image output directory. <phrase>"
-	HelpParameterFormat "P" "parallel" "How many parallel image downloads? <$parallel_limit_default> Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
+	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
+	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "r" "retries" "Retry image download this many times. <$retries_default> Maximum of $retries_max."
+	HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
 	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
-	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. <$timeout_default> Maximum of $timeout_max."
-	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. <phrase>"
-	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. <$upper_size_limit_default> Use 0 for unlimited."
+	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
+	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
+	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
 	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
 	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
