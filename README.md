@@ -1,13 +1,13 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them into a gallery image. The idea is to build a picture of a phrase. 
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
 
-(This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code that was changed in April 2016, June 2017 & August 2017.)
+This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code changed in April 2016, June 2017 & August 2017.
 
 ---
 ## Description:
 
-1. The user supplies a search-phrase and some other optional parameters on the command line. 
+1. The user supplies a search-phrase and some other optional parameters on the command line.
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
@@ -15,9 +15,9 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this URL list and downloads the first [**n**]umber of available images into this sub-directory. Up to **1,000** images can be requested. Up to [**p**]arallel images can be downloaded at the same time.  If an image is unavailable, the script skips it and continues downloading until it has acquired the required number of images or the [**f**]ailure limit is reached. 
+5. The script then iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 40 images can be downloaded concurrently.  If an image is unavailable, the script skips it and continues downloading until it has acquired the required number of images or the download failure limit is reached.
 
-6. Lastly, a thumbnail gallery image is built using [ImageMagick](http://www.imagemagick.org)'s **montage** into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
+6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
 ## Sample Outputs:
