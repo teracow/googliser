@@ -72,6 +72,9 @@ Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` a
 `-h` or `--help`
 Display this help then exit.
 
+`-i` or `--input`
+Put your search phrases into a text file then specify the file here. googliser will work through the file ignoring any line starting with a #.
+
 `-l` or `--lower-size [INTEGER]`
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
 
