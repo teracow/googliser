@@ -68,7 +68,7 @@ case "$OSTYPE" in
 esac
 
 # check for command-line parameters
-user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -140,6 +140,7 @@ Init()
 	output_path=""
 	links_only=false
 	dimensions=""
+	input_pathfile=""
 
 	WhatAreMyOptions
 
@@ -193,6 +194,7 @@ Init()
 	DebugThis "? \$output_path" "$output_path"
 	DebugThis "? \$links_only" "$links_only"
 	DebugThis "? \$dimensions" "$dimensions"
+	DebugThis "? \$input_pathfile" "$input_pathfile"
 	DebugThis "= environment" "*** internal parameters ***"
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
@@ -323,6 +325,7 @@ DisplayHelp()
 	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. <$fail_limit_default> Use 0 for unlimited ($google_max)."
 	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
+	#HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
 	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. <$lower_size_limit_default>"
 	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
 	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
@@ -431,6 +434,11 @@ WhatAreMyOptions()
 
 			-o|--output)
 				output_path="$2"
+				shift 2
+				;;
+
+			-i|--input)
+				input_pathfile="$2"
 				shift 2
 				;;
 
@@ -1673,6 +1681,16 @@ if [ "$exitcode" -eq "0" ]; then
 	esac
 
 	if [ "$exitcode" -eq "0" ]; then
+		if [ "$input_pathfile" ]; then
+			if [ ! -e "$input_pathfile" ]; then
+				DebugThis "! \$input_pathfile" "not found"
+				echo "$(ShowAsFailed " !! input file  (-i, --input) was not found ... unable to continue.")"
+				exitcode=2
+			fi
+		fi
+	fi
+
+	if [ "$exitcode" -eq "0" ]; then
 		case ${fail_limit#[-+]} in
 			*[!0-9]*)
 				DebugThis "! specified \$fail_limit" "invalid"
@@ -1800,7 +1818,7 @@ if [ "$exitcode" -eq "0" ]; then
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
-		if [ ! "$user_query" ]; then
+		if [ ! "$user_query" ] && [ ! "$input_pathfile" ]; then
 			DebugThis "! \$user_query" "unspecified"
 			echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified ... unable to continue.")"
 			exitcode=2
