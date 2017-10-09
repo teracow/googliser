@@ -27,6 +27,9 @@ These images have been scaled down for easier distribution.
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
 ![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
 
+    $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC -n16
+![puppies](images/googliser\-gallery\-\(kittens\)-s.png)
+
     $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)
 
@@ -35,7 +38,7 @@ These images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cDhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cCDhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required***
@@ -56,6 +59,9 @@ The shape of the image to download. Preset values are:
 
 `-c` or `--colour`
 Display with nice ANSI coloured text.
+
+`-C` or `--condensed`
+Create the gallery in condensed mode. All thumbnails are square with no padding between each thumbnail.
 
 `--debug`
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
