@@ -106,7 +106,7 @@ Number of images to download. Default is 25. Maximum is 1,000.
 The output directory. If unspecified, the search phrase is used.
 
 `-P` or `--parallel [INTEGER]`
-How many parallel image downloads? Default is 8. Maximum is 40.
+How many parallel image downloads? Default is 10. Maximum is 40.
 
 `-q` or `--quiet`
 Suppress standard display output. Error messages are still shown.
@@ -121,7 +121,7 @@ Put the URL results file into the image sub-directory afterward. If selected, th
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
 `-t` or `--timeout [INTEGER]`
-Number of seconds before Wget gives up. Default is 15. Maximum is 600 (10 minutes).
+Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes).
 
 `-T` or `--title [STRING]`
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
@@ -138,6 +138,8 @@ Image type to download. Preset values are:
 - `lineart`
 - `animated`
 
+`-z` or `--lightning`
+Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 16 images at the same time, and don't create a gallery afterward.
 
 **Usage Examples:**
 

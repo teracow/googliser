@@ -95,11 +95,11 @@ Init()
 
 	# parameter defaults
 	images_required_default=25
-	parallel_limit_default=8
+	parallel_limit_default=10
 	fail_limit_default=40
 	upper_size_limit_default=0
 	lower_size_limit_default=1000
-	timeout_default=15
+	timeout_default=5
 	retries_default=3
 
 	# internals
@@ -231,6 +231,17 @@ ValidateParameters()
 
 	# user parameter validation and bounds checks
 	[ "$exitcode" -gt "0" ] && return
+
+	if [ "$lightning" == "true" ]; then
+		# Yeah!
+		timeout=1
+		retries=0
+		skip_no_size=true
+		parallel_limit=16
+		links_only=false
+		create_gallery=false
+		fail_limit=0
+	fi
 
 	case ${images_required#[-+]} in
 		*[!0-9]*)
@@ -720,7 +731,6 @@ DisplayHelp()
 	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
 	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
 	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
-	#HelpParameterFormat "z" "lightning" "Use lightning mode to download images even faster by cancelling slow downloads!"
 	#HelpParameterFormat "?" "random" "Download a single random image only"
 	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
 	HelpParameterFormat "" "" "'face'"
@@ -728,6 +738,7 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'clipart'"
 	HelpParameterFormat "" "" "'lineart'"
 	HelpParameterFormat "" "" "'animated'"
+	HelpParameterFormat "z" "lightning" "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
 	echo
 	echo " Example:"
 
@@ -814,10 +825,10 @@ WhatAreMyOptions()
 				remove_after=true
 				shift
 				;;
-			#-z|--lightning)
-			#	lightning=true
-			#	shift
-			#	;;
+			-z|--lightning)
+				lightning=true
+				shift
+				;;
 			-h|--help)
 				show_help_only=true
 				return 7
@@ -886,7 +897,7 @@ DownloadResultGroup_auto()
 
 	DebugThis "- result group ($link_index) download" "start"
 
-	local wget_list_cmd="wget --quiet --timeout=${timeout} --tries=${retries} \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local wget_list_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 
 	DebugThis "? result group ($link_index) \$wget_list_cmd" "$wget_list_cmd"
 
