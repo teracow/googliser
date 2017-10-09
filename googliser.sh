@@ -970,7 +970,7 @@ DownloadResultGroups()
 		fi
 	fi
 
-	for ((group=1; group<=$groups_max; group++)) ; do
+	for ((group=1; group<=$groups_max; group++)); do
 		# wait here until a download slot becomes available
 		while [ "$parallel_count" -eq "$parallel_limit" ]; do
 			sleep 0.5
@@ -1223,8 +1223,8 @@ DownloadImages()
 	InitProgress
 	InitDownloadsCounts
 
-	while read imagelink ; do
-		while true ; do
+	while read imagelink; do
+		while true; do
 			RefreshDownloadCounts
 			ShowImageDownloadProgress
 
@@ -1559,6 +1559,7 @@ InitResultsCounts()
 	{
 
 	# clears the paths used to count the search result pages
+
 	[ -d "$results_run_count_path" ] && rm -f "$results_run_count_path"/*
 	[ -d "$results_success_count_path" ] && rm -f "$results_success_count_path"/*
 	[ -d "$results_fail_count_path" ] && rm -f "$results_fail_count_path"/*
@@ -1569,6 +1570,7 @@ InitDownloadsCounts()
 	{
 
 	# clears the paths used to count the downloaded images
+
 	[ -d "$download_run_count_path" ] && rm -f "$download_run_count_path"/*
 	[ -d "$download_success_count_path" ] && rm -f "$download_success_count_path"/*
 	[ -d "$dowload_fail_count_path" ] && rm -f "$download_fail_count_path"/*
@@ -1779,15 +1781,13 @@ CTRL_C_Captured()
 	kill $(jobs -p) 2>/dev/null
 	wait $(jobs -p) 2>/dev/null
 
-	# only want to remove partial downloads if they exist
 	RefreshDownloadCounts
 
 	if [ "$parallel_count" -gt "0" ]; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
   		for currentfile in $($CMD_LS -1 "$download_run_count_path"); do
+			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
 			DebugThis "= link ($currentfile) was partially processed" "deleted!"
-
- 			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
 		done
 	fi
 
@@ -1813,7 +1813,7 @@ DebugThis()
 WgetReturnCodes()
 	{
 
-	# converts a return code from wget into a text string explanation of the code
+	# convert wget return code into a description
 	# https://gist.github.com/cosimo/5747881#file-wget-exit-codes-txt
 
 	# $1 = wget return code
