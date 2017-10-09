@@ -76,7 +76,7 @@ Display this help then exit.
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a #.
 
 `-l` or `--lower-size [INTEGER]`
-Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
 
 `-L` or `--links-only`
 Only get image file URLs. Don't download any images.
@@ -127,7 +127,7 @@ Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
 `-u` or `--upper-size [INTEGER]`
-Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `-k --skip-no-size` is specified). Default is 0 (unlimited).
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
 
 `--type [PRESET]`
 Image type to download. Preset values are:
@@ -187,7 +187,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - The thumbnail sizes in the gallery are no larger than 400 x 400 pixels. At least one dimension will be 400 pixels, though. So, requesting more images will result in a gallery image with larger dimensions.
 
-- Thumbnail gallery building can be disabled if not required by using `-g --no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
+- Thumbnail gallery building can be disabled if not required by using `--no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
 
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
 
