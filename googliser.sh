@@ -397,7 +397,6 @@ ValidateParameters()
 		[[ $image_width =~ ^-?[0-9]+$ ]] && echo "image_width is a number" || echo "image_width is NOT a number"
 		[[ $image_height =~ ^-?[0-9]+$ ]] && echo "image_height is a number" || echo "image_height is NOT a number"
 
-
 		echo "image_width: [$image_width]"
 		echo "image_height: [$image_height]"
 		echo "dimensions_search: [$dimensions_search]"
@@ -479,7 +478,7 @@ ValidateParameters()
 ProcessQuery()
 	{
 
-	if [ ! "$user_query" ] && [ ! "$input_pathfile" ]; then
+	if [ ! "$user_query" ]; then
 		DebugThis "! \$user_query" "unspecified"
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
 		exitcode=2
@@ -759,132 +758,106 @@ WhatAreMyOptions()
 				images_required="$2"
 				shift 2
 				;;
-
 			-f|--failures)
 				fail_limit="$2"
 				shift 2
 				;;
-
 			-p|--phrase)
 				user_query="$2"
 				shift 2
 				;;
-
 			-P|--parallel)
 				parallel_limit="$2"
 				shift 2
 				;;
-
 			-t|--timeout)
 				timeout="$2"
 				shift 2
 				;;
-
 			-r|--retries)
 				retries="$2"
 				shift 2
 				;;
-
 			-u|--upper-size)
 				upper_size_limit="$2"
 				shift 2
 				;;
-
 			-l|--lower-size)
 				lower_size_limit="$2"
 				shift 2
 				;;
-
 			-T|--title)
 				gallery_title="$2"
 				shift 2
 				;;
-
 			-o|--output)
 				output_path="$2"
 				shift 2
 				;;
-
 			-i|--input)
 				input_pathfile="$2"
 				shift 2
 				;;
-
 			#--dimensions)
 			#	dimensions="$2"
 			#	shift 2
 			#	;;
-
 			-S|--skip-no-size)
 				skip_no_size=true
 				shift
 				;;
-
 			-s|--save-links)
 				save_links=true
 				shift
 				;;
-
 			-D|--delete-after)
 				remove_after=true
 				shift
 				;;
-
 			#-z|--lightning)
 			#	lightning=true
 			#	shift
 			#	;;
-
 			-h|--help)
 				show_help_only=true
 				return 7
 				;;
-
 			-c|--colour)
 				colour=true
 				shift
 				;;
-
 			-g|--no-gallery)
 				create_gallery=false
 				shift
 				;;
-
 			-q|--quiet)
 				verbose=false
 				shift
 				;;
-
 			--debug)
 				debug=true
 				shift
 				;;
-
 			-L|--links-only)
 				links_only=true
 				shift
 				;;
-
 			-m|--minimum-pixels)
 				min_pixels="$2"
 				shift 2
 				;;
-
 			-a|--aspect-ratio)
 				aspect_ratio="$2"
 				shift 2
 				;;
-
 			--type)
 				image_type="$2"
 				shift 2
 				;;
-
 			--)
 				shift		# shift to next parameter in $1
 				break
 				;;
-
 			*)
 				break		# there are no more matching parameters
 				;;
@@ -1712,7 +1685,6 @@ RenameExtAsType()
 					# then back but with new extension created from $imagetype
 					mv "$1".tmp "${1%.*}.$(Lowercase "$imagetype")"
 					;;
-
 				*)
 					# not a valid image
 					returncode=1
@@ -1743,7 +1715,6 @@ AllowableFileType()
 			# valid image type
 			return 0
 			;;
-
 		*)
 			# not a valid image
 			return 1
@@ -1840,35 +1811,27 @@ WgetReturnCodes()
 		0)
 			echo "No problems occurred"
 			;;
-
 		2)
 			echo "Parse error — for instance, when parsing command-line options, the .wgetrc or .netrc…"
 			;;
-
 		3)
 			echo "File I/O error"
 			;;
-
 		4)
 			echo "Network failure"
 			;;
-
 		5)
 			echo "SSL verification failure"
 			;;
-
 		6)
 			echo "Username/password authentication failure"
 			;;
-
 		7)
 			echo "Protocol errors"
 			;;
-
 		8)
 			echo "Server issued an error response"
 			;;
-
 		*)
 			echo "Generic error code"
 			;;
@@ -2098,7 +2061,11 @@ if [ "$exitcode" -eq "0" ]; then
 				if [[ $file_query != \#* ]]; then
 					user_query="$file_query"
 					ProcessQuery
+				else
+					DebugThis "! ignoring \$file_query" "comment"
 				fi
+			else
+				DebugThis "! ignoring \$file_query" "null"
 			fi
 		done < "$input_pathfile"
 	else
