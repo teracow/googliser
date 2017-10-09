@@ -66,7 +66,7 @@ case "$OSTYPE" in
 		;;
 esac
 
-user_parameters=$(getopt -o h,N,D,s,q,c,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -140,6 +140,7 @@ Init()
 	links_only=false
 	dimensions=""
 	input_pathfile=""
+	condensed_gallery=false
 
 	WhatAreMyOptions
 
@@ -248,6 +249,10 @@ ValidateParameters()
 		create_gallery=false
 		save_links=true
 		user_fail_limit=0
+	fi
+
+	if [ "$condensed_gallery" == "true" ]; then
+		create_gallery=true
 	fi
 
 	case ${images_required#[-+]} in
@@ -698,6 +703,7 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'wide'"
 	HelpParameterFormat "" "" "'panoramic'"
 	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
+	#HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
 	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
@@ -840,6 +846,10 @@ WhatAreMyOptions()
 				;;
 			-N|--no-gallery)
 				create_gallery=false
+				shift
+				;;
+			-C|--condensed)
+				condensed_gallery=true
 				shift
 				;;
 			-q|--quiet)
@@ -1325,6 +1335,10 @@ BuildGallery()
 
 	local title_colour="goldenrod1"
 	local thumbnail_dimensions="400x400"
+
+	# new feature: condensed gallery - crop images to square first, and zero tile padding
+	# convert -define jpeg:size=400x400 * -thumbnail 400x400^ -gravity center -extent 400x400 squared.jpg
+	# montage squared* -geometry +0+0 output.jpg
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
