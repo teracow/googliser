@@ -181,6 +181,7 @@ Init()
 	DebugThis "? \$lower_size_limit" "$lower_size_limit"
 	DebugThis "? \$create_gallery" "$create_gallery"
 	DebugThis "? \$gallery_title" "$gallery_title"
+	DebugThis "? \$condensed_gallery" "$condensed_gallery"
 	DebugThis "? \$save_links" "$save_links"
 	DebugThis "? \$colour" "$colour"
 	DebugThis "? \$verbose" "$verbose"
@@ -703,7 +704,7 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'wide'"
 	HelpParameterFormat "" "" "'panoramic'"
 	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
-	#HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
+	HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
 	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
@@ -951,7 +952,6 @@ ShowResultDownloadProgress()
 		fi
 
 		progress_message+=" result groups downloaded."
-
 		ProgressUpdater "${progress_message}"
 	fi
 
@@ -1208,7 +1208,6 @@ ShowImageDownloadProgress()
 		fi
 
  		progress_message+="."
-
 		ProgressUpdater "${progress_message}"
 	fi
 
@@ -1336,10 +1335,6 @@ BuildGallery()
 	local title_colour="goldenrod1"
 	local thumbnail_dimensions="400x400"
 
-	# new feature: condensed gallery - crop images to square first, and zero tile padding
-	# convert -define jpeg:size=400x400 * -thumbnail 400x400^ -gravity center -extent 400x400 squared.jpg
-	# montage squared* -geometry +0+0 output.jpg
-
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local func_startseconds=$(date +%s)
@@ -1356,12 +1351,15 @@ BuildGallery()
 		fi
 
 		progress_message+=" (construct thumbnails)"
-
 		ProgressUpdater "${progress_message}"
 	fi
 
 	# build gallery
-	build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+	if [ "$condensed_galley" == "true" ]; then
+		build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+	else
+		build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+	fi
 
 	DebugThis "? \$build_foreground_cmd" "$build_foreground_cmd"
 
@@ -1383,7 +1381,6 @@ BuildGallery()
 			fi
 
 			progress_message+=" (draw background pattern)"
-
 			ProgressUpdater "${progress_message}"
 		fi
 
@@ -1414,7 +1411,6 @@ BuildGallery()
 			fi
 
 			progress_message+=" (draw title text image)"
-
 			ProgressUpdater "${progress_message}"
 		fi
 
@@ -1443,7 +1439,6 @@ BuildGallery()
 			fi
 
 			progress_message+=" (compile all images)"
-
 			ProgressUpdater "${progress_message}"
 		fi
 
