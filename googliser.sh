@@ -113,11 +113,12 @@ Init()
 	timeout_max=600
 	retries_max=100
 	max_results_required=$images_required_default
+	fail_limit=$fail_limit_default
 
 	# user changable parameters
 	user_query=""
 	images_required=$images_required_default
-	fail_limit=$fail_limit_default
+	user_fail_limit=$fail_limit
 	parallel_limit=$parallel_limit_default
 	timeout=$timeout_default
 	retries=$retries_default
@@ -240,7 +241,13 @@ ValidateParameters()
 		parallel_limit=16
 		links_only=false
 		create_gallery=false
-		fail_limit=0
+		user_fail_limit=0
+	fi
+
+	if [ "$links_only" == "true" ]; then
+		create_gallery=false
+		save_links=true
+		user_fail_limit=0
 	fi
 
 	case ${images_required#[-+]} in
@@ -272,22 +279,22 @@ ValidateParameters()
 		fi
 	fi
 
-	case ${fail_limit#[-+]} in
+	case ${user_fail_limit#[-+]} in
 		*[!0-9]*)
-			DebugThis "! specified \$fail_limit" "invalid"
+			DebugThis "! specified \$user_fail_limit" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer")"
 			exitcode=2
 			return
 			;;
 		*)
-			if [ "$fail_limit" -le "0" ]; then
-				fail_limit=$google_max
-				DebugThis "~ \$fail_limit too low so set as \$google_max" "$fail_limit"
+			if [ "$user_fail_limit" -le "0" ]; then
+				user_fail_limit=$google_max
+				DebugThis "~ \$user_fail_limit too low so set as \$google_max" "$user_fail_limit"
 			fi
 
-			if [ "$fail_limit" -gt "$google_max" ]; then
-				fail_limit=$google_max
-				DebugThis "~ \$fail_limit too high so set as \$google_max" "$fail_limit"
+			if [ "$user_fail_limit" -gt "$google_max" ]; then
+				user_fail_limit=$google_max
+				DebugThis "~ \$user_fail_limit too high so set as \$google_max" "$user_fail_limit"
 			fi
 			;;
 	esac
@@ -387,9 +394,9 @@ ValidateParameters()
 			;;
 	esac
 
-	if [ "$max_results_required" -lt "$(($images_required+$fail_limit))" ]; then
-		max_results_required=$(($images_required+$fail_limit))
-		DebugThis "~ \$max_results_required too low so set as \$images_required + \$fail_limit" "$max_results_required"
+	if [ "$max_results_required" -lt "$(($images_required+$user_fail_limit))" ]; then
+		max_results_required=$(($images_required+$user_fail_limit))
+		DebugThis "~ \$max_results_required too low so set as \$images_required + \$user_fail_limit" "$max_results_required"
 	fi
 
 	dimensions_search=""
@@ -478,12 +485,6 @@ ValidateParameters()
 		advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
 	fi
 
-	if [ "$links_only" == "true" ]; then
-		create_gallery=false
-		save_links=true
-		fail_limit=0
-	fi
-
 	}
 
 ProcessQuery()
@@ -550,8 +551,8 @@ ProcessQuery()
 		exitcode=4
 		return
 	else
+		fail_limit=$user_fail_limit
 		if [ "$fail_limit" -gt "$result_count" ]; then
-			fail_limit=$result_count
 			fail_limit=$result_count
 			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
 		fi
@@ -770,7 +771,7 @@ WhatAreMyOptions()
 				shift 2
 				;;
 			-f|--failures)
-				fail_limit="$2"
+				user_fail_limit="$2"
 				shift 2
 				;;
 			-p|--phrase)
