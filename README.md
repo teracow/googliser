@@ -35,7 +35,7 @@ These images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cDghLqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the alternative form with 2 hypens and the full-text. Single character parameters (without arguments) can be concatenated. e.g. `-cDhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required***
@@ -65,9 +65,6 @@ Delete the downloaded images after building the thumbnail gallery. Umm, don't sp
 
 `-f` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if there are many failures).
-
-`-g` or `--no-gallery`
-Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
 `-h` or `--help`
 Display this help then exit.
@@ -101,6 +98,9 @@ Only download images with at least this many pixels. Preset values are:
 
 `-n` or `--number [INTEGER]`
 Number of images to download. Default is 25. Maximum is 1,000.
+
+`-N` or `--no-gallery`
+Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
 `-o` or `--output [PATH]`
 The output directory. If unspecified, the search phrase is used.
@@ -153,7 +153,7 @@ This will download the first 250 available images for the search-phrase *"kitten
 
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
-    $ ./googliser.sh -n 80 -p "storm clouds" -scg --debug
+    $ ./googliser.sh -n80 -p "storm clouds" -scN --debug
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---

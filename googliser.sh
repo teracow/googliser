@@ -66,14 +66,14 @@ case "$OSTYPE" in
 		;;
 esac
 
-user_parameters=$(getopt -o h,g,D,s,q,c,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,N,D,s,q,c,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
 	{
 
-	local script_date="2017-10-09"
+	local script_date="2017-10-10"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -702,7 +702,6 @@ DisplayHelp()
 	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
 	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
 	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
-	HelpParameterFormat "g" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "h" "help" "Display this help then exit."
 	HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
 	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
@@ -723,6 +722,7 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
 	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
+	HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
 	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
 	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
@@ -838,7 +838,7 @@ WhatAreMyOptions()
 				colour=true
 				shift
 				;;
-			-g|--no-gallery)
+			-N|--no-gallery)
 				create_gallery=false
 				shift
 				;;
