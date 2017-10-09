@@ -653,18 +653,18 @@ DisplayHelp()
 	local sample_user_query="cows"
 
 	if [ "$colour" == "true" ]; then
-		echo " - usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
+		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
 		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
 	else
-		echo " - usage: ./$script_file [PARAMETERS] ..."
+		echo " Usage: ./$script_file [PARAMETERS] ..."
 		message="Google images"
 	fi
 
 	echo
 	echo " search '${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
 	echo
-	echo " Requirements: Wget"
-	echo " Optional: identify, montage & convert (from ImageMagick)"
+	echo " External requirements: Wget"
+	echo " and optionally: identify, montage & convert (from ImageMagick)"
 	echo
 	echo " Questions or comments? teracow@gmail.com"
 	echo
@@ -729,7 +729,7 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'lineart'"
 	HelpParameterFormat "" "" "'animated'"
 	echo
-	echo " - Example:"
+	echo " Example:"
 
 	if [ "$colour" == "true" ]; then
 		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
@@ -2036,8 +2036,10 @@ Finish()
 				echo " -> $(ShowAsSucceed "All done!")"
 				;;
 			[1-2])
-				echo
-				echo " use '--help' to display parameter list."
+				if [ "$show_help_only" != "true" ]; then
+					echo
+					echo " use '--help' to display parameter list."
+				fi
 				;;
 			[3-6])
 				echo
