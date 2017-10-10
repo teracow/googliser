@@ -53,7 +53,7 @@ case "$OSTYPE" in
 		CMD_SED="gsed"
 		CMD_DU="gdu"
 		CMD_LS="gls"
-		temp_root="/tmp"
+		TEMP_ROOT="/tmp"
 		;;
 	*)
 		CMD_READLINK="readlink"
@@ -62,7 +62,7 @@ case "$OSTYPE" in
 		CMD_SED="sed"
 		CMD_DU="du"
 		CMD_LS="ls"
-		temp_root="/dev/shm"
+		TEMP_ROOT="/dev/shm"
 		;;
 esac
 
@@ -99,7 +99,7 @@ Init()
 	fail_limit_default=40
 	upper_size_limit_default=0
 	lower_size_limit_default=1000
-	timeout_default=5
+	timeout_default=8
 	retries_default=3
 
 	# internals
@@ -624,7 +624,7 @@ BuildEnviron()
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
 
-	temp_path=$($CMD_MKTEMP -p "${temp_root}" -d "$script_name.$$.XXX")
+	temp_path=$($CMD_MKTEMP -p "${TEMP_ROOT}" -d "$script_name.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
 
 	results_run_count_path="${temp_path}/results.running.count"
@@ -1239,7 +1239,7 @@ DownloadImages()
 
 			# abort downloading if too many failures
 			if [ "$fail_count" -ge "$fail_limit" ]; then
-				DebugThis "! failure limit reached" "$fail_count/$fail_limit"
+				DebugThis "! failure limit reached" "${fail_count}/${fail_limit}"
 
 				result=1
 
@@ -1263,7 +1263,7 @@ DownloadImages()
 				local link_index=$(printf "%04d" $result_index)
 
 				# create run file here as it takes too long to happen in background function
-				touch "$download_run_count_path/$link_index"
+				touch "${download_run_count_path}/${link_index}"
 				{ DownloadImage_auto "$imagelink" "$link_index" & } 2>/dev/null
 
 				break
@@ -1295,7 +1295,7 @@ DownloadImages()
 		fi
 	else
 		if [ "$result_index" -eq "$result_count" ]; then
-			DebugThis "! ran out of images to download!" "$result_index/$result_count"
+			DebugThis "! ran out of images to download!" "${result_index}/${result_count}"
 
 			if [ "$colour" == "true" ]; then
 				echo "$(ColourTextBrightRed "Ran out of images to download!")"
