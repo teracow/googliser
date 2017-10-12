@@ -7,7 +7,7 @@ This is an expansion upon a solution provided by [ShellFish](https://stackoverfl
 ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) **Seeking macOS testers** to check compatibility of this script on macOS with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
 
 ---
-## Description:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Description:
 
 1. The user supplies a search-phrase and some other optional parameters on the command line.
 
@@ -22,7 +22,7 @@ This is an expansion upon a solution provided by [ShellFish](https://stackoverfl
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
-## Sample Outputs:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Sample Outputs:
 
 These images have been scaled down for easier distribution.
 
@@ -36,7 +36,7 @@ These images have been scaled down for easier distribution.
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)
 
 ---
-## Usage:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Usage:
 
     $ ./googliser.sh [PARAMETERS] ...
 
@@ -165,7 +165,7 @@ This will download the first 56 available images for the search-phrase *"fish"* 
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-## Return Values ($?):
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Return Values ($?):
 
 0 : success!  
 1 : required external program unavailable.  
@@ -177,7 +177,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 7 : unable to create a temporary build directory.
 
 ---
-## Notes:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Notes:
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
@@ -210,7 +210,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 
 ---
-## Development Environment:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Development Environment:
 
 - [Debian](https://www.debian.org/) - *9 "Stretch" 64b*
 - GNU BASH - *v4.4.12*
@@ -233,6 +233,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-## Known Issues:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Known Issues:
 
 - none.
