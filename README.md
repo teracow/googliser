@@ -4,6 +4,9 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code changed in April 2016, June 2017 & August 2017.
 
+**Seeking macOS testers!**
+I'm hoping to check compatibility of this script on macOS with Apple's BASH. Please advise if you're willing to help ensure it can be run on Apple PCs.
+
 ---
 ## Description:
 
