@@ -4,7 +4,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code changed in April 2016, June 2017 & August 2017.
 
-![#f03c15](https://placehold.it/15/f03c15/000000?text=+) **Seeking macOS testers** to check compatibility of this script on macOS with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
+![#f03c15](https://placehold.it/15/f03c15/000000?text=+) **Seeking macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
 
 ---
 ## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Description:
@@ -13,18 +13,18 @@ This is an expansion upon a solution provided by [ShellFish](https://stackoverfl
 
 2. A sub-directory is created below the current directory with the name of this search-phrase.
 
-3. [Google Images](https://www.google.com.au/imghp?hl=en) is then queried and the results saved.
+3. [Google Images](https://www.google.com.au/imghp?hl=en) is queried and the results saved.
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script then iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 40 images can be downloaded concurrently.  If an image is unavailable, the script skips it and continues downloading until it has acquired the required number of images or the download failure limit is reached.
+5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 40 images can be downloaded concurrently.  If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded or the download failure-limit is reached.
 
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Sample Outputs:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Outputs:
 
-These images have been scaled down for easier distribution.
+These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
 ![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
@@ -233,6 +233,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Known Issues:
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Issues:
 
 - none.
