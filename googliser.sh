@@ -52,15 +52,13 @@ case "$OSTYPE" in
 		CMD_SED="gsed"
 		CMD_DU="gdu"
 		CMD_LS="gls"
-		TEMP_ROOT="/tmp"
 		;;
 	*"BSD")
-		CMD_READLINK="greadlink"
-		CMD_HEAD="ghead"
-		CMD_SED="gsed"
-		CMD_DU="gdu"
-		CMD_LS="gls"
-		TEMP_ROOT="/tmp"
+		CMD_READLINK="readlink"
+		CMD_HEAD="head"
+		CMD_SED="sed"
+		CMD_DU="du"
+		CMD_LS="ls"
 		;;
 	*)
 		CMD_READLINK="readlink"
@@ -68,13 +66,14 @@ case "$OSTYPE" in
 		CMD_SED="sed"
 		CMD_DU="du"
 		CMD_LS="ls"
-		TEMP_ROOT="/dev/shm"
 		;;
 esac
 
 user_parameters=$(getopt -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
+
+#echo "user_parameters: [$user_parameters]"
 
 Init()
 	{
@@ -630,7 +629,7 @@ BuildEnviron()
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
 
-	temp_path=$(mktemp -d "${TEMP_ROOT}/${script_name}.$$.XXX")
+	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
 
 	results_run_count_path="${temp_path}/results.running.count"

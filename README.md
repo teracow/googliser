@@ -38,7 +38,7 @@ These sample images have been scaled down for easier distribution.
 ---
 ## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Utilities installation
 
-**googliser** is supported on these platforms but may require some extra binaries.
+**googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS and FreeBSD. Some extra binaries are required though. Please advise of any issues.
 
 Debian/Ubuntu:
 
@@ -50,7 +50,7 @@ macOS:
 
 FreeBSD:
 
-    # pkg install bash wget imagemagick
+    # pkg install bash getopt wget imagemagick
 
 ---
 ## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Usage
@@ -222,7 +222,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
 
-- The temporary build directory is `/dev/shm/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
+- The temporary build directory is `/tmp/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
 
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 
