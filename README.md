@@ -4,10 +4,10 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code changed in April 2016, June 2017 & August 2017.
 
-![#f03c15](https://placehold.it/15/f03c15/000000?text=+) **Seeking macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
+![#f03c15](images/red.png) **Seeking macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Description
+## ![#c5f015](images/lime.png) Description
 
 1. The user supplies a search-phrase and some other optional parameters on the command line.
 
@@ -22,21 +22,21 @@ This is an expansion upon a solution provided by [ShellFish](https://stackoverfl
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Outputs
+## ![#c5f015](images/lime.png) Outputs
 
 These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
-![puppies](images/googliser\-gallery\-\(puppies\)-s.png)
+![puppies](images/googliser-gallery-puppies-s.png)
 
     $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC -n16
-![puppies](images/googliser\-gallery\-\(kittens\)-s.png)
+![puppies](images/googliser-gallery-kittens-s.png)
 
     $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
-![cows](images/googliser\-gallery\-\(cows\)\-s.png)
+![cows](images/googliser-gallery-cows-s.png)
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Compatibility
+## ![#c5f015](images/lime.png) Compatibility
 
 **googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS and FreeBSD. Some extra binaries are required though. Please advise of any issues.
 
@@ -53,7 +53,7 @@ FreeBSD:
     # pkg install bash getopt wget imagemagick
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Usage
+## ![#c5f015](images/lime.png) Usage
 
     $ ./googliser.sh [PARAMETERS] ...
 
@@ -182,7 +182,7 @@ This will download the first 56 available images for the search-phrase *"fish"* 
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Return Values ($?)
+## ![#c5f015](images/lime.png) Return Values ($?)
 
 0 : success!  
 1 : required external program unavailable.  
@@ -194,7 +194,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 7 : unable to create a temporary build directory.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Notes
+## ![#c5f015](images/lime.png) Notes
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
@@ -227,7 +227,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Development Environment
+## ![#c5f015](images/lime.png) Development Environment
 
 - [Debian](https://www.debian.org/) - *9 "Stretch" 64b*
 - GNU BASH - *v4.4.12*
@@ -251,6 +251,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Issues
+## ![#c5f015](images/lime.png) Issues
 
 - none.
