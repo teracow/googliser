@@ -42,17 +42,15 @@ These sample images have been scaled down for easier distribution.
 
 Debian/Ubuntu:
 
-    apt-get install wget imagemagick
+    $ sudo apt-get install wget imagemagick
 
 macOS:
 
-    brew install wget
-
+    # brew install wget coreutils
 
 FreeBSD:
 
-    pkg install bash wget imagemagick
-
+    # pkg install bash wget imagemagick
 
 ---
 ## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Usage
