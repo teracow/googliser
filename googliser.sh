@@ -48,7 +48,14 @@
 case "$OSTYPE" in
 	"darwin"*)
 		CMD_READLINK="greadlink"
-		CMD_MKTEMP="gmktemp"
+		CMD_HEAD="ghead"
+		CMD_SED="gsed"
+		CMD_DU="gdu"
+		CMD_LS="gls"
+		TEMP_ROOT="/tmp"
+		;;
+	*"BSD")
+		CMD_READLINK="greadlink"
 		CMD_HEAD="ghead"
 		CMD_SED="gsed"
 		CMD_DU="gdu"
@@ -57,7 +64,6 @@ case "$OSTYPE" in
 		;;
 	*)
 		CMD_READLINK="readlink"
-		CMD_MKTEMP="mktemp"
 		CMD_HEAD="head"
 		CMD_SED="sed"
 		CMD_DU="du"
@@ -73,7 +79,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-10"
+	local script_date="2017-10-14"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -624,7 +630,7 @@ BuildEnviron()
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
 
-	temp_path=$($CMD_MKTEMP -p "${TEMP_ROOT}" -d "$script_name.$$.XXX")
+	temp_path=$(mktemp -d "${TEMP_ROOT}/${script_name}.$$.XXX")
 	[ "$?" -gt "0" ] && return 1
 
 	results_run_count_path="${temp_path}/results.running.count"
@@ -1055,6 +1061,8 @@ DownloadImage_auto()
 		# try to get file size from server
 		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
 		DebugThis "? link ($link_index) \$wget_server_response_cmd" "$wget_server_response_cmd"
+
+		# for FreeBSD, maybe something like: 'fetch --no-verify-peer url' ???
 
 		response=$(eval "$wget_server_response_cmd")
 		result=$?

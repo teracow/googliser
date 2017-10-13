@@ -36,6 +36,25 @@ These sample images have been scaled down for easier distribution.
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)
 
 ---
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Utilities installation
+
+**googliser** is supported on these platforms but may require some extra binaries.
+
+Debian/Ubuntu:
+
+    apt-get install wget imagemagick
+
+macOS:
+
+    brew install wget
+
+
+FreeBSD:
+
+    pkg install bash wget imagemagick
+
+
+---
 ## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Usage
 
     $ ./googliser.sh [PARAMETERS] ...
