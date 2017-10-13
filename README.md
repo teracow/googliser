@@ -36,7 +36,7 @@ These sample images have been scaled down for easier distribution.
 ![cows](images/googliser\-gallery\-\(cows\)\-s.png)
 
 ---
-## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Utilities installation
+## ![#c5f015](https://placehold.it/15/c5f015/000000?text=+) Compatibility
 
 **googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS and FreeBSD. Some extra binaries are required though. Please advise of any issues.
 
