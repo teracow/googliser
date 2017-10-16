@@ -2,9 +2,11 @@
 ---
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
 
-This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google page-code changed in April 2016, June 2017 & August 2017.
+This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to August 2017.
 
-![#f03c15](images/red.png) **Seeking macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're willing to help ensure it will run on Apple PCs.
+Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) for his work on OSX compatibility. His mods have been incorporated into this script.
+
+![#f03c15](images/red.png) **Seeking more macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're able to help ensure it will run on Apple PCs. I'm currently coding to reduce reliance on external utilities, but this will take some time.
 
 ---
 ## ![#c5f015](images/lime.png) Description
@@ -46,7 +48,7 @@ Debian/Ubuntu:
 
 macOS:
 
-    # brew install wget coreutils
+    # brew install wget coreutils ghostscript gnu-sed gnu-getopt
 
 FreeBSD:
 

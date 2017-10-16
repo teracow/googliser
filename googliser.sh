@@ -53,13 +53,6 @@ case "$OSTYPE" in
 		CMD_DU="gdu"
 		CMD_LS="gls"
 		;;
-	*"BSD")
-		CMD_READLINK="readlink"
-		CMD_HEAD="head"
-		CMD_SED="sed"
-		CMD_DU="du"
-		CMD_LS="ls"
-		;;
 	*)
 		CMD_READLINK="readlink"
 		CMD_HEAD="head"
@@ -69,16 +62,14 @@ case "$OSTYPE" in
 		;;
 esac
 
-user_parameters=$(getopt -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: --long help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$(getopt -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
-
-#echo "user_parameters: [$user_parameters]"
 
 Init()
 	{
 
-	local script_date="2017-10-14"
+	local script_date="2017-10-16"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
