@@ -1704,11 +1704,17 @@ RenameExtAsType()
 		fi
 
 		if [ "$returncode" -eq "0" ]; then
-			# only want first 3 chars
-			imagetype="${rawtype:0:3}"
+			# only want first 4 chars
+			imagetype="${rawtype:0:4}"
+
+			# exception to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
+			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
+
+			# exception to handle identify's output for BMP i.e. "BMP3"
+			[ "$imagetype" == "BMP3" ] && imagetype="BMP"
 
 			case "$imagetype" in
-				JPE|GIF|PNG|BMP|ICO)
+				JPEG|GIF|PNG|BMP|ICO)
 					# move file into temp file
 					mv "$1" "$1".tmp
 
