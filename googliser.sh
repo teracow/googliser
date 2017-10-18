@@ -69,7 +69,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-16"
+	local script_date="2017-10-18"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
@@ -1692,14 +1692,11 @@ RenameExtAsType()
 		fi
 
 		if [ "$returncode" -eq "0" ]; then
-			# only want first 4 chars
-			imagetype="${rawtype:0:4}"
-
-			# have to add exception here to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
-			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
+			# only want first 3 chars
+			imagetype="${rawtype:0:3}"
 
 			case "$imagetype" in
-				PNG|JPEG|GIF)
+				JPE|GIF|PNG|BMP|ICO)
 					# move file into temp file
 					mv "$1" "$1".tmp
 
@@ -1732,7 +1729,7 @@ AllowableFileType()
 	[[ ! "$ext" =~ "." ]] && ext=""
 
 	case "$ext" in
-		.png|.jpg|.jpeg|.gif|.php)
+		.jpg|.jpeg|.gif|.png|.php|.bmp|.ico)
 			# valid image type
 			return 0
 			;;
