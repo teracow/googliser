@@ -437,6 +437,15 @@ ValidateParameters()
 			qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
 				min_pixels_search="isz:lt,islt:${min_pixels}"
 				;;
+			large)
+				min_pixels_search="isz:l"
+				;;
+			medium)
+				min_pixels_search="isz:m"
+				;;
+			icon)
+				min_pixels_search="isz:i"
+				;;
 			*)
 				echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid")"
 				exitcode=2
@@ -724,6 +733,9 @@ DisplayHelp()
 	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
 	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
 	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
+	HelpParameterFormat "" "" "'large'"
+	HelpParameterFormat "" "" "'medium'"
+	HelpParameterFormat "" "" "'icon'"
 	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
 	HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "o" "output" "The image output directory. [phrase]"

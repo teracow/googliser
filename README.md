@@ -122,6 +122,9 @@ Only download images with at least this many pixels. Preset values are:
 - `20mp`  (5120 x 3840)
 - `40mp`  (7216 x 5412)
 - `70mp`  (9600 x 7200)
+- `large`
+- `medium`
+- `icon`
 
 `-n` or `--number [INTEGER]`
 Number of images to download. Default is 25. Maximum is 1,000.
@@ -200,7 +203,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF) and [PHP](https://en.wikipedia.org/wiki/PHP) files are available for download.
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF), [PHP](https://en.wikipedia.org/wiki/PHP), [BMP](https://en.wikipedia.org/wiki/BMP_file_format) and [ICO](https://en.wikipedia.org/wiki/ICO_(file_format)) files are available for download.
 
 - If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If ImageMagic is not available, then no type-checking occurs.
 
