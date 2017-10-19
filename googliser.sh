@@ -1453,7 +1453,7 @@ BuildGallery()
 		fi
 
 		# compose thumbnails image on background image, then title image on top
-		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+25 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+40 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
 		DebugThis "? \$build_compose_cmd" "$build_compose_cmd"
 
