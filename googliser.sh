@@ -195,6 +195,286 @@ Init()
 
 	}
 
+BuildWorkPaths()
+	{
+
+	Flee()
+		{
+
+		echo "! Unable to create a temporary build directory! Exiting."; exit 7
+
+		}
+
+	image_file_prefix="google-image"
+	test_file="test-image"			# this is used during size testing
+	imagelinks_file="download.links.list"
+	debug_file="debug.log"
+	gallery_name="googliser-gallery"
+	current_path="$PWD"
+
+	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
+
+	results_run_count_path="${temp_path}/results.running.count"
+	mkdir -p "${results_run_count_path}" || Flee
+
+	results_success_count_path="${temp_path}/results.success.count"
+	mkdir -p "${results_success_count_path}" || Flee
+
+	results_fail_count_path="${temp_path}/results.fail.count"
+	mkdir -p "${results_fail_count_path}" || Flee
+
+	download_run_count_path="${temp_path}/download.running.count"
+	mkdir -p "${download_run_count_path}" || Flee
+
+	download_success_count_path="${temp_path}/download.success.count"
+	mkdir -p "${download_success_count_path}" || Flee
+
+	download_fail_count_path="${temp_path}/download.fail.count"
+	mkdir -p "${download_fail_count_path}" || Flee
+
+	testimage_pathfile="${temp_path}/${test_file}"
+	results_pathfile="${temp_path}/results.page.html"
+	gallery_title_pathfile="${temp_path}/gallery.title.png"
+	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
+	gallery_background_pathfile="${temp_path}/gallery.background.png"
+	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
+	debug_pathfile="${temp_path}/${debug_file}"
+
+	unset -f Flee
+
+	}
+
+WhatAreMyOptions()
+	{
+
+	# if getopt exited with an error then show help to user
+	[ "$user_parameters_result" != "0" ] && { echo; show_help_only=true; exitcode=2; return 1 ;}
+
+	eval set -- "$user_parameters"
+
+	while true; do
+		case "$1" in
+			-n|--number)
+				images_required="$2"
+				shift 2
+				;;
+			-f|--failures)
+				user_fail_limit="$2"
+				shift 2
+				;;
+			-p|--phrase)
+				user_query="$2"
+				shift 2
+				;;
+			-P|--parallel)
+				parallel_limit="$2"
+				shift 2
+				;;
+			-t|--timeout)
+				timeout="$2"
+				shift 2
+				;;
+			-r|--retries)
+				retries="$2"
+				shift 2
+				;;
+			-u|--upper-size)
+				upper_size_limit="$2"
+				shift 2
+				;;
+			-l|--lower-size)
+				lower_size_limit="$2"
+				shift 2
+				;;
+			-T|--title)
+				gallery_title="$2"
+				shift 2
+				;;
+			-o|--output)
+				output_path="$2"
+				shift 2
+				;;
+			-i|--input)
+				input_pathfile="$2"
+				shift 2
+				;;
+			#--dimensions)
+			#	dimensions="$2"
+			#	shift 2
+			#	;;
+			-S|--skip-no-size)
+				skip_no_size=true
+				shift
+				;;
+			-s|--save-links)
+				save_links=true
+				shift
+				;;
+			-D|--delete-after)
+				remove_after=true
+				shift
+				;;
+			-z|--lightning)
+				lightning=true
+				shift
+				;;
+			-h|--help)
+				show_help_only=true
+				return 7
+				;;
+			-c|--colour)
+				colour=true
+				shift
+				;;
+			-N|--no-gallery)
+				create_gallery=false
+				shift
+				;;
+			-C|--condensed)
+				condensed_gallery=true
+				shift
+				;;
+			-q|--quiet)
+				verbose=false
+				shift
+				;;
+			--debug)
+				debug=true
+				shift
+				;;
+			-L|--links-only)
+				links_only=true
+				shift
+				;;
+			-m|--minimum-pixels)
+				min_pixels="$2"
+				shift 2
+				;;
+			-a|--aspect-ratio)
+				aspect_ratio="$2"
+				shift 2
+				;;
+			--type)
+				image_type="$2"
+				shift 2
+				;;
+			--)
+				shift		# shift to next parameter in $1
+				break
+				;;
+			*)
+				break		# there are no more matching parameters
+				;;
+		esac
+	done
+
+	return 0
+
+	}
+
+DisplayHelp()
+	{
+
+	DebugThis "\ [${FUNCNAME[0]}]" "entry"
+
+	local sample_user_query="cows"
+
+	if [ "$colour" == "true" ]; then
+		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
+		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
+	else
+		echo " Usage: ./$script_file [PARAMETERS] ..."
+		message="Google images"
+	fi
+
+	echo
+	echo " search '${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
+	echo
+	echo " External requirements: Wget"
+	echo " and optionally: identify, montage & convert (from ImageMagick)"
+	echo
+	echo " Questions or comments? teracow@gmail.com"
+	echo
+	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
+	echo
+
+	if [ "$colour" == "true" ]; then
+		echo " $(ColourTextBrightOrange "* Required *")"
+	else
+		echo " * Required *"
+	fi
+
+	HelpParameterFormat "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
+	echo
+	echo " Optional"
+	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
+	HelpParameterFormat "" "" "'tall'"
+	HelpParameterFormat "" "" "'square'"
+	HelpParameterFormat "" "" "'wide'"
+	HelpParameterFormat "" "" "'panoramic'"
+	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
+	HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
+	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
+	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
+	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
+	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
+	HelpParameterFormat "h" "help" "Display this help then exit."
+	HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
+	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
+	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
+	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
+	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
+	HelpParameterFormat "" "" "'vga'   (640 x 480)"
+	HelpParameterFormat "" "" "'svga'  (800 x 600)"
+	HelpParameterFormat "" "" "'xga'   (1024 x 768)"
+	HelpParameterFormat "" "" "'2mp'   (1600 x 1200)"
+	HelpParameterFormat "" "" "'4mp'   (2272 x 1704)"
+	HelpParameterFormat "" "" "'6mp'   (2816 x 2112)"
+	HelpParameterFormat "" "" "'8mp'   (3264 x 2448)"
+	HelpParameterFormat "" "" "'10mp'  (3648 x 2736)"
+	HelpParameterFormat "" "" "'12mp'  (4096 x 3072)"
+	HelpParameterFormat "" "" "'15mp'  (4480 x 3360)"
+	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
+	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
+	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
+	HelpParameterFormat "" "" "'large'"
+	HelpParameterFormat "" "" "'medium'"
+	HelpParameterFormat "" "" "'icon'"
+	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
+	HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
+	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
+	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
+	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
+	HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
+	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
+	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
+	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
+	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
+	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
+	#HelpParameterFormat "?" "random" "Download a single random image only"
+	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
+	HelpParameterFormat "" "" "'face'"
+	HelpParameterFormat "" "" "'photo'"
+	HelpParameterFormat "" "" "'clipart'"
+	HelpParameterFormat "" "" "'lineart'"
+	HelpParameterFormat "" "" "'animated'"
+	HelpParameterFormat "z" "lightning" "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
+	echo
+	echo " Example:"
+
+	if [ "$colour" == "true" ]; then
+		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
+	else
+		echo " $ ./$script_file -p '${sample_user_query}'"
+	fi
+
+	echo
+	echo " This will download the first $images_required_default available images for the phrase '${sample_user_query}' and build them into a gallery image."
+
+	DebugThis "/ [${FUNCNAME[0]}]" "exit"
+
+	}
+
 ValidateParameters()
 	{
 
@@ -595,286 +875,6 @@ ProcessQuery()
 			fi
 		fi
 	fi
-
-	}
-
-BuildWorkPaths()
-	{
-
-	Flee()
-		{
-
-		echo "! Unable to create a temporary build directory! Exiting."; exit 7
-
-		}
-
-	image_file_prefix="google-image"
-	test_file="test-image"			# this is used during size testing
-	imagelinks_file="download.links.list"
-	debug_file="debug.log"
-	gallery_name="googliser-gallery"
-	current_path="$PWD"
-
-	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
-
-	results_run_count_path="${temp_path}/results.running.count"
-	mkdir -p "${results_run_count_path}" || Flee
-
-	results_success_count_path="${temp_path}/results.success.count"
-	mkdir -p "${results_success_count_path}" || Flee
-
-	results_fail_count_path="${temp_path}/results.fail.count"
-	mkdir -p "${results_fail_count_path}" || Flee
-
-	download_run_count_path="${temp_path}/download.running.count"
-	mkdir -p "${download_run_count_path}" || Flee
-
-	download_success_count_path="${temp_path}/download.success.count"
-	mkdir -p "${download_success_count_path}" || Flee
-
-	download_fail_count_path="${temp_path}/download.fail.count"
-	mkdir -p "${download_fail_count_path}" || Flee
-
-	testimage_pathfile="${temp_path}/${test_file}"
-	results_pathfile="${temp_path}/results.page.html"
-	gallery_title_pathfile="${temp_path}/gallery.title.png"
-	gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
-	gallery_background_pathfile="${temp_path}/gallery.background.png"
-	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
-	debug_pathfile="${temp_path}/${debug_file}"
-
-	unset -f Flee
-
-	}
-
-DisplayHelp()
-	{
-
-	DebugThis "\ [${FUNCNAME[0]}]" "entry"
-
-	local sample_user_query="cows"
-
-	if [ "$colour" == "true" ]; then
-		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
-		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
-	else
-		echo " Usage: ./$script_file [PARAMETERS] ..."
-		message="Google images"
-	fi
-
-	echo
-	echo " search '${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
-	echo
-	echo " External requirements: Wget"
-	echo " and optionally: identify, montage & convert (from ImageMagick)"
-	echo
-	echo " Questions or comments? teracow@gmail.com"
-	echo
-	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
-	echo
-
-	if [ "$colour" == "true" ]; then
-		echo " $(ColourTextBrightOrange "* Required *")"
-	else
-		echo " * Required *"
-	fi
-
-	HelpParameterFormat "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
-	echo
-	echo " Optional"
-	HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
-	HelpParameterFormat "" "" "'tall'"
-	HelpParameterFormat "" "" "'square'"
-	HelpParameterFormat "" "" "'wide'"
-	HelpParameterFormat "" "" "'panoramic'"
-	HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
-	HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
-	HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
-	#HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
-	HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
-	HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
-	HelpParameterFormat "h" "help" "Display this help then exit."
-	HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
-	HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
-	HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
-	HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
-	HelpParameterFormat "" "" "'qsvga' (400 x 300)"
-	HelpParameterFormat "" "" "'vga'   (640 x 480)"
-	HelpParameterFormat "" "" "'svga'  (800 x 600)"
-	HelpParameterFormat "" "" "'xga'   (1024 x 768)"
-	HelpParameterFormat "" "" "'2mp'   (1600 x 1200)"
-	HelpParameterFormat "" "" "'4mp'   (2272 x 1704)"
-	HelpParameterFormat "" "" "'6mp'   (2816 x 2112)"
-	HelpParameterFormat "" "" "'8mp'   (3264 x 2448)"
-	HelpParameterFormat "" "" "'10mp'  (3648 x 2736)"
-	HelpParameterFormat "" "" "'12mp'  (4096 x 3072)"
-	HelpParameterFormat "" "" "'15mp'  (4480 x 3360)"
-	HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
-	HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
-	HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-	HelpParameterFormat "" "" "'large'"
-	HelpParameterFormat "" "" "'medium'"
-	HelpParameterFormat "" "" "'icon'"
-	HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
-	HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
-	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
-	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
-	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
-	HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
-	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
-	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
-	HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
-	HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
-	HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
-	#HelpParameterFormat "?" "random" "Download a single random image only"
-	HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
-	HelpParameterFormat "" "" "'face'"
-	HelpParameterFormat "" "" "'photo'"
-	HelpParameterFormat "" "" "'clipart'"
-	HelpParameterFormat "" "" "'lineart'"
-	HelpParameterFormat "" "" "'animated'"
-	HelpParameterFormat "z" "lightning" "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
-	echo
-	echo " Example:"
-
-	if [ "$colour" == "true" ]; then
-		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
-	else
-		echo " $ ./$script_file -p '${sample_user_query}'"
-	fi
-
-	echo
-	echo " This will download the first $images_required_default available images for the phrase '${sample_user_query}' and build them into a gallery image."
-
-	DebugThis "/ [${FUNCNAME[0]}]" "exit"
-
-	}
-
-WhatAreMyOptions()
-	{
-
-	# if getopt exited with an error then show help to user
-	[ "$user_parameters_result" != "0" ] && { echo; show_help_only=true; exitcode=2; return 1 ;}
-
-	eval set -- "$user_parameters"
-
-	while true; do
-		case "$1" in
-			-n|--number)
-				images_required="$2"
-				shift 2
-				;;
-			-f|--failures)
-				user_fail_limit="$2"
-				shift 2
-				;;
-			-p|--phrase)
-				user_query="$2"
-				shift 2
-				;;
-			-P|--parallel)
-				parallel_limit="$2"
-				shift 2
-				;;
-			-t|--timeout)
-				timeout="$2"
-				shift 2
-				;;
-			-r|--retries)
-				retries="$2"
-				shift 2
-				;;
-			-u|--upper-size)
-				upper_size_limit="$2"
-				shift 2
-				;;
-			-l|--lower-size)
-				lower_size_limit="$2"
-				shift 2
-				;;
-			-T|--title)
-				gallery_title="$2"
-				shift 2
-				;;
-			-o|--output)
-				output_path="$2"
-				shift 2
-				;;
-			-i|--input)
-				input_pathfile="$2"
-				shift 2
-				;;
-			#--dimensions)
-			#	dimensions="$2"
-			#	shift 2
-			#	;;
-			-S|--skip-no-size)
-				skip_no_size=true
-				shift
-				;;
-			-s|--save-links)
-				save_links=true
-				shift
-				;;
-			-D|--delete-after)
-				remove_after=true
-				shift
-				;;
-			-z|--lightning)
-				lightning=true
-				shift
-				;;
-			-h|--help)
-				show_help_only=true
-				return 7
-				;;
-			-c|--colour)
-				colour=true
-				shift
-				;;
-			-N|--no-gallery)
-				create_gallery=false
-				shift
-				;;
-			-C|--condensed)
-				condensed_gallery=true
-				shift
-				;;
-			-q|--quiet)
-				verbose=false
-				shift
-				;;
-			--debug)
-				debug=true
-				shift
-				;;
-			-L|--links-only)
-				links_only=true
-				shift
-				;;
-			-m|--minimum-pixels)
-				min_pixels="$2"
-				shift 2
-				;;
-			-a|--aspect-ratio)
-				aspect_ratio="$2"
-				shift 2
-				;;
-			--type)
-				image_type="$2"
-				shift 2
-				;;
-			--)
-				shift		# shift to next parameter in $1
-				break
-				;;
-			*)
-				break		# there are no more matching parameters
-				;;
-		esac
-	done
-
-	return 0
 
 	}
 
