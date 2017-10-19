@@ -1414,7 +1414,7 @@ BuildGallery()
 
 		# create title image
 		# let's try a fixed height of 100 pixels
-		build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"${gallery_title}\" -blur 0x5 -fill $title_colour -stroke none label:\"${gallery_title}\" -flatten \"${gallery_title_pathfile}\""
+		build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ ${gallery_title}\" -blur 0x5 -fill $title_colour -stroke none label:\"\\ ${gallery_title}\" -flatten \"${gallery_title_pathfile}\""
 
 		DebugThis "? \$build_title_cmd" "$build_title_cmd"
 
