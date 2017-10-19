@@ -137,16 +137,13 @@ Init()
 	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
 	DebugThis "? \$user_parameters_raw" "$user_parameters_raw"
 
-	# display start
 	if [ "$verbose" == "true" ]; then
 		if [ "$colour" == "true" ]; then
 			echo " $script_details"
 		else
 			echo " $(RemoveColourCodes "$script_details")"
 		fi
-		echo
 	fi
-
 	if [ "$show_help_only" == "true" ]; then
 		DisplayHelp
 		return 1
@@ -251,8 +248,8 @@ BuildWorkPaths()
 WhatAreMyOptions()
 	{
 
-	# if getopt exited with an error then show help to user
-	[ "$user_parameters_result" != "0" ] && { echo; show_help_only=true; exitcode=2; return 1 ;}
+	[ "$user_parameters_result" != "0" ] && { echo; exitcode=2; return 1 ;}
+	[ "$user_parameters" == " --" ] && { show_help_only=true; exitcode=2; return 1 ;}
 
 	eval set -- "$user_parameters"
 
@@ -324,7 +321,7 @@ WhatAreMyOptions()
 				;;
 			-h|--help)
 				show_help_only=true
-				exitcode=7
+				exitcode=2
 				return 1
 				;;
 			-c|--colour)
@@ -383,7 +380,7 @@ DisplayHelp()
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
-
+	echo
 	if [ "$colour" == "true" ]; then
 		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
 		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
@@ -486,6 +483,7 @@ ValidateParameters()
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
+		echo
 		echo " Hmmm, so you've requested:"
 		echo " 1. don't create a gallery,"
 		echo " 2. delete the images after downloading,"
@@ -519,6 +517,7 @@ ValidateParameters()
 	case ${images_required#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$images_required" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -539,6 +538,7 @@ ValidateParameters()
 	if [ "$input_pathfile" ]; then
 		if [ ! -e "$input_pathfile" ]; then
 			DebugThis "! \$input_pathfile" "not found"
+			echo
 			echo "$(ShowAsFailed " !! input file  (-i, --input) was not found")"
 			exitcode=2
 			return 1
@@ -548,6 +548,7 @@ ValidateParameters()
 	case ${user_fail_limit#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$user_fail_limit" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -568,6 +569,7 @@ ValidateParameters()
 	case ${parallel_limit#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$parallel_limit" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-P, --parallel) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -588,6 +590,7 @@ ValidateParameters()
 	case ${timeout#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$timeout" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-t, --timeout) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -608,6 +611,7 @@ ValidateParameters()
 	case ${retries#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$retries" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-r, --retries) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -628,6 +632,7 @@ ValidateParameters()
 	case ${upper_size_limit#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$upper_size_limit" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-u, --upper-size) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -643,6 +648,7 @@ ValidateParameters()
 	case ${lower_size_limit#[-+]} in
 		*[!0-9]*)
 			DebugThis "! specified \$lower_size_limit" "invalid"
+			echo
 			echo "$(ShowAsFailed " !! number specified after (-l, --lower-size) must be a valid integer")"
 			exitcode=2
 			return 1
@@ -711,6 +717,7 @@ ValidateParameters()
 				min_pixels_search="isz:i"
 				;;
 			*)
+				echo
 				echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid")"
 				exitcode=2
 				return 1
@@ -734,6 +741,7 @@ ValidateParameters()
 				ar_type="xw"
 				;;
 			*)
+				echo
 				echo "$(ShowAsFailed " !! (-a, --aspect-ratio) preset invalid")"
 				exitcode=2
 				return 1
@@ -749,6 +757,7 @@ ValidateParameters()
 				image_type_search="itp:${image_type}"
 				;;
 			*)
+				echo
 				echo "$(ShowAsFailed " !! (--type) preset invalid")"
 				exitcode=2
 				return 1
@@ -769,6 +778,7 @@ ValidateParameters()
 ProcessQuery()
 	{
 
+	echo
 	if [ ! "$user_query" ]; then
 		DebugThis "! \$user_query" "unspecified"
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
@@ -803,6 +813,7 @@ ProcessQuery()
 	# create directory for search phrase
 	if [ -e "$target_path" ]; then
 		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
+		echo
 		echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
 		exitcode=3
 		return
@@ -814,6 +825,7 @@ ProcessQuery()
 
 		if [ "$result" -gt "0" ]; then
 			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
+			echo
 			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
 			exitcode=3
 			return
@@ -863,6 +875,7 @@ ProcessQuery()
 			BuildGallery
 
 			if [ "$?" -gt "0" ]; then
+				echo
 				echo "$(ShowAsFailed " !! unable to build thumbnail gallery")"
 				exitcode=6
 			else
@@ -2084,7 +2097,7 @@ FirstPreferredFont()
 
 Init
 
-if [ "$?" == "0" ] && [ "$exitcode" -eq "0" ]; then
+if [ "$exitcode" -eq "0" ]; then
 	if [ ! -z "$input_pathfile" ]; then
 		while read -r file_query; do
 			if [ -n "$file_query" ]; then
