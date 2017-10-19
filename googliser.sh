@@ -69,20 +69,11 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-18"
+	local script_date="2017-10-19"
 	script_file="googliser.sh"
 
 	script_name="${script_file%.*}"
 	local script_details="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
-
-	BuildEnviron
-
-	if [ "$?" -gt "0" ]; then
-		echo "! Unable to create a temporary build directory! Exiting."
-
-		exitcode=7
-		return 1
-	fi
 
 	server="www.google.com"
 
@@ -110,6 +101,7 @@ Init()
 	retries_max=100
 	max_results_required=$images_required_default
 	fail_limit=$fail_limit_default
+	exitcode=0
 
 	# user changable parameters
 	user_query=""
@@ -138,9 +130,8 @@ Init()
 	input_pathfile=""
 	condensed_gallery=false
 
+	BuildWorkPaths
 	WhatAreMyOptions
-
-	exitcode=$?
 
 	# display start
 	if [ "$verbose" == "true" ]; then
@@ -152,16 +143,9 @@ Init()
 		echo
 	fi
 
-	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
-		echo " Hmmm, so you've requested:"
-		echo " 1. don't create a gallery,"
-		echo " 2. delete the images after downloading,"
-		echo " 3. don't save the links file."
-		echo " Might be time to (R)ead-(T)he-(M)anual. ;)"
-		exitcode=2
-	fi
-
 	[ "$show_help_only" == "true" ] && DisplayHelp
+
+	ValidateParameters
 
 	DebugThis "> started" "$script_starttime"
 	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
@@ -199,37 +183,30 @@ Init()
 	IsReqProgAvail "wget" || exitcode=1
 
 	if [ "$create_gallery" == "true" ] && [ "$show_help_only" == "false" ]; then
-		IsReqProgAvail "montage" || exitcode=1
-		IsReqProgAvail "convert" || exitcode=1
+		IsReqProgAvail "montage" || { exitcode=1; return 1 ;}
+		IsReqProgAvail "convert" || { exitcode=1; return 1 ;}
 	fi
 
 	IsOptProgAvail "identify" && ident=true || ident=false
 
-	# ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-
-	# 'nfpr=1' seems to perform exact string search - does not show most likely match results or suggested search.
-	search_match_type="&nfpr=1"
-
-	# 'tbm=isch' seems to search for images
-	search_type="&tbm=isch"
-
-	# 'hl=en' seems to be language
-	search_language="&hl=en"
-
-	# 'site=imghp' seems to be result layout style
-	search_style="&site=imghp"
-
 	trap CTRL_C_Captured INT
 
-	ValidateParameters
+	return 0
 
 	}
 
 ValidateParameters()
 	{
 
-	# user parameter validation and bounds checks
-	[ "$exitcode" -gt "0" ] && return
+	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
+		echo " Hmmm, so you've requested:"
+		echo " 1. don't create a gallery,"
+		echo " 2. delete the images after downloading,"
+		echo " 3. don't save the links file."
+		echo " Might be time to (R)ead-(T)he-(M)anual. ;)"
+		exitcode=2
+		return 1
+	fi
 
 	if [ "$lightning" == "true" ]; then
 		# Yeah!
@@ -257,7 +234,7 @@ ValidateParameters()
 			DebugThis "! specified \$images_required" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$images_required" -lt "1" ]; then
@@ -277,7 +254,7 @@ ValidateParameters()
 			DebugThis "! \$input_pathfile" "not found"
 			echo "$(ShowAsFailed " !! input file  (-i, --input) was not found")"
 			exitcode=2
-			return
+			return 1
 		fi
 	fi
 
@@ -286,7 +263,7 @@ ValidateParameters()
 			DebugThis "! specified \$user_fail_limit" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-f, --failures) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$user_fail_limit" -le "0" ]; then
@@ -306,7 +283,7 @@ ValidateParameters()
 			DebugThis "! specified \$parallel_limit" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-P, --parallel) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$parallel_limit" -lt "1" ]; then
@@ -326,7 +303,7 @@ ValidateParameters()
 			DebugThis "! specified \$timeout" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-t, --timeout) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$timeout" -lt "1" ]; then
@@ -346,7 +323,7 @@ ValidateParameters()
 			DebugThis "! specified \$retries" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-r, --retries) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$retries" -lt "1" ]; then
@@ -366,7 +343,7 @@ ValidateParameters()
 			DebugThis "! specified \$upper_size_limit" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-u, --upper-size) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$upper_size_limit" -lt "0" ]; then
@@ -381,7 +358,7 @@ ValidateParameters()
 			DebugThis "! specified \$lower_size_limit" "invalid"
 			echo "$(ShowAsFailed " !! number specified after (-l, --lower-size) must be a valid integer")"
 			exitcode=2
-			return
+			return 1
 			;;
 		*)
 			if [ "$lower_size_limit" -lt "0" ]; then
@@ -423,7 +400,7 @@ ValidateParameters()
 
 		# only while debugging - remove for release
 		exitcode=2
-		return
+		return 1
 	fi
 
 	if [ "$dimensions" ] && [ "$min_pixels" ]; then
@@ -449,7 +426,7 @@ ValidateParameters()
 			*)
 				echo "$(ShowAsFailed " !! (-m, --minimum-pixels) preset invalid")"
 				exitcode=2
-				return
+				return 1
 				;;
 		esac
 	fi
@@ -472,7 +449,7 @@ ValidateParameters()
 			*)
 				echo "$(ShowAsFailed " !! (-a, --aspect-ratio) preset invalid")"
 				exitcode=2
-				return
+				return 1
 				;;
 		esac
 		[ "$ar_type" ] && aspect_ratio_search="iar:${ar_type}"
@@ -487,7 +464,7 @@ ValidateParameters()
 			*)
 				echo "$(ShowAsFailed " !! (--type) preset invalid")"
 				exitcode=2
-				return
+				return 1
 				;;
 		esac
 	fi
@@ -495,6 +472,8 @@ ValidateParameters()
 	if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ] || [ "$image_type_search" ]; then
 		advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
 	fi
+
+	return 0
 
 	}
 
@@ -619,8 +598,15 @@ ProcessQuery()
 
 	}
 
-BuildEnviron()
+BuildWorkPaths()
 	{
+
+	Flee()
+		{
+
+		echo "! Unable to create a temporary build directory! Exiting."; exit 7
+
+		}
 
 	image_file_prefix="google-image"
 	test_file="test-image"			# this is used during size testing
@@ -629,32 +615,25 @@ BuildEnviron()
 	gallery_name="googliser-gallery"
 	current_path="$PWD"
 
-	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX")
-	[ "$?" -gt "0" ] && return 1
+	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
 
 	results_run_count_path="${temp_path}/results.running.count"
-	mkdir -p "${results_run_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${results_run_count_path}" || Flee
 
 	results_success_count_path="${temp_path}/results.success.count"
-	mkdir -p "${results_success_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${results_success_count_path}" || Flee
 
 	results_fail_count_path="${temp_path}/results.fail.count"
-	mkdir -p "${results_fail_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${results_fail_count_path}" || Flee
 
 	download_run_count_path="${temp_path}/download.running.count"
-	mkdir -p "${download_run_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${download_run_count_path}" || Flee
 
 	download_success_count_path="${temp_path}/download.success.count"
-	mkdir -p "${download_success_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${download_success_count_path}" || Flee
 
 	download_fail_count_path="${temp_path}/download.fail.count"
-	mkdir -p "${download_fail_count_path}"
-	[ "$?" -gt "0" ] && return 1
+	mkdir -p "${download_fail_count_path}" || Flee
 
 	testimage_pathfile="${temp_path}/${test_file}"
 	results_pathfile="${temp_path}/results.page.html"
@@ -664,7 +643,7 @@ BuildEnviron()
 	imagelinks_pathfile="${temp_path}/${imagelinks_file}"
 	debug_pathfile="${temp_path}/${debug_file}"
 
-	return 0
+	unset -f Flee
 
 	}
 
@@ -775,7 +754,7 @@ WhatAreMyOptions()
 	{
 
 	# if getopt exited with an error then show help to user
-	[ "$user_parameters_result" != "0" ] && echo && show_help_only=true && return 2
+	[ "$user_parameters_result" != "0" ] && { echo; show_help_only=true; exitcode=2; return 1 ;}
 
 	eval set -- "$user_parameters"
 
@@ -895,6 +874,8 @@ WhatAreMyOptions()
 		esac
 	done
 
+	return 0
+
 	}
 
 DownloadResultGroup_auto()
@@ -910,6 +891,12 @@ DownloadResultGroup_auto()
 	local search_start="&start=$2"
 	local response=""
 	local link_index="$3"
+
+	# ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
+	local search_type="&tbm=isch"		# seems to search for images
+	local search_language="&hl=en"		# seems to be language
+	local search_style="&site=imghp"	# seems to be result layout style
+	local search_match_type="&nfpr=1"	# seems to perform exact string search - does not show most likely match results or suggested search.
 
 	local run_pathfile="$results_run_count_path/$link_index"
 	local success_pathfile="$results_success_count_path/$link_index"
