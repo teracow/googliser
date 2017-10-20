@@ -71,13 +71,11 @@ Init()
 
 	local script_date="2017-10-20"
 	script_file="googliser.sh"
-
 	script_name="${script_file%.*}"
-	local script_details="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
+	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
+	local script_details_plain="$script_file - $script_date PID:[$$]"
 
 	server="www.google.com"
-
-	# http://whatsmyuseragent.com
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
 
 	# parameter defaults
@@ -134,16 +132,17 @@ Init()
 	WhatAreMyOptions
 
 	DebugThis "> started" "$script_starttime"
-	DebugThis "? \$script_details" "$(RemoveColourCodes "${script_details}")"
+	DebugThis "? \$script_details" "$script_details_plain"
 	DebugThis "? \$user_parameters_raw" "$user_parameters_raw"
 
 	if [ "$verbose" == "true" ]; then
 		if [ "$colour" == "true" ]; then
-			echo " $script_details"
+			echo " $script_details_colour"
 		else
-			echo " $(RemoveColourCodes "$script_details")"
+			echo " $script_details_plain"
 		fi
 	fi
+
 	if [ "$show_help_only" == "true" ]; then
 		DisplayHelp
 		return 1
