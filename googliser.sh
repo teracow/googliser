@@ -991,18 +991,18 @@ DownloadResultGroup_auto()
 
 	DebugThis "- result group ($link_index) download" "start"
 
-	local wget_list_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+	local downloader_results_get_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 
-	DebugThis "? result group ($link_index) \$wget_list_cmd" "$wget_list_cmd"
+	DebugThis "? result group ($link_index) \$downloader_results_get_cmd" "$downloader_results_get_cmd"
 
-	response=$(eval "$wget_list_cmd")
+	response=$(eval "$downloader_results_get_cmd")
 	result=$?
 
 	if [ "$result" -eq "0" ]; then
 		DebugThis "$ result group ($link_index) download" "success!"
 		mv "$run_pathfile" "$success_pathfile"
 	else
-		DebugThis "! result group ($link_index) download" "failed! Wget returned: ($result - $(WgetReturnCodes "$result"))"
+		DebugThis "! result group ($link_index) download" "failed! downloader returned: ($result - $(WgetReturnCodes "$result"))"
 		mv "$run_pathfile" "$fail_pathfile"
 	fi
 
@@ -1157,12 +1157,12 @@ DownloadImage_auto()
 	# are file size limits going to be applied before download?
 	if [ "$upper_size_limit" -gt "0" ] || [ "$lower_size_limit" -gt "0" ]; then
 		# try to get file size from server
-		local wget_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
-		DebugThis "? link ($link_index) \$wget_server_response_cmd" "$wget_server_response_cmd"
+		local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
+		DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
 
 		# for FreeBSD, maybe something like: 'fetch --no-verify-peer url' ???
 
-		response=$(eval "$wget_server_response_cmd")
+		response=$(eval "$downloader_server_response_cmd")
 		result=$?
 
 		if [ "$result" -eq "0" ]; then
@@ -1200,10 +1200,10 @@ DownloadImage_auto()
 
 	# perform actual image download
 	if [ "$get_download" == "true" ]; then
-		local wget_download_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"$1\" 2>&1"
-		DebugThis "? link ($link_index) \$wget_download_cmd" "$wget_download_cmd"
+		local downloader_get_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"$1\" 2>&1"
+		DebugThis "? link ($link_index) \$downloader_get_cmd" "$downloader_get_cmd"
 
-		response=$(eval "$wget_download_cmd")
+		response=$(eval "$downloader_get_cmd")
 		result=$?
 
 		if [ "$result" -eq "0" ]; then
@@ -1252,7 +1252,7 @@ DownloadImage_auto()
 			fi
 		else
 			mv "$run_pathfile" "$fail_pathfile"
-			DebugThis "! link ($link_index) download" "failed! Wget returned $result ($(WgetReturnCodes "$result"))"
+			DebugThis "! link ($link_index) download" "failed! downloader returned $result ($(WgetReturnCodes "$result"))"
 
 			# delete temp file if one was created
 			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
