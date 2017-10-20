@@ -9,11 +9,11 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ![#f03c15](images/red.png) **Seeking more macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're able to help ensure it will run on Apple PCs. I'm currently coding to reduce reliance on external utilities, but this will take some time.
 
 ---
-## ![#c5f015](images/lime.png) Description
+## ![#c5f015](images/lime.png) Workflow
 
 1. The user supplies a search-phrase and some other optional parameters on the command line.
 
-2. A sub-directory is created below the current directory with the name of this search-phrase.
+2. A sub-directory with the name of this search-phrase is created below the current directory.
 
 3. [Google Images](https://www.google.com.au/imghp?hl=en) is queried and the results saved.
 
@@ -21,7 +21,7 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 
 5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 40 images can be downloaded concurrently.  If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded or the download failure-limit is reached.
 
-6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file.
+6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (like those shown below).
 
 ---
 ## ![#c5f015](images/lime.png) Outputs
@@ -254,8 +254,3 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 - [FreeBSD](https://www.freebsd.org/) - *11.1 amd64*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
-
----
-## ![#c5f015](images/lime.png) Issues
-
-- none.
