@@ -69,7 +69,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-20"
+	local script_date="2017-10-21"
 	script_file="googliser.sh"
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -83,6 +83,14 @@ Init()
 	lower_size_limit_default=1000
 	timeout_default=8
 	retries_default=3
+	max_results_required=$images_required_default
+	fail_limit=$fail_limit_default
+
+	# limits
+	google_max=1000
+	parallel_max=40
+	timeout_max=600
+	retries_max=100
 
 	# internals
 	local script_starttime=$(date)
@@ -91,12 +99,6 @@ Init()
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
 	target_path_created=false
 	show_help_only=false
-	google_max=1000
-	parallel_max=40
-	timeout_max=600
-	retries_max=100
-	max_results_required=$images_required_default
-	fail_limit=$fail_limit_default
 	exitcode=0
 
 	# user changable parameters
@@ -110,21 +112,21 @@ Init()
 	lower_size_limit=$lower_size_limit_default
 	create_gallery=true
 	gallery_title=""
+	condensed_gallery=false
 	save_links=false
 	colour=false
 	verbose=true
-	remove_after=false
 	debug=false
 	skip_no_size=false
+	remove_after=false
 	lightning=false
 	min_pixels=""
 	aspect_ratio=""
 	image_type=""
+	input_pathfile=""
 	output_path=""
 	links_only=false
 	dimensions=""
-	input_pathfile=""
-	condensed_gallery=false
 
 	BuildWorkPaths
 	WhatAreMyOptions
@@ -444,7 +446,7 @@ DisplayHelp()
 	HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
 	HelpParameterFormat "o" "output" "The image output directory. [phrase]"
 	HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
-	HelpParameterFormat "q" "quiet" "Suppress standard message output. Error messages are still shown."
+	HelpParameterFormat "q" "quiet" "Suppress standard output. Errors are still shown."
 	HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
 	HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
 	HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
