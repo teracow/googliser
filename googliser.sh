@@ -777,6 +777,8 @@ ProcessQuery()
 	{
 
 	echo
+
+	# some last-minute parameter validation - needed when reading phrases from text file
 	if [ ! "$user_query" ]; then
 		DebugThis "! \$user_query" "unspecified"
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
@@ -810,17 +812,16 @@ ProcessQuery()
 
 	# create directory for search phrase
 	if [ -e "$target_path" ]; then
-		DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
-		echo
-		echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
-		exitcode=3
-		return 1
-	fi
-
-	if [ "$exitcode" -eq "0" ]; then
+		if [ "$($CMD_LS -1 "$target_path" | wc -l)" -gt "0" ]; then
+			DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
+			echo
+			echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
+			exitcode=3
+			return 1
+		fi
+	else
 		mkdir -p "$target_path"
 		result=$?
-
 		if [ "$result" -gt "0" ]; then
 			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
 			echo
@@ -833,12 +834,12 @@ ProcessQuery()
 		fi
 	fi
 
+	# download search results pages
 	DownloadResultGroups
-
 	if [ "$?" -gt "0" ]; then
 		echo "$(ShowAsFailed " !! couldn't download Google search results")"
 		exitcode=4
-		return
+		return 1
 	else
 		fail_limit=$user_fail_limit
 		if [ "$fail_limit" -gt "$result_count" ]; then
@@ -855,14 +856,13 @@ ProcessQuery()
 	if [ "$result_count" -eq "0" ]; then
 		DebugThis "= zero results returned?" "Oops..."
 		exitcode=4
-		return
+		return 1
 	fi
 
 	# download images
 	if [ "$exitcode" -eq "0" ]; then
 		if [ $links_only == "false" ]; then
 			DownloadImages
-
 			[ "$?" -gt "0" ] && exitcode=5
 		fi
 	fi
@@ -871,7 +871,6 @@ ProcessQuery()
 	if [ "$exitcode" -eq "0" ] || [ "$exitcode" -eq "5" ]; then
 		if [ "$create_gallery" == "true" ]; then
 			BuildGallery
-
 			if [ "$?" -gt "0" ]; then
 				echo
 				echo "$(ShowAsFailed " !! unable to build thumbnail gallery")"
