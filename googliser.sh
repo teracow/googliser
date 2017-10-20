@@ -75,9 +75,6 @@ Init()
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
 	local script_details_plain="$script_file - $script_date PID:[$$]"
 
-	server="www.google.com"
-	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
-
 	# parameter defaults
 	images_required_default=25
 	parallel_limit_default=10
@@ -88,10 +85,11 @@ Init()
 	retries_default=3
 
 	# internals
-	script_starttime=$(date)
+	local script_starttime=$(date)
 	script_startseconds=$(date +%s)
+	server="www.google.com"
+	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
 	target_path_created=false
-	helpme=false
 	show_help_only=false
 	google_max=1000
 	parallel_max=40
@@ -180,7 +178,7 @@ Init()
 	DebugThis "? \$google_max" "$google_max"
 	DebugThis "? \$temp_path" "$temp_path"
 
-	IsReqProgAvail "wget" || exitcode=1
+	IsReqProgAvail "wget" || { exitcode=1; return 1 ;}
 
 	if [ "$create_gallery" == "true" ] && [ "$show_help_only" == "false" ]; then
 		IsReqProgAvail "montage" || { exitcode=1; return 1 ;}
@@ -379,6 +377,7 @@ DisplayHelp()
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
 	local sample_user_query="cows"
+
 	echo
 	if [ "$colour" == "true" ]; then
 		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
@@ -782,7 +781,7 @@ ProcessQuery()
 		DebugThis "! \$user_query" "unspecified"
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
 		exitcode=2
-		return
+		return 1
 	fi
 
 	echo " -> processing query: \"$user_query\""
@@ -815,7 +814,7 @@ ProcessQuery()
 		echo
 		echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
 		exitcode=3
-		return
+		return 1
 	fi
 
 	if [ "$exitcode" -eq "0" ]; then
@@ -827,7 +826,7 @@ ProcessQuery()
 			echo
 			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
 			exitcode=3
-			return
+			return 1
 		else
 			DebugThis "$ create output directory [$target_path]" "success!"
 			target_path_created=true
@@ -979,10 +978,10 @@ DownloadResultGroup_auto()
 	local link_index="$3"
 
 	# ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-	local search_type="&tbm=isch"		# seems to search for images
-	local search_language="&hl=en"		# seems to be language
-	local search_style="&site=imghp"	# seems to be result layout style
-	local search_match_type="&nfpr=1"	# seems to perform exact string search - does not show most likely match results or suggested search.
+	local search_type="&tbm=isch"		# search for images
+	local search_language="&hl=en"		# language
+	local search_style="&site=imghp"	# result layout style
+	local search_match_type="&nfpr=1"	# perform exact string search - does not show most likely match results or suggested search.
 
 	local run_pathfile="$results_run_count_path/$link_index"
 	local success_pathfile="$results_success_count_path/$link_index"
@@ -1035,8 +1034,6 @@ DownloadImages()
 
 			# abort downloading if too many failures
 			if [ "$fail_count" -ge "$fail_limit" ]; then
-				DebugThis "! failure limit reached" "${fail_count}/${fail_limit}"
-
 				result=1
 
 				wait 2>/dev/null
@@ -1084,6 +1081,8 @@ DownloadImages()
 	fi
 
 	if [ "$result" -eq "1" ]; then
+		DebugThis "! failure limit reached" "${fail_count}/${fail_limit}"
+
 		if [ "$colour" == "true" ]; then
 			echo "$(ColourTextBrightRed "Too many failures!")"
 		else
