@@ -69,7 +69,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-21"
+	local script_date="2017-10-24"
 	script_file="googliser.sh"
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -1160,8 +1160,6 @@ DownloadImage_auto()
 		# try to get file size from server
 		local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
 		DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
-
-		# for FreeBSD, maybe something like: 'fetch --no-verify-peer url' ???
 
 		response=$(eval "$downloader_server_response_cmd")
 		result=$?

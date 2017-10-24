@@ -40,7 +40,7 @@ These sample images have been scaled down for easier distribution.
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
-**googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS and FreeBSD. Some extra binaries are required though. Please advise of any issues.
+**googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS. Some extra binaries are required though. Please advise of any issues.
 
 Debian/Ubuntu:
 
@@ -49,10 +49,6 @@ Debian/Ubuntu:
 macOS:
 
     # brew install wget coreutils ghostscript gnu-sed gnu-getopt
-
-FreeBSD:
-
-    # pkg install bash getopt wget imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Usage
