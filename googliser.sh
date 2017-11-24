@@ -69,7 +69,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-10-29"
+	local script_date="2017-11-24"
 	script_file="googliser.sh"
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -135,15 +135,15 @@ Init()
 	DebugThis "? \$script_details" "$script_details_plain"
 	DebugThis "? \$user_parameters_raw" "$user_parameters_raw"
 
-	if [ "$verbose" == "true" ]; then
-		if [ "$colour" == "true" ]; then
+	if [[ $verbose = true ]]; then
+		if [[ $colour = true ]]; then
 			echo " $script_details_colour"
 		else
 			echo " $script_details_plain"
 		fi
 	fi
 
-	if [ "$show_help_only" == "true" ]; then
+	if [[ $show_help_only = true ]]; then
 		DisplayHelp
 		return 1
 	else
@@ -182,7 +182,7 @@ Init()
 
 	IsReqProgAvail "wget" || { exitcode=1; return 1 ;}
 
-	if [ "$create_gallery" == "true" ] && [ "$show_help_only" == "false" ]; then
+	if [[ $create_gallery = true ]] && [[ $show_help_only = false ]]; then
 		IsReqProgAvail "montage" || { exitcode=1; return 1 ;}
 		IsReqProgAvail "convert" || { exitcode=1; return 1 ;}
 	fi
@@ -215,22 +215,22 @@ BuildWorkPaths()
 	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
 
 	results_run_count_path="${temp_path}/results.running.count"
-	mkdir -p "${results_run_count_path}" || Flee
+	mkdir -p "$results_run_count_path" || Flee
 
 	results_success_count_path="${temp_path}/results.success.count"
-	mkdir -p "${results_success_count_path}" || Flee
+	mkdir -p "$results_success_count_path" || Flee
 
 	results_fail_count_path="${temp_path}/results.fail.count"
-	mkdir -p "${results_fail_count_path}" || Flee
+	mkdir -p "$results_fail_count_path" || Flee
 
 	download_run_count_path="${temp_path}/download.running.count"
-	mkdir -p "${download_run_count_path}" || Flee
+	mkdir -p "$download_run_count_path" || Flee
 
 	download_success_count_path="${temp_path}/download.success.count"
-	mkdir -p "${download_success_count_path}" || Flee
+	mkdir -p "$download_success_count_path" || Flee
 
 	download_fail_count_path="${temp_path}/download.fail.count"
-	mkdir -p "${download_fail_count_path}" || Flee
+	mkdir -p "$download_fail_count_path" || Flee
 
 	testimage_pathfile="${temp_path}/${test_file}"
 	results_pathfile="${temp_path}/results.page.html"
@@ -247,8 +247,8 @@ BuildWorkPaths()
 WhatAreMyOptions()
 	{
 
-	[ $user_parameters_result -ne 0 ] && { echo; exitcode=2; return 1 ;}
-	[ "$user_parameters" == " --" ] && { show_help_only=true; exitcode=2; return 1 ;}
+	[[ $user_parameters_result -ne 0 ]] && { echo; exitcode=2; return 1 ;}
+	[[ $user_parameters = " --" ]] && { show_help_only=true; exitcode=2; return 1 ;}
 
 	eval set -- "$user_parameters"
 
@@ -381,7 +381,7 @@ DisplayHelp()
 	local sample_user_query="cows"
 
 	echo
-	if [ "$colour" == "true" ]; then
+	if [[ $colour = true ]]; then
 		echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
 		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
 	else
@@ -390,7 +390,7 @@ DisplayHelp()
 	fi
 
 	echo
-	echo " search '${message}', download from each of the image URLs, then create a gallery image using ImageMagick."
+	echo " search '$message', download from each of the image URLs, then create a gallery image using ImageMagick."
 	echo
 	echo " External requirements: Wget"
 	echo " and optionally: identify, montage & convert (from ImageMagick)"
@@ -400,7 +400,7 @@ DisplayHelp()
 	echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
 	echo
 
-	if [ "$colour" == "true" ]; then
+	if [[ $colour = true ]]; then
 		echo " $(ColourTextBrightOrange "* Required *")"
 	else
 		echo " * Required *"
@@ -464,14 +464,14 @@ DisplayHelp()
 	echo
 	echo " Example:"
 
-	if [ "$colour" == "true" ]; then
-		echo "$(ColourTextBrightWhite " $ ./$script_file -p \"${sample_user_query}\"")"
+	if [[ $colour = true ]]; then
+		echo "$(ColourTextBrightWhite " $ ./$script_file -p '$sample_user_query'")"
 	else
-		echo " $ ./$script_file -p '${sample_user_query}'"
+		echo " $ ./$script_file -p '$sample_user_query'"
 	fi
 
 	echo
-	echo " This will download the first $images_required_default available images for the phrase '${sample_user_query}' and build them into a gallery image."
+	echo " This will download the first $images_required_default available images for the phrase '$sample_user_query' and build them into a gallery image."
 
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
 
@@ -482,7 +482,7 @@ ValidateParameters()
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
-	if [ "$create_gallery" == "false" ] && [ "$remove_after" == "true" ] && [ "$links_only" == "false" ]; then
+	if [[ $create_gallery = false ]] && [[ $remove_after = true ]] && [[ $links_only = false ]]; then
 		echo
 		echo " Hmmm, so you've requested:"
 		echo " 1. don't create a gallery,"
@@ -493,7 +493,7 @@ ValidateParameters()
 		return 1
 	fi
 
-	if [ "$lightning" == "true" ]; then
+	if [[ $lightning = true ]]; then
 		# Yeah!
 		timeout=1
 		retries=0
@@ -504,13 +504,13 @@ ValidateParameters()
 		user_fail_limit=0
 	fi
 
-	if [ "$links_only" == "true" ]; then
+	if [[ $links_only = true ]]; then
 		create_gallery=false
 		save_links=true
 		user_fail_limit=0
 	fi
 
-	if [ "$condensed_gallery" == "true" ]; then
+	if [[ $condensed_gallery = true ]]; then
 		create_gallery=true
 	fi
 
@@ -523,20 +523,20 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $images_required -lt 1 ]; then
+			if [[ $images_required -lt 1 ]]; then
 				images_required=1
 				DebugThis "~ \$images_required too low so set sensible minimum" "$images_required"
 			fi
 
-			if [ $images_required -gt $google_max ]; then
+			if [[ $images_required -gt $google_max ]]; then
 				images_required=$google_max
 				DebugThis "~ \$images_required too high so set as \$google_max" "$images_required"
 			fi
 			;;
 	esac
 
-	if [ "$input_pathfile" ]; then
-		if [ ! -e "$input_pathfile" ]; then
+	if [[ -n $input_pathfile ]]; then
+		if [[ ! -e $input_pathfile ]]; then
 			DebugThis "! \$input_pathfile" "not found"
 			echo
 			echo "$(ShowAsFailed " !! input file  (-i, --input) was not found")"
@@ -554,12 +554,12 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $user_fail_limit -le 0 ]; then
+			if [[ $user_fail_limit -le 0 ]]; then
 				user_fail_limit=$google_max
 				DebugThis "~ \$user_fail_limit too low so set as \$google_max" "$user_fail_limit"
 			fi
 
-			if [ $user_fail_limit -gt $google_max ]; then
+			if [[ $user_fail_limit -gt $google_max ]]; then
 				user_fail_limit=$google_max
 				DebugThis "~ \$user_fail_limit too high so set as \$google_max" "$user_fail_limit"
 			fi
@@ -575,12 +575,12 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $parallel_limit -lt 1 ]; then
+			if [[ $parallel_limit -lt 1 ]]; then
 				parallel_limit=1
 				DebugThis "~ \$parallel_limit too low so set as" "$parallel_limit"
 			fi
 
-			if [ $parallel_limit -gt $parallel_max ]; then
+			if [[ $parallel_limit -gt $parallel_max ]]; then
 				parallel_limit=$parallel_max
 				DebugThis "~ \$parallel_limit too high so set as" "$parallel_limit"
 			fi
@@ -596,12 +596,12 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $timeout -lt 1 ]; then
+			if [[ $timeout -lt 1 ]]; then
 				timeout=1
 				DebugThis "~ \$timeout too low so set as" "$timeout"
 			fi
 
-			if [ $timeout -gt $timeout_max ]; then
+			if [[ $timeout -gt $timeout_max ]]; then
 				timeout=$timeout_max
 				DebugThis "~ \$timeout too high so set as" "$timeout"
 			fi
@@ -617,12 +617,12 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $retries -lt 1 ]; then
+			if [[ $retries -lt 1 ]]; then
 				retries=1
 				DebugThis "~ \$retries too low so set as" "$retries"
 			fi
 
-			if [ $retries -gt $retries_max ]; then
+			if [[ $retries -gt $retries_max ]]; then
 				retries=$retries_max
 				DebugThis "~ \$retries too high so set as" "$retries"
 			fi
@@ -638,7 +638,7 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $upper_size_limit -lt 0 ]; then
+			if [[ $upper_size_limit -lt 0 ]]; then
 				upper_size_limit=0
 				DebugThis "~ \$upper_size_limit too small so set as" "$upper_size_limit (unlimited)"
 			fi
@@ -654,25 +654,25 @@ ValidateParameters()
 			return 1
 			;;
 		*)
-			if [ $lower_size_limit -lt 0 ]; then
+			if [[ $lower_size_limit -lt 0 ]]; then
 				lower_size_limit=0
 				DebugThis "~ \$lower_size_limit too small so set as" "$lower_size_limit"
 			fi
 
-			if [ $upper_size_limit -gt 0 ] && [ $lower_size_limit -gt $upper_size_limit ]; then
+			if [[ $upper_size_limit -gt 0 ]] && [[ $lower_size_limit -gt $upper_size_limit ]]; then
 				lower_size_limit=$(($upper_size_limit-1))
 				DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
 			fi
 			;;
 	esac
 
-	if [ $max_results_required -lt $(($images_required+$user_fail_limit)) ]; then
+	if [[ $max_results_required -lt $(($images_required+$user_fail_limit)) ]]; then
 		max_results_required=$(($images_required+$user_fail_limit))
 		DebugThis "~ \$max_results_required too low so set as \$images_required + \$user_fail_limit" "$max_results_required"
 	fi
 
 	dimensions_search=""
-	if [ "$dimensions" ]; then
+	if [[ -n $dimensions ]]; then
 		# parse dimensions strings like '1920x1080' or '1920' or 'x1080'
 		echo "dimensions: [$dimensions]"
 
@@ -696,13 +696,13 @@ ValidateParameters()
 		return 1
 	fi
 
-	if [ "$dimensions" ] && [ "$min_pixels" ]; then
+	if [[ -n $dimensions ]] && [[ -n $min_pixels ]]; then
 		min_pixels=""
 		DebugThis "~ \$dimensions was specified so cleared \$min_pixels"
 	fi
 
 	min_pixels_search=""
-	if [ "$min_pixels" ]; then
+	if [[ -n $min_pixels ]]; then
 		case "$min_pixels" in
 			qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
 				min_pixels_search="isz:lt,islt:${min_pixels}"
@@ -726,7 +726,7 @@ ValidateParameters()
 	fi
 
 	aspect_ratio_search=""
-	if [ "$aspect_ratio" ]; then
+	if [[ -n $aspect_ratio ]]; then
 		case "$aspect_ratio" in
 			tall)
 				ar_type="t"
@@ -747,11 +747,11 @@ ValidateParameters()
 				return 1
 				;;
 		esac
-		[ "$ar_type" ] && aspect_ratio_search="iar:${ar_type}"
+		[[ -n $ar_type ]] && aspect_ratio_search="iar:${ar_type}"
 	fi
 
 	image_type_search=""
-	if [ "$image_type" ]; then
+	if [[ -n $image_type ]]; then
 		case "$image_type" in
 			face|photo|clipart|lineart|animated)
 				image_type_search="itp:${image_type}"
@@ -765,7 +765,7 @@ ValidateParameters()
 		esac
 	fi
 
-	if [ "$min_pixels_search" ] || [ "$aspect_ratio_search" ] || [ "$image_type_search" ]; then
+	if [[ -n $min_pixels_search ]] || [[ -n $aspect_ratio_search ]] || [[ -n $image_type_search ]]; then
 		advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
 	fi
 
@@ -781,7 +781,7 @@ ProcessQuery()
 	echo
 
 	# some last-minute parameter validation - needed when reading phrases from text file
-	if [ ! "$user_query" ]; then
+	if [[ ! $user_query ]]; then
 		DebugThis "! \$user_query" "unspecified"
 		echo "$(ShowAsFailed " !! search phrase (-p, --phrase) was unspecified")"
 		exitcode=2
@@ -793,12 +793,12 @@ ProcessQuery()
 	safe_query="$(echo $user_query | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
 	DebugThis "? \$safe_query" "$safe_query"
 
-	if [ -z "$output_path" ]; then
+	if [[ -z $output_path ]]; then
 		target_path="${current_path}/${safe_query}"
 	else
 		safe_path="$(echo $output_path | tr ' ' '_')"	# replace whitepace with '_' so less issues later on!
 		DebugThis "? \$safe_path" "$safe_path"
-		if [ ! -z "$input_pathfile" ]; then
+		if [[ ! -z $input_pathfile ]]; then
 			target_path="${safe_path}/${safe_query}"
 		else
 			target_path="$safe_path"
@@ -807,14 +807,14 @@ ProcessQuery()
 
 	DebugThis "? \$target_path" "$target_path"
 
-	if [ $exitcode -eq 0 ] && [ ! "$gallery_title" ]; then
+	if [[ $exitcode -eq 0 ]] && [[ ! $gallery_title ]]; then
 		gallery_title=$user_query
 		DebugThis "~ \$gallery_title was unspecified so set as" "$gallery_title"
 	fi
 
 	# create directory for search phrase
-	if [ -e "$target_path" ]; then
-		if [ $($CMD_LS -1 "$target_path" | wc -l) -gt 0 ]; then
+	if [[ -e $target_path ]]; then
+		if [[ $($CMD_LS -1 $target_path | wc -l) -gt 0 ]]; then
 			DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
 			echo
 			echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
@@ -824,7 +824,7 @@ ProcessQuery()
 	else
 		mkdir -p "$target_path"
 		result=$?
-		if [ $result -gt 0 ]; then
+		if [[ $result -gt 0 ]]; then
 			DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
 			echo
 			echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
@@ -838,61 +838,61 @@ ProcessQuery()
 
 	# download search results pages
 	DownloadResultGroups
-	if [ $? -gt 0 ]; then
+	if [[ $? -gt 0 ]]; then
 		echo "$(ShowAsFailed " !! couldn't download Google search results")"
 		exitcode=4
 		return 1
 	else
 		fail_limit=$user_fail_limit
-		if [ $fail_limit -gt $result_count ]; then
+		if [[ $fail_limit -gt $result_count ]]; then
 			fail_limit=$result_count
 			DebugThis "~ \$fail_limit too high so set as \$result_count" "$fail_limit"
 		fi
 
-		if [ $images_required -gt $result_count ]; then
+		if [[ $images_required -gt $result_count ]]; then
 			images_required=$result_count
 			DebugThis "~ \$images_required too high so set as \$result_count" "$result_count"
 		fi
 	fi
 
-	if [ $result_count -eq 0 ]; then
+	if [[ $result_count -eq 0 ]]; then
 		DebugThis "= zero results returned?" "Oops..."
 		exitcode=4
 		return 1
 	fi
 
 	# download images
-	if [ $exitcode -eq 0 ]; then
-		if [ $links_only == "false" ]; then
+	if [[ $exitcode -eq 0 ]]; then
+		if [[ $links_only = false ]]; then
 			DownloadImages
-			[ $? -gt 0 ] && exitcode=5
+			[[ $? -gt 0 ]] && exitcode=5
 		fi
 	fi
 
 	# build thumbnail gallery even if fail_limit was reached
-	if [ $exitcode -eq 0 ] || [ $exitcode -eq 5 ]; then
-		if [ "$create_gallery" == "true" ]; then
+	if [[ $exitcode -eq 0 ]] || [[ $exitcode -eq 5 ]]; then
+		if [[ $create_gallery = true ]]; then
 			BuildGallery
-			if [ $? -gt 0 ]; then
+			if [[ $? -gt 0 ]]; then
 				echo
 				echo "$(ShowAsFailed " !! unable to build thumbnail gallery")"
 				exitcode=6
 			else
-				if [ "$remove_after" == "true" ]; then
+				if [[ $remove_after = true ]]; then
 					rm -f "${target_path}/${image_file_prefix}"*
-					DebugThis "= remove all downloaded images from" "[${target_path}]"
+					DebugThis "= remove all downloaded images from" "[$target_path]"
 				fi
 			fi
 		fi
 	fi
 
 	# copy links file into target directory if possible. If not, then copy to current directory.
-	if [ $exitcode -eq 0 ]; then
-		if [ "$save_links" == "true" ]; then
-			if [ "$target_path_created" == "true" ]; then
-				cp -f "${imagelinks_pathfile}" "${target_path}/${imagelinks_file}"
+	if [[ $exitcode -eq 0 ]]; then
+		if [[ $save_links = true ]]; then
+			if [[ $target_path_created = true ]]; then
+				cp -f "$imagelinks_pathfile" "${target_path}/${imagelinks_file}"
 			else
-				cp -f "${imagelinks_pathfile}" "${current_path}/${imagelinks_file}"
+				cp -f "$imagelinks_pathfile" "${current_path}/${imagelinks_file}"
 			fi
 		fi
 	fi
@@ -916,8 +916,8 @@ DownloadResultGroups()
 	InitProgress
 	InitResultsCounts
 
-	if [ "$verbose" == "true" ]; then
-		if [ "$colour" == "true" ]; then
+	if [[ $verbose = true ]]; then
+		if [[ $colour = true ]]; then
 			echo -n " -> searching $(ShowGoogle): "
 		else
 			echo -n " -> searching Google: "
@@ -926,7 +926,7 @@ DownloadResultGroups()
 
 	for ((group=1; group<=$groups_max; group++)); do
 		# wait here until a download slot becomes available
-		while [ $parallel_count -eq $parallel_limit ]; do
+		while [[ $parallel_count -eq $parallel_limit ]]; do
 			sleep 0.5
 
 			RefreshResultsCounts
@@ -943,7 +943,7 @@ DownloadResultGroups()
 		RefreshResultsCounts
 		ShowResultDownloadProgress
 
-		[ $(($group*100)) -gt $max_results_required ] && break
+		[[ $(($group*100)) -gt $max_results_required ]] && break
 	done
 
 	# wait here while all running downloads finish
@@ -953,11 +953,11 @@ DownloadResultGroups()
 	ShowResultDownloadProgress
 
 	# build all groups into a single file
-	cat "${results_pathfile}".* > "${results_pathfile}"
+	cat "$results_pathfile".* > "$results_pathfile"
 
 	ParseResults
 
-	[ $fail_count -gt 0 ] && result=1 || result=0
+	[[ $fail_count -gt 0 ]] && result=1 || result=0
 
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
@@ -999,7 +999,7 @@ DownloadResultGroup_auto()
 	response=$(eval "$downloader_results_get_cmd")
 	result=$?
 
-	if [ $result -eq 0 ]; then
+	if [[ $result -eq 0 ]]; then
 		DebugThis "$ result group ($link_index) download" "success!"
 		mv "$run_pathfile" "$success_pathfile"
 	else
@@ -1025,7 +1025,7 @@ DownloadImages()
 	local fail_count=0
 	local imagelink=""
 
-	[ "$verbose" == "true" ] && echo -n " -> acquiring images: "
+	[[ $verbose = true ]] && echo -n " -> acquiring images: "
 
 	InitProgress
 	InitDownloadsCounts
@@ -1036,7 +1036,7 @@ DownloadImages()
 			ShowImageDownloadProgress
 
 			# abort downloading if too many failures
-			if [ $fail_count -ge $fail_limit ]; then
+			if [[ $fail_count -ge $fail_limit ]]; then
 				result=1
 
 				wait 2>/dev/null
@@ -1045,16 +1045,16 @@ DownloadImages()
 			fi
 
 			# wait here until a download slot becomes available
-			while [ $parallel_count -eq $parallel_limit ]; do
+			while [[ $parallel_count -eq $parallel_limit ]]; do
 				sleep 0.5
 
 				RefreshDownloadCounts
 			done
 
 			# have enough images now so exit loop
-			[ $success_count -eq $images_required ] &&	break 2
+			[[ $success_count -eq $images_required ]] &&	break 2
 
-			if [ $(($success_count+$parallel_count)) -lt $images_required ]; then
+			if [[ $(($success_count+$parallel_count)) -lt $images_required ]]; then
 				((result_index++))
 				local link_index=$(printf "%04d" $result_index)
 
@@ -1065,37 +1065,37 @@ DownloadImages()
 				break
 			fi
 		done
-	done < "${imagelinks_pathfile}"
+	done < "$imagelinks_pathfile"
 
 	wait 2>/dev/null
 
 	RefreshDownloadCounts
 	ShowImageDownloadProgress
 
-	if [ $fail_count -gt 0 ]; then
+	if [[ $fail_count -gt 0 ]]; then
 		# derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
 		percent="$((200*($fail_count)/($success_count+$fail_count) % 2 + 100*($fail_count)/($success_count+$fail_count)))%"
 
-		if [ "$colour" == "true" ]; then
+		if [[ $colour = true ]]; then
 			echo -n "($(ColourTextBrightRed "$percent")) "
 		else
 			echo -n "($percent) "
 		fi
 	fi
 
-	if [ $result -eq 1 ]; then
+	if [[ $result -eq 1 ]]; then
 		DebugThis "! failure limit reached" "${fail_count}/${fail_limit}"
 
-		if [ "$colour" == "true" ]; then
+		if [[ $colour = true ]]; then
 			echo "$(ColourTextBrightRed "Too many failures!")"
 		else
 			echo "Too many failures!"
 		fi
 	else
-		if [ $result_index -eq $result_count ]; then
+		if [[ $result_index -eq $result_count ]]; then
 			DebugThis "! ran out of images to download!" "${result_index}/${result_count}"
 
-			if [ "$colour" == "true" ]; then
+			if [[ $colour = true ]]; then
 				echo "$(ColourTextBrightRed "Ran out of images to download!")"
 			else
 				echo "Ran out of images to download!"
@@ -1103,11 +1103,11 @@ DownloadImages()
 
 			result=1
 		else
-			[ "$verbose" == "true" ] && echo
+			[[ $verbose = true ]] && echo
 		fi
 	fi
 
-	if [ $result -ne 1 ]; then
+	if [[ $result -ne 1 ]]; then
 		download_bytes="$($CMD_DU "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
 		DebugThis "= downloaded bytes" "$(DisplayThousands "$download_bytes")"
 
@@ -1156,37 +1156,37 @@ DownloadImage_auto()
 	local targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
 
 	# are file size limits going to be applied before download?
-	if [ $upper_size_limit -gt 0 ] || [ $lower_size_limit -gt 0 ]; then
+	if [[ $upper_size_limit -gt 0 ]] || [[ $lower_size_limit -gt 0 ]]; then
 		# try to get file size from server
-		local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${testimage_pathfileext}\" \"$1\" 2>&1"
+		local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$retries --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
 		DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
 
 		response=$(eval "$downloader_server_response_cmd")
 		result=$?
 
-		if [ $result -eq 0 ]; then
+		if [[ $result -eq 0 ]]; then
 			estimated_size=$(grep "Content-Length:" <<< "$response" | $CMD_SED 's|^.*: ||' )
 
-			if [ -z "$estimated_size" ] || [ "$estimated_size" == "unspecified" ]; then
+			if [[ -z $estimated_size ]] || [[ $estimated_size = unspecified ]]; then
 				estimated_size="unknown"
 			fi
 
 			DebugThis "? link ($link_index) \$estimated_size" "$estimated_size bytes"
 
-			if [ "$estimated_size" != "unknown" ]; then
-				if [ $estimated_size -lt $lower_size_limit ]; then
+			if [[ $estimated_size != unknown ]]; then
+				if [[ $estimated_size -lt $lower_size_limit ]]; then
 					DebugThis "! link ($link_index) (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 
-				if [ $upper_size_limit -gt 0 ] && [ $estimated_size -gt $upper_size_limit ]; then
+				if [[ $upper_size_limit -gt 0 ]] && [[ $estimated_size -gt $upper_size_limit ]]; then
 					DebugThis "! link ($link_index) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
 					size_ok=false
 					get_download=false
 				fi
 			else
-				if [ "$skip_no_size" == "true" ]; then
+				if [[ $skip_no_size = true ]]; then
 					DebugThis "! link ($link_index) unknown image size so" "failed!"
 					get_download=false
 				fi
@@ -1198,33 +1198,33 @@ DownloadImage_auto()
 	fi
 
 	# perform actual image download
-	if [ "$get_download" == "true" ]; then
-		local downloader_get_cmd="wget --max-redirect 0 --timeout=${timeout} --tries=${retries} --user-agent \"$useragent\" --output-document \"${targetimage_pathfileext}\" \"$1\" 2>&1"
+	if [[ $get_download = true ]]; then
+		local downloader_get_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$retries --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
 		DebugThis "? link ($link_index) \$downloader_get_cmd" "$downloader_get_cmd"
 
 		response=$(eval "$downloader_get_cmd")
 		result=$?
 
-		if [ $result -eq 0 ]; then
+		if [[ $result -eq 0 ]]; then
 			# http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
 			download_speed=$(grep -o '\([0-9.]\+ [KM]B/s\)' <<< "$response")
 
-			if [ -e "${targetimage_pathfileext}" ]; then
+			if [[ -e $targetimage_pathfileext ]]; then
 				actual_size=$(wc -c < "$targetimage_pathfileext")
 
-				if [ "$actual_size" == "$estimated_size" ]; then
+				if [[ $actual_size = $estimated_size ]]; then
 					DebugThis "? link ($link_index) \$actual_size" "$actual_size bytes (estimate was correct)"
 				else
 					DebugThis "? link ($link_index) \$actual_size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
 				fi
 
-				if [ $actual_size -lt $lower_size_limit ]; then
+				if [[ $actual_size -lt $lower_size_limit ]]; then
 					DebugThis "! link ($link_index) \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
 				fi
 
-				if [ $upper_size_limit -gt 0 ] && [ $actual_size -gt $upper_size_limit ]; then
+				if [[ $upper_size_limit -gt 0 ]] && [[ $actual_size -gt $upper_size_limit ]]; then
 					DebugThis "! link ($link_index) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
 					rm -f "$targetimage_pathfileext"
 					size_ok=false
@@ -1234,10 +1234,10 @@ DownloadImage_auto()
 				size_ok=false
 			fi
 
-			if [ "$size_ok" == "true" ]; then
+			if [[ $size_ok = true ]]; then
 				RenameExtAsType "$targetimage_pathfileext"
 
-				if [ $? -eq 0 ]; then
+				if [[ $? -eq 0 ]]; then
 					mv "$run_pathfile" "$success_pathfile"
 					DebugThis "$ link ($link_index) image type validation" "success!"
 					DebugThis "$ link ($link_index) download" "success!"
@@ -1254,7 +1254,7 @@ DownloadImage_auto()
 			DebugThis "! link ($link_index) download" "failed! downloader returned $result ($(WgetReturnCodes "$result"))"
 
 			# delete temp file if one was created
-			[ -e "${targetimage_pathfileext}" ] && rm -f "${targetimage_pathfileext}"
+			[[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
 		fi
 	else
 		mv "$run_pathfile" "$fail_pathfile"
@@ -1273,20 +1273,20 @@ ParseResults()
 
 	PageScraper
 
-	if [ -e "$imagelinks_pathfile" ]; then
+	if [[ -e $imagelinks_pathfile ]]; then
 		# check against allowable file types
-		while read imagelink ; do
+		while read imagelink; do
 			AllowableFileType "$imagelink"
-			[ $? -eq 0 ] && echo "$imagelink" >> "$imagelinks_pathfile".tmp
-		done < "${imagelinks_pathfile}"
+			[[ $? -eq 0 ]] && echo "$imagelink" >> "${imagelinks_pathfile}.tmp"
+		done < "$imagelinks_pathfile"
 
-		[ -e "$imagelinks_pathfile".tmp ] && mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+		[[ -e "${imagelinks_pathfile}.tmp" ]] && mv "${imagelinks_pathfile}.tmp" "$imagelinks_pathfile"
 
 		# get link count
-		result_count=$(wc -l < "${imagelinks_pathfile}")
+		result_count=$(wc -l < "$imagelinks_pathfile")
 
 		# if too many results then trim
-		if [ $result_count -gt $max_results_required ]; then
+		if [[ $result_count -gt $max_results_required ]]; then
 			DebugThis "! received more results than required" "$result_count/$max_results_required"
 
 			$CMD_HEAD --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
@@ -1297,25 +1297,25 @@ ParseResults()
 		fi
 	fi
 
-	if [ "$verbose" == "true" ]; then
-		if [ $result_count -gt 0 ]; then
-			if [ "$colour" == "true" ]; then
-				if [ $result_count -ge $(($max_results_required)) ]; then
-					echo "$(ColourTextBrightGreen "${result_count}") results!"
+	if [[ $verbose = true ]]; then
+		if [[ $result_count -gt 0 ]]; then
+			if [[ $colour = true ]]; then
+				if [[ $result_count -ge $(($max_results_required)) ]]; then
+					echo "$(ColourTextBrightGreen "$result_count") results!"
 				fi
 
-				if [ $result_count -ge $images_required ] && [ $result_count -lt $(($max_results_required)) ]; then
-					echo "$(ColourTextBrightOrange "${result_count}") results!"
+				if [[ $result_count -ge $images_required ]] && [[ $result_count -lt $(($max_results_required)) ]]; then
+					echo "$(ColourTextBrightOrange "$result_count") results!"
 				fi
 
-				if [ $result_count -lt $images_required ]; then
-					echo "$(ColourTextBrightRed "${result_count}") results!"
+				if [[ $result_count -lt $images_required ]]; then
+					echo "$(ColourTextBrightRed "$result_count") results!"
 				fi
 			else
-				echo "${result_count} results!"
+				echo "$result_count results!"
 			fi
 		else
-			if [ "$colour" == "true" ]; then
+			if [[ $colour = true ]]; then
 				echo "$(ColourTextBrightRed "No results!")"
 			else
 				echo "No results!"
@@ -1338,23 +1338,23 @@ BuildGallery()
 
 	InitProgress
 
-	if [ "$verbose" == "true" ]; then
+	if [[ $verbose = true ]]; then
 		echo -n " -> building gallery: "
 
-		if [ "$colour" == "true" ]; then
+		if [[ $colour = true ]]; then
 			progress_message="$(ColourTextBrightOrange "stage 1/4")"
 		else
 			progress_message="stage 1/4"
 		fi
 
 		progress_message+=" (construct thumbnails)"
-		ProgressUpdater "${progress_message}"
+		ProgressUpdater "$progress_message"
 	fi
 
-	if [ "$condensed_gallery" == "true" ]; then
-		build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+	if [[ $condensed_gallery = true ]]; then
+		build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
 	else
-		build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"${gallery_thumbnails_pathfile}\""
+		build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
 	fi
 
 	DebugThis "? \$build_foreground_cmd" "$build_foreground_cmd"
@@ -1362,105 +1362,105 @@ BuildGallery()
 	eval $build_foreground_cmd 2> /dev/null
 	result=$?
 
-	if [ $result -eq 0 ]; then
+	if [[ $result -eq 0 ]]; then
 		DebugThis "$ \$build_foreground_cmd" "success!"
 	else
 		DebugThis "! \$build_foreground_cmd" "failed! montage returned: ($result)"
 	fi
 
-	if [ $result -eq 0 ]; then
-		if [ "$verbose" == "true" ]; then
-			if [ "$colour" == "true" ]; then
+	if [[ $result -eq 0 ]]; then
+		if [[ $verbose = true ]]; then
+			if [[ $colour = true ]]; then
 				progress_message="$(ColourTextBrightOrange "stage 2/4")"
 			else
 				progress_message="stage 2/4"
 			fi
 
 			progress_message+=" (draw background pattern)"
-			ProgressUpdater "${progress_message}"
+			ProgressUpdater "$progress_message"
 		fi
 
 		# get image dimensions
-		read -r width height <<< $(convert -ping "${gallery_thumbnails_pathfile}" -format "%w %h" info:)
+		read -r width height <<< $(convert -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
 
 		# create a dark image with light sphere in centre
-		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"${gallery_background_pathfile}\""
+		build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
 
 		DebugThis "? \$build_background_cmd" "$build_background_cmd"
 
 		eval $build_background_cmd 2> /dev/null
 		result=$?
 
-		if [ $result -eq 0 ]; then
+		if [[ $result -eq 0 ]]; then
 			DebugThis "$ \$build_background_cmd" "success!"
 		else
 			DebugThis "! \$build_background_cmd" "failed! convert returned: ($result)"
 		fi
 	fi
 
-	if [ $result -eq 0 ]; then
-		if [ "$verbose" == "true" ]; then
-			if [ "$colour" == "true" ]; then
+	if [[ $result -eq 0 ]]; then
+		if [[ $verbose = true ]]; then
+			if [[ $colour = true ]]; then
 				progress_message="$(ColourTextBrightOrange "stage 3/4")"
 			else
 				progress_message="stage 3/4"
 			fi
 
 			progress_message+=" (draw title text image)"
-			ProgressUpdater "${progress_message}"
+			ProgressUpdater "$progress_message"
 		fi
 
 		# create title image
 		# let's try a fixed height of 100 pixels
-		build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ ${gallery_title}\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ ${gallery_title}\\ \" -flatten \"${gallery_title_pathfile}\""
+		build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
 		DebugThis "? \$build_title_cmd" "$build_title_cmd"
 
 		eval $build_title_cmd 2> /dev/null
 		result=$?
 
-		if [ $result -eq 0 ]; then
+		if [[ $result -eq 0 ]]; then
 			DebugThis "$ \$build_title_cmd" "success!"
 		else
 			DebugThis "! \$build_title_cmd" "failed! convert returned: ($result)"
 		fi
 	fi
 
-	if [ $result -eq 0 ]; then
-		if [ "$verbose" == "true" ]; then
-			if [ "$colour" == "true" ]; then
+	if [[ $result -eq 0 ]]; then
+		if [[ $verbose = true ]]; then
+			if [[ $colour = true ]]; then
 				progress_message="$(ColourTextBrightOrange "stage 4/4")"
 			else
 				progress_message="stage 4/4"
 			fi
 
 			progress_message+=" (compile all images)"
-			ProgressUpdater "${progress_message}"
+			ProgressUpdater "$progress_message"
 		fi
 
 		# compose thumbnails image on background image, then title image on top
-		build_compose_cmd="convert \"${gallery_background_pathfile}\" \"${gallery_thumbnails_pathfile}\" -gravity center -composite \"${gallery_title_pathfile}\" -gravity north -geometry +0+40 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+		build_compose_cmd="convert \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center -composite \"$gallery_title_pathfile\" -gravity north -geometry +0+40 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
 		DebugThis "? \$build_compose_cmd" "$build_compose_cmd"
 
 		eval $build_compose_cmd 2> /dev/null
 		result=$?
 
-		if [ $result -eq 0 ]; then
+		if [[ $result -eq 0 ]]; then
 			DebugThis "$ \$build_compose_cmd" "success!"
 		else
 			DebugThis "! \$build_compose_cmd" "failed! convert returned: ($result)"
 		fi
 	fi
 
-	[ -e "${gallery_title_pathfile}" ] && rm -f "${gallery_title_pathfile}"
-	[ -e "${gallery_thumbnails_pathfile}" ] && rm -f "${gallery_thumbnails_pathfile}"
-	[ -e "${gallery_background_pathfile}" ] && rm -f "${gallery_background_pathfile}"
+	[[ -e $gallery_title_pathfile ]] && rm -f "$gallery_title_pathfile"
+	[[ -e $gallery_thumbnails_pathfile ]] && rm -f "$gallery_thumbnails_pathfile"
+	[[ -e $gallery_background_pathfile ]] && rm -f "$gallery_background_pathfile"
 
-	if [ $result -eq 0 ]; then
+	if [[ $result -eq 0 ]]; then
 		DebugThis "$ [${FUNCNAME[0]}]" "success!"
-		if [ "$verbose" == "true" ]; then
-			if [ "$colour" == "true" ]; then
+		if [[ $verbose = true ]]; then
+			if [[ $colour = true ]]; then
 				ProgressUpdater "$(ColourTextBrightGreen "done!")"
 			else
 				ProgressUpdater "done!"
@@ -1469,14 +1469,14 @@ BuildGallery()
 	else
 		DebugThis "! [${FUNCNAME[0]}]" "failed! See previous!"
 
-		if [ "$colour" == "true" ]; then
+		if [[ $colour = true ]]; then
 			ProgressUpdater "$(ColourTextBrightRed "failed!")"
 		else
 			ProgressUpdater "failed!"
 		fi
 	fi
 
-	[ "$verbose" == "true" ] && echo
+	[[ $verbose = true ]] && echo
 
 	DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
 	DebugThis "/ [${FUNCNAME[0]}]" "exit"
@@ -1493,26 +1493,26 @@ Finish()
 	DebugThis "< finished" "$(date)"
 
 	# copy debug file into target directory if possible. If not, then copy to current directory.
-	if [ "$debug" == "true" ]; then
-		if [ "$target_path_created" == "true" ]; then
-			[ -e "${target_path}/${debug_file}" ] && echo "" >> "${target_path}/${debug_file}"
-			cp -f "${debug_pathfile}" "${target_path}/${debug_file}"
+	if [[ $debug = true ]]; then
+		if [[ $target_path_created = true ]]; then
+			[[ -e ${target_path}/${debug_file} ]] && echo "" >> "${target_path}/${debug_file}"
+			cp -f "$debug_pathfile" "${target_path}/${debug_file}"
 		else
 			# append to current path debug file (if it exists)
-			[ -e "${current_path}/${debug_file}" ] && echo "" >> "${current_path}/${debug_file}"
-			cat "${debug_pathfile}" >> "${current_path}/${debug_file}"
+			[[ -e ${current_path}/${debug_file} ]] && echo "" >> "${current_path}/${debug_file}"
+			cat "$debug_pathfile" >> "${current_path}/${debug_file}"
 		fi
 	fi
 
 	# display end
-	if [ "$verbose" == "true" ]; then
+	if [[ $verbose = true ]]; then
 		case $exitcode in
 			0)
 				echo
 				echo " -> $(ShowAsSucceed "All done!")"
 				;;
 			[1-2])
-				if [ "$show_help_only" != "true" ]; then
+				if [[ $show_help_only != true ]]; then
 					echo
 					echo " use '-h' or '--help' to display parameter list."
 				fi
@@ -1526,7 +1526,7 @@ Finish()
 		esac
 	fi
 
-	[ "$show_help_only" == "true" ] && exitcode=0
+	[[ $show_help_only = true ]] && exitcode=0
 
 	}
 
@@ -1546,11 +1546,11 @@ ProgressUpdater()
 
 	# $1 = message to display
 
-	if [ "$1" != "$previous_msg" ]; then
+	if [[ $1 != $previous_msg ]]; then
 		temp=$(RemoveColourCodes "$1")
 		current_length=$((${#temp}+1))
 
-		if [ $current_length -lt $previous_length ]; then
+		if [[ $current_length -lt $previous_length ]]; then
 			appended_length=$(($current_length-$previous_length))
 			# backspace to start of previous msg, print new msg, add additional spaces, then backspace to end of msg
 			printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 " ; printf "%${appended_length}s" ; printf "%${appended_length}s" | tr ' ' '\b'
@@ -1570,9 +1570,9 @@ InitResultsCounts()
 
 	# clears the paths used to count the search result pages
 
-	[ -d "$results_run_count_path" ] && rm -f "$results_run_count_path"/*
-	[ -d "$results_success_count_path" ] && rm -f "$results_success_count_path"/*
-	[ -d "$results_fail_count_path" ] && rm -f "$results_fail_count_path"/*
+	[[ -d $results_run_count_path ]] && rm -f "$results_run_count_path"/*
+	[[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
+	[[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
 
 	}
 
@@ -1581,9 +1581,9 @@ InitDownloadsCounts()
 
 	# clears the paths used to count the downloaded images
 
-	[ -d "$download_run_count_path" ] && rm -f "$download_run_count_path"/*
-	[ -d "$download_success_count_path" ] && rm -f "$download_success_count_path"/*
-	[ -d "$dowload_fail_count_path" ] && rm -f "$download_fail_count_path"/*
+	[[ -d $download_run_count_path ]] && rm -f "$download_run_count_path"/*
+	[[ -d $download_success_count_path ]] && rm -f "$download_success_count_path"/*
+	[[ -d $dowload_fail_count_path ]] && rm -f "$download_fail_count_path"/*
 
 	}
 
@@ -1599,9 +1599,9 @@ RefreshResultsCounts()
 ShowResultDownloadProgress()
 	{
 
-	if [ "$verbose" == "true" ]; then
-		if [ "$colour" == "true" ]; then
-			if [ $success_count -eq $groups_max ]; then
+	if [[ $verbose = true ]]; then
+		if [[ $colour = true ]]; then
+			if [[ $success_count -eq $groups_max ]]; then
 				progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
 			else
 				progress_message="$(ColourTextBrightOrange "${success_count}/${groups_max}")"
@@ -1611,7 +1611,7 @@ ShowResultDownloadProgress()
 		fi
 
 		progress_message+=" result groups downloaded."
-		ProgressUpdater "${progress_message}"
+		ProgressUpdater "$progress_message"
 	fi
 
 	}
@@ -1628,9 +1628,9 @@ RefreshDownloadCounts()
 ShowImageDownloadProgress()
 	{
 
-	if [ "$verbose" == "true" ]; then
+	if [[ $verbose = true ]]; then
 		# number of image downloads that are OK
-		if [ "$colour" == "true" ]; then
+		if [[ $colour = true ]]; then
 			progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
 		else
 			progress_message="${success_count}/${images_required}"
@@ -1639,10 +1639,10 @@ ShowImageDownloadProgress()
 		progress_message+=" downloaded"
 
 		# show the number of files currently downloading (if any)
-		if [ $parallel_count -gt 0 ]; then
+		if [[ $parallel_count -gt 0 ]]; then
 			progress_message+=", "
 
-			if [ "$colour" == "true" ]; then
+			if [[ $colour = true ]]; then
 				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
 			else
 				progress_message+="${parallel_count}/${parallel_limit}"
@@ -1652,10 +1652,10 @@ ShowImageDownloadProgress()
 		fi
 
 		# include failures (if any)
-		if [ $fail_count -gt 0 ]; then
+		if [[ $fail_count -gt 0 ]]; then
 			progress_message+=" and "
 
-			if [ "$colour" == "true" ]; then
+			if [[ $colour = true ]]; then
 				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
 			else
 				progress_message+="${fail_count}/${fail_limit}"
@@ -1665,7 +1665,7 @@ ShowImageDownloadProgress()
 		fi
 
  		progress_message+="."
-		ProgressUpdater "${progress_message}"
+		ProgressUpdater "$progress_message"
 	fi
 
 	}
@@ -1715,9 +1715,9 @@ HelpParameterFormat()
 	# $2 = long parameter
 	# $3 = description
 
-	if [ ! -z "$1" ] && [ ! -z "$2" ]; then
+	if [[ ! -z $1 ]] && [[ ! -z $2 ]]; then
 		printf "  -%-1s, --%-15s %s\n" "$1" "$2" "$3"
-	elif [ -z "$1" ] && [ ! -z "$2" ]; then
+	elif [[ -z $1 ]] && [[ ! -z $2 ]]; then
 		printf "   %-1s  --%-15s %s\n" "" "$2" "$3"
 	else
 		printf "   %-1s    %-15s %s\n" "" "" "$3"
@@ -1734,24 +1734,24 @@ RenameExtAsType()
 
 	local returncode=0
 
-	if [ "$ident" == "true" ]; then
-		[ -z "$1" ] && returncode=1
-		[ ! -e "$1" ] && returncode=1
+	if [[ $ident = true ]]; then
+		[[ -z $1 ]] && returncode=1
+		[[ ! -e $1 ]] && returncode=1
 
-		if [ $returncode -eq 0 ]; then
+		if [[ $returncode -eq 0 ]]; then
 			rawtype=$(identify -format "%m" "$1")
 			returncode=$?
 		fi
 
-		if [ $returncode -eq 0 ]; then
+		if [[ $returncode -eq 0 ]]; then
 			# only want first 4 chars
 			imagetype="${rawtype:0:4}"
 
 			# exception to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
-			[ "$imagetype" == "GIFG" ] && imagetype="GIF"
+			[[ $imagetype = 'GIFG' ]] && imagetype="GIF"
 
 			# exception to handle identify's output for BMP i.e. "BMP3"
-			[ "$imagetype" == "BMP3" ] && imagetype="BMP"
+			[[ $imagetype = 'BMP3' ]] && imagetype="BMP"
 
 			case "$imagetype" in
 				JPEG|GIF|PNG|BMP|ICO)
@@ -1818,11 +1818,11 @@ PageScraper()
 	#
 	#---------------------------------------------------------------------------------------------------------------
 
-	cat "${results_pathfile}" \
+	cat "$results_pathfile" \
 	| $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
 	| grep '<div jsname=.*http' \
 	| $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
-	> "${imagelinks_pathfile}"
+	> "$imagelinks_pathfile"
 
 	}
 
@@ -1833,7 +1833,7 @@ CTRL_C_Captured()
 
 	echo
 
-	if [ "$colour" == "true" ]; then
+	if [[ $colour = true ]]; then
 		echo " -> $(ColourTextBrightRed "[SIGINT]") - let's cleanup now ..."
 	else
 		echo " -> [SIGINT] - let's cleanup now ..."
@@ -1845,7 +1845,7 @@ CTRL_C_Captured()
 
 	RefreshDownloadCounts
 
-	if [ $parallel_count -gt 0 ]; then
+	if [[ $parallel_count -gt 0 ]]; then
 		# remove any image files where processing by [DownloadImage_auto] was incomplete
   		for currentfile in $($CMD_LS -1 "$download_run_count_path"); do
 			rm -f "${target_path}/${image_file_prefix}($currentfile)".*
@@ -1868,7 +1868,7 @@ DebugThis()
 	# $1 = item
 	# $2 = value
 
-	echo "$1: '$2'" >> "${debug_pathfile}"
+	echo "$1: '$2'" >> "$debug_pathfile"
 
 	}
 
@@ -1982,7 +1982,7 @@ ShowAsFailed()
 
 	# $1 = message to show in colour if colour is set
 
-	if [ "$colour" == "true" ]; then
+	if [[ $colour = true ]]; then
 		echo -n "$(ColourTextBrightRed "$1")"
 	else
 		echo -n "$1"
@@ -1995,7 +1995,7 @@ ShowAsSucceed()
 
 	# $1 = message to show in colour if colour is set
 
-	if [ "$colour" == "true" ]; then
+	if [[ $colour = true ]]; then
 		echo -n "$(ColourTextBrightGreen "$1")"
 	else
 		echo -n "$1"
@@ -2064,13 +2064,13 @@ FirstPreferredFont()
 	local available_fonts=$(convert -list font | grep "Font:" | $CMD_SED 's| Font: ||')
 	local first_available_font=""
 
-	while read preferred_font ; do
-		while read available_font ; do
-			[ "$preferred_font" == "$available_font" ] && break 2
+	while read preferred_font; do
+		while read available_font; do
+			[[ $preferred_font = $available_font ]] && break 2
 		done <<< "$available_fonts"
 	done <<< "$preferred_fonts"
 
-	if [ ! -z "$preferred_font" ]; then
+	if [[ ! -z $preferred_font ]]; then
 		echo "$preferred_font"
 	else
 		# uncomment 2nd line down to return first installed font if no preferred fonts could be found.
@@ -2085,10 +2085,10 @@ FirstPreferredFont()
 
 Init
 
-if [ $exitcode -eq 0 ]; then
-	if [ ! -z "$input_pathfile" ]; then
+if [[ $exitcode -eq 0 ]]; then
+	if [[ ! -z $input_pathfile ]]; then
 		while read -r file_query; do
-			if [ -n "$file_query" ]; then
+			if [[ -n $file_query ]]; then
 				if [[ $file_query != \#* ]]; then
 					user_query="$file_query"
 					ProcessQuery
