@@ -47,18 +47,18 @@
 
 case "$OSTYPE" in
 	"darwin"*)
-		CMD_READLINK="greadlink"
-		CMD_HEAD="ghead"
-		CMD_SED="gsed"
-		CMD_DU="gdu"
-		CMD_LS="gls"
+		CMD_READLINK='greadlink'
+		CMD_HEAD='ghead'
+		CMD_SED='gsed'
+		CMD_DU='gdu'
+		CMD_LS='gls'
 		;;
 	*)
-		CMD_READLINK="readlink"
-		CMD_HEAD="head"
-		CMD_SED="sed"
-		CMD_DU="du"
-		CMD_LS="ls"
+		CMD_READLINK='readlink'
+		CMD_HEAD='head'
+		CMD_SED='sed'
+		CMD_DU='du'
+		CMD_LS='ls'
 		;;
 esac
 
@@ -69,8 +69,8 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date="2017-11-24"
-	script_file="googliser.sh"
+	local script_date='2017-11-25'
+	script_file='googliser.sh'
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
 	local script_details_plain="$script_file - $script_date PID:[$$]"
@@ -95,14 +95,14 @@ Init()
 	# internals
 	local script_starttime=$(date)
 	script_startseconds=$(date +%s)
-	server="www.google.com"
+	server='www.google.com'
 	useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
 	target_path_created=false
 	show_help_only=false
 	exitcode=0
 
 	# user changable parameters
-	user_query=""
+	user_query=''
 	images_required=$images_required_default
 	user_fail_limit=$fail_limit
 	parallel_limit=$parallel_limit_default
@@ -111,7 +111,7 @@ Init()
 	upper_size_limit=$upper_size_limit_default
 	lower_size_limit=$lower_size_limit_default
 	create_gallery=true
-	gallery_title=""
+	gallery_title=''
 	condensed_gallery=false
 	save_links=false
 	colour=false
@@ -120,13 +120,13 @@ Init()
 	skip_no_size=false
 	remove_after=false
 	lightning=false
-	min_pixels=""
-	aspect_ratio=""
-	image_type=""
-	input_pathfile=""
-	output_path=""
+	min_pixels=''
+	aspect_ratio=''
+	image_type=''
+	input_pathfile=''
+	output_path=''
 	links_only=false
-	dimensions=""
+	dimensions=''
 
 	BuildWorkPaths
 	WhatAreMyOptions
@@ -183,11 +183,11 @@ Init()
 	IsReqProgAvail "wget" || { exitcode=1; return 1 ;}
 
 	if [[ $create_gallery = true ]] && [[ $show_help_only = false ]]; then
-		IsReqProgAvail "montage" || { exitcode=1; return 1 ;}
-		IsReqProgAvail "convert" || { exitcode=1; return 1 ;}
+		IsReqProgAvail 'montage' || { exitcode=1; return 1 ;}
+		IsReqProgAvail 'convert' || { exitcode=1; return 1 ;}
 	fi
 
-	IsOptProgAvail "identify" && ident=true || ident=false
+	IsOptProgAvail 'identify' && ident=true || ident=false
 
 	trap CTRL_C_Captured INT
 
@@ -205,11 +205,11 @@ BuildWorkPaths()
 
 		}
 
-	image_file_prefix="google-image"
-	test_file="test-image"			# this is used during size testing
-	imagelinks_file="download.links.list"
-	debug_file="debug.log"
-	gallery_name="googliser-gallery"
+	image_file_prefix='google-image'
+	test_file='test-image'			# this is used during size testing
+	imagelinks_file='download.links.list'
+	debug_file='debug.log'
+	gallery_name='googliser-gallery'
 	current_path="$PWD"
 
 	temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
@@ -248,7 +248,7 @@ WhatAreMyOptions()
 	{
 
 	[[ $user_parameters_result -ne 0 ]] && { echo; exitcode=2; return 1 ;}
-	[[ $user_parameters = " --" ]] && { show_help_only=true; exitcode=2; return 1 ;}
+	[[ $user_parameters = ' --' ]] && { show_help_only=true; exitcode=2; return 1 ;}
 
 	eval set -- "$user_parameters"
 
@@ -378,7 +378,7 @@ DisplayHelp()
 
 	DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
-	local sample_user_query="cows"
+	local sample_user_query='cows'
 
 	echo
 	if [[ $colour = true ]]; then
@@ -386,7 +386,7 @@ DisplayHelp()
 		message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
 	else
 		echo " Usage: ./$script_file [PARAMETERS] ..."
-		message="Google images"
+		message='Google images'
 	fi
 
 	echo
@@ -671,12 +671,12 @@ ValidateParameters()
 		DebugThis "~ \$max_results_required too low so set as \$images_required + \$user_fail_limit" "$max_results_required"
 	fi
 
-	dimensions_search=""
+	dimensions_search=''
 	if [[ -n $dimensions ]]; then
 		# parse dimensions strings like '1920x1080' or '1920' or 'x1080'
 		echo "dimensions: [$dimensions]"
 
-		if grep -q "x" <<< $dimensions; then
+		if grep -q 'x' <<< $dimensions; then
 			echo "found a separator"
 			image_width=${dimensions%x*}
 			image_height=${dimensions#*x}
@@ -697,24 +697,24 @@ ValidateParameters()
 	fi
 
 	if [[ -n $dimensions ]] && [[ -n $min_pixels ]]; then
-		min_pixels=""
+		min_pixels=''
 		DebugThis "~ \$dimensions was specified so cleared \$min_pixels"
 	fi
 
-	min_pixels_search=""
+	min_pixels_search=''
 	if [[ -n $min_pixels ]]; then
 		case "$min_pixels" in
 			qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
 				min_pixels_search="isz:lt,islt:${min_pixels}"
 				;;
 			large)
-				min_pixels_search="isz:l"
+				min_pixels_search='isz:l'
 				;;
 			medium)
-				min_pixels_search="isz:m"
+				min_pixels_search='isz:m'
 				;;
 			icon)
-				min_pixels_search="isz:i"
+				min_pixels_search='isz:i'
 				;;
 			*)
 				echo
@@ -725,20 +725,20 @@ ValidateParameters()
 		esac
 	fi
 
-	aspect_ratio_search=""
+	aspect_ratio_search=''
 	if [[ -n $aspect_ratio ]]; then
 		case "$aspect_ratio" in
 			tall)
-				ar_type="t"
+				ar_type='t'
 				;;
 			square)
-				ar_type="s"
+				ar_type='s'
 				;;
 			wide)
-				ar_type="w"
+				ar_type='w'
 				;;
 			panoramic)
-				ar_type="xw"
+				ar_type='xw'
 				;;
 			*)
 				echo
@@ -750,7 +750,7 @@ ValidateParameters()
 		[[ -n $ar_type ]] && aspect_ratio_search="iar:${ar_type}"
 	fi
 
-	image_type_search=""
+	image_type_search=''
 	if [[ -n $image_type ]]; then
 		case "$image_type" in
 			face|photo|clipart|lineart|animated)
@@ -953,7 +953,7 @@ DownloadResultGroups()
 	ShowResultDownloadProgress
 
 	# build all groups into a single file
-	cat "$results_pathfile".* > "$results_pathfile"
+	cat ${results_pathfile}.* > "$results_pathfile"
 
 	ParseResults
 
@@ -977,14 +977,14 @@ DownloadResultGroup_auto()
 	local result=0
 	local search_group="&ijn=$1"
 	local search_start="&start=$2"
-	local response=""
+	local response=''
 	local link_index="$3"
 
 	# ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-	local search_type="&tbm=isch"		# search for images
-	local search_language="&hl=en"		# language
-	local search_style="&site=imghp"	# result layout style
-	local search_match_type="&nfpr=1"	# perform exact string search - does not show most likely match results or suggested search.
+	local search_type='&tbm=isch'		# search for images
+	local search_language='&hl=en'		# language
+	local search_style='&site=imghp'	# result layout style
+	local search_match_type='&nfpr=1'	# perform exact string search - does not show most likely match results or suggested search.
 
 	local run_pathfile="$results_run_count_path/$link_index"
 	local success_pathfile="$results_success_count_path/$link_index"
@@ -1018,12 +1018,12 @@ DownloadImages()
 
 	local func_startseconds=$(date +%s)
 	local result_index=0
-	local message=""
+	local message=''
 	local result=0
 	local parallel_count=0
 	local success_count=0
 	local fail_count=0
-	local imagelink=""
+	local imagelink=''
 
 	[[ $verbose = true ]] && echo -n " -> acquiring images: "
 
@@ -1137,7 +1137,7 @@ DownloadImage_auto()
 	local result=0
 	local size_ok=true
 	local get_download=true
-	local response=""
+	local response=''
 	local link_index="$2"
 
 	local run_pathfile="$download_run_count_path/$link_index"
@@ -1149,7 +1149,7 @@ DownloadImage_auto()
 	# extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
 	local ext=$(echo ${1:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
 
-	[[ ! "$ext" =~ "." ]] && ext=".jpg"	# if URL did not have a file extension then choose jpg as default
+	[[ ! "$ext" =~ '.' ]] && ext='.jpg'	# if URL did not have a file extension then choose jpg as default
 
 	local testimage_pathfileext="${testimage_pathfile}($link_index)${ext}"
 	local targetimage_pathfile="${target_path}/${image_file_prefix}"
@@ -1193,7 +1193,7 @@ DownloadImage_auto()
 			fi
 		else
 			DebugThis "! link ($link_index) (before download) server-response" "failed!"
-			estimated_size="unknown"
+			estimated_size='unknown'
 		fi
 	fi
 
@@ -1277,10 +1277,10 @@ ParseResults()
 		# check against allowable file types
 		while read imagelink; do
 			AllowableFileType "$imagelink"
-			[[ $? -eq 0 ]] && echo "$imagelink" >> "${imagelinks_pathfile}.tmp"
+			[[ $? -eq 0 ]] && echo "$imagelink" >> ${imagelinks_pathfile}.tmp
 		done < "$imagelinks_pathfile"
 
-		[[ -e "${imagelinks_pathfile}.tmp" ]] && mv "${imagelinks_pathfile}.tmp" "$imagelinks_pathfile"
+		[[ -e ${imagelinks_pathfile}.tmp ]] && mv ${imagelinks_pathfile}.tmp "$imagelinks_pathfile"
 
 		# get link count
 		result_count=$(wc -l < "$imagelinks_pathfile")
@@ -1535,9 +1535,9 @@ InitProgress()
 
 	# needs to be called prior to first call of ProgressUpdater
 
-	progress_message=""
+	progress_message=''
 	previous_length=0
-	previous_msg=""
+	previous_msg=''
 
 	}
 
@@ -1570,9 +1570,9 @@ InitResultsCounts()
 
 	# clears the paths used to count the search result pages
 
-	[[ -d $results_run_count_path ]] && rm -f "$results_run_count_path"/*
-	[[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
-	[[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
+	[[ -d $results_run_count_path ]] && rm -f ${results_run_count_path}/*
+	[[ -d $results_success_count_path ]] && rm -f ${results_success_count_path}/*
+	[[ -d $results_fail_count_path ]] && rm -f ${results_fail_count_path}/*
 
 	}
 
@@ -1581,9 +1581,9 @@ InitDownloadsCounts()
 
 	# clears the paths used to count the downloaded images
 
-	[[ -d $download_run_count_path ]] && rm -f "$download_run_count_path"/*
-	[[ -d $download_success_count_path ]] && rm -f "$download_success_count_path"/*
-	[[ -d $dowload_fail_count_path ]] && rm -f "$download_fail_count_path"/*
+	[[ -d $download_run_count_path ]] && rm -f ${download_run_count_path}/*
+	[[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
+	[[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
 
 	}
 
@@ -1610,7 +1610,7 @@ ShowResultDownloadProgress()
 			progress_message="${success_count}/${groups_max}"
 		fi
 
-		progress_message+=" result groups downloaded."
+		progress_message+=' result groups downloaded.'
 		ProgressUpdater "$progress_message"
 	fi
 
@@ -1636,11 +1636,11 @@ ShowImageDownloadProgress()
 			progress_message="${success_count}/${images_required}"
 		fi
 
-		progress_message+=" downloaded"
+		progress_message+=' downloaded'
 
 		# show the number of files currently downloading (if any)
 		if [[ $parallel_count -gt 0 ]]; then
-			progress_message+=", "
+			progress_message+=', '
 
 			if [[ $colour = true ]]; then
 				progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
@@ -1648,12 +1648,12 @@ ShowImageDownloadProgress()
 				progress_message+="${parallel_count}/${parallel_limit}"
 			fi
 
-			progress_message+=" are in progress"
+			progress_message+=' are in progress'
 		fi
 
 		# include failures (if any)
 		if [[ $fail_count -gt 0 ]]; then
-			progress_message+=" and "
+			progress_message+=' and '
 
 			if [[ $colour = true ]]; then
 				progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
@@ -1661,10 +1661,10 @@ ShowImageDownloadProgress()
 				progress_message+="${fail_count}/${fail_limit}"
 			fi
 
-			progress_message+=" failed"
+			progress_message+=' failed'
 		fi
 
- 		progress_message+="."
+ 		progress_message+='.'
 		ProgressUpdater "$progress_message"
 	fi
 
@@ -1748,10 +1748,10 @@ RenameExtAsType()
 			imagetype="${rawtype:0:4}"
 
 			# exception to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
-			[[ $imagetype = 'GIFG' ]] && imagetype="GIF"
+			[[ $imagetype = 'GIFG' ]] && imagetype='GIF'
 
 			# exception to handle identify's output for BMP i.e. "BMP3"
-			[[ $imagetype = 'BMP3' ]] && imagetype="BMP"
+			[[ $imagetype = 'BMP3' ]] && imagetype='BMP'
 
 			case "$imagetype" in
 				JPEG|GIF|PNG|BMP|ICO)
@@ -1784,7 +1784,7 @@ AllowableFileType()
 	local ext=$(echo ${lcase:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
 
 	# if string does not have a '.' then assume no extension present
-	[[ ! "$ext" =~ "." ]] && ext=""
+	[[ ! "$ext" =~ '.' ]] && ext=''
 
 	case "$ext" in
 		.jpg|.jpeg|.gif|.png|.php|.bmp|.ico)
@@ -2042,16 +2042,16 @@ DisplayThousands()
 WantedFonts()
 	{
 
-	local font_list=""
+	local font_list=''
 
-	font_list+="Century-Schoolbook-L-Bold-Italic\n"
-	font_list+="Droid-Serif-Bold-Italic\n"
-	font_list+="FreeSerif-Bold-Italic\n"
-	font_list+="Nimbus-Roman-No9-L-Medium-Italic\n"
-	font_list+="Times-BoldItalic\n"
-	font_list+="URW-Palladio-L-Bold-Italic\n"
-	font_list+="Utopia-Bold-Italic\n"
-	font_list+="Bitstream-Charter-Bold-Italic\n"
+	font_list+='Century-Schoolbook-L-Bold-Italic\n'
+	font_list+='Droid-Serif-Bold-Italic\n'
+	font_list+='FreeSerif-Bold-Italic\n'
+	font_list+='Nimbus-Roman-No9-L-Medium-Italic\n'
+	font_list+='Times-BoldItalic\n'
+	font_list+='URW-Palladio-L-Bold-Italic\n'
+	font_list+='Utopia-Bold-Italic\n'
+	font_list+='Bitstream-Charter-Bold-Italic\n'
 
 	echo -e "$font_list"
 
@@ -2062,7 +2062,7 @@ FirstPreferredFont()
 
 	local preferred_fonts=$(WantedFonts)
 	local available_fonts=$(convert -list font | grep "Font:" | $CMD_SED 's| Font: ||')
-	local first_available_font=""
+	local first_available_font=''
 
 	while read preferred_font; do
 		while read available_font; do
