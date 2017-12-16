@@ -199,7 +199,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
-- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF), [PHP](https://en.wikipedia.org/wiki/PHP), [BMP](https://en.wikipedia.org/wiki/BMP_file_format) and [ICO](https://en.wikipedia.org/wiki/ICO_(file_format)) files are available for download.
+- Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF), [BMP](https://en.wikipedia.org/wiki/BMP_file_format) and [ICO](https://en.wikipedia.org/wiki/ICO_(file_format)) files are available for download.
 
 - If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If ImageMagic is not available, then no type-checking occurs.
 
@@ -230,7 +230,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9 "Stretch" 64b*
+- [Debian](https://www.debian.org/) - *9.2 "Stretch" 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*

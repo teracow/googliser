@@ -70,7 +70,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date='2017-11-25'
+	local script_date='2017-12-17'
 	script_file='googliser.sh'
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -1788,7 +1788,7 @@ AllowableFileType()
 	[[ ! "$ext" =~ '.' ]] && ext=''
 
 	case "$ext" in
-		.jpg|.jpeg|.gif|.png|.php|.bmp|.ico)
+		.jpg|.jpeg|.gif|.png|.bmp|.ico)
 			# valid image type
 			return 0
 			;;
