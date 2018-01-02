@@ -3,7 +3,7 @@
 ###############################################################################
 # googliser.sh
 #
-# (C)opyright 2016-2017 Teracow Software
+# (C)opyright 2016-2018 Teracow Software
 #
 # If you find this script useful, please send me an email to let me know. :)
 #   teracow@gmail.com
@@ -70,7 +70,7 @@ user_parameters_raw="$@"
 Init()
 	{
 
-	local script_date='2017-12-17'
+	local script_date='2018-01-03'
 	script_file='googliser.sh'
 	script_name="${script_file%.*}"
 	local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -871,7 +871,7 @@ ProcessQuery()
 	fi
 
 	# build thumbnail gallery even if fail_limit was reached
-	if [[ $exitcode -eq 0 ]] || [[ $exitcode -eq 5 ]]; then
+	if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
 		if [[ $create_gallery = true ]]; then
 			BuildGallery
 			if [[ $? -gt 0 ]]; then
@@ -888,7 +888,7 @@ ProcessQuery()
 	fi
 
 	# copy links file into target directory if possible. If not, then copy to current directory.
-	if [[ $exitcode -eq 0 ]]; then
+	if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
 		if [[ $save_links = true ]]; then
 			if [[ $target_path_created = true ]]; then
 				cp -f "$imagelinks_pathfile" "${target_path}/${imagelinks_file}"
