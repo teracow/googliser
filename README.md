@@ -230,7 +230,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.2 "Stretch" 64b*
+- [Debian](https://www.debian.org/) - *9.4 "Stretch" 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*
