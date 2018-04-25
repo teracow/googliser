@@ -53,6 +53,7 @@ case "$OSTYPE" in
         CMD_SED='gsed'
         CMD_DU='gdu'
         CMD_LS='gls'
+        CMD_GETOPT="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
         CMD_READLINK='readlink'
@@ -60,17 +61,18 @@ case "$OSTYPE" in
         CMD_SED='sed'
         CMD_DU='du'
         CMD_LS='ls'
+        CMD_GETOPT='getopt'
         ;;
 esac
 
-user_parameters=$(getopt -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
     {
 
-    local script_date='2018-01-03'
+    local script_date='2018-04-25'
     script_file='googliser.sh'
     script_name="${script_file%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
