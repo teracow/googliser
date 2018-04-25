@@ -29,7 +29,7 @@ case "$OSTYPE" in
         CMD_SED='gsed'
         CMD_DU='gdu'
         CMD_LS='gls'
-        export FLAGS_GETOPT_CMD="$(brew --prefix gnu-getopt)/bin/getopt"    # https://stackoverflow.com/a/47542834/6182835
+        CMD_GETOPT="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
         CMD_READLINK='readlink'
@@ -37,17 +37,18 @@ case "$OSTYPE" in
         CMD_SED='sed'
         CMD_DU='du'
         CMD_LS='ls'
+        CMD_GETOPT='getopt'
         ;;
 esac
 
-user_parameters=$(getopt -o n:,p: -l number:,phrase: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($CMD_GETOPT -o n:,p: -l number:,phrase: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
     {
 
-    local script_date='2018-04-24'
+    local script_date='2018-04-25'
     script_file='parse-args-on-mac.sh'
     script_name="${script_file%.*}"
     local script_details_plain="$script_file - $script_date PID:[$$]"
