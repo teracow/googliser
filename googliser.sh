@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local script_date='2018-04-25'
+    local script_date='2018-06-15'
     script_file='googliser.sh'
     script_name="${script_file%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -1810,7 +1810,7 @@ PageScraper()
     # sed   1. add 2 x newline chars before each occurence of '<div',
     #       2. remove ' notranslate' (if this is one of the odd times Google have added it),
     #
-    # grep  3. only list lines with '<div jsname=' and eventually followed by 'http',
+    # grep  3. only list lines with '<div class="rg_meta">',
     #
     # sed   4. remove lines with 'YouTube' (case insensitive),
     #       5. remove lines with 'Vimeo' (case insensitive),
@@ -1823,7 +1823,7 @@ PageScraper()
 
     cat "$results_pathfile" \
     | $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
-    | grep '<div jsname=.*http' \
+    | grep '<div class="rg_meta">' \
     | $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
     > "$imagelinks_pathfile"
 
