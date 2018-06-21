@@ -2,7 +2,7 @@
 ---
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based upon a user-specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
 
-This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to August 2017.
+This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to June 2018.
 
 Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) for his work on OSX compatibility. His mods have been incorporated into this script.
 
@@ -48,7 +48,7 @@ Debian/Ubuntu:
 
 macOS:
 
-    # brew install wget coreutils ghostscript gnu-sed gnu-getopt
+    # brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Usage
@@ -247,5 +247,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
 - [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
+- macOS - *10.13 High Sierra*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
