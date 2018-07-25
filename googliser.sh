@@ -48,20 +48,20 @@
 
 case "$OSTYPE" in
     "darwin"*)
-        CMD_READLINK='greadlink'
-        CMD_HEAD='ghead'
-        CMD_SED='gsed'
-        CMD_DU='gdu'
-        CMD_LS='gls'
+        CMD_READLINK=greadlink
+        CMD_HEAD=ghead
+        CMD_SED=gsed
+        CMD_DU=gdu
+        CMD_LS=gls
         CMD_GETOPT="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
-        CMD_READLINK='readlink'
-        CMD_HEAD='head'
-        CMD_SED='sed'
-        CMD_DU='du'
-        CMD_LS='ls'
-        CMD_GETOPT='getopt'
+        CMD_READLINK=readlink
+        CMD_HEAD=head
+        CMD_SED=sed
+        CMD_DU=du
+        CMD_LS=ls
+        CMD_GETOPT=getopt
         ;;
 esac
 
@@ -72,8 +72,8 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local script_date='2018-06-15'
-    script_file='googliser.sh'
+    local script_date=2018-07-26
+    script_file=googliser.sh
     script_name="${script_file%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
     local script_details_plain="$script_file - $script_date PID:[$$]"
@@ -98,7 +98,7 @@ Init()
     # internals
     local script_starttime=$(date)
     script_startseconds=$(date +%s)
-    server='www.google.com'
+    server=www.google.com
     useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
     target_path_created=false
     show_help_only=false
@@ -185,12 +185,12 @@ Init()
 
     IsReqProgAvail 'wget' || { exitcode=1; return 1 ;}
 
-    if [[ $create_gallery = true ]] && [[ $show_help_only = false ]]; then
-        IsReqProgAvail 'montage' || { exitcode=1; return 1 ;}
-        IsReqProgAvail 'convert' || { exitcode=1; return 1 ;}
+    if [[ $create_gallery = true && $show_help_only = false ]]; then
+        IsReqProgAvail montage || { exitcode=1; return 1 ;}
+        IsReqProgAvail convert || { exitcode=1; return 1 ;}
     fi
 
-    IsOptProgAvail 'identify' && ident=true || ident=false
+    IsOptProgAvail identify && ident=true || ident=false
 
     trap CTRL_C_Captured INT
 
@@ -208,11 +208,11 @@ BuildWorkPaths()
 
         }
 
-    image_file_prefix='google-image'
-    test_file='test-image'          # this is used during size testing
-    imagelinks_file='download.links.list'
-    debug_file='debug.log'
-    gallery_name='googliser-gallery'
+    image_file_prefix=google-image
+    test_file=test-image          # this is used during size testing
+    imagelinks_file=download.links.list
+    debug_file=debug.log
+    gallery_name=googliser-gallery
     current_path="$PWD"
 
     temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
@@ -381,7 +381,7 @@ DisplayHelp()
 
     DebugThis "\ [${FUNCNAME[0]}]" 'entry'
 
-    local sample_user_query='cows'
+    local sample_user_query=cows
 
     echo
     if [[ $colour = true ]]; then
@@ -412,58 +412,58 @@ DisplayHelp()
     HelpParameterFormat "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
     echo
     echo " Optional"
-    HelpParameterFormat "a" "aspect-ratio" "Image aspect ratio. Specify like '-a square'. Presets are:"
-    HelpParameterFormat "" "" "'tall'"
-    HelpParameterFormat "" "" "'square'"
-    HelpParameterFormat "" "" "'wide'"
-    HelpParameterFormat "" "" "'panoramic'"
-    HelpParameterFormat "c" "colour" "Display with ANSI coloured text."
-    HelpParameterFormat "C" "condensed" "Create a condensed thumbnail gallery. All square images with no tile padding."
-    HelpParameterFormat "" "debug" "Save the debug file [$debug_file] into the output directory."
-    #HelpParameterFormat "d" "dimensions" "Specify exact image dimensions to download."
-    HelpParameterFormat "D" "delete-after" "Remove all downloaded images afterwards."
-    HelpParameterFormat "f" "failures" "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
-    HelpParameterFormat "h" "help" "Display this help then exit."
-    HelpParameterFormat "i" "input" "A text file containing a list of phrases to download. One phrase per line."
-    HelpParameterFormat "l" "lower-size" "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
-    HelpParameterFormat "L" "links-only" "Only get image file URLs. Don't download any images."
-    HelpParameterFormat "m" "minimum-pixels" "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
-    HelpParameterFormat "" "" "'qsvga' (400 x 300)"
-    HelpParameterFormat "" "" "'vga'   (640 x 480)"
-    HelpParameterFormat "" "" "'svga'  (800 x 600)"
-    HelpParameterFormat "" "" "'xga'   (1024 x 768)"
-    HelpParameterFormat "" "" "'2mp'   (1600 x 1200)"
-    HelpParameterFormat "" "" "'4mp'   (2272 x 1704)"
-    HelpParameterFormat "" "" "'6mp'   (2816 x 2112)"
-    HelpParameterFormat "" "" "'8mp'   (3264 x 2448)"
-    HelpParameterFormat "" "" "'10mp'  (3648 x 2736)"
-    HelpParameterFormat "" "" "'12mp'  (4096 x 3072)"
-    HelpParameterFormat "" "" "'15mp'  (4480 x 3360)"
-    HelpParameterFormat "" "" "'20mp'  (5120 x 3840)"
-    HelpParameterFormat "" "" "'40mp'  (7216 x 5412)"
-    HelpParameterFormat "" "" "'70mp'  (9600 x 7200)"
-    HelpParameterFormat "" "" "'large'"
-    HelpParameterFormat "" "" "'medium'"
-    HelpParameterFormat "" "" "'icon'"
-    HelpParameterFormat "n" "number" "Number of images to download. [$images_required_default] Maximum of $google_max."
-    HelpParameterFormat "N" "no-gallery" "Don't create thumbnail gallery."
-    HelpParameterFormat "o" "output" "The image output directory. [phrase]"
-    HelpParameterFormat "P" "parallel" "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
-    HelpParameterFormat "q" "quiet" "Suppress standard output. Errors are still shown."
-    HelpParameterFormat "r" "retries" "Retry image download this many times. [$retries_default] Maximum of $retries_max."
-    HelpParameterFormat "s" "save-links" "Save URL list to file [$imagelinks_file] into the output directory."
-    HelpParameterFormat "S" "skip-no-size" "Don't download any image if its size cannot be determined."
-    HelpParameterFormat "t" "timeout" "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
-    HelpParameterFormat "T" "title" "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
-    HelpParameterFormat "u" "upper-size" "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
-    #HelpParameterFormat "?" "random" "Download a single random image only"
-    HelpParameterFormat "" "type" "Image type. Specify like '--type clipart'. Presets are:"
-    HelpParameterFormat "" "" "'face'"
-    HelpParameterFormat "" "" "'photo'"
-    HelpParameterFormat "" "" "'clipart'"
-    HelpParameterFormat "" "" "'lineart'"
-    HelpParameterFormat "" "" "'animated'"
-    HelpParameterFormat "z" "lightning" "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
+    HelpParameterFormat a aspect-ratio "Image aspect ratio. Specify like '-a square'. Presets are:"
+    HelpParameterFormat '' '' "'tall'"
+    HelpParameterFormat '' '' "'square'"
+    HelpParameterFormat '' '' "'wide'"
+    HelpParameterFormat '' '' "'panoramic'"
+    HelpParameterFormat c colour "Display with ANSI coloured text."
+    HelpParameterFormat C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
+    HelpParameterFormat '' debug "Save the debug file [$debug_file] into the output directory."
+    #HelpParameterFormat d dimensions "Specify exact image dimensions to download."
+    HelpParameterFormat D delete-after "Remove all downloaded images afterwards."
+    HelpParameterFormat f failures "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
+    HelpParameterFormat h help "Display this help then exit."
+    HelpParameterFormat i input "A text file containing a list of phrases to download. One phrase per line."
+    HelpParameterFormat l lower-size "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
+    HelpParameterFormat L links-only "Only get image file URLs. Don't download any images."
+    HelpParameterFormat m minimum-pixels "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
+    HelpParameterFormat '' '' "'qsvga' (400 x 300)"
+    HelpParameterFormat '' '' "'vga'   (640 x 480)"
+    HelpParameterFormat '' '' "'svga'  (800 x 600)"
+    HelpParameterFormat '' '' "'xga'   (1024 x 768)"
+    HelpParameterFormat '' '' "'2mp'   (1600 x 1200)"
+    HelpParameterFormat '' '' "'4mp'   (2272 x 1704)"
+    HelpParameterFormat '' '' "'6mp'   (2816 x 2112)"
+    HelpParameterFormat '' '' "'8mp'   (3264 x 2448)"
+    HelpParameterFormat '' '' "'10mp'  (3648 x 2736)"
+    HelpParameterFormat '' '' "'12mp'  (4096 x 3072)"
+    HelpParameterFormat '' '' "'15mp'  (4480 x 3360)"
+    HelpParameterFormat '' '' "'20mp'  (5120 x 3840)"
+    HelpParameterFormat '' '' "'40mp'  (7216 x 5412)"
+    HelpParameterFormat '' '' "'70mp'  (9600 x 7200)"
+    HelpParameterFormat '' '' "'large'"
+    HelpParameterFormat '' '' "'medium'"
+    HelpParameterFormat '' '' "'icon'"
+    HelpParameterFormat n number "Number of images to download. [$images_required_default] Maximum of $google_max."
+    HelpParameterFormat N no-gallery "Don't create thumbnail gallery."
+    HelpParameterFormat o output "The image output directory. [phrase]"
+    HelpParameterFormat P parallel "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
+    HelpParameterFormat q quiet "Suppress standard output. Errors are still shown."
+    HelpParameterFormat r retries "Retry image download this many times. [$retries_default] Maximum of $retries_max."
+    HelpParameterFormat s save-links "Save URL list to file [$imagelinks_file] into the output directory."
+    HelpParameterFormat S skip-no-size "Don't download any image if its size cannot be determined."
+    HelpParameterFormat t timeout "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
+    HelpParameterFormat T title "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
+    HelpParameterFormat u upper-size "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
+    #HelpParameterFormat '?' random "Download a single random image only"
+    HelpParameterFormat '' type "Image type. Specify like '--type clipart'. Presets are:"
+    HelpParameterFormat '' '' "'face'"
+    HelpParameterFormat '' '' "'photo'"
+    HelpParameterFormat '' '' "'clipart'"
+    HelpParameterFormat '' '' "'lineart'"
+    HelpParameterFormat '' '' "'animated'"
+    HelpParameterFormat z lightning "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
     echo
     echo " Example:"
 
@@ -485,7 +485,7 @@ ValidateParameters()
 
     DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
-    if [[ $create_gallery = false ]] && [[ $remove_after = true ]] && [[ $links_only = false ]]; then
+    if [[ $create_gallery = false && $remove_after = true && $links_only = false ]]; then
         echo
         echo " Hmmm, so you've requested:"
         echo " 1. don't create a gallery,"
@@ -662,7 +662,7 @@ ValidateParameters()
                 DebugThis '~ $lower_size_limit too small so set as' "$lower_size_limit"
             fi
 
-            if [[ $upper_size_limit -gt 0 ]] && [[ $lower_size_limit -gt $upper_size_limit ]]; then
+            if [[ $upper_size_limit -gt 0 && $lower_size_limit -gt $upper_size_limit ]]; then
                 lower_size_limit=$(($upper_size_limit-1))
                 DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
             fi
@@ -699,7 +699,7 @@ ValidateParameters()
         return 1
     fi
 
-    if [[ -n $dimensions ]] && [[ -n $min_pixels ]]; then
+    if [[ -n $dimensions && -n $min_pixels ]]; then
         min_pixels=''
         DebugThis '~ $dimensions was specified so cleared $min_pixels'
     fi
@@ -768,7 +768,7 @@ ValidateParameters()
         esac
     fi
 
-    if [[ -n $min_pixels_search ]] || [[ -n $aspect_ratio_search ]] || [[ -n $image_type_search ]]; then
+    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search ]]; then
         advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
     fi
 
@@ -784,7 +784,7 @@ ProcessQuery()
     echo
 
     # some last-minute parameter validation - needed when reading phrases from text file
-    if [[ ! $user_query ]]; then
+    if [[ -z $user_query ]]; then
         DebugThis '! $user_query' 'unspecified'
         echo "$(ShowAsFailed ' !! search phrase (-p, --phrase) was unspecified')"
         exitcode=2
@@ -801,7 +801,7 @@ ProcessQuery()
     else
         safe_path="$(echo $output_path | tr ' ' '_')"   # replace whitepace with '_' so less issues later on!
         DebugThis '? $safe_path' "$safe_path"
-        if [[ ! -z $input_pathfile ]]; then
+        if [[ -n $input_pathfile ]]; then
             target_path="${safe_path}/${safe_query}"
         else
             target_path="$safe_path"
@@ -810,7 +810,7 @@ ProcessQuery()
 
     DebugThis '? $target_path' "$target_path"
 
-    if [[ $exitcode -eq 0 ]] && [[ ! $gallery_title ]]; then
+    if [[ $exitcode -eq 0 && -z $gallery_title ]]; then
         gallery_title=$user_query
         DebugThis '~ $gallery_title was unspecified so set as' "$gallery_title"
     fi
@@ -1114,7 +1114,7 @@ DownloadImages()
         download_bytes="$($CMD_DU "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
         DebugThis '= downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
-        download_seconds="$(($(date +%s )-$func_startseconds))"
+        download_seconds="$(($(date +%s)-$func_startseconds))"
         DebugThis '= download seconds' "$(DisplayThousands "$download_seconds")"
 
         avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
@@ -1123,7 +1123,7 @@ DownloadImages()
 
     DebugThis '? $success_count' "$success_count"
     DebugThis '? $fail_count' "$fail_count"
-    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s )-$func_startseconds))")"
+    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     return $result
@@ -1159,7 +1159,7 @@ DownloadImage_auto()
     local targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
 
     # are file size limits going to be applied before download?
-    if [[ $upper_size_limit -gt 0 ]] || [[ $lower_size_limit -gt 0 ]]; then
+    if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
         local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$retries --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
         DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
@@ -1170,7 +1170,7 @@ DownloadImage_auto()
         if [[ $result -eq 0 ]]; then
             estimated_size=$(grep 'Content-Length:' <<< "$response" | $CMD_SED 's|^.*: ||' )
 
-            if [[ -z $estimated_size ]] || [[ $estimated_size = unspecified ]]; then
+            if [[ -z $estimated_size || $estimated_size = unspecified ]]; then
                 estimated_size='unknown'
             fi
 
@@ -1183,7 +1183,7 @@ DownloadImage_auto()
                     get_download=false
                 fi
 
-                if [[ $upper_size_limit -gt 0 ]] && [[ $estimated_size -gt $upper_size_limit ]]; then
+                if [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
                     DebugThis "! link ($link_index) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
                     size_ok=false
                     get_download=false
@@ -1227,7 +1227,7 @@ DownloadImage_auto()
                     size_ok=false
                 fi
 
-                if [[ $upper_size_limit -gt 0 ]] && [[ $actual_size -gt $upper_size_limit ]]; then
+                if [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
                     DebugThis "! link ($link_index) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
@@ -1307,7 +1307,7 @@ ParseResults()
                     echo "$(ColourTextBrightGreen "$result_count") results!"
                 fi
 
-                if [[ $result_count -ge $images_required ]] && [[ $result_count -lt $(($max_results_required)) ]]; then
+                if [[ $result_count -ge $images_required && $result_count -lt $(($max_results_required)) ]]; then
                     echo "$(ColourTextBrightOrange "$result_count") results!"
                 fi
 
@@ -1362,7 +1362,7 @@ BuildGallery()
 
     DebugThis '? $build_foreground_cmd' "$build_foreground_cmd"
 
-    eval $build_foreground_cmd 2> /dev/null
+    eval $build_foreground_cmd 2>/dev/null
     result=$?
 
     if [[ $result -eq 0 ]]; then
@@ -1391,7 +1391,7 @@ BuildGallery()
 
         DebugThis '? $build_background_cmd' "$build_background_cmd"
 
-        eval $build_background_cmd 2> /dev/null
+        eval $build_background_cmd 2>/dev/null
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1419,7 +1419,7 @@ BuildGallery()
 
         DebugThis '? $build_title_cmd' "$build_title_cmd"
 
-        eval $build_title_cmd 2> /dev/null
+        eval $build_title_cmd 2>/dev/null
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1446,7 +1446,7 @@ BuildGallery()
 
         DebugThis '? $build_compose_cmd' "$build_compose_cmd"
 
-        eval $build_compose_cmd 2> /dev/null
+        eval $build_compose_cmd 2>/dev/null
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1695,7 +1695,7 @@ IsOptProgAvail()
     # $1 = search $PATH for this binary with 'which'
     # $? = 0 if found, 1 if not found
 
-    if (which "$1" > /dev/null 2>&1); then
+    if (which "$1" >/dev/null 2>&1); then
         DebugThis '$ optional program is available' "$1"
     else
         DebugThis '! optional program is unavailable' "$1"
@@ -1718,9 +1718,9 @@ HelpParameterFormat()
     # $2 = long parameter
     # $3 = description
 
-    if [[ ! -z $1 ]] && [[ ! -z $2 ]]; then
+    if [[ -n $1 && -n $2 ]]; then
         printf "  -%-1s, --%-15s %s\n" "$1" "$2" "$3"
-    elif [[ -z $1 ]] && [[ ! -z $2 ]]; then
+    elif [[ -z $1 && -n $2 ]]; then
         printf "   %-1s  --%-15s %s\n" '' "$2" "$3"
     else
         printf "   %-1s    %-15s %s\n" '' '' "$3"
@@ -2073,7 +2073,7 @@ FirstPreferredFont()
         done <<< "$available_fonts"
     done <<< "$preferred_fonts"
 
-    if [[ ! -z $preferred_font ]]; then
+    if [[ -n $preferred_font ]]; then
         echo "$preferred_font"
     else
         # uncomment 2nd line down to return first installed font if no preferred fonts could be found.
@@ -2089,7 +2089,7 @@ FirstPreferredFont()
 Init
 
 if [[ $exitcode -eq 0 ]]; then
-    if [[ ! -z $input_pathfile ]]; then
+    if [[ -n $input_pathfile ]]; then
         while read -r file_query; do
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
