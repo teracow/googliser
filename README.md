@@ -247,6 +247,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
 - [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
-- macOS - *10.13 High Sierra*
+- macOS - *10.13 High Sierra*, *10.14 Mojave*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
