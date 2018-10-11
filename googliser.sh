@@ -65,7 +65,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,usage-rights:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -125,6 +125,7 @@ Init()
     lightning=false
     min_pixels=''
     aspect_ratio=''
+    usage_rights=''
     image_type=''
     input_pathfile=''
     output_path=''
@@ -175,6 +176,7 @@ Init()
     DebugThis '? $min_pixels' "$min_pixels"
     DebugThis '? $aspect_ratio' "$aspect_ratio"
     DebugThis '? $image_type' "$image_type"
+    DebugThis '? $usage_rights' "$usage_rights"
     DebugThis '? $input_pathfile' "$input_pathfile"
     DebugThis '? $output_path' "$output_path"
     DebugThis '? $links_only' "$links_only"
@@ -362,6 +364,10 @@ WhatAreMyOptions()
                 image_type="$2"
                 shift 2
                 ;;
+            --usage-rights)
+                usage_rights="$2"
+                shift 2
+                ;;
             --)
                 shift       # shift to next parameter in $1
                 break
@@ -463,6 +469,11 @@ DisplayHelp()
     HelpParameterFormat '' '' "'clipart'"
     HelpParameterFormat '' '' "'lineart'"
     HelpParameterFormat '' '' "'animated'"
+    HelpParameterFormat '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
+    HelpParameterFormat '' '' "'reuse'"
+    HelpParameterFormat '' '' "'reuse-with-mod'"
+    HelpParameterFormat '' '' "'noncomm-reuse'"
+    HelpParameterFormat '' '' "'noncomm-reuse-with-mod'"
     HelpParameterFormat z lightning "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
     echo
     echo " Example:"
@@ -768,8 +779,32 @@ ValidateParameters()
         esac
     fi
 
-    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search ]]; then
-        advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search}"
+    usage_rights_search=''
+    if [[ -n $usage_rights ]]; then
+        case "$usage_rights" in
+            reuse-with-mod)
+                usage_rights_search='sur:fmc'
+                ;;
+            reuse)
+                usage_rights_search='sur:fc'
+                ;;
+            noncomm-reuse-with-mod)
+                usage_rights_search='sur:fm'
+                ;;
+            noncomm-reuse)
+                usage_rights_search='sur:f'
+                ;;
+            *)
+                echo
+                echo "$(ShowAsFailed ' !! (--usage-rights) preset invalid')"
+                exitcode=2
+                return 1
+                ;;
+        esac
+    fi
+
+    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search ]]; then
+        advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search},${usage_rights_search}"
     fi
 
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
