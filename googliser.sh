@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local script_date=2018-07-26
+    local script_date=2018-10-17
     script_file=googliser.sh
     script_name="${script_file%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -461,14 +461,14 @@ DisplayHelp()
     HelpParameterFormat S skip-no-size "Don't download any image if its size cannot be determined."
     HelpParameterFormat t timeout "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
     HelpParameterFormat T title "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
-    HelpParameterFormat u upper-size "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
-    #HelpParameterFormat '?' random "Download a single random image only"
     HelpParameterFormat '' type "Image type. Specify like '--type clipart'. Presets are:"
     HelpParameterFormat '' '' "'face'"
     HelpParameterFormat '' '' "'photo'"
     HelpParameterFormat '' '' "'clipart'"
     HelpParameterFormat '' '' "'lineart'"
     HelpParameterFormat '' '' "'animated'"
+    HelpParameterFormat u upper-size "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
+    #HelpParameterFormat '?' random "Download a single random image only"
     HelpParameterFormat '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     HelpParameterFormat '' '' "'reuse'"
     HelpParameterFormat '' '' "'reuse-with-mod'"

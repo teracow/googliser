@@ -4,7 +4,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to June 2018.
 
-Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) for his work on OSX compatibility. His mods have been incorporated into this script.
+Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) and [stevemart](https://github.com/stevemart) for their work on macOS compatibility. Their mods have been incorporated into this script.
 
 ![#f03c15](images/red.png) **Seeking more macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're able to help ensure it will run on Apple PCs. I'm currently coding to reduce reliance on external utilities, but this will take some time.
 
@@ -152,9 +152,6 @@ Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes
 `-T` or `--title [STRING]`
 Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
 
-`-u` or `--upper-size [INTEGER]`
-Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
-
 `--type [PRESET]`
 Image type to download. Preset values are:
 
@@ -163,6 +160,17 @@ Image type to download. Preset values are:
 - `clipart`
 - `lineart`
 - `animated`
+
+`-u` or `--upper-size [INTEGER]`
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
+
+`--usage-rights [PRESET]`
+Usage rights. Preset values are:
+
+- `resuse`
+- `resuse-with-mod`
+- `noncomm-reuse`
+- `noncomm-reuse-with-mod`
 
 `-z` or `--lightning`
 Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 16 images at the same time, and don't create a gallery afterward.
@@ -230,7 +238,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.4 "Stretch" 64b*
+- [Debian](https://www.debian.org/) - *9.5 "Stretch" 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*
