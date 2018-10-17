@@ -167,10 +167,10 @@ Only download image files smaller than this many bytes. Some servers do not repo
 `--usage-rights [PRESET]`
 Usage rights. Preset values are:
 
-- `resuse`
-- `resuse-with-mod`
-- `noncomm-reuse`
-- `noncomm-reuse-with-mod`
+- `reuse` (labeled for reuse)
+- `reuse-with-mod` (labeled for reuse with modification)
+- `noncomm-reuse` (labeled for noncommercial reuse)
+- `noncomm-reuse-with-mod` (labeled for noncommercial reuse with modification)
 
 `-z` or `--lightning`
 Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 16 images at the same time, and don't create a gallery afterward.
