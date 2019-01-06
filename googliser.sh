@@ -72,11 +72,11 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local script_date=2019-01-06
-    script_file=googliser.sh
-    script_name="${script_file%.*}"
-    local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
-    local script_details_plain="$script_file - $script_date PID:[$$]"
+    local SCRIPT_VERSION=20190107
+    SCRIPT_FILE=googliser.sh
+    script_name="${SCRIPT_FILE%.*}"
+    local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") ($SCRIPT_VERSION) PID:[$$]"
+    local script_details_plain="$SCRIPT_FILE ($SCRIPT_VERSION) PID:[$$]"
 
     # parameter defaults
     images_required_default=25
@@ -391,10 +391,10 @@ DisplayHelp()
 
     echo
     if [[ $colour = true ]]; then
-        echo " Usage: $(ColourTextBrightWhite "./$script_file") [PARAMETERS] ..."
+        echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
         message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
     else
-        echo " Usage: ./$script_file [PARAMETERS] ..."
+        echo " Usage: ./$SCRIPT_FILE [PARAMETERS] ..."
         message='Google images'
     fi
 
@@ -479,9 +479,9 @@ DisplayHelp()
     echo " Example:"
 
     if [[ $colour = true ]]; then
-        echo "$(ColourTextBrightWhite " $ ./$script_file -p '$sample_user_query'")"
+        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$sample_user_query'")"
     else
-        echo " $ ./$script_file -p '$sample_user_query'"
+        echo " $ ./$SCRIPT_FILE -p '$sample_user_query'"
     fi
 
     echo
@@ -539,12 +539,12 @@ ValidateParameters()
         *)
             if [[ $images_required -lt 1 ]]; then
                 images_required=1
-                DebugThis '~ $images_required too low so set to a sensible minimum' "$images_required"
+                DebugThis '~ $images_required TOO LOW so set to a sensible minimum' "$images_required"
             fi
 
             if [[ $images_required -gt $google_max ]]; then
                 images_required=$google_max
-                DebugThis '~ $images_required too high so set as $google_max' "$images_required"
+                DebugThis '~ $images_required TOO HIGH so set as $google_max' "$images_required"
             fi
             ;;
     esac
@@ -570,12 +570,12 @@ ValidateParameters()
         *)
             if [[ $user_fail_limit -le 0 ]]; then
                 user_fail_limit=$google_max
-                DebugThis '~ $user_fail_limit too low so set as $google_max' "$user_fail_limit"
+                DebugThis '~ $user_fail_limit TOO LOW so set as $google_max' "$user_fail_limit"
             fi
 
             if [[ $user_fail_limit -gt $google_max ]]; then
                 user_fail_limit=$google_max
-                DebugThis '~ $user_fail_limit too high so set as $google_max' "$user_fail_limit"
+                DebugThis '~ $user_fail_limit TOO HIGH so set as $google_max' "$user_fail_limit"
             fi
             ;;
     esac
@@ -591,12 +591,12 @@ ValidateParameters()
         *)
             if [[ $parallel_limit -lt 1 ]]; then
                 parallel_limit=1
-                DebugThis '~ $parallel_limit too low so set as' "$parallel_limit"
+                DebugThis '~ $parallel_limit TOO LOW so set as' "$parallel_limit"
             fi
 
             if [[ $parallel_limit -gt $parallel_max ]]; then
                 parallel_limit=$parallel_max
-                DebugThis '~ $parallel_limit too high so set as' "$parallel_limit"
+                DebugThis '~ $parallel_limit TOO HIGH so set as' "$parallel_limit"
             fi
             ;;
     esac
@@ -612,12 +612,12 @@ ValidateParameters()
         *)
             if [[ $timeout -lt 1 ]]; then
                 timeout=1
-                DebugThis '~ $timeout too low so set as' "$timeout"
+                DebugThis '~ $timeout TOO LOW so set as' "$timeout"
             fi
 
             if [[ $timeout -gt $timeout_max ]]; then
                 timeout=$timeout_max
-                DebugThis '~ $timeout too high so set as' "$timeout"
+                DebugThis '~ $timeout TOO HIGH so set as' "$timeout"
             fi
             ;;
     esac
@@ -633,12 +633,12 @@ ValidateParameters()
         *)
             if [[ $retries -lt 1 ]]; then
                 retries=1
-                DebugThis '~ $retries too low so set as' "$retries"
+                DebugThis '~ $retries TOO LOW so set as' "$retries"
             fi
 
             if [[ $retries -gt $retries_max ]]; then
                 retries=$retries_max
-                DebugThis '~ $retries too high so set as' "$retries"
+                DebugThis '~ $retries TOO HIGH so set as' "$retries"
             fi
             ;;
     esac
@@ -654,7 +654,7 @@ ValidateParameters()
         *)
             if [[ $upper_size_limit -lt 0 ]]; then
                 upper_size_limit=0
-                DebugThis '~ $upper_size_limit too small so set as' "$upper_size_limit (unlimited)"
+                DebugThis '~ $upper_size_limit TOO LOW so set as' "$upper_size_limit (unlimited)"
             fi
             ;;
     esac
@@ -670,7 +670,7 @@ ValidateParameters()
         *)
             if [[ $lower_size_limit -lt 0 ]]; then
                 lower_size_limit=0
-                DebugThis '~ $lower_size_limit too small so set as' "$lower_size_limit"
+                DebugThis '~ $lower_size_limit TOO LOW so set as' "$lower_size_limit"
             fi
 
             if [[ $upper_size_limit -gt 0 && $lower_size_limit -gt $upper_size_limit ]]; then
@@ -682,7 +682,7 @@ ValidateParameters()
 
     if [[ $max_results_required -lt $(($images_required+$user_fail_limit)) ]]; then
         max_results_required=$(($images_required+$user_fail_limit))
-        DebugThis '~ $max_results_required too low so set as $images_required + $user_fail_limit' "$max_results_required"
+        DebugThis '~ $max_results_required TOO LOW so set as $images_required + $user_fail_limit' "$max_results_required"
     fi
 
     dimensions_search=''
@@ -1150,11 +1150,11 @@ DownloadImages()
         DebugThis '= downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
         download_seconds="$(($(date +%s)-$func_startseconds))"
+        DebugThis '= download seconds' "$(DisplayThousands "$download_seconds")"
         if [[ $download_seconds -lt 1 ]]; then
             download_seconds=1
-            DebugThis '~ $download_seconds too low so set to usable minimum' "$download_seconds"
+            DebugThis '~ $download_seconds TOO LOW so set to a usable minimum' "$download_seconds"
         fi
-        DebugThis '= download seconds' "$(DisplayThousands "$download_seconds")"
 
         avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
         DebugThis '= average download speed' "${avg_download_speed}B/s"
@@ -1531,7 +1531,7 @@ Finish()
     {
 
     # write results into debug file
-    DebugThis "T [$script_file] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+    DebugThis "T [$SCRIPT_FILE] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
     DebugThis "< finished" "$(date)"
 
     # copy debug file into target directory if possible. If not, then copy to current directory.
@@ -1719,10 +1719,10 @@ IsReqProgAvail()
     # $? = 0 if found, 1 if not found
 
     if (which "$1" > /dev/null 2>&1); then
-        DebugThis '$ required program is available' "$1"
+        DebugThis '$ required program IS available' "$1"
     else
-        echo " !! required program [$1] is unavailable"
-        DebugThis '! required program is unavailable' "$1"
+        echo " !! required program [$1] IS NOT available"
+        DebugThis '! required program IS NOT available' "$1"
         return 1
     fi
 
@@ -1735,9 +1735,9 @@ IsOptProgAvail()
     # $? = 0 if found, 1 if not found
 
     if (which "$1" >/dev/null 2>&1); then
-        DebugThis '$ optional program is available' "$1"
+        DebugThis '$ optional program IS available' "$1"
     else
-        DebugThis '! optional program is unavailable' "$1"
+        DebugThis '! optional program IS NOT available' "$1"
         return 1
     fi
 
