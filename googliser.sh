@@ -3,7 +3,7 @@
 ###############################################################################
 # googliser.sh
 #
-# (C)opyright 2016-2018 Teracow Software
+# (C)opyright 2016-2019 Teracow Software
 #
 # If you find this script useful, please send me an email to let me know. :)
 #   teracow@gmail.com
@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local script_date=2018-10-17
+    local script_date=2019-01-06
     script_file=googliser.sh
     script_name="${script_file%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$script_file") - $script_date PID:[$$]"
@@ -539,7 +539,7 @@ ValidateParameters()
         *)
             if [[ $images_required -lt 1 ]]; then
                 images_required=1
-                DebugThis '~ $images_required too low so set sensible minimum' "$images_required"
+                DebugThis '~ $images_required too low so set to a sensible minimum' "$images_required"
             fi
 
             if [[ $images_required -gt $google_max ]]; then
@@ -1150,6 +1150,10 @@ DownloadImages()
         DebugThis '= downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
         download_seconds="$(($(date +%s)-$func_startseconds))"
+        if [[ $download_seconds -lt 1 ]]; then
+            download_seconds=1
+            DebugThis '~ $download_seconds too low so set to usable minimum' "$download_seconds"
+        fi
         DebugThis '= download seconds' "$(DisplayThousands "$download_seconds")"
 
         avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
