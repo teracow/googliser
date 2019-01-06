@@ -157,7 +157,8 @@ Init()
     DebugThis '= environment' '*** parameters after validation and adjustment ***'
     DebugThis '? $user_query' "$user_query"
     DebugThis '? $images_required' "$images_required"
-    DebugThis '? $fail_limit' "$fail_limit"
+    DebugThis '? $user_fail_limit' "$user_fail_limit"
+    DebugThis '? $max_results_required' "$max_results_required"
     DebugThis '? $parallel_limit' "$parallel_limit"
     DebugThis '? $timeout' "$timeout"
     DebugThis '? $retries' "$retries"
