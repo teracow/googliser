@@ -48,7 +48,7 @@ Debian/Ubuntu:
 
 macOS:
 
-    # brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
+    $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Usage
