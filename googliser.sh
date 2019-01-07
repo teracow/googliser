@@ -828,14 +828,14 @@ ProcessQuery()
     fi
 
     echo " -> processing query: \"$user_query\""
-    search_phrase="&q=$(echo $user_query | tr ' ' '+')" # replace whitepace with '+' to suit curl/wget
-    safe_query="$(echo $user_query | tr ' ' '_')"   # replace whitepace with '_' so less issues later on!
+    search_phrase="&q=${user_query// /+}"           # replace whitepace with '+' to suit curl/wget
+    safe_query="${user_query// /_}"                 # replace whitepace with '_' so less issues later on!
     DebugThis '? $safe_query' "$safe_query"
 
     if [[ -z $output_path ]]; then
         target_path="${current_path}/${safe_query}"
     else
-        safe_path="$(echo $output_path | tr ' ' '_')"   # replace whitepace with '_' so less issues later on!
+        safe_path="${output_path// /_}"             # replace whitepace with '_' so less issues later on!
         DebugThis '? $safe_path' "$safe_path"
         if [[ -n $input_pathfile ]]; then
             target_path="${safe_path}/${safe_query}"
