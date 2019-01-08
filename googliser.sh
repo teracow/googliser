@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=20190107
+    local SCRIPT_VERSION=20190108
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") ($SCRIPT_VERSION) PID:[$$]"
@@ -99,7 +99,7 @@ Init()
     local script_starttime=$(date)
     script_startseconds=$(date +%s)
     server=www.google.com
-    useragent='Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'
+    useragent='Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0'
     target_path_created=false
     show_help_only=false
     exitcode=0
