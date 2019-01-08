@@ -853,13 +853,7 @@ ProcessQuery()
 
     # create directory for search phrase
     if [[ -e $target_path ]]; then
-        if [[ $($CMD_LS -1 $target_path | wc -l) -gt 0 ]]; then
-            DebugThis "! create ouput directory [$target_path]" "failed! Directory already exists!"
-            echo
-            echo "$(ShowAsFailed " !! output directory [$target_path] already exists")"
-            exitcode=3
-            return 1
-        fi
+        DebugThis '$ output directory already exists' "$target_path"
     else
         mkdir -p "$target_path"
         result=$?
