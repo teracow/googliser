@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=20190108
+    local SCRIPT_VERSION=20190110
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") ($SCRIPT_VERSION) PID:[$$]"
@@ -1967,42 +1967,42 @@ ConvertSecs()
 ColourTextBrightWhite()
     {
 
-    echo -en '\E[1;97m'"$(PrintResetColours "$1")"
+    echo -en '\033[1;97m'"$(PrintResetColours "$1")"
 
     }
 
 ColourTextBrightGreen()
     {
 
-    echo -en '\E[1;32m'"$(PrintResetColours "$1")"
+    echo -en '\033[1;32m'"$(PrintResetColours "$1")"
 
     }
 
 ColourTextBrightOrange()
     {
 
-    echo -en '\E[1;38;5;214m'"$(PrintResetColours "$1")"
+    echo -en '\033[1;38;5;214m'"$(PrintResetColours "$1")"
 
     }
 
 ColourTextBrightRed()
     {
 
-    echo -en '\E[1;31m'"$(PrintResetColours "$1")"
+    echo -en '\033[1;31m'"$(PrintResetColours "$1")"
 
     }
 
 ColourTextBrightBlue()
     {
 
-    echo -en '\E[1;94m'"$(PrintResetColours "$1")"
+    echo -en '\033[1;94m'"$(PrintResetColours "$1")"
 
     }
 
 PrintResetColours()
     {
 
-    echo -en "$1"'\E[0m'
+    echo -en "$1"'\033[0m'
 
     }
 
