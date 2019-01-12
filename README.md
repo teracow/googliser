@@ -9,6 +9,11 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ![#f03c15](images/red.png) **Seeking more macOS testers** to check compatibility of this script with Apple's BASH. Please advise if you're able to help ensure it will run on Apple PCs. I'm currently coding to reduce reliance on external utilities, but this will take some time.
 
 ---
+## ![#c5f015](images/lime.png) Installation
+
+    $ curl -skLO https://git.io/googliser.sh && chmod +x googliser.sh
+
+---
 ## ![#c5f015](images/lime.png) Workflow
 
 1. The user supplies a search-phrase and some other optional parameters on the command line.
@@ -49,11 +54,6 @@ Debian/Ubuntu:
 macOS:
 
     $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
-
----
-## ![#c5f015](images/lime.png) Installation
-
-    $ curl -skLO https://git.io/googliser.sh && chmod +x googliser.sh
 
 ---
 ## ![#c5f015](images/lime.png) Usage
