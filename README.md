@@ -51,6 +51,11 @@ macOS:
     $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
+## ![#c5f015](images/lime.png) Installation
+
+    $ curl -skLO https://git.io/googliser.sh && chmod +x googliser.sh
+
+---
 ## ![#c5f015](images/lime.png) Usage
 
     $ ./googliser.sh [PARAMETERS] ...
