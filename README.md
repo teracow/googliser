@@ -34,12 +34,15 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --upper-size 100000 --lower-size 2000 --failures 0
+
 ![puppies](images/googliser-gallery-puppies-s.png)
 
     $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC -n16
+
 ![puppies](images/googliser-gallery-kittens-s.png)
 
     $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
+
 ![cows](images/googliser-gallery-cows-s.png)
 
 ---
