@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=20190110
+    local SCRIPT_VERSION=20190112
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") ($SCRIPT_VERSION) PID:[$$]"
@@ -814,8 +814,10 @@ ValidateParameters()
 
     }
 
-ProcessQuery()
+ProcSingleQuery()
     {
+
+    DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
     echo
 
@@ -929,6 +931,8 @@ ProcessQuery()
             fi
         fi
     fi
+
+    DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     return 0
 
@@ -2128,7 +2132,7 @@ if [[ $exitcode -eq 0 ]]; then
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
                     user_query="$file_query"
-                    ProcessQuery
+                    ProcSingleQuery
                 else
                     DebugThis '! ignoring $file_query' 'comment'
                 fi
@@ -2137,7 +2141,7 @@ if [[ $exitcode -eq 0 ]]; then
             fi
         done < "$input_pathfile"
     else
-        ProcessQuery
+        ProcSingleQuery
     fi
 fi
 
