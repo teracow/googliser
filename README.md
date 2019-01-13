@@ -16,7 +16,7 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ---
 ## ![#c5f015](images/lime.png) Workflow
 
-1. The user supplies a search-phrase and some other optional parameters on the command line.
+1. The user supplies a search-phrase and other optional parameters on the command-line.
 
 2. A sub-directory with the name of this search-phrase is created below the current directory.
 
@@ -95,7 +95,7 @@ Put the debug log into the image sub-directory afterward. If selected, debugging
 Delete the downloaded images after building the thumbnail gallery. Umm, don't specify this and `--no-gallery` at the same time.
 
 `-f` or `--failures [INTEGER]`
-How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if there are many failures).
+How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if you've previously had a lot of failures).
 
 `-h` or `--help`
 Display this help then exit.
@@ -186,9 +186,11 @@ Lightning mode! For those who really can't wait! Lightning mode downloads images
 **Usage Examples:**
 
     $ ./googliser.sh -p "cows"
+
 This will download the first 25 available images for the search-phrase *"cows"*
 
     $ ./googliser.sh --number 250 --phrase "kittens" --parallel 12 --failures 0
+
 This will download the first 250 available images for the search-phrase *"kittens"*, download up to 12 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
@@ -196,6 +198,7 @@ This will download the first 250 available images for the search-phrase *"kitten
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
     $ ./googliser.sh -n80 -p "storm clouds" -scN --debug
+
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
 
 ---
