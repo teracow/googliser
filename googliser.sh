@@ -72,11 +72,11 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=20190112
+    local SCRIPT_VERSION=20190114
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
-    local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") ($SCRIPT_VERSION) PID:[$$]"
-    local script_details_plain="$SCRIPT_FILE ($SCRIPT_VERSION) PID:[$$]"
+    local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
+    local script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
 
     # parameter defaults
     images_required_default=25
