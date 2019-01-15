@@ -249,12 +249,12 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.6 "Stretch" 64b*
+- [Debian](https://www.debian.org/) - *9.6 Stretch 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*
 - GNU Wget - *v1.18*
-- [ImageMagick](http://www.imagemagick.org) - *v6.9.7-4 Q16 x86_64 20170114*
+- [ImageMagick](http://www.imagemagick.org) - *v6.9.7-4 Q16*
 - Geany - *v1.29*
 - [ReText](https://github.com/retext-project/retext) - *v6.0.2*
 - Konsole - *v16.12.0*
@@ -268,5 +268,6 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 - [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
 - [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*
 - [Fedora](https://getfedora.org/) - *28 Workstation*
+- [Mint](https://linuxmint.com/) - *19.1 Tessa XFCE*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
