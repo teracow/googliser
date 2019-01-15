@@ -11,7 +11,7 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ---
 ## ![#c5f015](images/lime.png) Installation
 
-    $ wget -qN https://git.io/googliser.sh && chmod +x googliser.sh
+    $ wget -qN git.io/googliser.sh && chmod +x googliser.sh
 
 ---
 ## ![#c5f015](images/lime.png) Workflow
