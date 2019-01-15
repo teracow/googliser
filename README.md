@@ -48,7 +48,7 @@ These sample images have been scaled down for easier distribution.
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
-**googliser** is fully supported on Debian/Ubuntu and I'm working on support for macOS. Some extra binaries are required though. Please advise of any issues.
+**googliser** is fully supported on Fedora Workstation. Debian/Ubuntu and macOS will require some extra binaries. Please advise of any issues.
 
 Debian/Ubuntu:
 
@@ -266,6 +266,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
 - [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
-- macOS - *10.13 High Sierra*, *10.14 Mojave*
+- [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*
+- [Fedora](https://getfedora.org/) - *28 Workstation*
 
 Suggestions / comments / bug reports / advice (are|is) most welcome. :) [email me](mailto:teracow@gmail.com)
