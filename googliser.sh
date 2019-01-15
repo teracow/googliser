@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190114
+    local SCRIPT_VERSION=190115
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -1631,9 +1631,9 @@ InitDownloadsCounts()
 RefreshResultsCounts()
     {
 
-    parallel_count=$($CMD_LS -1 "$results_run_count_path" | wc -l)
-    success_count=$($CMD_LS -1 "$results_success_count_path" | wc -l)
-    fail_count=$($CMD_LS -1 "$results_fail_count_path" | wc -l)
+    parallel_count=$($CMD_LS -1 "$results_run_count_path" | wc -l); parallel_count=${parallel_count##* }
+    success_count=$($CMD_LS -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }
+    fail_count=$($CMD_LS -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }
 
     }
 
@@ -1660,9 +1660,9 @@ ShowResultDownloadProgress()
 RefreshDownloadCounts()
     {
 
-    parallel_count=$($CMD_LS -1 "$download_run_count_path" | wc -l)
-    success_count=$($CMD_LS -1 "$download_success_count_path" | wc -l)
-    fail_count=$($CMD_LS -1 "$download_fail_count_path" | wc -l)
+    parallel_count=$($CMD_LS -1 "$download_run_count_path" | wc -l); parallel_count=${parallel_count##* }
+    success_count=$($CMD_LS -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }
+    fail_count=$($CMD_LS -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }
 
     }
 
