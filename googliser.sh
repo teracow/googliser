@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190115
+    local SCRIPT_VERSION=190116
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -155,7 +155,6 @@ Init()
     fi
 
     DebugThis '= environment' '*** parameters after validation and adjustment ***'
-    DebugThis '? $user_query' "$user_query"
     DebugThis '? $images_required' "$images_required"
     DebugThis '? $user_fail_limit' "$user_fail_limit"
     DebugThis '? $max_results_required' "$max_results_required"
