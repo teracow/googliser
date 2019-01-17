@@ -1009,9 +1009,9 @@ DownloadResultGroup_auto()
     {
 
     # *** This function runs as a background process ***
-    # $1 = page group to load:      (0, 1, 2, 3, etc...)
+    # $1 = page group to load:          (0, 1, 2, 3, etc...)
     # $2 = pointer starts at result:    (0, 100, 200, 300, etc...)
-    # $3 = debug index identifier e.g. "02"
+    # $3 = debug index identifier       (e.g. "02")
 
     local result=0
     local search_group="&ijn=$1"
@@ -1031,11 +1031,11 @@ DownloadResultGroup_auto()
 
     DebugThis "- result group ($link_index) download" 'start'
 
-    local downloader_results_get_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+    local get_results_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 
-    DebugThis "? result group ($link_index) \$downloader_results_get_cmd" "$downloader_results_get_cmd"
+    DebugThis "? result group ($link_index) \$get_results_cmd" "$get_results_cmd"
 
-    response=$(eval "$downloader_results_get_cmd")
+    response=$(eval "$get_results_cmd")
     result=$?
 
     if [[ $result -eq 0 ]]; then
@@ -1201,10 +1201,10 @@ DownloadImage_auto()
     # are file size limits going to be applied before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
-        DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
+        local get_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
+        DebugThis "? link ($link_index) \$get_server_response_cmd" "$get_server_response_cmd"
 
-        response=$(eval "$downloader_server_response_cmd")
+        response=$(eval "$get_server_response_cmd")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1242,10 +1242,10 @@ DownloadImage_auto()
 
     # perform actual image download
     if [[ $get_download = true ]]; then
-        local downloader_get_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
-        DebugThis "? link ($link_index) \$downloader_get_cmd" "$downloader_get_cmd"
+        local get_image_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
+        DebugThis "? link ($link_index) \$get_image_cmd" "$get_image_cmd"
 
-        response=$(eval "$downloader_get_cmd")
+        response=$(eval "$get_image_cmd")
         result=$?
 
         if [[ $result -eq 0 ]]; then
