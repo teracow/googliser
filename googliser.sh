@@ -634,8 +634,8 @@ ValidateParameters()
             return 1
             ;;
         *)
-            if [[ $retries -lt 1 ]]; then
-                retries=1
+            if [[ $retries -lt 0 ]]; then
+                retries=0
                 DebugThis '~ $retries TOO LOW so set as' "$retries"
             fi
 
@@ -1201,7 +1201,7 @@ DownloadImage_auto()
     # are file size limits going to be applied before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$retries --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
+        local downloader_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
         DebugThis "? link ($link_index) \$downloader_server_response_cmd" "$downloader_server_response_cmd"
 
         response=$(eval "$downloader_server_response_cmd")
@@ -1242,7 +1242,7 @@ DownloadImage_auto()
 
     # perform actual image download
     if [[ $get_download = true ]]; then
-        local downloader_get_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$retries --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
+        local downloader_get_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
         DebugThis "? link ($link_index) \$downloader_get_cmd" "$downloader_get_cmd"
 
         response=$(eval "$downloader_get_cmd")
