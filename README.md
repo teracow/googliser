@@ -157,7 +157,7 @@ Some servers do not report a byte file-size, so this parameter will ensure these
 Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes).
 
 `-T` or `--title [STRING]`
-Specify a custom title for the gallery. Default is to use the search-phrase. Enclose whitespace in quotes e.g. *'This is what cows look like!'*
+Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify title as 'false'. Enclose whitespace in single or double-quotes according to taste. e.g. *'This is what cows look like!'*
 
 `--type [PRESET]`
 Image type to download. Preset values are:

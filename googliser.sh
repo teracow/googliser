@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190116
+    local SCRIPT_VERSION=190117
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -164,7 +164,6 @@ Init()
     DebugThis '? $upper_size_limit' "$upper_size_limit"
     DebugThis '? $lower_size_limit' "$lower_size_limit"
     DebugThis '? $create_gallery' "$create_gallery"
-    DebugThis '? $gallery_title' "$gallery_title"
     DebugThis '? $condensed_gallery' "$condensed_gallery"
     DebugThis '? $save_links' "$save_links"
     DebugThis '? $colour' "$colour"
@@ -292,7 +291,11 @@ WhatAreMyOptions()
                 shift 2
                 ;;
             -T|--title)
-                gallery_title="$2"
+                if [[ $(Lowercase "$2") = false ]]; then
+                    gallery_title="_false_"
+                else
+                    gallery_title="$2"
+                fi
                 shift 2
                 ;;
             -o|--output)
@@ -1378,6 +1381,7 @@ BuildGallery()
 
     InitProgress
 
+    # build thumbnails image overlay
     if [[ $verbose = true ]]; then
         echo -n " -> building gallery: "
 
@@ -1391,10 +1395,16 @@ BuildGallery()
         ProgressUpdater "$progress_message"
     fi
 
-    if [[ $condensed_gallery = true ]]; then
-        build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
+    if [[ $gallery_title = '_false_' ]]; then
+        reserve_for_title=''
     else
-        build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none -gravity north -splice 0x140 -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
+        reserve_for_title='-gravity north -splice 0x140'
+    fi
+
+    if [[ $condensed_gallery = true ]]; then
+        build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
+    else
+        build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugThis '? $build_foreground_cmd' "$build_foreground_cmd"
@@ -1408,6 +1418,7 @@ BuildGallery()
         DebugThis '! $build_foreground_cmd' "failed! montage returned: ($result)"
     fi
 
+    # build background image
     if [[ $result -eq 0 ]]; then
         if [[ $verbose = true ]]; then
             if [[ $colour = true ]]; then
@@ -1438,6 +1449,7 @@ BuildGallery()
         fi
     fi
 
+    # build title image overlay
     if [[ $result -eq 0 ]]; then
         if [[ $verbose = true ]]; then
             if [[ $colour = true ]]; then
@@ -1450,22 +1462,25 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
-        # create title image
-        # let's try a fixed height of 100 pixels
-        build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+        if [[ $gallery_title != '_false_' ]]; then
+            # create title image
+            # let's try a fixed height of 100 pixels
+            build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
-        DebugThis '? $build_title_cmd' "$build_title_cmd"
+            DebugThis '? $build_title_cmd' "$build_title_cmd"
 
-        eval $build_title_cmd 2>/dev/null
-        result=$?
+            eval $build_title_cmd 2>/dev/null
+            result=$?
 
-        if [[ $result -eq 0 ]]; then
-            DebugThis '$ $build_title_cmd' 'success!'
-        else
-            DebugThis '! $build_title_cmd' "failed! convert returned: ($result)"
+            if [[ $result -eq 0 ]]; then
+                DebugThis '$ $build_title_cmd' 'success!'
+            else
+                DebugThis '! $build_title_cmd' "failed! convert returned: ($result)"
+            fi
         fi
     fi
 
+    # compose thumbnail and title images onto background image
     if [[ $result -eq 0 ]]; then
         if [[ $verbose = true ]]; then
             if [[ $colour = true ]]; then
@@ -1478,8 +1493,14 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
+        if [[ $gallery_title = '_false_' ]]; then
+            include_title=''
+        else
+            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+40"
+        fi
+
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="convert \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center -composite \"$gallery_title_pathfile\" -gravity north -geometry +0+40 -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+        build_compose_cmd="convert \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
         DebugThis '? $build_compose_cmd' "$build_compose_cmd"
 
