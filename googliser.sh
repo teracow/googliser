@@ -72,7 +72,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190117
+    local SCRIPT_VERSION=190118
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -1201,10 +1201,10 @@ DownloadImage_auto()
     # are file size limits going to be applied before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        local get_server_response_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
-        DebugThis "? link ($link_index) \$get_server_response_cmd" "$get_server_response_cmd"
+        local get_image_size_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
+        DebugThis "? link ($link_index) \$get_image_size_cmd" "$get_image_size_cmd"
 
-        response=$(eval "$get_server_response_cmd")
+        response=$(eval "$get_image_size_cmd")
         result=$?
 
         if [[ $result -eq 0 ]]; then
