@@ -883,12 +883,12 @@ ProcSingleQuery()
         fail_limit=$user_fail_limit
         if [[ $fail_limit -gt $result_count ]]; then
             fail_limit=$result_count
-            DebugThis '~ $fail_limit too high so set as $result_count' "$fail_limit"
+            DebugThis '~ $fail_limit TOO HIGH so set as $result_count' "$fail_limit"
         fi
 
         if [[ $images_required -gt $result_count ]]; then
             images_required=$result_count
-            DebugThis '~ $images_required too high so set as $result_count' "$result_count"
+            DebugThis '~ $images_required TOO HIGH so set as $result_count' "$result_count"
         fi
     fi
 
@@ -1218,13 +1218,13 @@ DownloadImage_auto()
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) (before download) is too small!" "$estimated_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) (before download) is TOO SMALL!" "$estimated_size bytes < $lower_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) (before download) is too large!" "$estimated_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) (before download) is TOO LARGE!" "$estimated_size bytes > $upper_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
@@ -1262,13 +1262,13 @@ DownloadImage_auto()
                 fi
 
                 if [[ $actual_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) \$actual_size (after download) is too small!" "$actual_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) \$actual_size (after download) is TOO SMALL!" "$actual_size bytes < $lower_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) \$actual_size (after download) is too large!" "$actual_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) \$actual_size (after download) is TOO LARGE!" "$actual_size bytes > $upper_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
