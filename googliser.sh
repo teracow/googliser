@@ -53,7 +53,6 @@ case "$OSTYPE" in
         CMD_HEAD=ghead
         CMD_SED=gsed
         CMD_DU=gdu
-        CMD_LS=gls
         CMD_GETOPT="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
@@ -61,7 +60,6 @@ case "$OSTYPE" in
         CMD_HEAD=head
         CMD_SED=sed
         CMD_DU=du
-        CMD_LS=ls
         CMD_GETOPT=getopt
         ;;
 esac
@@ -73,7 +71,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190118
+    local SCRIPT_VERSION=190119
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -1686,9 +1684,9 @@ InitDownloadsCounts()
 RefreshResultsCounts()
     {
 
-    parallel_count=$($CMD_LS -1 "$results_run_count_path" | wc -l); parallel_count=${parallel_count##* }
-    success_count=$($CMD_LS -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }
-    fail_count=$($CMD_LS -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }
+    parallel_count=$(ls -1 "$results_run_count_path" | wc -l); parallel_count=${parallel_count##* }
+    success_count=$(ls -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }
+    fail_count=$(ls -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }
 
     }
 
@@ -1715,9 +1713,9 @@ ShowResultDownloadProgress()
 RefreshDownloadCounts()
     {
 
-    parallel_count=$($CMD_LS -1 "$download_run_count_path" | wc -l); parallel_count=${parallel_count##* }
-    success_count=$($CMD_LS -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }
-    fail_count=$($CMD_LS -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }
+    parallel_count=$(ls -1 "$download_run_count_path" | wc -l); parallel_count=${parallel_count##* }
+    success_count=$(ls -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }
+    fail_count=$(ls -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }
 
     }
 
@@ -1943,7 +1941,7 @@ CTRL_C_Captured()
 
     if [[ $parallel_count -gt 0 ]]; then
         # remove any image files where processing by [DownloadImage_auto] was incomplete
-        for currentfile in $($CMD_LS -1 "$download_run_count_path"); do
+        for currentfile in $(ls -1 "$download_run_count_path"); do
             rm -f "${target_path}/${image_file_prefix}($currentfile)".*
             DebugThis "= link ($currentfile) was partially processed" 'deleted!'
         done
