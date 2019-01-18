@@ -1524,7 +1524,7 @@ BuildGallery()
         if [[ $gallery_title = '_false_' ]]; then
             include_title=''
         else
-            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((title_height+10))"
+            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((border_thickness+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
