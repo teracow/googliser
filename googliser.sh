@@ -892,7 +892,7 @@ ProcSingleQuery()
             exitcode=3
             return 1
         else
-            DebugThis "$ create output directory [$target_path]" "success!"
+            DebugThis "$ create output directory [$target_path]" "success"
             target_path_created=true
         fi
     fi
@@ -1063,7 +1063,7 @@ DownloadResultGroup_auto()
     result=$?
 
     if [[ $result -eq 0 ]]; then
-        DebugThis "$ result group ($link_index) results download" 'success!'
+        DebugThis "$ result group ($link_index) results download" 'success'
         mv "$run_pathfile" "$success_pathfile"
     else
         DebugThis "! result group ($link_index) results download" "failed! downloader returned: ($result - $(WgetReturnCodes "$result"))"
@@ -1242,13 +1242,13 @@ DownloadImage_auto()
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size (before download) is TOO SMALL!" "$estimated_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) image size (before download) is TOO SMALL" "$estimated_size bytes < $lower_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size (before download) is TOO LARGE!" "$estimated_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) image size (before download) is TOO LARGE" "$estimated_size bytes > $upper_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
@@ -1286,13 +1286,13 @@ DownloadImage_auto()
                 fi
 
                 if [[ $actual_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size (after download) is TOO SMALL!" "$actual_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) image size (after download) is TOO SMALL" "$actual_size bytes < $lower_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size (after download) is TOO LARGE!" "$actual_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) image size (after download) is TOO LARGE" "$actual_size bytes > $upper_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
@@ -1306,8 +1306,8 @@ DownloadImage_auto()
 
                 if [[ $? -eq 0 ]]; then
                     mv "$run_pathfile" "$success_pathfile"
-                    DebugThis "$ link ($link_index) image type validation" 'success!'
-                    DebugThis "$ link ($link_index) image download" 'success!'
+                    DebugThis "$ link ($link_index) image type validation" 'success'
+                    DebugThis "$ link ($link_index) image download" 'success'
                     DebugThis "? link ($link_index) \$download_speed" "$download_speed"
                 else
                     DebugThis "! link ($link_index) image type validation" 'failed!'
@@ -1439,7 +1439,7 @@ BuildGallery()
     result=$?
 
     if [[ $result -eq 0 ]]; then
-        DebugThis '$ $build_foreground_cmd' 'success!'
+        DebugThis '$ $build_foreground_cmd' 'success'
     else
         DebugThis '! $build_foreground_cmd' "failed! montage returned: ($result)"
     fi
@@ -1469,7 +1469,7 @@ BuildGallery()
         result=$?
 
         if [[ $result -eq 0 ]]; then
-            DebugThis '$ $build_background_cmd' 'success!'
+            DebugThis '$ $build_background_cmd' 'success'
         else
             DebugThis '! $build_background_cmd' "failed! convert returned: ($result)"
         fi
@@ -1501,7 +1501,7 @@ BuildGallery()
             result=$?
 
             if [[ $result -eq 0 ]]; then
-                DebugThis '$ $build_title_cmd' 'success!'
+                DebugThis '$ $build_title_cmd' 'success'
             else
                 DebugThis '! $build_title_cmd' "failed! convert returned: ($result)"
             fi
@@ -1536,7 +1536,7 @@ BuildGallery()
         result=$?
 
         if [[ $result -eq 0 ]]; then
-            DebugThis '$ $build_compose_cmd' 'success!'
+            DebugThis '$ $build_compose_cmd' 'success'
         else
             DebugThis '! $build_compose_cmd' "failed! convert returned: ($result)"
         fi
@@ -1547,7 +1547,7 @@ BuildGallery()
     [[ -e $gallery_background_pathfile ]] && rm -f "$gallery_background_pathfile"
 
     if [[ $result -eq 0 ]]; then
-        DebugThis "$ [${FUNCNAME[0]}]" 'success!'
+        DebugThis "$ [${FUNCNAME[0]}]" 'success'
         if [[ $verbose = true ]]; then
             if [[ $colour = true ]]; then
                 ProgressUpdater "$(ColourTextBrightGreen 'done!')"
