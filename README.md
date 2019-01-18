@@ -238,7 +238,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - The thumbnail sizes in the gallery are no larger than 400 x 400 pixels. At least one dimension will be 400 pixels, though. So, requesting more images will result in a gallery image with larger dimensions.
 
-- Thumbnail gallery building can be disabled if not required by using `--no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file that is 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
+- Thumbnail gallery building can be disabled if not required by using `--no-gallery`. Why? As a test, I built from 380 images (totalling 32.6MB) which created a single gallery image file of 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
 
 - Typically, downloads run quite fast and then get slower as the required number of images is reached due to less parallel Wgets running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
 
