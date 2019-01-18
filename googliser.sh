@@ -155,7 +155,7 @@ Init()
         ValidateParameters
     fi
 
-    DebugThis '= environment' '*** parameters after validation and adjustment ***'
+    DebugThis '= environment' '*** runtime parameters after validation and adjustment ***'
     DebugThis '? $images_required' "$images_required"
     DebugThis '? $user_fail_limit' "$user_fail_limit"
     DebugThis '? $max_results_required' "$max_results_required"
@@ -845,6 +845,7 @@ ProcSingleQuery()
     DebugThis "\ [${FUNCNAME[0]}]" "entry"
 
     echo
+    DebugThis '= environment' '*** user query parameters ***'
 
     # some last-minute parameter validation - needed when reading phrases from text file
     if [[ -z $user_query ]]; then
@@ -874,24 +875,24 @@ ProcSingleQuery()
     DebugThis '? $target_path' "$target_path"
 
     if [[ $exitcode -eq 0 && -z $gallery_title ]]; then
-        gallery_title=$user_query
-        DebugThis '~ $gallery_title was unspecified so set as' "$gallery_title"
+        gallery_title="$user_query"
+        DebugThis '~ $gallery_title was unspecified so set as' "'$gallery_title'"
     fi
 
     # create directory for search phrase
     if [[ -e $target_path ]]; then
-        DebugThis '$ output directory already exists' "$target_path"
+        DebugThis '$ target path already exists' "$target_path"
     else
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
-            DebugThis "! create output directory [$target_path]" "failed! mkdir returned: ($result)"
+            DebugThis "! create target path" "failed! mkdir returned: ($result)"
             echo
-            echo "$(ShowAsFailed " !! couldn't create output directory [$target_path]")"
+            echo "$(ShowAsFailed " !! couldn't create target path [$target_path]")"
             exitcode=3
             return 1
         else
-            DebugThis "$ create output directory [$target_path]" "success"
+            DebugThis "$ create target path" "success"
             target_path_created=true
         fi
     fi
@@ -1493,7 +1494,7 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
-        DebugThis '? $gallery_title' "$gallery_title"
+        DebugThis '? $gallery_title' "'$gallery_title'"
 
         if [[ $gallery_title != '_false_' ]]; then
             # create title image
