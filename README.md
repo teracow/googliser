@@ -81,6 +81,9 @@ The shape of the image to download. Preset values are:
 - `wide`
 - `panoramic`
 
+`-b` or `--border-thickness [INTEGER]`
+Thickness of border surrounding the generated gallery image in pixels. Default is 30. Enter 0 for no border.
+
 `-c` or `--colour`
 Display with nice ANSI coloured text.
 

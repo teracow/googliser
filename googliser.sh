@@ -65,7 +65,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,usage-rights:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -88,6 +88,7 @@ Init()
     retries_default=3
     max_results_required=$images_required_default
     fail_limit=$fail_limit_default
+    border_thickness_default=30
 
     # limits
     google_max=1000
@@ -131,6 +132,7 @@ Init()
     output_path=''
     links_only=false
     dimensions=''
+    border_thickness=$border_thickness_default
 
     BuildWorkPaths
     WhatAreMyOptions
@@ -180,6 +182,7 @@ Init()
     DebugThis '? $output_path' "$output_path"
     DebugThis '? $links_only' "$links_only"
     DebugThis '? $dimensions' "$dimensions"
+    DebugThis '? $border_thickness' "$border_thickness"
     DebugThis '= environment' '*** internal parameters ***'
     DebugThis '? $google_max' "$google_max"
     DebugThis '? $temp_path' "$temp_path"
@@ -363,6 +366,10 @@ WhatAreMyOptions()
                 aspect_ratio="$2"
                 shift 2
                 ;;
+            -b|--border-thickness)
+                border_thickness="$2"
+                shift 2
+                ;;
             --type)
                 image_type="$2"
                 shift 2
@@ -409,7 +416,7 @@ DisplayHelp()
     echo
     echo " Questions or comments? teracow@gmail.com"
     echo
-    echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown in [ ]"
+    echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown as [n]."
     echo
 
     if [[ $colour = true ]]; then
@@ -426,15 +433,16 @@ DisplayHelp()
     FormatHelpLine '' '' "'square'"
     FormatHelpLine '' '' "'wide'"
     FormatHelpLine '' '' "'panoramic'"
+    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$border_thickness_default]. Use '0' for no border."
     FormatHelpLine c colour "Display with ANSI coloured text."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
     FormatHelpLine '' debug "Save the debug file [$debug_file] into the output directory."
     #FormatHelpLine d dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
-    FormatHelpLine f failures "Total number of download failures allowed before aborting. [$fail_limit_default] Use 0 for unlimited ($google_max)."
+    FormatHelpLine f failures "Total number of download failures allowed before aborting [$fail_limit_default]. Use '0' for unlimited ($google_max)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
-    FormatHelpLine l lower-size "Only download images that are larger than this many bytes. [$lower_size_limit_default]"
+    FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$lower_size_limit_default]."
     FormatHelpLine L links-only "Only get image file URLs. Don't download any images."
     FormatHelpLine m minimum-pixels "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
     FormatHelpLine '' '' "'qsvga' (400 x 300)"
@@ -454,23 +462,23 @@ DisplayHelp()
     FormatHelpLine '' '' "'large'"
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
-    FormatHelpLine n number "Number of images to download. [$images_required_default] Maximum of $google_max."
+    FormatHelpLine n number "Number of images to download [$images_required_default]. Maximum of $google_max."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
-    FormatHelpLine o output "The image output directory. [phrase]"
-    FormatHelpLine P parallel "How many parallel image downloads? [$parallel_limit_default] Maximum of $parallel_max. Use wisely!"
+    FormatHelpLine o output "The image output directory [phrase]."
+    FormatHelpLine P parallel "How many parallel image downloads? [$parallel_limit_default]. Maximum of $parallel_max. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
-    FormatHelpLine r retries "Retry image download this many times. [$retries_default] Maximum of $retries_max."
+    FormatHelpLine r retries "Retry image download this many times [$retries_default]. Maximum of $retries_max."
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
-    FormatHelpLine t timeout "Number of seconds before aborting each image download. [$timeout_default] Maximum of $timeout_max."
-    FormatHelpLine T title "Title for thumbnail gallery image. Enclose whitespace in quotes. [phrase]"
+    FormatHelpLine t timeout "Number of seconds before aborting each image download [$timeout_default]. Maximum of $timeout_max."
+    FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
     FormatHelpLine '' '' "'face'"
     FormatHelpLine '' '' "'photo'"
     FormatHelpLine '' '' "'clipart'"
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
-    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes. [$upper_size_limit_default] Use 0 for unlimited."
+    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$upper_size_limit_default]. Use '0' for unlimited."
     #FormatHelpLine '?' random "Download a single random image only"
     FormatHelpLine '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
@@ -679,6 +687,22 @@ ValidateParameters()
             if [[ $upper_size_limit -gt 0 && $lower_size_limit -gt $upper_size_limit ]]; then
                 lower_size_limit=$(($upper_size_limit-1))
                 DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
+            fi
+            ;;
+    esac
+
+    case ${border_thickness#[-+]} in
+        *[!0-9]*)
+            DebugThis '! specified $border_thickness' 'invalid'
+            echo
+            echo "$(ShowAsFailed ' !! number specified after (-b, --border-thickness) must be a valid integer')"
+            exitcode=2
+            return 1
+            ;;
+        *)
+            if [[ $border_thickness -lt 0 ]]; then
+                border_thickness=0
+                DebugThis '~ $border_thickness TOO LOW so set as' "$border_thickness"
             fi
             ;;
     esac
@@ -1378,6 +1402,8 @@ BuildGallery()
 
     local thumbnail_dimensions='400x400'
     local func_startseconds=$(date +%s)
+    local reserve_for_border="-border $border_thickness"
+    local title_height=100
 
     InitProgress
 
@@ -1398,13 +1424,13 @@ BuildGallery()
     if [[ $gallery_title = '_false_' ]]; then
         reserve_for_title=''
     else
-        reserve_for_title='-gravity north -splice 0x140'
+        reserve_for_title="-gravity north -splice 0x$((title_height+border_thickness+10))"
     fi
 
     if [[ $condensed_gallery = true ]]; then
-        build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none -border 30 \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugThis '? $build_foreground_cmd' "$build_foreground_cmd"
@@ -1462,10 +1488,12 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
+        DebugThis '? $gallery_title' "$gallery_title"
+
         if [[ $gallery_title != '_false_' ]]; then
             # create title image
             # let's try a fixed height of 100 pixels
-            build_title_cmd="convert -size x100 -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+            build_title_cmd="convert -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
             DebugThis '? $build_title_cmd' "$build_title_cmd"
 
@@ -1496,7 +1524,7 @@ BuildGallery()
         if [[ $gallery_title = '_false_' ]]; then
             include_title=''
         else
-            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+40"
+            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((title_height+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
@@ -1777,11 +1805,11 @@ FormatHelpLine()
     # $3 = description
 
     if [[ -n $1 && -n $2 ]]; then
-        printf "  -%-1s, --%-15s %s\n" "$1" "$2" "$3"
+        printf "  -%-1s, --%-17s %s\n" "$1" "$2" "$3"
     elif [[ -z $1 && -n $2 ]]; then
-        printf "   %-1s  --%-15s %s\n" '' "$2" "$3"
+        printf "   %-1s  --%-17s %s\n" '' "$2" "$3"
     else
-        printf "   %-1s    %-15s %s\n" '' '' "$3"
+        printf "   %-1s    %-17s %s\n" '' '' "$3"
     fi
 
     }
