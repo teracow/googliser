@@ -1221,7 +1221,7 @@ DownloadImage_auto()
     local targetimage_pathfile="${target_path}/${image_file_prefix}"
     local targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
 
-    # are file size limits going to be applied before download?
+    # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
         local get_image_size_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\""
@@ -1267,7 +1267,7 @@ DownloadImage_auto()
         fi
     fi
 
-    # perform actual image download
+    # perform image download
     if [[ $get_download = true ]]; then
         local get_image_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\""
         DebugThis "? link ($link_index) \$get_image_cmd" "'$get_image_cmd'"
