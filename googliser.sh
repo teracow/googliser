@@ -41,7 +41,8 @@
 #   /   function exit
 #   ?   variable value
 #   =   evaluation
-#   ~   variable had boundary issues so was set within bounds
+#   ~   variable was reset within bounds
+#   -   executing
 #   $   success
 #   !   failure
 #   T   elapsed time
@@ -1235,7 +1236,7 @@ DownloadImage_auto()
             estimated_size=$(grep 'Content-Length:' <<< "$response" | $CMD_SED 's|^.*: ||' )
 
             if [[ -z $estimated_size || $estimated_size = unspecified ]]; then
-                estimated_size='unknown'
+                estimated_size=unknown
             fi
 
             DebugThis "? link ($link_index) \$estimated_size" "$estimated_size bytes"
@@ -1260,7 +1261,11 @@ DownloadImage_auto()
             fi
         else
             DebugThis "! link ($link_index) image size (before download) server-response" 'failed!'
-            estimated_size='unknown'
+            if [[ $skip_no_size = true ]]; then
+                get_download=false
+            else
+                estimated_size=unknown
+            fi
         fi
     fi
 
@@ -1307,14 +1312,15 @@ DownloadImage_auto()
                 if [[ $? -eq 0 ]]; then
                     mv "$run_pathfile" "$success_pathfile"
                     DebugThis "$ link ($link_index) image type validation" 'success'
-                    DebugThis "$ link ($link_index) image download" 'success'
                     DebugThis "? link ($link_index) \$download_speed" "$download_speed"
+                    DebugThis "$ link ($link_index) image download" 'success'
                 else
                     DebugThis "! link ($link_index) image type validation" 'failed!'
                 fi
             else
                 # files that were outside size limits still count as failures
                 mv "$run_pathfile" "$fail_pathfile"
+                DebugThis "! link ($link_index) image download" 'failed!'
             fi
         else
             mv "$run_pathfile" "$fail_pathfile"
@@ -1325,6 +1331,7 @@ DownloadImage_auto()
         fi
     else
         mv "$run_pathfile" "$fail_pathfile"
+        DebugThis "! link ($link_index) image download" 'failed!'
     fi
 
     return 0
