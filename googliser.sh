@@ -139,7 +139,7 @@ Init()
 
     DebugThis '> started' "$script_starttime"
     DebugThis '? $script_details' "$script_details_plain"
-    DebugThis '? $user_parameters_raw' "$user_parameters_raw"
+    DebugThis '? $user_parameters_raw' "'$user_parameters_raw'"
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
@@ -1057,7 +1057,7 @@ DownloadResultGroup_auto()
 
     local get_results_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
 
-    DebugThis "? result group ($link_index) \$get_results_cmd" "$get_results_cmd"
+    DebugThis "? result group ($link_index) \$get_results_cmd" "'$get_results_cmd'"
 
     response=$(eval "$get_results_cmd")
     result=$?
@@ -1226,7 +1226,7 @@ DownloadImage_auto()
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
         local get_image_size_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\" 2>&1"
-        DebugThis "? link ($link_index) \$get_image_size_cmd" "$get_image_size_cmd"
+        DebugThis "? link ($link_index) \$get_image_size_cmd" "'$get_image_size_cmd'"
 
         response=$(eval "$get_image_size_cmd")
         result=$?
@@ -1267,7 +1267,7 @@ DownloadImage_auto()
     # perform actual image download
     if [[ $get_download = true ]]; then
         local get_image_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\" 2>&1"
-        DebugThis "? link ($link_index) \$get_image_cmd" "$get_image_cmd"
+        DebugThis "? link ($link_index) \$get_image_cmd" "'$get_image_cmd'"
 
         response=$(eval "$get_image_cmd")
         result=$?
@@ -1433,7 +1433,7 @@ BuildGallery()
         build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
-    DebugThis '? $build_foreground_cmd' "$build_foreground_cmd"
+    DebugThis '? $build_foreground_cmd' "'$build_foreground_cmd'"
 
     eval $build_foreground_cmd 2>/dev/null
     result=$?
@@ -1463,7 +1463,7 @@ BuildGallery()
         # create a dark image with light sphere in centre
         build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
 
-        DebugThis '? $build_background_cmd' "$build_background_cmd"
+        DebugThis '? $build_background_cmd' "'$build_background_cmd'"
 
         eval $build_background_cmd 2>/dev/null
         result=$?
@@ -1495,7 +1495,7 @@ BuildGallery()
             # let's try a fixed height of 100 pixels
             build_title_cmd="convert -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
-            DebugThis '? $build_title_cmd' "$build_title_cmd"
+            DebugThis '? $build_title_cmd' "'$build_title_cmd'"
 
             eval $build_title_cmd 2>/dev/null
             result=$?
@@ -1530,7 +1530,7 @@ BuildGallery()
         # compose thumbnails image on background image, then title image on top
         build_compose_cmd="convert \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
-        DebugThis '? $build_compose_cmd' "$build_compose_cmd"
+        DebugThis '? $build_compose_cmd' "'$build_compose_cmd'"
 
         eval $build_compose_cmd 2>/dev/null
         result=$?
@@ -1957,7 +1957,7 @@ DebugThis()
     # $1 = item
     # $2 = value
 
-    echo "$1: '$2'" >> "$debug_pathfile"
+    echo "$1: $2" >> "$debug_pathfile"
 
     }
 
