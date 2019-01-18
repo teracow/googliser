@@ -1280,7 +1280,7 @@ DownloadImage_auto()
             download_speed=$(grep -o '\([0-9.]\+ [KM]B/s\)' <<< "$response")
 
             if [[ -e $targetimage_pathfileext ]]; then
-                actual_size=$(wc -c < "$targetimage_pathfileext")
+                actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
 
                 if [[ $actual_size = $estimated_size ]]; then
                     DebugThis "? link ($link_index) image size (after download)" "$actual_size bytes (estimate was correct)"
@@ -1355,7 +1355,7 @@ ParseResults()
         [[ -e ${imagelinks_pathfile}.tmp ]] && mv ${imagelinks_pathfile}.tmp "$imagelinks_pathfile"
 
         # get link count
-        result_count=$(wc -l < "$imagelinks_pathfile")
+        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
 
         # if too many results then trim
         if [[ $result_count -gt $max_results_required ]]; then
