@@ -28,6 +28,19 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (like those shown below).
 
 ---
+## ![#c5f015](images/lime.png) Compatibility
+
+**googliser** is fully supported on Fedora Workstation & Manjaro. Debian/Ubuntu and macOS may require some extra binaries. Please advise of any issues.
+
+Debian/Ubuntu:
+
+    $ sudo apt install wget imagemagick
+
+macOS:
+
+    $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
+
+---
 ## ![#c5f015](images/lime.png) Outputs
 
 These sample images have been scaled down for easier distribution.
@@ -43,19 +56,6 @@ These sample images have been scaled down for easier distribution.
     $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
 
 ![cows](images/googliser-gallery-cows-s.png)
-
----
-## ![#c5f015](images/lime.png) Compatibility
-
-**googliser** is fully supported on Fedora Workstation & Manjaro. Debian/Ubuntu and macOS may require some extra binaries. Please advise of any issues.
-
-Debian/Ubuntu:
-
-    $ sudo apt install wget imagemagick
-
-macOS:
-
-    $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Usage
