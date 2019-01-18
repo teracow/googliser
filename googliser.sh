@@ -1211,7 +1211,7 @@ DownloadImage_auto()
     local success_pathfile="$download_success_count_path/$link_index"
     local fail_pathfile="$download_fail_count_path/$link_index"
 
-    DebugThis "- link ($link_index) image download" 'start'
+    DebugThis "- link ($link_index) processing" 'start'
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo ${1:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
@@ -1233,33 +1233,30 @@ DownloadImage_auto()
 
         if [[ $result -eq 0 ]]; then
             estimated_size=$(grep 'Content-Length:' <<< "$response" | $CMD_SED 's|^.*: ||' )
-
-            if [[ -z $estimated_size || $estimated_size = unspecified ]]; then
-                estimated_size=unknown
-            fi
+            [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
             DebugThis "? link ($link_index) \$estimated_size" "$estimated_size bytes"
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size before download is TOO SMALL" "$estimated_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) pre-download image size is TOO SMALL" "$estimated_size bytes < $lower_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size before download is TOO LARGE" "$estimated_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) pre-download image size is TOO LARGE" "$estimated_size bytes > $upper_size_limit bytes"
                     size_ok=false
                     get_download=false
                 fi
             else
                 if [[ $skip_no_size = true ]]; then
-                    DebugThis "! link ($link_index) image size before download unknown" 'failed!'
+                    DebugThis "! link ($link_index) pre-download image size is UNKNOWN" 'failed!'
                     get_download=false
                 fi
             fi
         else
-            DebugThis "! link ($link_index) image size before download server-response" 'failed!'
+            DebugThis "! link ($link_index) get pre-download image size" 'failed!'
             if [[ $skip_no_size = true ]]; then
                 get_download=false
             else
@@ -1284,19 +1281,19 @@ DownloadImage_auto()
                 actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
 
                 if [[ $actual_size = $estimated_size ]]; then
-                    DebugThis "? link ($link_index) image size after download" "$actual_size bytes (estimate was correct)"
+                    DebugThis "? link ($link_index) post-download image size" "$actual_size bytes (estimate was correct)"
                 else
-                    DebugThis "? link ($link_index) image size after download" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
+                    DebugThis "? link ($link_index) post-download image size" "$actual_size bytes (estimate of $estimated_size bytes was incorrect)"
                 fi
 
                 if [[ $actual_size -lt $lower_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size after download is TOO SMALL" "$actual_size bytes < $lower_size_limit bytes"
+                    DebugThis "! link ($link_index) post-download image size is TOO SMALL" "$actual_size bytes < $lower_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
 
                 if [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
-                    DebugThis "! link ($link_index) image size after download is TOO LARGE" "$actual_size bytes > $upper_size_limit bytes"
+                    DebugThis "! link ($link_index) post-download image size is TOO LARGE" "$actual_size bytes > $upper_size_limit bytes"
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
@@ -1330,7 +1327,7 @@ DownloadImage_auto()
         fi
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugThis "! link ($link_index) image download" 'failed!'
+        DebugThis "! link ($link_index) processing" 'failed!'
     fi
 
     return 0
