@@ -239,7 +239,7 @@ BuildWorkPaths()
     mkdir -p "$download_fail_count_path" || Flee
 
     testimage_pathfile="${temp_path}/${test_file}"
-    results_pathfile="${temp_path}/results.page.html"
+    searchresults_pathfile="${temp_path}/search.results.page.html"
     gallery_title_pathfile="${temp_path}/gallery.title.png"
     gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
     gallery_background_pathfile="${temp_path}/gallery.background.png"
@@ -1016,7 +1016,7 @@ DownloadResultGroups()
     ShowResultDownloadProgress
 
     # build all groups into a single file
-    cat ${results_pathfile}.* > "$results_pathfile"
+    cat ${searchresults_pathfile}.* > "$searchresults_pathfile"
 
     ParseResults
 
@@ -1055,7 +1055,7 @@ DownloadResultGroup_auto()
 
     DebugThis "- result group ($link_index) results download" 'start'
 
-    local get_results_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${results_pathfile}.$1\""
+    local get_results_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${searchresults_pathfile}.$1\""
 
     DebugThis "? result group ($link_index) \$get_results_cmd" "'$get_results_cmd'"
 
@@ -1341,7 +1341,7 @@ ParseResults()
 
     result_count=0
 
-    PageScraper
+    ScrapeSearchResultsPage
 
     if [[ -e $imagelinks_pathfile ]]; then
         # check against allowable file types
@@ -1891,10 +1891,12 @@ AllowableFileType()
 
     }
 
-PageScraper()
+ScrapeSearchResultsPage()
     {
 
-    #------------- when Google change their web-code again, these regexes will need to be changed too --------------
+    DebugThis "\ [${FUNCNAME[0]}]" 'entry'
+
+    #------------- these regexes will need updating when Google change their web-code again --------------
     #
     # sed   1. add 2 x newline chars before each occurence of '<div',
     #       2. remove ' notranslate' (if this is one of the odd times Google have added it),
@@ -1910,11 +1912,13 @@ PageScraper()
     #
     #---------------------------------------------------------------------------------------------------------------
 
-    cat "$results_pathfile" \
+    cat "$searchresults_pathfile" \
     | $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
     | $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
     > "$imagelinks_pathfile"
+
+    DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     }
 
