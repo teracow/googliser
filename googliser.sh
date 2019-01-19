@@ -64,7 +64,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o:,R: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions:,recent: -n $($CMD_READLINK -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -88,6 +88,7 @@ Init()
     max_results_required=$images_required_default
     fail_limit=$fail_limit_default
     border_thickness_default=30
+    recent_default=any
 
     # limits
     google_max=1000
@@ -113,6 +114,7 @@ Init()
     retries=$retries_default
     upper_size_limit=$upper_size_limit_default
     lower_size_limit=$lower_size_limit_default
+    recent=$recent_default
     create_gallery=true
     gallery_title=''
     condensed_gallery=false
@@ -164,6 +166,7 @@ Init()
     DebugThis '? $retries' "$retries"
     DebugThis '? $upper_size_limit' "$upper_size_limit"
     DebugThis '? $lower_size_limit' "$lower_size_limit"
+    DebugThis '? $recent' "$recent"
     DebugThis '? $create_gallery' "$create_gallery"
     DebugThis '? $condensed_gallery' "$condensed_gallery"
     DebugThis '? $save_links' "$save_links"
@@ -369,6 +372,10 @@ WhatAreMyOptions()
                 border_thickness="$2"
                 shift 2
                 ;;
+            -R|--recent)
+                recent="$2"
+                shift 2
+                ;;
             --type)
                 image_type="$2"
                 shift 2
@@ -467,6 +474,13 @@ DisplayHelp()
     FormatHelpLine P parallel "How many parallel image downloads? [$parallel_limit_default]. Maximum of $parallel_max. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
     FormatHelpLine r retries "Retry image download this many times [$retries_default]. Maximum of $retries_max."
+    FormatHelpLine R recent "Only get images published this far back in time [$recent_default]. Specify like '--recent month'. Presets are:"
+    FormatHelpLine '' '' "'any'"
+    FormatHelpLine '' '' "'hour'"
+    FormatHelpLine '' '' "'day'"
+    FormatHelpLine '' '' "'week'"
+    FormatHelpLine '' '' "'month'"
+    FormatHelpLine '' '' "'year'"
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$timeout_default]. Maximum of $timeout_max."
@@ -829,8 +843,37 @@ ValidateParameters()
         esac
     fi
 
-    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search ]]; then
-        advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search},${usage_rights_search}"
+    if [[ -n $recent ]]; then
+        case "$recent" in
+            any)
+                recent_search=''
+                ;;
+            hour)
+                recent_search='qdr:h'
+                ;;
+            day)
+                recent_search='qdr:d'
+                ;;
+            week)
+                recent_search='qdr:w'
+                ;;
+            month)
+                recent_search='qdr:m'
+                ;;
+            year)
+                recent_search='qdr:y'
+                ;;
+            *)
+                echo
+                echo "$(ShowAsFailed ' !! (--recent) preset invalid')"
+                exitcode=2
+                return 1
+                ;;
+        esac
+    fi
+
+    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search || -n $recent_search ]]; then
+        advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search},${usage_rights_search},${recent_search}"
     fi
 
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'

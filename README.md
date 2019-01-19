@@ -150,6 +150,16 @@ Suppress standard display output. Error messages are still shown.
 `-r` or `--retries [INTEGER]`
 Number of download retries for each image. Default is 3. Maximum is 100.
 
+`-R` or `--recent [PRESET]`
+Only get images published this far back in time. Default is any. Preset values are:
+
+- `any`
+- `hour`
+- `day`
+- `week`
+- `month`
+- `year`
+
 `-s` or `--save-links`
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
 
