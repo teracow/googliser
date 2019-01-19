@@ -1370,8 +1370,9 @@ DownloadImage_auto()
         fi
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugThis "! link ($link_index) processing" 'failed!'
     fi
+
+    DebugThis "- link ($link_index) processing" 'finished'
 
     return 0
 
