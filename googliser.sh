@@ -1288,7 +1288,7 @@ DownloadImage_auto()
             estimated_size="$(grep -i 'content-length:' <<< $response | $CMD_SED 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
-            DebugThis "? link ($link_index) \$estimated_size" "$estimated_size bytes"
+            DebugThis "? link ($link_index) pre-download image size estimate" "$estimated_size bytes"
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]]; then
