@@ -1309,7 +1309,8 @@ DownloadImage_auto()
                 fi
             fi
         else
-            DebugThis "! link ($link_index) get pre-download image size" 'failed!'
+            DebugThis "! link ($link_index) get pre-download image size" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+
             if [[ $skip_no_size = true ]]; then
                 get_download=false
             else
