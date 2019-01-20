@@ -1563,7 +1563,7 @@ BuildGallery()
             progress_message='stage 1/4'
         fi
 
-        progress_message+=' (construct thumbnails)'
+        progress_message+=' (compose thumbnails)'
         ProgressUpdater "$progress_message"
     fi
 
@@ -1599,7 +1599,7 @@ BuildGallery()
                 progress_message='stage 2/4'
             fi
 
-            progress_message+=' (draw background pattern)'
+            progress_message+=' (draw background)'
             ProgressUpdater "$progress_message"
         fi
 
@@ -1630,7 +1630,7 @@ BuildGallery()
                 progress_message='stage 3/4'
             fi
 
-            progress_message+=' (draw title text image)'
+            progress_message+=' (draw title)'
             ProgressUpdater "$progress_message"
         fi
 
@@ -1663,7 +1663,7 @@ BuildGallery()
                 progress_message='stage 4/4'
             fi
 
-            progress_message+=' (compile all images)'
+            progress_message+=' (compose images)'
             ProgressUpdater "$progress_message"
         fi
 
