@@ -1435,7 +1435,7 @@ Downloader_GetHeaders()
     local output_pathfile="$3"
 
     if [[ $(basename $downloader_bin) = wget ]]; then
-        local get_headers_cmd="$downloader_bin --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+        local get_headers_cmd="$downloader_bin --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $downloader_bin) = curl ]]; then
         local get_headers_cmd="$downloader_bin --silent --head --insecure --max-time 30 $useragent_string \"$URL\""
     else
@@ -1463,7 +1463,7 @@ Downloader_GetFile()
     local output_pathfile="$3"
 
     if [[ $(basename $downloader_bin) = wget ]]; then
-        local get_image_cmd="$downloader_bin --max-redirect 0 --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+        local get_image_cmd="$downloader_bin --max-redirect 0 --no-check-certificate --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $downloader_bin) = curl ]]; then
         local get_image_cmd="$downloader_bin --silent --max-time 30 $useragent_string --output \"$output_pathfile\" \"$URL\""
     else
