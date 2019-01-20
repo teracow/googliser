@@ -1112,16 +1112,16 @@ DownloadResultGroup_auto()
     local success_pathfile="$results_success_count_path/$link_index"
     local fail_pathfile="$results_fail_count_path/$link_index"
 
-    DebugThis "- result group ($link_index) results download" 'start'
+    DebugThis "- result group ($link_index) processing" 'start'
 
     response=$(Downloader_GetResults "$page_group" "$link_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
-        DebugThis "$ result group ($link_index) results download" 'success'
+        DebugThis "$ result group ($link_index) processing" 'success'
         mv "$run_pathfile" "$success_pathfile"
     else
-        DebugThis "! result group ($link_index) results download" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+        DebugThis "! result group ($link_index) processing" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
         mv "$run_pathfile" "$fail_pathfile"
     fi
 
@@ -2085,9 +2085,9 @@ Downloader_ReturnCodes()
     # $1 = downloader return code
     # echo = return code description
 
-    if [[ $downloader_bin = wget ]]; then
+    if [[ $(basename $downloader_bin) = wget ]]; then
         WgetReturnCodes "$1"
-    elif [[ $downloader_bin = curl ]]; then
+    elif [[ $(basename $downloader_bin) = curl ]]; then
         CurlReturnCodes "$1"
     else
         DebugThis "! no return codes available for this downloader"
