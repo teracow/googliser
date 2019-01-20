@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** to download images in parallel then combines them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** (or [cURL](https://github.com/curl/curl)) to download images in parallel then combines them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to June 2018.
 
@@ -228,9 +228,9 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Notes
 
-- I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images.
+- I wrote this script so users don't need to obtain an API key from Google to download multiple images.
 
-- It prefers to use [GNU Wget](https://en.wikipedia.org/wiki/Wget) but will use [cURL](https://github.com/curl/curl) if it can find it.
+- The downloader prefers to use [GNU Wget](https://en.wikipedia.org/wiki/Wget) but can also use [cURL](https://github.com/curl/curl) if it's available.
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
@@ -250,7 +250,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - Thumbnail gallery building can be disabled if not required by using `--no-gallery`. Why? As a test, I built a gallery from 380 images (totalling 32.6MB) which created a file of 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
 
-- Typically, downloads run quite fast and then get slower as the required number of images is reached, as less parallel Wgets are running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
+- Typically, downloads run quite fast and then get slower as the required number of images is reached, as less parallel downloads are running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
 
 - Sometimes, you may also see a slowdown when downloading the last image (e.g. when something like 24 out of 25 images have downloaded without issue). This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
 
