@@ -26,7 +26,7 @@
 
 # return values ($?):
 #   0   completed successfully
-#   1   required program unavailable (wget, montage, convert)
+#   1   required/alternative program unavailable (wget, curl, montage, convert, identify)
 #   2   required parameter unspecified or wrong
 #   3   could not create output directory for 'phrase'
 #   4   could not get a list of search results from Google
@@ -71,7 +71,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190119
+    local SCRIPT_VERSION=190120
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -103,6 +103,7 @@ Init()
     useragent='Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0'
     target_path_created=false
     show_help_only=false
+    useragent_string="--user-agent \"$useragent\""
     exitcode=0
 
     # user changable parameters
@@ -189,14 +190,34 @@ Init()
     DebugThis '? $google_max' "$google_max"
     DebugThis '? $temp_path' "$temp_path"
 
-    IsReqProgAvail 'wget' || { exitcode=1; return 1 ;}
-
-    if [[ $create_gallery = true && $show_help_only = false ]]; then
-        IsReqProgAvail montage || { exitcode=1; return 1 ;}
-        IsReqProgAvail convert || { exitcode=1; return 1 ;}
+    if ! downloader_bin=$(which wget); then
+        if ! downloader_bin=$(which curl); then
+            DebugThis "! no recognised 'downloader' binary found"
+            exitcode=1
+            return 1
+        fi
     fi
 
-    IsOptProgAvail identify && ident=true || ident=false
+    DebugThis '? $downloader_bin' "$downloader_bin"
+
+    if [[ $create_gallery = true && $show_help_only = false ]]; then
+        if ! montage_bin=$(which montage); then
+            DebugThis "! no recognised 'montage' binary found"
+            exitcode=1
+            return 1
+        elif ! convert_bin=$(which convert); then
+            DebugThis "! no recognised 'convert' binary found"
+            exitcode=1
+            return 1
+        fi
+    fi
+
+    DebugThis '? $montage_bin' "$montage_bin"
+    DebugThis '? $convert_bin' "$convert_bin"
+
+    ! identify_bin=$(which identify) && DebugThis "! no recognised 'identify' binary found"
+
+    DebugThis '? $identify_bin' "$identify_bin"
 
     trap CTRL_C_Captured INT
 
@@ -417,7 +438,7 @@ DisplayHelp()
     echo
     echo " search '$message', download from each of the image URLs, then create a gallery image using ImageMagick."
     echo
-    echo " External requirements: Wget"
+    echo " External requirements: Wget or cURL"
     echo " and optionally: identify, montage & convert (from ImageMagick)"
     echo
     echo " Questions or comments? teracow@gmail.com"
@@ -1080,17 +1101,12 @@ DownloadResultGroup_auto()
     # $2 = pointer starts at result:    (0, 100, 200, 300, etc...)
     # $3 = debug index identifier       (e.g. "02")
 
-    local result=0
-    local search_group="&ijn=$1"
+    local page_group="$1"
+    local search_group="&ijn=$page_group"
     local search_start="&start=$2"
-    local response=''
     local link_index="$3"
-
-    # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-    local search_type='&tbm=isch'       # search for images
-    local search_language='&hl=en'      # language
-    local search_style='&site=imghp'    # result layout style
-    local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+    local response=''
+    local result=0
 
     local run_pathfile="$results_run_count_path/$link_index"
     local success_pathfile="$results_success_count_path/$link_index"
@@ -1098,18 +1114,14 @@ DownloadResultGroup_auto()
 
     DebugThis "- result group ($link_index) results download" 'start'
 
-    local get_results_cmd="wget --quiet --timeout=5 --tries=3 \"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\" --user-agent '$useragent' --output-document \"${searchresults_pathfile}.$1\""
-
-    DebugThis "? result group ($link_index) \$get_results_cmd" "'$get_results_cmd'"
-
-    response=$(eval "$get_results_cmd")
+    response=$(Downloader_GetResults "$page_group" "$link_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
         DebugThis "$ result group ($link_index) results download" 'success'
         mv "$run_pathfile" "$success_pathfile"
     else
-        DebugThis "! result group ($link_index) results download" "failed! downloader returned: ($result - $(WgetReturnCodes "$result"))"
+        DebugThis "! result group ($link_index) results download" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
         mv "$run_pathfile" "$fail_pathfile"
     fi
 
@@ -1244,11 +1256,12 @@ DownloadImage_auto()
     # $1 = URL to download
     # $2 = debug index identifier e.g. "0026"
 
-    local result=0
-    local size_ok=true
-    local get_download=true
-    local response=''
+    local URL="$1"
     local link_index="$2"
+    local get_download=true
+    local size_ok=true
+    local response=''
+    local result=0
 
     local run_pathfile="$download_run_count_path/$link_index"
     local success_pathfile="$download_success_count_path/$link_index"
@@ -1268,14 +1281,11 @@ DownloadImage_auto()
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        local get_image_size_cmd="wget --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$testimage_pathfileext\" \"$1\""
-        DebugThis "? link ($link_index) \$get_image_size_cmd" "'$get_image_size_cmd'"
-
-        response=$(eval "$get_image_size_cmd" 2>&1)
+        response="$(Downloader_GetHeaders "$URL" "$link_index" "$testimage_pathfileext")"
         result=$?
 
         if [[ $result -eq 0 ]]; then
-            estimated_size=$(grep 'Content-Length:' <<< "$response" | $CMD_SED 's|^.*: ||' )
+            estimated_size="$(grep -i 'content-length:' <<< $response | $CMD_SED 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
             DebugThis "? link ($link_index) \$estimated_size" "$estimated_size bytes"
@@ -1310,10 +1320,7 @@ DownloadImage_auto()
 
     # perform image download
     if [[ $get_download = true ]]; then
-        local get_image_cmd="wget --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) --user-agent \"$useragent\" --output-document \"$targetimage_pathfileext\" \"$1\""
-        DebugThis "? link ($link_index) \$get_image_cmd" "'$get_image_cmd'"
-
-        response=$(eval "$get_image_cmd" 2>&1)
+        response=$(Downloader_GetFile "$URL" "$link_index" "$targetimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1363,7 +1370,7 @@ DownloadImage_auto()
             fi
         else
             mv "$run_pathfile" "$fail_pathfile"
-            DebugThis "! link ($link_index) image download" "failed! downloader returned $result ($(WgetReturnCodes "$result"))"
+            DebugThis "! link ($link_index) image download" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
 
             # delete temp file if one was created
             [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
@@ -1375,6 +1382,97 @@ DownloadImage_auto()
     DebugThis "- link ($link_index) processing" 'finished'
 
     return 0
+
+    }
+
+Downloader_GetResults()
+    {
+
+    # $1 = URL to check
+    # $2 = debug index identifier e.g. (0002)
+    # echo = downloader stdout & stderr
+    # $? = downloader return code
+
+    local URL="$1"
+    local link_index="$2"
+
+    # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
+    local search_type='&tbm=isch'       # search for images
+    local search_language='&hl=en'      # language
+    local search_style='&site=imghp'    # result layout style
+    local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+
+    # compiled search string
+    local search_string="\"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+
+    if [[ $(basename $downloader_bin) = wget ]]; then
+        local get_results_cmd="$downloader_bin --quiet --timeout=5 --tries=3 $search_string $useragent_string --output-document \"${searchresults_pathfile}.$URL\""
+    elif [[ $(basename $downloader_bin) = curl ]]; then
+        local get_results_cmd="$downloader_bin --max-time 30 $search_string $useragent_string --output \"${searchresults_pathfile}.$URL\""
+    else
+        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+        return 1
+    fi
+
+    DebugThis "? result group ($link_index) \$get_results_cmd" "'$get_results_cmd'"
+
+    eval "$get_results_cmd" 2>&1
+
+    }
+
+Downloader_GetHeaders()
+    {
+
+    # $1 = URL to check
+    # $2 = debug index identifier e.g. (0002)
+    # $3 = temporary filename to download to (only used by Wget)
+    # echo = header string
+    # $? = downloader return code
+
+    local URL="$1"
+    local link_index="$2"
+    local output_pathfile="$3"
+
+    if [[ $(basename $downloader_bin) = wget ]]; then
+        local get_headers_cmd="$downloader_bin --spider --server-response --max-redirect 0 --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+    elif [[ $(basename $downloader_bin) = curl ]]; then
+        local get_headers_cmd="$downloader_bin --silent --head --insecure --max-time 30 $useragent_string \"$URL\""
+    else
+        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+        return 1
+    fi
+
+    DebugThis "? link ($link_index) \$get_headers_cmd" "'$get_headers_cmd'"
+
+    eval "$get_headers_cmd" 2>&1
+
+    }
+
+Downloader_GetFile()
+    {
+
+    # $1 = URL to check
+    # $2 = debug index identifier e.g. (0002)
+    # $3 = filename to download to
+    # echo = downloader stdout & stderr
+    # $? = downloader return code
+
+    local URL="$1"
+    local link_index="$2"
+    local output_pathfile="$3"
+
+    if [[ $(basename $downloader_bin) = wget ]]; then
+        local get_image_cmd="$downloader_bin --max-redirect 0 --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+    elif [[ $(basename $downloader_bin) = curl ]]; then
+        local get_image_cmd="$downloader_bin --silent --max-time 30 $useragent_string --output \"$output_pathfile\" \"$URL\""
+    else
+        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+        return 1
+    fi
+
+    DebugThis "? link ($link_index) \$get_image_cmd" "'$get_image_cmd'"
+
+    eval "$get_image_cmd" 2>&1
 
     }
 
@@ -1475,9 +1573,9 @@ BuildGallery()
     fi
 
     if [[ $condensed_gallery = true ]]; then
-        build_foreground_cmd="convert \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$convert_bin \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        build_foreground_cmd="montage \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$montage_bin \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugThis '? $build_foreground_cmd' "'$build_foreground_cmd'"
@@ -1505,10 +1603,10 @@ BuildGallery()
         fi
 
         # get image dimensions
-        read -r width height <<< $(convert -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
+        read -r width height <<< $($convert_bin -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
 
         # create a dark image with light sphere in centre
-        build_background_cmd="convert -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
+        build_background_cmd="$convert_bin -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
 
         DebugThis '? $build_background_cmd' "'$build_background_cmd'"
 
@@ -1540,7 +1638,7 @@ BuildGallery()
         if [[ $gallery_title != '_false_' ]]; then
             # create title image
             # let's try a fixed height of 100 pixels
-            build_title_cmd="convert -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+            build_title_cmd="$convert_bin -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
             DebugThis '? $build_title_cmd' "'$build_title_cmd'"
 
@@ -1575,7 +1673,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="convert \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+        build_compose_cmd="$convert_bin \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
         DebugThis '? $build_compose_cmd' "'$build_compose_cmd'"
 
@@ -1806,37 +1904,6 @@ ShowImageDownloadProgress()
 
     }
 
-IsReqProgAvail()
-    {
-
-    # $1 = search $PATH for this binary with 'which'
-    # $? = 0 if found, 1 if not found
-
-    if (which "$1" > /dev/null 2>&1); then
-        DebugThis '$ required program IS available' "$1"
-    else
-        echo " !! required program [$1] IS NOT available"
-        DebugThis '! required program IS NOT available' "$1"
-        return 1
-    fi
-
-    }
-
-IsOptProgAvail()
-    {
-
-    # $1 = search $PATH for this binary with 'which'
-    # $? = 0 if found, 1 if not found
-
-    if (which "$1" >/dev/null 2>&1); then
-        DebugThis '$ optional program IS available' "$1"
-    else
-        DebugThis '! optional program IS NOT available' "$1"
-        return 1
-    fi
-
-    }
-
 ShowGoogle()
     {
 
@@ -1870,12 +1937,12 @@ RenameExtAsType()
 
     local returncode=0
 
-    if [[ $ident = true ]]; then
+    if [[ -n $identify_bin ]]; then
         [[ -z $1 ]] && returncode=1
         [[ ! -e $1 ]] && returncode=1
 
         if [[ $returncode -eq 0 ]]; then
-            rawtype=$(identify -format "%m" "$1")
+            rawtype=$($identify_bin -format "%m" "$1")
             returncode=$?
         fi
 
@@ -2012,13 +2079,30 @@ DebugThis()
 
     }
 
+Downloader_ReturnCodes()
+    {
+
+    # $1 = downloader return code
+    # echo = return code description
+
+    if [[ $downloader_bin = wget ]]; then
+        WgetReturnCodes "$1"
+    elif [[ $downloader_bin = curl ]]; then
+        CurlReturnCodes "$1"
+    else
+        DebugThis "! no return codes available for this downloader"
+        return 1
+    fi
+
+    }
+
 WgetReturnCodes()
     {
 
-    # convert wget return code into a description
+    # convert Wget return code into a description
     # https://gist.github.com/cosimo/5747881#file-wget-exit-codes-txt
 
-    # $1 = wget return code
+    # $1 = Wget return code
     # echo = text string
 
     case "$1" in
@@ -2048,6 +2132,269 @@ WgetReturnCodes()
             ;;
         *)
             echo "Generic error code"
+            ;;
+    esac
+
+    }
+
+CurlReturnCodes()
+    {
+
+    # convert cURL return code into a description
+    # https://ec.haxx.se/usingcurl-returns.html
+
+    # $1 = cURL return code
+    # echo = text string
+
+    case "$1" in
+        0)
+            echo "No problems occurred"
+            ;;
+        1)
+            echo "Unsupported protocol"
+            ;;
+        2)
+            echo "Failed to initialize"
+            ;;
+        3)
+            echo "URL malformed"
+            ;;
+        4)
+            echo "A feature or option that was needed to perform the desired request was not enabled or was explicitly disabled at build-time"
+            ;;
+        5)
+            echo "Couldn't resolve proxy"
+            ;;
+        6)
+            echo "Couldn't resolve host"
+            ;;
+        7)
+            echo "Failed to connect to host"
+            ;;
+        8)
+            echo "Unknown FTP server response"
+            ;;
+        9)
+            echo "FTP access denied"
+            ;;
+        10)
+            echo "FTP accept failed"
+            ;;
+        11)
+            echo "FTP weird PASS reply"
+            ;;
+        12)
+            echo "During an active FTP session (PORT is used) while waiting for the server to connect, the timeout expired"
+            ;;
+        13)
+            echo "Unknown response to FTP PASV command, Curl could not parse the reply sent to the PASV request"
+            ;;
+        14)
+            echo "Unknown FTP 227 format"
+            ;;
+        15)
+            echo "FTP can't get host"
+            ;;
+        16)
+            echo "HTTP/2 error"
+            ;;
+        17)
+            echo "FTP couldn't set binary"
+            ;;
+        18)
+            echo "Partial file"
+            ;;
+        19)
+            echo "FTP couldn't download/access the given file"
+            ;;
+        21)
+            echo "Quote error"
+            ;;
+        22)
+            echo "HTTP page not retrieved"
+            ;;
+        23)
+            echo "Write error"
+            ;;
+        25)
+            echo "Upload failed"
+            ;;
+        26)
+            echo "Read error"
+            ;;
+        27)
+            echo "Out of memory"
+            ;;
+        28)
+            echo "Operation timeout"
+            ;;
+        30)
+            echo "FTP PORT failed"
+            ;;
+        31)
+            echo "FTP couldn't use REST"
+            ;;
+        33)
+            echo "HTTP range error"
+            ;;
+        34)
+            echo "HTTP post error"
+            ;;
+        35)
+            echo "A TLS/SSL connect error"
+            ;;
+        36)
+            echo "Bad download resume"
+            ;;
+        37)
+            echo "Couldn't read the given file when using the FILE:// scheme"
+            ;;
+        38)
+            echo "LDAP cannot bind"
+            ;;
+        39)
+            echo "LDAP search failed"
+            ;;
+        42)
+            echo "Aborted by callback"
+            ;;
+        43)
+            echo "Bad function argument"
+            ;;
+        45)
+            echo "Interface error"
+            ;;
+        47)
+            echo "Too many redirects"
+            ;;
+        48)
+            echo "Unknown option specified to libcurl"
+            ;;
+        49)
+            echo "Malformed telnet option"
+            ;;
+        51)
+            echo "The server's SSL/TLS certificate or SSH fingerprint failed verification"
+            ;;
+        52)
+            echo "The server did not reply anything, which in this context is considered an error"
+            ;;
+        53)
+            echo "SSL crypto engine not found"
+            ;;
+        54)
+            echo "Cannot set SSL crypto engine as default"
+            ;;
+        55)
+            echo "Failed sending network data"
+            ;;
+        56)
+            echo "Failure in receiving network data"
+            ;;
+        58)
+            echo "Problem with the local certificate"
+            ;;
+        59)
+            echo "Couldn't use the specified SSL cipher"
+            ;;
+        60)
+            echo "Peer certificate cannot be authenticated with known CA certificates"
+            ;;
+        61)
+            echo "Unrecognized transfer encoding"
+            ;;
+        62)
+            echo "Invalid LDAP URL"
+            ;;
+        63)
+            echo "Maximum file size exceeded"
+            ;;
+        64)
+            echo "Requested FTP SSL level failed"
+            ;;
+        65)
+            echo "Sending the data requires a rewind that failed"
+            ;;
+        66)
+            echo "Failed to initialize SSL Engine"
+            ;;
+        67)
+            echo "The user name, password, or similar was not accepted and curl failed to log in"
+            ;;
+        68)
+            echo "File not found on TFTP server"
+            ;;
+        69)
+            echo "Permission problem on TFTP server"
+            ;;
+        70)
+            echo "Out of disk space on TFTP server"
+            ;;
+        71)
+            echo "Illegal TFTP operation"
+            ;;
+        72)
+            echo "Unknown TFTP transfer ID"
+            ;;
+        73)
+            echo "File already exists (TFTP)"
+            ;;
+        74)
+            echo "No such user (TFTP)"
+            ;;
+        75)
+            echo "Character conversion failed"
+            ;;
+        76)
+            echo "Character conversion functions required"
+            ;;
+        77)
+            echo "Problem with reading the SSL CA cert"
+            ;;
+        78)
+            echo "The resource referenced in the URL does not exist"
+            ;;
+        79)
+            echo "An unspecified error occurred during the SSH session"
+            ;;
+        80)
+            echo "Failed to shut down the SSL connection"
+            ;;
+        82)
+            echo "Could not load CRL file, missing or wrong format"
+            ;;
+        83)
+            echo "TLS certificate issuer check failed"
+            ;;
+        84)
+            echo "The FTP PRET command failed"
+            ;;
+        85)
+            echo "RTSP: mismatch of CSeq numbers"
+            ;;
+        86)
+            echo "RTSP: mismatch of Session Identifiers"
+            ;;
+        87)
+            echo "unable to parse FTP file list"
+            ;;
+        88)
+            echo "FTP chunk callback reported error"
+            ;;
+        89)
+            echo "No connection available, the session will be queued"
+            ;;
+        90)
+            echo "SSL public key does not matched pinned public key"
+            ;;
+        91)
+            echo "Invalid SSL certificate status"
+            ;;
+        92)
+            echo "Stream error in HTTP/2 framing layer"
+            ;;
+        *)
+            echo "Unknown error code"
             ;;
     esac
 
@@ -2201,7 +2548,7 @@ FirstPreferredFont()
     {
 
     local preferred_fonts=$(WantedFonts)
-    local available_fonts=$(convert -list font | grep "Font:" | $CMD_SED 's| Font: ||')
+    local available_fonts=$($convert_bin -list font | grep "Font:" | $CMD_SED 's| Font: ||')
     local first_available_font=''
 
     while read preferred_font; do

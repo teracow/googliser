@@ -230,7 +230,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - I wrote this scraper so that users do not need to obtain an API key from Google to download multiple images.
 
-- It uses [GNU Wget](https://en.wikipedia.org/wiki/Wget) as I think it's more widely available than alternatives such as [cURL](https://github.com/curl/curl).
+- It prefers to use [GNU Wget](https://en.wikipedia.org/wiki/Wget) but will use [cURL](https://github.com/curl/curl) if it can find it.
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
 
