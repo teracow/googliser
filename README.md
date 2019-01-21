@@ -30,15 +30,15 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
-**googliser** is fully supported on Fedora Workstation & Manjaro. Debian/Ubuntu and macOS may require some extra binaries. Please advise of any issues.
+**googliser** is fully supported on Fedora Workstation, Manjaro & Ubuntu. Debian and macOS may require some extra binaries. Please advise of any issues.
 
-Debian/Ubuntu:
+Debian:
 
     $ sudo apt install wget imagemagick
 
 macOS:
 
-    $ brew install wget coreutils ghostscript gnu-sed gnu-getopt imagemagick
+    $ brew install coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Outputs
@@ -277,7 +277,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 **Also tested on:**
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
-- [Ubuntu](http://www.ubuntu.com/) - *14.04.5 LTS 64b*
+- [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS*
 - [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*
 - [Fedora](https://getfedora.org/) - *28 Workstation*
 - [Mint](https://linuxmint.com/) - *19.1 Tessa XFCE*
