@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of image URLs to **[Wget](https://en.wikipedia.org/wiki/Wget)** (or [cURL](https://github.com/curl/curl)) to download images in parallel, then combine them using ImageMagick's **[montage](http://www.imagemagick.org/Usage/montage/#montage)** into a single gallery image. The idea is to build a picture of a phrase.
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of image URLs to [Wget](https://en.wikipedia.org/wiki/Wget) (or [cURL](https://github.com/curl/curl)) to download images in parallel, then combine them using ImageMagick's [montage](http://www.imagemagick.org/Usage/montage/#montage) into a single gallery image. The idea is to build a picture of a phrase.
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to June 2018.
 
@@ -11,6 +11,11 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 ## ![#c5f015](images/lime.png) Installation
 
     $ wget -qN git.io/googliser.sh && chmod +x googliser.sh
+
+or use:
+
+    $ curl -skLO git.io/googliser.sh && chmod +x googliser.sh
+
 
 ---
 ## ![#c5f015](images/lime.png) Workflow
@@ -27,6 +32,7 @@ Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae
 
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (see below for examples).
 
+
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
@@ -38,6 +44,8 @@ Debian:
 
 macOS:
 
+    $ xcode-select --install
+    $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     $ brew install coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
