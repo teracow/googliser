@@ -49,29 +49,29 @@
 
 case "$OSTYPE" in
     "darwin"*)
-        CMD_READLINK=greadlink
-        CMD_HEAD=ghead
-        CMD_SED=gsed
-        CMD_DU=gdu
-        CMD_GETOPT="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
+        READLINK_BIN=greadlink
+        HEAD_BIN=ghead
+        SED_BIN=gsed
+        DU_BIN=gdu
+        GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
-        CMD_READLINK=readlink
-        CMD_HEAD=head
-        CMD_SED=sed
-        CMD_DU=du
-        CMD_GETOPT=getopt
+        READLINK_BIN=readlink
+        HEAD_BIN=head
+        SED_BIN=sed
+        DU_BIN=du
+        GETOPT_BIN=getopt
         ;;
 esac
 
-user_parameters=$($CMD_GETOPT -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o:,R: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions:,recent: -n $($CMD_READLINK -f -- "$0") -- "$@")
+user_parameters=$($GETOPT_BIN -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o:,R: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions:,recent: -n $($READLINK_BIN -f -- "$0") -- "$@")
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 Init()
     {
 
-    local SCRIPT_VERSION=190120
+    local SCRIPT_VERSION=190121
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -190,34 +190,34 @@ Init()
     DebugThis '? $google_max' "$google_max"
     DebugThis '? $temp_path' "$temp_path"
 
-    if ! downloader_bin=$(which wget); then
-        if ! downloader_bin=$(which curl); then
+    if ! DOWNLOADER_BIN=$(which wget); then
+        if ! DOWNLOADER_BIN=$(which curl); then
             DebugThis "! no recognised 'downloader' binary found"
             exitcode=1
             return 1
         fi
     fi
 
-    DebugThis '? $downloader_bin' "$downloader_bin"
+    DebugThis '? $DOWNLOADER_BIN' "$DOWNLOADER_BIN"
 
     if [[ $create_gallery = true && $show_help_only = false ]]; then
-        if ! montage_bin=$(which montage); then
+        if ! MONTAGE_BIN=$(which montage); then
             DebugThis "! no recognised 'montage' binary found"
             exitcode=1
             return 1
-        elif ! convert_bin=$(which convert); then
+        elif ! CONVERT_BIN=$(which convert); then
             DebugThis "! no recognised 'convert' binary found"
             exitcode=1
             return 1
         fi
     fi
 
-    DebugThis '? $montage_bin' "$montage_bin"
-    DebugThis '? $convert_bin' "$convert_bin"
+    DebugThis '? $MONTAGE_BIN' "$MONTAGE_BIN"
+    DebugThis '? $CONVERT_BIN' "$CONVERT_BIN"
 
-    ! identify_bin=$(which identify) && DebugThis "! no recognised 'identify' binary found"
+    ! IDENTIFY_BIN=$(which identify) && DebugThis "! no recognised 'identify' binary found"
 
-    DebugThis '? $identify_bin' "$identify_bin"
+    DebugThis '? $IDENTIFY_BIN' "$IDENTIFY_BIN"
 
     trap CTRL_C_Captured INT
 
@@ -1226,7 +1226,7 @@ DownloadImages()
     fi
 
     if [[ $result -ne 1 ]]; then
-        download_bytes="$($CMD_DU "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
+        download_bytes="$($DU_BIN "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
         DebugThis '= downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
         download_seconds="$(($(date +%s)-$func_startseconds))"
@@ -1270,7 +1270,7 @@ DownloadImage_auto()
     DebugThis "- link ($link_index) processing" 'start'
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
-    local ext=$(echo ${1:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
+    local ext=$(echo ${1:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
     [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
@@ -1285,7 +1285,7 @@ DownloadImage_auto()
         result=$?
 
         if [[ $result -eq 0 ]]; then
-            estimated_size="$(grep -i 'content-length:' <<< $response | $CMD_SED 's|^.*: ||;s|\r||')"
+            estimated_size="$(grep -i 'content-length:' <<< $response | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
             DebugThis "? link ($link_index) pre-download image size estimate" "$estimated_size bytes"
@@ -1406,10 +1406,10 @@ Downloader_GetResults()
     # compiled search string
     local search_string="\"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
-    if [[ $(basename $downloader_bin) = wget ]]; then
-        local get_results_cmd="$downloader_bin --quiet --timeout=5 --tries=3 $search_string $useragent_string --output-document \"${searchresults_pathfile}.$URL\""
-    elif [[ $(basename $downloader_bin) = curl ]]; then
-        local get_results_cmd="$downloader_bin --max-time 30 $search_string $useragent_string --output \"${searchresults_pathfile}.$URL\""
+    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $useragent_string --output-document \"${searchresults_pathfile}.$URL\""
+    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $useragent_string --output \"${searchresults_pathfile}.$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1434,10 +1434,10 @@ Downloader_GetHeaders()
     local link_index="$2"
     local output_pathfile="$3"
 
-    if [[ $(basename $downloader_bin) = wget ]]; then
-        local get_headers_cmd="$downloader_bin --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
-    elif [[ $(basename $downloader_bin) = curl ]]; then
-        local get_headers_cmd="$downloader_bin --silent --head --insecure --max-time 30 $useragent_string \"$URL\""
+    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        local get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        local get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $useragent_string \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1462,10 +1462,10 @@ Downloader_GetFile()
     local link_index="$2"
     local output_pathfile="$3"
 
-    if [[ $(basename $downloader_bin) = wget ]]; then
-        local get_image_cmd="$downloader_bin --max-redirect 0 --no-check-certificate --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
-    elif [[ $(basename $downloader_bin) = curl ]]; then
-        local get_image_cmd="$downloader_bin --silent --max-time 30 $useragent_string --output \"$output_pathfile\" \"$URL\""
+    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        local get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        local get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $useragent_string --output \"$output_pathfile\" \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1502,7 +1502,7 @@ ParseResults()
         if [[ $result_count -gt $max_results_required ]]; then
             DebugThis '! received more results than required' "$result_count/$max_results_required"
 
-            $CMD_HEAD --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
+            $HEAD_BIN --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             result_count=$max_results_required
 
@@ -1574,9 +1574,9 @@ BuildGallery()
     fi
 
     if [[ $condensed_gallery = true ]]; then
-        build_foreground_cmd="$convert_bin \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$CONVERT_BIN \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        build_foreground_cmd="$montage_bin \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$MONTAGE_BIN \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugThis '? $build_foreground_cmd' "'$build_foreground_cmd'"
@@ -1604,10 +1604,10 @@ BuildGallery()
         fi
 
         # get image dimensions
-        read -r width height <<< $($convert_bin -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
+        read -r width height <<< $($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
 
         # create a dark image with light sphere in centre
-        build_background_cmd="$convert_bin -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
+        build_background_cmd="$CONVERT_BIN -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
 
         DebugThis '? $build_background_cmd' "'$build_background_cmd'"
 
@@ -1639,7 +1639,7 @@ BuildGallery()
         if [[ $gallery_title != '_false_' ]]; then
             # create title image
             # let's try a fixed height of 100 pixels
-            build_title_cmd="$convert_bin -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+            build_title_cmd="$CONVERT_BIN -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
             DebugThis '? $build_title_cmd' "'$build_title_cmd'"
 
@@ -1674,7 +1674,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$convert_bin \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
 
         DebugThis '? $build_compose_cmd' "'$build_compose_cmd'"
 
@@ -1938,12 +1938,12 @@ RenameExtAsType()
 
     local returncode=0
 
-    if [[ -n $identify_bin ]]; then
+    if [[ -n $IDENTIFY_BIN ]]; then
         [[ -z $1 ]] && returncode=1
         [[ ! -e $1 ]] && returncode=1
 
         if [[ $returncode -eq 0 ]]; then
-            rawtype=$($identify_bin -format "%m" "$1")
+            rawtype=$($IDENTIFY_BIN -format "%m" "$1")
             returncode=$?
         fi
 
@@ -1985,7 +1985,7 @@ AllowableFileType()
     # $? = 0 if OK, 1 if not
 
     local lcase=$(Lowercase "$1")
-    local ext=$(echo ${lcase:(-5)} | $CMD_SED "s/.*\(\.[^\.]*\)$/\1/")
+    local ext=$(echo ${lcase:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
     # if string does not have a '.' then assume no extension present
     [[ ! "$ext" =~ '.' ]] && ext=''
@@ -2025,9 +2025,9 @@ ScrapeSearchResultsPage()
     #---------------------------------------------------------------------------------------------------------------
 
     cat "$searchresults_pathfile" \
-    | $CMD_SED 's|<div|\n\n&|g;s| notranslate||g' \
+    | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
-    | $CMD_SED '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
+    | $SED_BIN '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
     > "$imagelinks_pathfile"
 
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
@@ -2086,9 +2086,9 @@ Downloader_ReturnCodes()
     # $1 = downloader return code
     # echo = return code description
 
-    if [[ $(basename $downloader_bin) = wget ]]; then
+    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
         WgetReturnCodes "$1"
-    elif [[ $(basename $downloader_bin) = curl ]]; then
+    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
         CurlReturnCodes "$1"
     else
         DebugThis "! no return codes available for this downloader"
@@ -2461,7 +2461,7 @@ RemoveColourCodes()
     {
 
     # http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
-    echo -n "$1" | $CMD_SED "s,\x1B\[[0-9;]*[a-zA-Z],,g"
+    echo -n "$1" | $SED_BIN "s,\x1B\[[0-9;]*[a-zA-Z],,g"
 
     }
 
@@ -2549,7 +2549,7 @@ FirstPreferredFont()
     {
 
     local preferred_fonts=$(WantedFonts)
-    local available_fonts=$($convert_bin -list font | grep "Font:" | $CMD_SED 's| Font: ||')
+    local available_fonts=$($CONVERT_BIN -list font | grep "Font:" | $SED_BIN 's| Font: ||')
     local first_available_font=''
 
     while read preferred_font; do
