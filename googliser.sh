@@ -26,7 +26,7 @@
 
 # return values ($?):
 #   0   completed successfully
-#   1   required/alternative program unavailable (wget, curl, montage, convert, identify)
+#   1   required/alternative program unavailable (wget, curl, montage, convert, identify, brew, etc...)
 #   2   required parameter unspecified or wrong
 #   3   could not create output directory for 'phrase'
 #   4   could not get a list of search results from Google
@@ -47,33 +47,14 @@
 #   !   failure
 #   T   elapsed time
 
-case "$OSTYPE" in
-    "darwin"*)
-        READLINK_BIN=greadlink
-        SED_BIN=gsed
-        DU_BIN=gdu
-        GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
-        ;;
-    *)
-        READLINK_BIN=readlink
-        SED_BIN=sed
-        DU_BIN=du
-        GETOPT_BIN=getopt
-        ;;
-esac
-
-user_parameters=$($GETOPT_BIN -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o:,R: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions:,recent: -n $($READLINK_BIN -f -- "$0") -- "$@")
-user_parameters_result=$?
-user_parameters_raw="$@"
-
 Init()
     {
 
     local SCRIPT_VERSION=190122
     SCRIPT_FILE=googliser.sh
-    script_name="${SCRIPT_FILE%.*}"
-    local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
-    local script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
+    SCRIPT_NAME="${SCRIPT_FILE%.*}"
+    script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
+    script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
 
     # parameter defaults
     images_required_default=25
@@ -89,7 +70,7 @@ Init()
     recent_default=any
 
     # limits
-    google_max=1000
+    GOOGLE_MAX=1000
     parallel_max=40
     timeout_max=600
     retries_max=100
@@ -134,13 +115,20 @@ Init()
     dimensions=''
     border_thickness=$border_thickness_default
 
+    FindPackageManager
     BuildWorkPaths
-    WhatAreMyOptions
-    FindLocalPackageManager
 
     DebugThis '> started' "$script_starttime"
     DebugThis '? $script_details' "$script_details_plain"
-    DebugThis '? $user_parameters_raw' "'$user_parameters_raw'"
+
+    }
+
+ProcEnvironment()
+    {
+
+    DebugThis "\ [${FUNCNAME[0]}]" "entry"
+
+    WhatAreMyOptions
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
@@ -186,9 +174,10 @@ Init()
     DebugThis '? $dimensions' "$dimensions"
     DebugThis '? $border_thickness' "$border_thickness"
     DebugThis '= environment' '*** internal parameters ***'
-    DebugThis '? $google_max' "$google_max"
+    DebugThis '? $OSTYPE' "$OSTYPE"
+    DebugThis '? $PACKAGER_BIN' "$PACKAGER_BIN"
+    DebugThis '? $GOOGLE_MAX' "$GOOGLE_MAX"
     DebugThis '? $temp_path' "$temp_path"
-    DebugThis '? $LOCAL_PACKAGE_MANAGER' "$LOCAL_PACKAGE_MANAGER"
 
     if ! DOWNLOADER_BIN=$(which wget); then
         if ! DOWNLOADER_BIN=$(which curl); then
@@ -221,7 +210,31 @@ Init()
 
     trap CTRL_C_Captured INT
 
+    DebugThis "/ [${FUNCNAME[0]}]" 'exit'
+
     return 0
+
+    }
+
+FindPackageManager()
+    {
+
+    case "$OSTYPE" in
+        "darwin"*)
+            PACKAGER_BIN=$(which brew)
+            ;;
+        "linux"*)
+            if ! PACKAGER_BIN=$(which apt); then
+                if ! PACKAGER_BIN=$(which yum); then
+                    if ! PACKAGER_BIN=$(which opkg); then
+                        PACKAGER_BIN=''
+                    fi
+                fi
+            fi
+            ;;
+    esac
+
+    [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
 
     }
 
@@ -236,35 +249,13 @@ SuggestInstall()
 
     DebugThis "! no recognised '$executable' executable found"
     echo -e "\n '$executable' executable not found!"
-    if [[ $LOCAL_PACKAGE_MANAGER != unknown ]]; then
-        echo -e "\n try installing it with:"
-        echo " $ $(basename $LOCAL_PACKAGE_MANAGER) install $package"
+    if [[ $PACKAGER_BIN != unknown ]]; then
+        echo -e "\n try installing with:"
+        echo " $ $(basename $PACKAGER_BIN) install $package"
     else
         echo " no local package manager found!"
         echo " well, I'm out of ideas..."
     fi
-
-    }
-
-FindLocalPackageManager()
-    {
-
-    case "$OSTYPE" in
-        "darwin"*)
-            LOCAL_PACKAGE_MANAGER=$(which brew)
-            ;;
-        *)
-            if ! LOCAL_PACKAGE_MANAGER=$(which apt); then
-                if ! LOCAL_PACKAGE_MANAGER=$(which yum); then
-                    if ! LOCAL_PACKAGE_MANAGER=$(which opkg); then
-                        LOCAL_PACKAGE_MANAGER=''
-                    fi
-                fi
-            fi
-            ;;
-    esac
-
-    [[ -z $LOCAL_PACKAGE_MANAGER ]] && LOCAL_PACKAGE_MANAGER=unknown
 
     }
 
@@ -285,7 +276,7 @@ BuildWorkPaths()
     gallery_name=googliser-gallery
     current_path="$PWD"
 
-    temp_path=$(mktemp -d "/tmp/${script_name}.$$.XXX") || Flee
+    temp_path=$(mktemp -d "/tmp/${SCRIPT_NAME}.$$.XXX") || Flee
 
     results_run_count_path="${temp_path}/results.running.count"
     mkdir -p "$results_run_count_path" || Flee
@@ -319,6 +310,8 @@ BuildWorkPaths()
 
 WhatAreMyOptions()
     {
+
+    DebugThis '? $user_parameters_raw' "'$user_parameters_raw'"
 
     [[ $user_parameters_result -ne 0 ]] && { echo; exitcode=2; return 1 ;}
     [[ $user_parameters = ' --' ]] && { show_help_only=true; exitcode=2; return 1 ;}
@@ -509,7 +502,7 @@ DisplayHelp()
     FormatHelpLine '' debug "Save the debug file [$debug_file] into the output directory."
     #FormatHelpLine d dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
-    FormatHelpLine f failures "Total number of download failures allowed before aborting [$fail_limit_default]. Use '0' for unlimited ($google_max)."
+    FormatHelpLine f failures "Total number of download failures allowed before aborting [$fail_limit_default]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$lower_size_limit_default]."
@@ -532,7 +525,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'large'"
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
-    FormatHelpLine n number "Number of images to download [$images_required_default]. Maximum of $google_max."
+    FormatHelpLine n number "Number of images to download [$images_required_default]. Maximum of $GOOGLE_MAX."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
     FormatHelpLine o output "The image output directory [phrase]."
     FormatHelpLine P parallel "How many parallel image downloads? [$parallel_limit_default]. Maximum of $parallel_max. Use wisely!"
@@ -630,9 +623,9 @@ ValidateParameters()
                 DebugThis '~ $images_required TOO LOW so set to a sensible minimum' "$images_required"
             fi
 
-            if [[ $images_required -gt $google_max ]]; then
-                images_required=$google_max
-                DebugThis '~ $images_required TOO HIGH so set as $google_max' "$images_required"
+            if [[ $images_required -gt $GOOGLE_MAX ]]; then
+                images_required=$GOOGLE_MAX
+                DebugThis '~ $images_required TOO HIGH so set as $GOOGLE_MAX' "$images_required"
             fi
             ;;
     esac
@@ -657,13 +650,13 @@ ValidateParameters()
             ;;
         *)
             if [[ $user_fail_limit -le 0 ]]; then
-                user_fail_limit=$google_max
-                DebugThis '~ $user_fail_limit TOO LOW so set as $google_max' "$user_fail_limit"
+                user_fail_limit=$GOOGLE_MAX
+                DebugThis '~ $user_fail_limit TOO LOW so set as $GOOGLE_MAX' "$user_fail_limit"
             fi
 
-            if [[ $user_fail_limit -gt $google_max ]]; then
-                user_fail_limit=$google_max
-                DebugThis '~ $user_fail_limit TOO HIGH so set as $google_max' "$user_fail_limit"
+            if [[ $user_fail_limit -gt $GOOGLE_MAX ]]; then
+                user_fail_limit=$GOOGLE_MAX
+                DebugThis '~ $user_fail_limit TOO HIGH so set as $GOOGLE_MAX' "$user_fail_limit"
             fi
             ;;
     esac
@@ -1077,7 +1070,7 @@ DownloadResultGroups()
     DebugThis "\ [${FUNCNAME[0]}]" 'entry'
 
     local func_startseconds=$(date +%s)
-    local groups_max=$(($google_max/100))
+    local groups_max=$(($GOOGLE_MAX/100))
     local pointer=0
     local parallel_count=0
     local success_count=0
@@ -2614,7 +2607,38 @@ FirstPreferredFont()
 
     }
 
+#OSTYPE="darwin"
+
 Init
+
+case "$OSTYPE" in
+    "darwin"*)
+        READLINK_BIN=greadlink
+        SED_BIN=gsed
+        DU_BIN=gdu
+        if [[ $(basename $PACKAGER_BIN) = brew ]]; then
+            GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
+        else
+            DebugThis "! 'brew' executable" "not found"
+            echo " 'brew' executable was not found!"
+            echo -e "\n On this platform, you can try installing it with:"
+            echo ' $ xcode-select --install && ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+            exit 1
+        fi
+        ;;
+    *)
+        READLINK_BIN=readlink
+        SED_BIN=sed
+        DU_BIN=du
+        GETOPT_BIN=getopt
+        ;;
+esac
+
+user_parameters=$($GETOPT_BIN -o h,N,D,s,q,c,C,S,z,L,T:,a:,b:,i:,l:,u:,m:,r:,t:,P:,f:,n:,p:,o:,R: -l help,no-gallery,condensed,debug,delete-after,save-links,quiet,colour,skip-no-size,lightning,links-only,title:,input:,lower-size:,upper-size:,retries:,timeout:,parallel:,failures:,number:,phrase:,minimum-pixels:,aspect-ratio:,border-thickness:,usage-rights:,type:,output:,dimensions:,recent: -n $($READLINK_BIN -f -- "$0") -- "$@")
+user_parameters_result=$?
+user_parameters_raw="$@"
+
+ProcEnvironment
 
 if [[ $exitcode -eq 0 ]]; then
     if [[ -n $input_pathfile ]]; then
