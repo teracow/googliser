@@ -71,7 +71,7 @@ user_parameters_raw="$@"
 Init()
     {
 
-    local SCRIPT_VERSION=190121
+    local SCRIPT_VERSION=190122
     SCRIPT_FILE=googliser.sh
     script_name="${SCRIPT_FILE%.*}"
     local script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
@@ -138,6 +138,7 @@ Init()
 
     BuildWorkPaths
     WhatAreMyOptions
+    FindLocalPackageManager
 
     DebugThis '> started' "$script_starttime"
     DebugThis '? $script_details' "$script_details_plain"
@@ -189,10 +190,11 @@ Init()
     DebugThis '= environment' '*** internal parameters ***'
     DebugThis '? $google_max' "$google_max"
     DebugThis '? $temp_path' "$temp_path"
+    DebugThis '? $LOCAL_PACKAGE_MANAGER' "$LOCAL_PACKAGE_MANAGER"
 
     if ! DOWNLOADER_BIN=$(which wget); then
         if ! DOWNLOADER_BIN=$(which curl); then
-            DebugThis "! no recognised 'downloader' binary found"
+            SuggestInstall wget
             exitcode=1
             return 1
         fi
@@ -202,11 +204,11 @@ Init()
 
     if [[ $create_gallery = true && $show_help_only = false ]]; then
         if ! MONTAGE_BIN=$(which montage); then
-            DebugThis "! no recognised 'montage' binary found"
+            SuggestInstall montage imagemagick
             exitcode=1
             return 1
         elif ! CONVERT_BIN=$(which convert); then
-            DebugThis "! no recognised 'convert' binary found"
+            SuggestInstall convert imagemagick
             exitcode=1
             return 1
         fi
@@ -222,6 +224,49 @@ Init()
     trap CTRL_C_Captured INT
 
     return 0
+
+    }
+
+SuggestInstall()
+    {
+
+    # $1 = executable name missing
+    # $2 (optional) = package to install. Only specify this if different to $1
+
+    [[ -n $1 ]] && executable=$1 || return 1
+    [[ -n $2 ]] && package=$2 || package=$executable
+
+    DebugThis "! no recognised '$executable' executable found"
+    echo -e "\n '$executable' executable not found!"
+    if [[ $LOCAL_PACKAGE_MANAGER != unknown ]]; then
+        echo -e "\n try installing it with:"
+        echo " $ $(basename $LOCAL_PACKAGE_MANAGER) install $package"
+    else
+        echo " no local package manager found!"
+        echo " well, I'm out of ideas..."
+    fi
+
+    }
+
+FindLocalPackageManager()
+    {
+
+    case "$OSTYPE" in
+        "darwin"*)
+            LOCAL_PACKAGE_MANAGER=$(which brew)
+            ;;
+        *)
+            if ! LOCAL_PACKAGE_MANAGER=$(which apt); then
+                if ! LOCAL_PACKAGE_MANAGER=$(which yum); then
+                    if ! LOCAL_PACKAGE_MANAGER=$(which opkg); then
+                        LOCAL_PACKAGE_MANAGER=''
+                    fi
+                fi
+            fi
+            ;;
+    esac
+
+    [[ -z $LOCAL_PACKAGE_MANAGER ]] && LOCAL_PACKAGE_MANAGER=unknown
 
     }
 
