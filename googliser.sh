@@ -275,31 +275,31 @@ BuildWorkPaths()
 
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
-    results_run_count_path="${TEMP_PATH}/results.running.count"
+    results_run_count_path="$TEMP_PATH/results.running.count"
     mkdir -p "$results_run_count_path" || Flee
 
-    results_success_count_path="${TEMP_PATH}/results.success.count"
+    results_success_count_path="$TEMP_PATH/results.success.count"
     mkdir -p "$results_success_count_path" || Flee
 
-    results_fail_count_path="${TEMP_PATH}/results.fail.count"
+    results_fail_count_path="$TEMP_PATH/results.fail.count"
     mkdir -p "$results_fail_count_path" || Flee
 
-    download_run_count_path="${TEMP_PATH}/download.running.count"
+    download_run_count_path="$TEMP_PATH/download.running.count"
     mkdir -p "$download_run_count_path" || Flee
 
-    download_success_count_path="${TEMP_PATH}/download.success.count"
+    download_success_count_path="$TEMP_PATH/download.success.count"
     mkdir -p "$download_success_count_path" || Flee
 
-    download_fail_count_path="${TEMP_PATH}/download.fail.count"
+    download_fail_count_path="$TEMP_PATH/download.fail.count"
     mkdir -p "$download_fail_count_path" || Flee
 
-    testimage_pathfile="${TEMP_PATH}/${test_file}"
-    searchresults_pathfile="${TEMP_PATH}/search.results.page.html"
-    gallery_title_pathfile="${TEMP_PATH}/gallery.title.png"
-    gallery_thumbnails_pathfile="${TEMP_PATH}/gallery.thumbnails.png"
-    gallery_background_pathfile="${TEMP_PATH}/gallery.background.png"
-    imagelinks_pathfile="${TEMP_PATH}/${imagelinks_file}"
-    debug_pathfile="${TEMP_PATH}/${debug_file}"
+    testimage_pathfile="$TEMP_PATH/$test_file"
+    searchresults_pathfile="$TEMP_PATH/search.results.page.html"
+    gallery_title_pathfile="$TEMP_PATH/gallery.title.png"
+    gallery_thumbnails_pathfile="$TEMP_PATH/gallery.thumbnails.png"
+    gallery_background_pathfile="$TEMP_PATH/gallery.background.png"
+    imagelinks_pathfile="$TEMP_PATH/$imagelinks_file"
+    debug_pathfile="$TEMP_PATH/$debug_file"
 
     unset -f Flee
 
@@ -752,7 +752,7 @@ ValidateParameters()
             fi
 
             if [[ $upper_size_limit -gt 0 && $lower_size_limit -gt $upper_size_limit ]]; then
-                lower_size_limit=$(($upper_size_limit-1))
+                lower_size_limit=$((upper_size_limit-1))
                 DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
             fi
             ;;
@@ -774,8 +774,8 @@ ValidateParameters()
             ;;
     esac
 
-    if [[ $max_results_required -lt $(($images_required+$user_fail_limit)) ]]; then
-        max_results_required=$(($images_required+$user_fail_limit))
+    if [[ $max_results_required -lt $((images_required+user_fail_limit)) ]]; then
+        max_results_required=$((images_required+user_fail_limit))
         DebugThis '~ $max_results_required TOO LOW so set as $images_required + $user_fail_limit' "$max_results_required"
     fi
 
@@ -813,7 +813,7 @@ ValidateParameters()
     if [[ -n $min_pixels ]]; then
         case "$min_pixels" in
             qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
-                min_pixels_search="isz:lt,islt:${min_pixels}"
+                min_pixels_search="isz:lt,islt:$min_pixels"
                 ;;
             large)
                 min_pixels_search='isz:l'
@@ -855,14 +855,14 @@ ValidateParameters()
                 return 1
                 ;;
         esac
-        [[ -n $ar_type ]] && aspect_ratio_search="iar:${ar_type}"
+        [[ -n $ar_type ]] && aspect_ratio_search="iar:$ar_type"
     fi
 
     image_type_search=''
     if [[ -n $image_type ]]; then
         case "$image_type" in
             face|photo|clipart|lineart|animated)
-                image_type_search="itp:${image_type}"
+                image_type_search="itp:$image_type"
                 ;;
             *)
                 echo
@@ -927,7 +927,7 @@ ValidateParameters()
     fi
 
     if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search || -n $recent_search ]]; then
-        advanced_search="&tbs=${min_pixels_search},${aspect_ratio_search},${image_type_search},${usage_rights_search},${recent_search}"
+        advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$usage_rights_search,$recent_search"
     fi
 
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
@@ -958,12 +958,12 @@ ProcSingleQuery()
     DebugThis '? $safe_query' "$safe_query"
 
     if [[ -z $output_path ]]; then
-        target_path="${current_path}/${safe_query}"
+        target_path="$current_path/$safe_query"
     else
         safe_path="${output_path// /_}"             # replace whitepace with '_' so less issues later on!
         DebugThis '? $safe_path' "$safe_path"
         if [[ -n $input_pathfile ]]; then
-            target_path="${safe_path}/${safe_query}"
+            target_path="$safe_path/$safe_query"
         else
             target_path="$safe_path"
         fi
@@ -1037,7 +1037,7 @@ ProcSingleQuery()
                 exitcode=6
             else
                 if [[ $remove_after = true ]]; then
-                    rm -f "${target_path}/${image_file_prefix}"*
+                    rm -f "$target_path/$image_file_prefix"*
                     DebugThis '= remove all downloaded images from' "$target_path"
                 fi
             fi
@@ -1048,9 +1048,9 @@ ProcSingleQuery()
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
         if [[ $save_links = true ]]; then
             if [[ $target_path_created = true ]]; then
-                cp -f "$imagelinks_pathfile" "${target_path}/${imagelinks_file}"
+                cp -f "$imagelinks_pathfile" "$target_path/$imagelinks_file"
             else
-                cp -f "$imagelinks_pathfile" "${current_path}/${imagelinks_file}"
+                cp -f "$imagelinks_pathfile" "$current_path/$imagelinks_file"
             fi
         fi
     fi
@@ -1067,7 +1067,7 @@ DownloadResultGroups()
     DebugThis "\ [${FUNCNAME[0]}]" 'entry'
 
     local func_startseconds=$(date +%s)
-    local groups_max=$(($GOOGLE_MAX/100))
+    local groups_max=$((GOOGLE_MAX/100))
     local pointer=0
     local parallel_count=0
     local success_count=0
@@ -1093,17 +1093,16 @@ DownloadResultGroups()
             ShowResultDownloadProgress
         done
 
-        pointer=$((($group-1)*100))
-        link_index=$(printf "%02d" $(($group-1)))
+        group_index=$(printf "%02d" $group)
 
         # create run file here as it takes too long to happen in background function
-        touch "$results_run_count_path/$link_index"
-        { DownloadResultGroup_auto "$(($group-1))" "$pointer" "$link_index" & } 2>/dev/null
+        touch "$results_run_count_path/$group_index"
+        { DownloadResultGroup_auto "$group" "$group_index" & } 2>/dev/null
 
         RefreshResultsCounts
         ShowResultDownloadProgress
 
-        [[ $(($group*100)) -gt $max_results_required ]] && break
+        [[ $((group*100)) -gt $max_results_required ]] && break
     done
 
     # wait here while all running downloads finish
@@ -1119,7 +1118,7 @@ DownloadResultGroups()
 
     [[ $fail_count -gt 0 ]] && result=1 || result=0
 
-    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-func_startseconds))")"
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     return $result
@@ -1130,31 +1129,28 @@ DownloadResultGroup_auto()
     {
 
     # *** This function runs as a background process ***
-    # $1 = page group to load:          (0, 1, 2, 3, etc...)
-    # $2 = pointer starts at result:    (0, 100, 200, 300, etc...)
-    # $3 = debug index identifier       (e.g. "02")
+    # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
+    # $2 = debug index identifier       e.g. (02)
 
     local page_group="$1"
-    local search_group="&ijn=$page_group"
-    local search_start="&start=$2"
-    local link_index="$3"
+    local group_index="$2"
     local response=''
     local result=0
 
-    local run_pathfile="$results_run_count_path/$link_index"
-    local success_pathfile="$results_success_count_path/$link_index"
-    local fail_pathfile="$results_fail_count_path/$link_index"
+    local run_pathfile="$results_run_count_path/$group_index"
+    local success_pathfile="$results_success_count_path/$group_index"
+    local fail_pathfile="$results_fail_count_path/$group_index"
 
-    DebugThis "- result group ($link_index) processing" 'start'
+    DebugThis "- result group ($group_index) processing" 'start'
 
-    response=$(Downloader_GetResults "$page_group" "$link_index")
+    response=$(Downloader_GetResults "$page_group" "$group_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
-        DebugThis "$ result group ($link_index) processing" 'success'
+        DebugThis "$ result group ($group_index) processing" 'success'
         mv "$run_pathfile" "$success_pathfile"
     else
-        DebugThis "! result group ($link_index) processing" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+        DebugThis "! result group ($group_index) processing" "failed! downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
         mv "$run_pathfile" "$fail_pathfile"
     fi
 
@@ -1205,12 +1201,12 @@ DownloadImages()
             # have enough images now so exit loop
             [[ $success_count -eq $images_required ]] &&    break 2
 
-            if [[ $(($success_count+$parallel_count)) -lt $images_required ]]; then
+            if [[ $((success_count+parallel_count)) -lt $images_required ]]; then
                 ((result_index++))
                 local link_index=$(printf "%04d" $result_index)
 
                 # create run file here as it takes too long to happen in background function
-                touch "${download_run_count_path}/${link_index}"
+                touch "$download_run_count_path/$link_index"
                 { DownloadImage_auto "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
@@ -1225,7 +1221,7 @@ DownloadImages()
 
     if [[ $fail_count -gt 0 ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-        percent="$((200*($fail_count)/($success_count+$fail_count) % 2 + 100*($fail_count)/($success_count+$fail_count)))%"
+        percent="$((200*(fail_count)/(success_count+fail_count) % 2 + 100*(fail_count)/(success_count+fail_count)))%"
 
         if [[ $colour = true ]]; then
             echo -n "($(ColourTextBrightRed "$percent")) "
@@ -1235,7 +1231,7 @@ DownloadImages()
     fi
 
     if [[ $result -eq 1 ]]; then
-        DebugThis "! failure limit reached" "${fail_count}/${fail_limit}"
+        DebugThis "! failure limit reached" "$fail_count/$fail_limit"
 
         if [[ $colour = true ]]; then
             echo "$(ColourTextBrightRed 'Too many failures!')"
@@ -1244,7 +1240,7 @@ DownloadImages()
         fi
     else
         if [[ $result_index -eq $result_count ]]; then
-            DebugThis "! ran out of images to download!" "${result_index}/${result_count}"
+            DebugThis "! ran out of images to download!" "$result_index/$result_count"
 
             if [[ $colour = true ]]; then
                 echo "$(ColourTextBrightRed 'Ran out of images to download!')"
@@ -1259,23 +1255,23 @@ DownloadImages()
     fi
 
     if [[ $result -ne 1 ]]; then
-        download_bytes="$($DU_BIN "${target_path}/${image_file_prefix}"* -cb | tail -n1 | cut -f1)"
+        download_bytes="$($DU_BIN "$target_path/$image_file_prefix"* -cb | tail -n1 | cut -f1)"
         DebugThis '= downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
-        download_seconds="$(($(date +%s)-$func_startseconds))"
+        download_seconds="$(($(date +%s)-func_startseconds))"
         DebugThis '= download seconds' "$(DisplayThousands "$download_seconds")"
         if [[ $download_seconds -lt 1 ]]; then
             download_seconds=1
             DebugThis '~ $download_seconds TOO LOW so set to a usable minimum' "$download_seconds"
         fi
 
-        avg_download_speed="$(DisplayISO "$(($download_bytes/$download_seconds))")"
+        avg_download_speed="$(DisplayISO "$((download_bytes/download_seconds))")"
         DebugThis '= average download speed' "${avg_download_speed}B/s"
     fi
 
     DebugThis '? $success_count' "$success_count"
     DebugThis '? $fail_count' "$fail_count"
-    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-func_startseconds))")"
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     return $result
@@ -1307,9 +1303,9 @@ DownloadImage_auto()
 
     [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
-    local testimage_pathfileext="${testimage_pathfile}($link_index)${ext}"
-    local targetimage_pathfile="${target_path}/${image_file_prefix}"
-    local targetimage_pathfileext="${targetimage_pathfile}($link_index)${ext}"
+    local testimage_pathfileext="$testimage_pathfile($link_index)$ext"
+    local targetimage_pathfile="$target_path/$image_file_prefix"
+    local targetimage_pathfileext="$targetimage_pathfile($link_index)$ext"
 
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
@@ -1422,14 +1418,15 @@ DownloadImage_auto()
 Downloader_GetResults()
     {
 
-    # $1 = URL to check
-    # $2 = debug index identifier e.g. (0002)
+    # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
+    # $2 = debug log link index         e.g. (02)
     # echo = downloader stdout & stderr
     # $? = downloader return code
 
-    local URL="$1"
-    local link_index="$2"
-
+    local page_group="$1"
+    local group_index="$2"
+    local search_group="&ijn=$((page_group-1))"
+    local search_start="&start=$(((page_group-1)*100))"
     local SERVER=www.google.com
 
     # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
@@ -1439,18 +1436,18 @@ Downloader_GetResults()
     local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
 
     # compiled search string
-    local search_string="\"https://${SERVER}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+    local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $USERAGENT --output-document \"${searchresults_pathfile}.$URL\""
+        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"${searchresults_pathfile}.$URL\""
+        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
     fi
 
-    DebugThis "? result group ($link_index) \$get_results_cmd" "'$get_results_cmd'"
+    DebugThis "? result group ($group_index) \$get_results_cmd" "'$get_results_cmd'"
 
     eval "$get_results_cmd" 2>&1
 
@@ -1525,10 +1522,10 @@ ParseResults()
         # check against allowable file types
         while read imagelink; do
             AllowableFileType "$imagelink"
-            [[ $? -eq 0 ]] && echo "$imagelink" >> ${imagelinks_pathfile}.tmp
+            [[ $? -eq 0 ]] && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
         done < "$imagelinks_pathfile"
 
-        [[ -e ${imagelinks_pathfile}.tmp ]] && mv ${imagelinks_pathfile}.tmp "$imagelinks_pathfile"
+        [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
 
         # get link count
         result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
@@ -1548,11 +1545,11 @@ ParseResults()
     if [[ $verbose = true ]]; then
         if [[ $result_count -gt 0 ]]; then
             if [[ $colour = true ]]; then
-                if [[ $result_count -ge $(($max_results_required)) ]]; then
+                if [[ $result_count -ge $max_results_required ]]; then
                     echo "$(ColourTextBrightGreen "$result_count") results!"
                 fi
 
-                if [[ $result_count -ge $images_required && $result_count -lt $(($max_results_required)) ]]; then
+                if [[ $result_count -ge $images_required && $result_count -lt $max_results_required ]]; then
                     echo "$(ColourTextBrightOrange "$result_count") results!"
                 fi
 
@@ -1609,9 +1606,9 @@ BuildGallery()
     fi
 
     if [[ $condensed_gallery = true ]]; then
-        build_foreground_cmd="$CONVERT_BIN \"${target_path}/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        build_foreground_cmd="$MONTAGE_BIN \"${target_path}/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        build_foreground_cmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugThis '? $build_foreground_cmd' "'$build_foreground_cmd'"
@@ -1709,7 +1706,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"${target_path}/${gallery_name}-($safe_query).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$gallery_name-($safe_query).png\""
 
         DebugThis '? $build_compose_cmd' "'$build_compose_cmd'"
 
@@ -1748,7 +1745,7 @@ BuildGallery()
 
     [[ $verbose = true ]] && echo
 
-    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-$func_startseconds))")"
+    DebugThis "T [${FUNCNAME[0]}] elapsed time" "$(ConvertSecs "$(($(date +%s)-func_startseconds))")"
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
     return $result
@@ -1759,18 +1756,18 @@ Finish()
     {
 
     # write results into debug file
-    DebugThis "T [$SCRIPT_FILE] elapsed time" "$(ConvertSecs "$(($(date +%s)-$script_startseconds))")"
+    DebugThis "T [$SCRIPT_FILE] elapsed time" "$(ConvertSecs "$(($(date +%s)-script_startseconds))")"
     DebugThis "< finished" "$(date)"
 
     # copy debug file into target directory if possible. If not, then copy to current directory.
     if [[ $debug = true ]]; then
         if [[ $target_path_created = true ]]; then
-            [[ -e ${target_path}/${debug_file} ]] && echo "" >> "${target_path}/${debug_file}"
-            cp -f "$debug_pathfile" "${target_path}/${debug_file}"
+            [[ -e $target_path/$debug_file ]] && echo "" >> "$target_path/$debug_file"
+            cp -f "$debug_pathfile" "$target_path/$debug_file"
         else
             # append to current path debug file (if it exists)
-            [[ -e ${current_path}/${debug_file} ]] && echo "" >> "${current_path}/${debug_file}"
-            cat "$debug_pathfile" >> "${current_path}/${debug_file}"
+            [[ -e $current_path/$debug_file ]] && echo "" >> "$current_path/$debug_file"
+            cat "$debug_pathfile" >> "$current_path/$debug_file"
         fi
     fi
 
@@ -1821,7 +1818,7 @@ ProgressUpdater()
         current_length=$((${#temp}+1))
 
         if [[ $current_length -lt $previous_length ]]; then
-            appended_length=$(($current_length-$previous_length))
+            appended_length=$((current_length-previous_length))
             # backspace to start of previous msg, print new msg, add additional spaces, then backspace to end of msg
             printf "%${previous_length}s" | tr ' ' '\b' ; echo -n "$1 " ; printf "%${appended_length}s" ; printf "%${appended_length}s" | tr ' ' '\b'
         else
@@ -1872,12 +1869,12 @@ ShowResultDownloadProgress()
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
             if [[ $success_count -eq $groups_max ]]; then
-                progress_message="$(ColourTextBrightGreen "${success_count}/${groups_max}")"
+                progress_message="$(ColourTextBrightGreen "$success_count/$groups_max")"
             else
-                progress_message="$(ColourTextBrightOrange "${success_count}/${groups_max}")"
+                progress_message="$(ColourTextBrightOrange "$success_count/$groups_max")"
             fi
         else
-            progress_message="${success_count}/${groups_max}"
+            progress_message="$success_count/$groups_max"
         fi
 
         progress_message+=' result groups downloaded.'
@@ -1901,9 +1898,9 @@ ShowImageDownloadProgress()
     if [[ $verbose = true ]]; then
         # number of image downloads that are OK
         if [[ $colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "${success_count}/${images_required}")"
+            progress_message="$(ColourTextBrightGreen "$success_count/$images_required")"
         else
-            progress_message="${success_count}/${images_required}"
+            progress_message="$success_count/$images_required"
         fi
 
         progress_message+=' downloaded'
@@ -1913,9 +1910,9 @@ ShowImageDownloadProgress()
             progress_message+=', '
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightOrange "${parallel_count}/${parallel_limit}")"
+                progress_message+="$(ColourTextBrightOrange "$parallel_count/$parallel_limit")"
             else
-                progress_message+="${parallel_count}/${parallel_limit}"
+                progress_message+="$parallel_count/$parallel_limit"
             fi
 
             progress_message+=' are in progress'
@@ -1926,9 +1923,9 @@ ShowImageDownloadProgress()
             progress_message+=' and '
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightRed "${fail_count}/${fail_limit}")"
+                progress_message+="$(ColourTextBrightRed "$fail_count/$fail_limit")"
             else
-                progress_message+="${fail_count}/${fail_limit}"
+                progress_message+="$fail_count/$fail_limit"
             fi
 
             progress_message+=' failed'
@@ -2091,7 +2088,7 @@ CTRL_C_Captured()
     if [[ $parallel_count -gt 0 ]]; then
         # remove any image files where processing by [DownloadImage_auto] was incomplete
         for currentfile in $(ls -1 "$download_run_count_path"); do
-            rm -f "${target_path}/${image_file_prefix}($currentfile)".*
+            rm -f "$target_path/$image_file_prefix($currentfile)".*
             DebugThis "= link ($currentfile) was partially processed" 'deleted!'
         done
     fi
