@@ -50,14 +50,12 @@
 case "$OSTYPE" in
     "darwin"*)
         READLINK_BIN=greadlink
-        HEAD_BIN=ghead
         SED_BIN=gsed
         DU_BIN=gdu
         GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         ;;
     *)
         READLINK_BIN=readlink
-        HEAD_BIN=head
         SED_BIN=sed
         DU_BIN=du
         GETOPT_BIN=getopt
@@ -1547,7 +1545,7 @@ ParseResults()
         if [[ $result_count -gt $max_results_required ]]; then
             DebugThis '! received more results than required' "$result_count/$max_results_required"
 
-            $HEAD_BIN --lines "$max_results_required" --quiet "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
+            head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             result_count=$max_results_required
 
