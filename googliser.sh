@@ -52,49 +52,46 @@ Init()
 
     local SCRIPT_VERSION=190122
     SCRIPT_FILE=googliser.sh
-    SCRIPT_NAME="${SCRIPT_FILE%.*}"
-    script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
-    script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
 
     # parameter defaults
-    images_required_default=25
-    parallel_limit_default=10
-    fail_limit_default=40
-    upper_size_limit_default=0
-    lower_size_limit_default=1000
-    timeout_default=8
-    retries_default=3
-    max_results_required=$images_required_default
-    fail_limit=$fail_limit_default
-    border_thickness_default=30
-    recent_default=any
+    IMAGES_REQUIRED_DEFAULT=25
+    PARALLEL_LIMIT_DEFAULT=10
+    FAIL_LIMIT_DEFAULT=40
+    UPPER_SIZE_LIMIT_DEFAULT=0
+    LOWER_SIZE_LIMIT_DEFAULT=1000
+    TIMEOUT_DEFAULT=8
+    RETRIES_DEFAULT=3
+    max_results_required=$IMAGES_REQUIRED_DEFAULT
+    fail_limit=$FAIL_LIMIT_DEFAULT
+    BORDER_THICKNESS_DEFAULT=30
+    RECENT_DEFAULT=any
 
-    # limits
+    # parameter limits
     GOOGLE_MAX=1000
-    parallel_max=40
-    timeout_max=600
-    retries_max=100
+    PARALLEL_MAX=40
+    TIMEOUT_MAX=600
+    RETRIES_MAX=100
 
     # internals
     local script_starttime=$(date)
     script_startseconds=$(date +%s)
-    server=www.google.com
-    useragent='Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0'
     target_path_created=false
     show_help_only=false
-    useragent_string="--user-agent \"$useragent\""
     exitcode=0
+    script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
+    script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
+    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"'
 
-    # user changable parameters
+    # user-changeable parameters
     user_query=''
-    images_required=$images_required_default
+    images_required=$IMAGES_REQUIRED_DEFAULT
     user_fail_limit=$fail_limit
-    parallel_limit=$parallel_limit_default
-    timeout=$timeout_default
-    retries=$retries_default
-    upper_size_limit=$upper_size_limit_default
-    lower_size_limit=$lower_size_limit_default
-    recent=$recent_default
+    parallel_limit=$PARALLEL_LIMIT_DEFAULT
+    timeout=$TIMEOUT_DEFAULT
+    retries=$RETRIES_DEFAULT
+    upper_size_limit=$UPPER_SIZE_LIMIT_DEFAULT
+    lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
+    recent=$RECENT_DEFAULT
     create_gallery=true
     gallery_title=''
     condensed_gallery=false
@@ -113,7 +110,7 @@ Init()
     output_path=''
     links_only=false
     dimensions=''
-    border_thickness=$border_thickness_default
+    border_thickness=$BORDER_THICKNESS_DEFAULT
 
     FindPackageManager
     BuildWorkPaths
@@ -175,9 +172,9 @@ ProcEnvironment()
     DebugThis '? $border_thickness' "$border_thickness"
     DebugThis '= environment' '*** internal parameters ***'
     DebugThis '? $OSTYPE' "$OSTYPE"
-    DebugThis '? $PACKAGER_BIN' "$PACKAGER_BIN"
     DebugThis '? $GOOGLE_MAX' "$GOOGLE_MAX"
-    DebugThis '? $temp_path' "$temp_path"
+    DebugThis '? $PACKAGER_BIN' "$PACKAGER_BIN"
+    DebugThis '? $TEMP_PATH' "$TEMP_PATH"
 
     if ! DOWNLOADER_BIN=$(which wget); then
         if ! DOWNLOADER_BIN=$(which curl); then
@@ -276,33 +273,33 @@ BuildWorkPaths()
     gallery_name=googliser-gallery
     current_path="$PWD"
 
-    temp_path=$(mktemp -d "/tmp/${SCRIPT_NAME}.$$.XXX") || Flee
+    TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
-    results_run_count_path="${temp_path}/results.running.count"
+    results_run_count_path="${TEMP_PATH}/results.running.count"
     mkdir -p "$results_run_count_path" || Flee
 
-    results_success_count_path="${temp_path}/results.success.count"
+    results_success_count_path="${TEMP_PATH}/results.success.count"
     mkdir -p "$results_success_count_path" || Flee
 
-    results_fail_count_path="${temp_path}/results.fail.count"
+    results_fail_count_path="${TEMP_PATH}/results.fail.count"
     mkdir -p "$results_fail_count_path" || Flee
 
-    download_run_count_path="${temp_path}/download.running.count"
+    download_run_count_path="${TEMP_PATH}/download.running.count"
     mkdir -p "$download_run_count_path" || Flee
 
-    download_success_count_path="${temp_path}/download.success.count"
+    download_success_count_path="${TEMP_PATH}/download.success.count"
     mkdir -p "$download_success_count_path" || Flee
 
-    download_fail_count_path="${temp_path}/download.fail.count"
+    download_fail_count_path="${TEMP_PATH}/download.fail.count"
     mkdir -p "$download_fail_count_path" || Flee
 
-    testimage_pathfile="${temp_path}/${test_file}"
-    searchresults_pathfile="${temp_path}/search.results.page.html"
-    gallery_title_pathfile="${temp_path}/gallery.title.png"
-    gallery_thumbnails_pathfile="${temp_path}/gallery.thumbnails.png"
-    gallery_background_pathfile="${temp_path}/gallery.background.png"
-    imagelinks_pathfile="${temp_path}/${imagelinks_file}"
-    debug_pathfile="${temp_path}/${debug_file}"
+    testimage_pathfile="${TEMP_PATH}/${test_file}"
+    searchresults_pathfile="${TEMP_PATH}/search.results.page.html"
+    gallery_title_pathfile="${TEMP_PATH}/gallery.title.png"
+    gallery_thumbnails_pathfile="${TEMP_PATH}/gallery.thumbnails.png"
+    gallery_background_pathfile="${TEMP_PATH}/gallery.background.png"
+    imagelinks_pathfile="${TEMP_PATH}/${imagelinks_file}"
+    debug_pathfile="${TEMP_PATH}/${debug_file}"
 
     unset -f Flee
 
@@ -460,7 +457,7 @@ DisplayHelp()
 
     DebugThis "\ [${FUNCNAME[0]}]" 'entry'
 
-    local sample_user_query=cows
+    local SAMPLE_USER_QUERY=cows
 
     echo
     if [[ $colour = true ]]; then
@@ -496,16 +493,16 @@ DisplayHelp()
     FormatHelpLine '' '' "'square'"
     FormatHelpLine '' '' "'wide'"
     FormatHelpLine '' '' "'panoramic'"
-    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$border_thickness_default]. Use '0' for no border."
+    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
     FormatHelpLine c colour "Display with ANSI coloured text."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
     FormatHelpLine '' debug "Save the debug file [$debug_file] into the output directory."
     #FormatHelpLine d dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
-    FormatHelpLine f failures "Total number of download failures allowed before aborting [$fail_limit_default]. Use '0' for unlimited ($GOOGLE_MAX)."
+    FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
-    FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$lower_size_limit_default]."
+    FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_LIMIT_DEFAULT]."
     FormatHelpLine L links-only "Only get image file URLs. Don't download any images."
     FormatHelpLine m minimum-pixels "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
     FormatHelpLine '' '' "'qsvga' (400 x 300)"
@@ -525,13 +522,13 @@ DisplayHelp()
     FormatHelpLine '' '' "'large'"
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
-    FormatHelpLine n number "Number of images to download [$images_required_default]. Maximum of $GOOGLE_MAX."
+    FormatHelpLine n number "Number of images to download [$IMAGES_REQUIRED_DEFAULT]. Maximum of $GOOGLE_MAX."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
     FormatHelpLine o output "The image output directory [phrase]."
-    FormatHelpLine P parallel "How many parallel image downloads? [$parallel_limit_default]. Maximum of $parallel_max. Use wisely!"
+    FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
-    FormatHelpLine r retries "Retry image download this many times [$retries_default]. Maximum of $retries_max."
-    FormatHelpLine R recent "Only get images published this far back in time [$recent_default]. Specify like '--recent month'. Presets are:"
+    FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
+    FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
     FormatHelpLine '' '' "'hour'"
     FormatHelpLine '' '' "'day'"
@@ -540,7 +537,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'year'"
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
-    FormatHelpLine t timeout "Number of seconds before aborting each image download [$timeout_default]. Maximum of $timeout_max."
+    FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_DEFAULT]. Maximum of $TIMEOUT_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
     FormatHelpLine '' '' "'face'"
@@ -548,7 +545,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'clipart'"
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
-    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$upper_size_limit_default]. Use '0' for unlimited."
+    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_LIMIT_DEFAULT]. Use '0' for unlimited."
     #FormatHelpLine '?' random "Download a single random image only"
     FormatHelpLine '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
@@ -560,13 +557,13 @@ DisplayHelp()
     echo " Example:"
 
     if [[ $colour = true ]]; then
-        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$sample_user_query'")"
+        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_QUERY'")"
     else
-        echo " $ ./$SCRIPT_FILE -p '$sample_user_query'"
+        echo " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_QUERY'"
     fi
 
     echo
-    echo " This will download the first $images_required_default available images for the phrase '$sample_user_query' and build them into a gallery image."
+    echo " This will download the first $IMAGES_REQUIRED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
 
     DebugThis "/ [${FUNCNAME[0]}]" 'exit'
 
@@ -675,8 +672,8 @@ ValidateParameters()
                 DebugThis '~ $parallel_limit TOO LOW so set as' "$parallel_limit"
             fi
 
-            if [[ $parallel_limit -gt $parallel_max ]]; then
-                parallel_limit=$parallel_max
+            if [[ $parallel_limit -gt $PARALLEL_MAX ]]; then
+                parallel_limit=$PARALLEL_MAX
                 DebugThis '~ $parallel_limit TOO HIGH so set as' "$parallel_limit"
             fi
             ;;
@@ -696,8 +693,8 @@ ValidateParameters()
                 DebugThis '~ $timeout TOO LOW so set as' "$timeout"
             fi
 
-            if [[ $timeout -gt $timeout_max ]]; then
-                timeout=$timeout_max
+            if [[ $timeout -gt $TIMEOUT_MAX ]]; then
+                timeout=$TIMEOUT_MAX
                 DebugThis '~ $timeout TOO HIGH so set as' "$timeout"
             fi
             ;;
@@ -717,8 +714,8 @@ ValidateParameters()
                 DebugThis '~ $retries TOO LOW so set as' "$retries"
             fi
 
-            if [[ $retries -gt $retries_max ]]; then
-                retries=$retries_max
+            if [[ $retries -gt $RETRIES_MAX ]]; then
+                retries=$RETRIES_MAX
                 DebugThis '~ $retries TOO HIGH so set as' "$retries"
             fi
             ;;
@@ -1433,6 +1430,8 @@ Downloader_GetResults()
     local URL="$1"
     local link_index="$2"
 
+    local SERVER=www.google.com
+
     # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
     local search_type='&tbm=isch'       # search for images
     local search_language='&hl=en'      # language
@@ -1440,12 +1439,12 @@ Downloader_GetResults()
     local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
 
     # compiled search string
-    local search_string="\"https://${server}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+    local search_string="\"https://${SERVER}/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $useragent_string --output-document \"${searchresults_pathfile}.$URL\""
+        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $USERAGENT --output-document \"${searchresults_pathfile}.$URL\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $useragent_string --output \"${searchresults_pathfile}.$URL\""
+        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"${searchresults_pathfile}.$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1471,9 +1470,9 @@ Downloader_GetHeaders()
     local output_pathfile="$3"
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+        local get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $useragent_string \"$URL\""
+        local get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1499,9 +1498,9 @@ Downloader_GetFile()
     local output_pathfile="$3"
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout=$timeout $useragent_string --output-document \"$output_pathfile\" \"$URL\""
+        local get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout=$timeout $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $useragent_string --output \"$output_pathfile\" \"$URL\""
+        local get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
