@@ -1314,7 +1314,7 @@ DownloadImage_auto()
         result=$?
 
         if [[ $result -eq 0 ]]; then
-            estimated_size="$(grep -i 'content-length:' <<< $response | $SED_BIN 's|^.*: ||;s|\r||')"
+            estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
             DebugThis "? link ($link_index) pre-download image size estimate" "$estimated_size bytes"
