@@ -1359,7 +1359,6 @@ DownloadImage_auto()
         if [[ $result -eq 0 ]]; then
             # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
             download_speed=$(grep -o '\([0-9.]\+ [KM]B/s\)' <<< "$response")
-
             if [[ -e $targetimage_pathfileext ]]; then
                 actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
 
@@ -1431,6 +1430,7 @@ Downloader_GetResults()
     local search_group="&ijn=$((page_group-1))"
     local search_start="&start=$(((page_group-1)*100))"
     local SERVER=www.google.com
+    local get_results_cmd=''
 
     # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
     local search_type='&tbm=isch'       # search for images
@@ -1442,9 +1442,9 @@ Downloader_GetResults()
     local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
+        get_results_cmd="$DOWNLOADER_BIN --quiet --timeout=5 --tries=3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
+        get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1468,11 +1468,12 @@ Downloader_GetHeaders()
     local URL="$1"
     local link_index="$2"
     local output_pathfile="$3"
+    local get_headers_cmd=''
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+        get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
+        get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
@@ -1496,11 +1497,12 @@ Downloader_GetFile()
     local URL="$1"
     local link_index="$2"
     local output_pathfile="$3"
+    local get_image_cmd=''
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        local get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout=$timeout $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+        get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout=$timeout --tries=$((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
     elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        local get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
+        get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
     else
         DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
         return 1
