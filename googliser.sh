@@ -50,7 +50,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190122
+    local SCRIPT_VERSION=190123
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1171,6 +1171,7 @@ DownloadImages()
     local success_count=0
     local fail_count=0
     local imagelink=''
+    local download_bytes=0
 
     [[ $verbose = true ]] && echo -n " -> acquiring images: "
 
@@ -1291,6 +1292,8 @@ DownloadImage_auto()
     local size_ok=true
     local response=''
     local result=0
+    local download_speed=''
+    local actual_size=0
 
     local run_pathfile="$download_run_count_path/$link_index"
     local success_pathfile="$download_success_count_path/$link_index"
@@ -1310,7 +1313,7 @@ DownloadImage_auto()
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        response="$(Downloader_GetHeaders "$URL" "$link_index" "$testimage_pathfileext")"
+        response=$(Downloader_GetHeaders "$URL" "$link_index" "$testimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
