@@ -50,7 +50,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190123
+    local SCRIPT_VERSION=190124
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -78,8 +78,8 @@ Init()
     target_path_created=false
     show_help_only=false
     exitcode=0
-    script_details_colour="$(ColourTextBrightWhite "$SCRIPT_FILE") V:$SCRIPT_VERSION PID:$$"
-    script_details_plain="$SCRIPT_FILE V:$SCRIPT_VERSION PID:$$"
+    script_details_colour="$(ColourBackgroundBlack "$(ColourTextBrightWhite " $SCRIPT_FILE ")") v:$SCRIPT_VERSION PID:$$"
+    script_details_plain="$SCRIPT_FILE v:$SCRIPT_VERSION PID:$$"
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"'
 
     # user-changeable parameters
@@ -2449,6 +2449,13 @@ ConvertSecs()
     ((s=${1}%60))
 
     printf "%02dh:%02dm:%02ds\n" $h $m $s
+
+    }
+
+ColourBackgroundBlack()
+    {
+
+    echo -en '\033[40m'"$(PrintResetColours "$1")"
 
     }
 
