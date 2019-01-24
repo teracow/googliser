@@ -50,7 +50,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190124
+    local SCRIPT_VERSION=190125
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -953,17 +953,18 @@ ProcSingleQuery()
     fi
 
     echo " -> processing query: \"$user_query\""
-    search_phrase="&q=${user_query// /+}"           # replace whitepace with '+' to suit curl/wget
-    safe_query="${user_query// /_}"                 # replace whitepace with '_' so less issues later on!
-    DebugThis '? $safe_query' "$safe_query"
+    local safe_search_phrase="${user_query// /+}"       # replace whitepace with '+' to suit curl/wget
+    DebugThis '? $safe_search_phrase' "'$safe_search_phrase'"
+    safe_path_phrase="${user_query// /_}"               # replace whitepace with '_' so less issues later on!
+    safe_search_query="&q=$safe_search_phrase"
 
     if [[ -z $output_path ]]; then
-        target_path="$current_path/$safe_query"
+        target_path="$current_path/$safe_path_phrase"
     else
-        safe_path="${output_path// /_}"             # replace whitepace with '_' so less issues later on!
+        safe_path="${output_path// /_}"                 # replace whitepace with '_' so less issues later on!
         DebugThis '? $safe_path' "$safe_path"
         if [[ -n $input_pathfile ]]; then
-            target_path="$safe_path/$safe_query"
+            target_path="$safe_path/$safe_path_phrase"
         else
             target_path="$safe_path"
         fi
@@ -1439,7 +1440,7 @@ Downloader_GetResults()
     local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
 
     # compiled search string
-    local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${search_phrase}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+    local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
     if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
         get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
@@ -1711,7 +1712,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$gallery_name-($safe_query).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$gallery_name-($safe_path_phrase).png\""
 
         DebugThis '? $build_compose_cmd' "'$build_compose_cmd'"
 
