@@ -2286,7 +2286,7 @@ DebugSearchChildSpawned()
 
     # record $1 (search group index) as spawned process in debug log
 
-    DebugThis '>' "$(FormatSearch $1)" "proc spawned"
+    DebugThis '>' "$(FormatSearch $1)" "processor spawned"
 
     }
 
@@ -2295,7 +2295,7 @@ DebugSearchChildEnd()
 
     # record $1 (search group index) as spawned process in debug log
 
-    DebugThis '<' "$(FormatSearch $1)" "proc ended"
+    DebugThis '<' "$(FormatSearch $1)" "processor ended"
 
     }
 
@@ -2354,7 +2354,7 @@ DebugLinkChildSpawned()
 
     # record $1 (link name) as spawned process in debug log
 
-    DebugThis '>' "$(FormatLink $1)" "proc spawned"
+    DebugThis '>' "$(FormatLink $1)" "processor spawned"
 
     }
 
@@ -2363,7 +2363,7 @@ DebugLinkChildEnd()
 
     # record $1 (link name) as spawned process in debug log
 
-    DebugThis '<' "$(FormatLink $1)" "proc ended"
+    DebugThis '<' "$(FormatLink $1)" "processor ended"
 
     }
 
