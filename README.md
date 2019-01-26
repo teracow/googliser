@@ -98,7 +98,7 @@ Display with nice ANSI coloured text.
 `-C` or `--condensed`
 Create the gallery in condensed mode. All thumbnails are square with no padding between each thumbnail.
 
-`--debug`
+`-d` or `--debug`
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
 
 `-D` or `--delete-after`
