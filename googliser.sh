@@ -2328,7 +2328,7 @@ DebugSearchChildSpawned()
 
     [[ -z $1 ]] && return 1
 
-    DebugThis '>' "$(FormatSearch $1)" "processor spawned"
+    DebugChildSpawned "$(FormatSearch $1)"
 
     }
 
@@ -2339,7 +2339,7 @@ DebugSearchChildEnd()
 
     [[ -z $1 ]] && return 1
 
-    DebugThis '<' "$(FormatSearch $1)" "processor ended"
+    DebugChildEnded "$(FormatSearch $1)"
 
     }
 
