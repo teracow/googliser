@@ -43,6 +43,7 @@
 #   =   execution
 #   ~   variable was reset within bounds
 #   $   success
+#   x   warning
 #   !   failure
 #   T   elapsed time
 #   #   comment
@@ -117,9 +118,9 @@ Init()
     BuildWorkPaths
 
     DebugScriptEntry
+    DebugScriptNow
     DebugScriptVar SCRIPT_VERSION
     DebugScriptVal 'PID' "$$"
-    DebugScriptNow
 
     }
 
@@ -198,6 +199,7 @@ ProcEnvironment()
     {
 
     DebugFuncEntry
+    local func_startseconds=$(date +%s)
 
     WhatAreMyOptions
 
@@ -223,8 +225,8 @@ ProcEnvironment()
     DebugScriptVar parallel_limit
     DebugScriptVal '$timeout (seconds)' "$timeout"
     DebugScriptVar retries
-    DebugScriptVal '$upper_size_limit (bytes)' "$upper_size_limit"
-    DebugScriptVal '$lower_size_limit (bytes)' "$lower_size_limit"
+    DebugScriptVal '$upper_size_limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+    DebugScriptVal '$lower_size_limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
     DebugScriptVar recent
     DebugScriptVar create_gallery
     DebugScriptVar condensed_gallery
@@ -246,7 +248,7 @@ ProcEnvironment()
     DebugScriptVal '$border_thickness (pixels)' "$border_thickness"
     DebugScriptComment 'internal parameters'
     DebugScriptVar OSTYPE
-    DebugScriptVal '$GOOGLE_MAX (number of images)' "$GOOGLE_MAX"
+    DebugScriptVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
     DebugScriptVar PACKAGER_BIN
     DebugScriptVar TEMP_PATH
 
@@ -275,12 +277,13 @@ ProcEnvironment()
     DebugScriptVar MONTAGE_BIN
     DebugScriptVar CONVERT_BIN
 
-    ! IDENTIFY_BIN=$(which identify) && DebugThis "! no recognised 'identify' binary found"
+    ! IDENTIFY_BIN=$(which identify) && DebugScriptWarning "no recognised 'identify' binary found"
 
     DebugScriptVar IDENTIFY_BIN
 
     trap CTRL_C_Captured INT
 
+    DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
     return 0
@@ -479,7 +482,7 @@ DisplayHelp()
     FormatHelpLine c colour "Display with ANSI coloured text."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
     FormatHelpLine d debug "Save the debug file [$debug_file] into the output directory."
-    #FormatHelpLine d dimensions "Specify exact image dimensions to download."
+    #FormatHelpLine '' dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
@@ -1023,7 +1026,6 @@ ProcSingleQuery()
             else
                 if [[ $remove_after = true ]]; then
                     rm -f "$target_path/$image_file_prefix"*
-                    DebugFuncVal 'remove all downloaded images from' "$target_path"
                 fi
             fi
         fi
@@ -1310,7 +1312,7 @@ DownloadImage_auto()
             estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
-            DebugLinkVal "$link_index" 'pre-download image size' "$estimated_size bytes"
+            DebugLinkVal "$link_index" 'pre-download image size' "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
@@ -1348,8 +1350,8 @@ DownloadImage_auto()
                 # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
                 download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
 
-                DebugLinkVal "$link_index" 'post-download image size' "$actual_size bytes"
-                DebugLinkVal "$link_index" "average download speed" "$download_speed"
+                DebugLinkVal "$link_index" 'post-download image size' "$(DisplayThousands "$actual_size") bytes"
+                DebugLinkVal "$link_index" 'average download speed' "$download_speed"
 
                 if [[ $actual_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
                     rm -f "$targetimage_pathfileext"
@@ -2125,6 +2127,9 @@ DebugScriptNow()
 DebugScriptVal()
     {
 
+    # $1 = function variable name to log
+    # $2 = value
+
     [[ -z $1 || -z $2 ]] && return 1
 
     DebugVal "$(FormatScript)" "$1: $2"
@@ -2160,7 +2165,29 @@ DebugScriptComment()
 
     [[ -z $1 ]] && return 1
 
-    DebugComment "[${SCRIPT_FILE}]" "$1"
+    DebugComment "$(FormatScript)" "$1"
+
+    }
+
+DebugScriptFailure()
+    {
+
+    # $1 = message
+
+    [[ -z $1 ]] && return 1
+
+    DebugFailed "$(FormatScript)" "$1"
+
+    }
+
+DebugScriptWarning()
+    {
+
+    # $1 = message
+
+    [[ -z $1 ]] && return 1
+
+    DebugWarning "$(FormatScript)" "$1"
 
     }
 
@@ -2229,6 +2256,8 @@ DebugFuncVar()
 
     # $1 = function variable name and value to log
 
+    [[ -z $1 ]] && return 1
+
     DebugVar "$(FormatFunc)" "$1"
 
     }
@@ -2251,6 +2280,8 @@ DebugFuncVal()
     # $1 = function variable name to log
     # $2 = value
 
+    [[ -z $1 || -z $2 ]] && return 1
+
     DebugVal "$(FormatFunc)" "$1: $2"
 
     }
@@ -2259,6 +2290,8 @@ DebugFuncComment()
     {
 
     # $1 = function comment to log
+
+    [[ -z $1 ]] && return 1
 
     DebugComment "$(FormatFunc)" "$1"
 
@@ -2293,6 +2326,8 @@ DebugSearchChildSpawned()
 
     # record $1 (search group index) as spawned process in debug log
 
+    [[ -z $1 ]] && return 1
+
     DebugThis '>' "$(FormatSearch $1)" "processor spawned"
 
     }
@@ -2301,6 +2336,8 @@ DebugSearchChildEnd()
     {
 
     # record $1 (search group index) as spawned process in debug log
+
+    [[ -z $1 ]] && return 1
 
     DebugThis '<' "$(FormatSearch $1)" "processor ended"
 
@@ -2326,7 +2363,7 @@ DebugSearchExec()
     # $2 = reason
     # $3 = command string to execute
 
-    [[ -z $1 || -z $2 ]] && return 1
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
 
     DebugExec "$(FormatSearch $1) $2" "$3"
 
@@ -2372,16 +2409,20 @@ DebugLinkChildSpawned()
 
     # record $1 (link name) as spawned process in debug log
 
-    DebugThis '>' "$(FormatLink $1)" "processor spawned"
+    [[ -z $1 ]] && return 1
+
+    DebugChildSpawned "$(FormatLink $1)"
 
     }
 
 DebugLinkChildEnd()
     {
 
-    # record $1 (link name) as spawned process in debug log
+    # record $1 (link name) as ended process in debug log
 
-    DebugThis '<' "$(FormatLink $1)" "processor ended"
+    [[ -z $1 ]] && return 1
+
+    DebugChildEnded "$(FormatLink $1)"
 
     }
 
@@ -2392,7 +2433,7 @@ DebugLinkVal()
     # $2 = variable
     # $3 = value
 
-    [[ -z $1 || -z $2 ]] && return 1
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
 
     DebugVal "$(FormatLink $1) $2:" "$3"
 
@@ -2405,7 +2446,7 @@ DebugLinkExec()
     # $2 = reason
     # $3 = command string to execute
 
-    [[ -z $1 || -z $2 ]] && return 1
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
 
     DebugExec "$(FormatLink $1) $2" "$3"
 
@@ -2426,6 +2467,8 @@ DebugNow()
     {
 
     # record variable name and value in debug log
+
+    [[ -z $1 ]] && return 1
 
     DebugThis '=' "$1 now:" "$(date)"
 
@@ -2451,7 +2494,7 @@ DebugVal()
     # make a record of name and value in debug log
     # $1 = section
     # $2 = name
-    # $3 - value
+    # $3 = value (optional)
 
     [[ -z $1 || -z $2 ]] && return 1
 
@@ -2468,6 +2511,8 @@ DebugEntry()
 
     # record $1 as a function or script name name in debug log
 
+    [[ -z $1 ]] && return 1
+
     DebugThis '\' "$1" "entry"
 
     }
@@ -2476,6 +2521,8 @@ DebugExit()
     {
 
     # record $1 as a function or script name name in debug log
+
+    [[ -z $1 ]] && return 1
 
     DebugThis '/' "$1" "exit"
 
@@ -2487,9 +2534,26 @@ DebugSuccess()
     # $1 = section
     # $2 = operation
 
-    [[ -z $1 ]] && return 1
+    [[ -z $1 || -z $2 ]] && return 1
 
     DebugThis '$' "$1 $2:" "OK"
+
+    }
+
+DebugWarning()
+    {
+
+    # $1 = section
+    # $2 = operation
+    # $3 = optional reason
+
+    [[ -z $1 ]] && return 1
+
+    if [[ -n $3 ]]; then
+        DebugThis 'x' "$1 $2: $3:" "warning"
+    else
+        DebugThis 'x' "$1 $2:" "warning"
+    fi
 
     }
 
@@ -2515,6 +2579,8 @@ DebugExec()
 
     # record process execution start in debug log
 
+    [[ -z $1 || -z $2 ]] && return 1
+
     DebugThis '=' "$1:" "'$2'"
 
     }
@@ -2523,6 +2589,8 @@ DebugComment()
     {
 
     # record comment in debug log
+
+    [[ -z $1 || -z $2 ]] && return 1
 
     DebugThis '#' "$1" "*** $2 ***"
 
@@ -2537,6 +2605,28 @@ DebugElapsedTime()
     [[ -z $1 || -z $2 ]] && return 1
 
     DebugThis 'T' "$1 elapsed time:" "$(ConvertSecs "$(($(date +%s)-$2))")"
+
+    }
+
+DebugChildSpawned()
+    {
+
+    # record $1 as spawned process in debug log
+
+    [[ -z $1 ]] && return 1
+
+    DebugThis '>' "$1" "processor spawned"
+
+    }
+
+DebugChildEnded()
+    {
+
+    # record $1 as ended process in debug log
+
+    [[ -z $1 ]] && return 1
+
+    DebugThis '<' "$1" "processor ended"
 
     }
 
