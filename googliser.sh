@@ -51,7 +51,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190126
+    local SCRIPT_VERSION=190127
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -278,7 +278,7 @@ CheckEnvironment()
         DebugFuncVar MONTAGE_BIN
         DebugFuncVar CONVERT_BIN
 
-        ! IDENTIFY_BIN=$(which identify) && DebugScriptWarning "no recognised 'identify' binary found"
+        ! IDENTIFY_BIN=$(which identify) && DebugScriptWarn "no recognised 'identify' binary found"
 
         DebugFuncVar IDENTIFY_BIN
 
@@ -595,9 +595,9 @@ ValidateParams()
 
     case ${images_required#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $images_required is invalid'
+            DebugScriptFail 'specified $images_required is invalid'
             echo
-            echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer")"
+            echo "$(ShowFail " !! number specified after (-n, --number) must be a valid integer")"
             exitcode=2
             return 1
             ;;
@@ -616,9 +616,9 @@ ValidateParams()
 
     if [[ -n $input_pathfile ]]; then
         if [[ ! -e $input_pathfile ]]; then
-            DebugScriptFailure '$input_pathfile was not found'
+            DebugScriptFail '$input_pathfile was not found'
             echo
-            echo "$(ShowAsFailed ' !! input file  (-i, --input) was not found')"
+            echo "$(ShowFail ' !! input file  (-i, --input) was not found')"
             exitcode=2
             return 1
         fi
@@ -626,9 +626,9 @@ ValidateParams()
 
     case ${user_fail_limit#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $user_fail_limit is invalid'
+            DebugScriptFail 'specified $user_fail_limit is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-f, --failures) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-f, --failures) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -647,9 +647,9 @@ ValidateParams()
 
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $parallel_limit is invalid'
+            DebugScriptFail 'specified $parallel_limit is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-P, --parallel) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-P, --parallel) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -668,9 +668,9 @@ ValidateParams()
 
     case ${timeout#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $timeout is invalid'
+            DebugScriptFail 'specified $timeout is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-t, --timeout) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-t, --timeout) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -689,9 +689,9 @@ ValidateParams()
 
     case ${retries#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $retries is invalid'
+            DebugScriptFail 'specified $retries is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-r, --retries) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-r, --retries) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -710,9 +710,9 @@ ValidateParams()
 
     case ${upper_size_limit#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $upper_size_limit is invalid'
+            DebugScriptFail 'specified $upper_size_limit is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-u, --upper-size) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -726,9 +726,9 @@ ValidateParams()
 
     case ${lower_size_limit#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $lower_size_limit is invalid'
+            DebugScriptFail 'specified $lower_size_limit is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-l, --lower-size) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -747,9 +747,9 @@ ValidateParams()
 
     case ${border_thickness#[-+]} in
         *[!0-9]*)
-            DebugScriptFailure 'specified $border_thickness is invalid'
+            DebugScriptFail 'specified $border_thickness is invalid'
             echo
-            echo "$(ShowAsFailed ' !! number specified after (-b, --border-thickness) must be a valid integer')"
+            echo "$(ShowFail ' !! number specified after (-b, --border-thickness) must be a valid integer')"
             exitcode=2
             return 1
             ;;
@@ -812,9 +812,9 @@ ValidateParams()
                 min_pixels_search='isz:i'
                 ;;
             *)
-                DebugScriptFailure 'specified $min_pixels is invalid'
+                DebugScriptFail 'specified $min_pixels is invalid'
                 echo
-                echo "$(ShowAsFailed ' !! (-m, --minimum-pixels) preset invalid')"
+                echo "$(ShowFail ' !! (-m, --minimum-pixels) preset invalid')"
                 exitcode=2
                 return 1
                 ;;
@@ -837,9 +837,9 @@ ValidateParams()
                 ar_type='xw'
                 ;;
             *)
-                DebugScriptFailure 'specified $aspect_ratio is invalid'
+                DebugScriptFail 'specified $aspect_ratio is invalid'
                 echo
-                echo "$(ShowAsFailed ' !! (-a, --aspect-ratio) preset invalid')"
+                echo "$(ShowFail ' !! (-a, --aspect-ratio) preset invalid')"
                 exitcode=2
                 return 1
                 ;;
@@ -854,9 +854,9 @@ ValidateParams()
                 image_type_search="itp:$image_type"
                 ;;
             *)
-                DebugScriptFailure 'specified $image_type is invalid'
+                DebugScriptFail 'specified $image_type is invalid'
                 echo
-                echo "$(ShowAsFailed ' !! (--type) preset invalid')"
+                echo "$(ShowFail ' !! (--type) preset invalid')"
                 exitcode=2
                 return 1
                 ;;
@@ -879,9 +879,9 @@ ValidateParams()
                 usage_rights_search='sur:f'
                 ;;
             *)
-                DebugScriptFailure 'specified $usage_rights is invalid'
+                DebugScriptFail 'specified $usage_rights is invalid'
                 echo
-                echo "$(ShowAsFailed ' !! (--usage-rights) preset invalid')"
+                echo "$(ShowFail ' !! (--usage-rights) preset invalid')"
                 exitcode=2
                 return 1
                 ;;
@@ -909,9 +909,9 @@ ValidateParams()
                 recent_search='qdr:y'
                 ;;
             *)
-                DebugScriptFailure 'specified $recent is invalid'
+                DebugScriptFail 'specified $recent is invalid'
                 echo
-                echo "$(ShowAsFailed ' !! (--recent) preset invalid')"
+                echo "$(ShowFail ' !! (--recent) preset invalid')"
                 exitcode=2
                 return 1
                 ;;
@@ -939,8 +939,8 @@ ProcessQuery()
 
     # some last-minute parameter validation - needed when reading phrases from text file
     if [[ -z $user_query ]]; then
-        DebugFuncFailure '$user_query' 'unspecified'
-        echo "$(ShowAsFailed ' !! search phrase (-p, --phrase) was unspecified')"
+        DebugFuncFail '$user_query' 'unspecified'
+        echo "$(ShowFail ' !! search phrase (-p, --phrase) was unspecified')"
         exitcode=2
         return 1
     fi
@@ -977,9 +977,9 @@ ProcessQuery()
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
-            DebugFuncFailure "create target path" "failed! mkdir returned: ($result)"
+            DebugFuncFail "create target path" "failed! mkdir returned: ($result)"
             echo
-            echo "$(ShowAsFailed " !! couldn't create target path [$target_path]")"
+            echo "$(ShowFail " !! couldn't create target path [$target_path]")"
             exitcode=3
             return 1
         else
@@ -991,7 +991,7 @@ ProcessQuery()
     # download search results pages
     DownloadResultGroups
     if [[ $? -gt 0 ]]; then
-        echo "$(ShowAsFailed " !! couldn't download Google search results")"
+        echo "$(ShowFail " !! couldn't download Google search results")"
         exitcode=4
         return 1
     else
@@ -1027,7 +1027,7 @@ ProcessQuery()
             BuildGallery
             if [[ $? -gt 0 ]]; then
                 echo
-                echo "$(ShowAsFailed ' !! unable to build thumbnail gallery')"
+                echo "$(ShowFail ' !! unable to build thumbnail gallery')"
                 exitcode=6
             else
                 if [[ $remove_after = true ]]; then
@@ -1138,15 +1138,15 @@ DownloadResultGroup_auto()
 
     DebugSearchChildSpawned "$group_index"
 
-    response=$(Downloader_GetResults "$page_group" "$group_index")
+    response=$(Downloader_GetResultsGroup "$page_group" "$group_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
         mv "$run_pathfile" "$success_pathfile"
         DebugSearchSuccess "$group_index" 'get search results'
     else
-        mv "$run_pathfile" "$fail_pathfile" 'get search results'
-        DebugSearchFailure "$group_index" "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+        mv "$run_pathfile" "$fail_pathfile"
+        DebugSearchFail "$group_index" "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
     fi
 
     DebugSearchElapsedTime "$group_index" "$func_startseconds"
@@ -1230,7 +1230,7 @@ DownloadImages()
     fi
 
     if [[ $result -eq 1 ]]; then
-        DebugFuncFailure '! failure limit reached' "$fail_count/$fail_limit"
+        DebugFuncFail '! failure limit reached' "$fail_count/$fail_limit"
 
         if [[ $colour = true ]]; then
             echo "$(ColourTextBrightRed 'Too many failures!')"
@@ -1239,7 +1239,7 @@ DownloadImages()
         fi
     else
         if [[ $result_index -eq $result_count ]]; then
-            DebugFuncFailure '! ran out of images to download!' "$result_index/$result_count"
+            DebugFuncFail '! ran out of images to download!' "$result_index/$result_count"
 
             if [[ $colour = true ]]; then
                 echo "$(ColourTextBrightRed 'Ran out of images to download!')"
@@ -1311,7 +1311,7 @@ DownloadImage_auto()
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        response=$(Downloader_GetHeaders "$URL" "$link_index" "$testimage_pathfileext")
+        response=$(Downloader_GetHeader "$URL" "$link_index" "$testimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1322,7 +1322,7 @@ DownloadImage_auto()
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugLinkFailure "$link_index" 'image size'
+                    DebugLinkFail "$link_index" 'image size'
                     size_ok=false
                     get_download=false
                 else
@@ -1330,12 +1330,12 @@ DownloadImage_auto()
                 fi
             else
                 if [[ $skip_no_size = true ]]; then
-                    DebugLinkFailure "$link_index" 'pre-download image size is UNKNOWN'
+                    DebugLinkFail "$link_index" 'pre-download image size is UNKNOWN'
                     get_download=false
                 fi
             fi
         else
-            DebugLinkFailure "$link_index" "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            DebugLinkFail "$link_index" "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
             if [[ $skip_no_size = true ]]; then
                 get_download=false
@@ -1377,23 +1377,23 @@ DownloadImage_auto()
                     DebugLinkSuccess "$link_index" 'image type'
                     DebugLinkSuccess "$link_index" 'image download'
                 else
-                    DebugLinkFailure "$link_index" 'image type'
+                    DebugLinkFail "$link_index" 'image type'
                 fi
             else
                 # files that were outside size limits still count as failures
                 mv "$run_pathfile" "$fail_pathfile"
-                DebugLinkFailure "$link_index" 'image size'
+                DebugLinkFail "$link_index" 'image size'
             fi
         else
             mv "$run_pathfile" "$fail_pathfile"
-            DebugLinkFailure "$link_index" "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            DebugLinkFail "$link_index" "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
             # delete temp file if one was created
             [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
         fi
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugLinkFailure "$link_index" 'image download'
+        DebugLinkFail "$link_index" 'image download'
     fi
 
     DebugLinkElapsedTime "$link_index" "$func_startseconds"
@@ -1403,7 +1403,7 @@ DownloadImage_auto()
 
     }
 
-Downloader_GetResults()
+Downloader_GetResultsGroup()
     {
 
     # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
@@ -1442,7 +1442,7 @@ Downloader_GetResults()
 
     }
 
-Downloader_GetHeaders()
+Downloader_GetHeader()
     {
 
     # $1 = URL to check
@@ -1610,7 +1610,7 @@ BuildGallery()
     if [[ $result -eq 0 ]]; then
         DebugFuncSuccess "$stage_description"
     else
-        DebugFuncFailure "$stage_description" "($result)"
+        DebugFuncFail "$stage_description" "($result)"
     fi
 
     if [[ $result -eq 0 ]]; then
@@ -1641,7 +1641,7 @@ BuildGallery()
         if [[ $result -eq 0 ]]; then
             DebugFuncSuccess "$stage_description"
         else
-            DebugFuncFailure "$stage_description" "($result)"
+            DebugFuncFail "$stage_description" "($result)"
         fi
     fi
 
@@ -1672,7 +1672,7 @@ BuildGallery()
             if [[ $result -eq 0 ]]; then
                 DebugFuncSuccess "$stage_description"
             else
-                DebugFuncFailure "$stage_description" "($result)"
+                DebugFuncFail "$stage_description" "($result)"
             fi
         fi
     fi
@@ -1708,7 +1708,7 @@ BuildGallery()
         if [[ $result -eq 0 ]]; then
             DebugFuncSuccess "$stage_description"
         else
-            DebugFuncFailure "$stage_description" "($result)"
+            DebugFuncFail "$stage_description" "($result)"
         fi
     fi
 
@@ -1749,7 +1749,7 @@ Finish()
         case $exitcode in
             0)
                 echo
-                echo " -> $(ShowAsSucceed 'All done!')"
+                echo " -> $(ShowSuccess 'All done!')"
                 ;;
             [1-2])
                 if [[ $show_help_only != true ]]; then
@@ -1759,7 +1759,7 @@ Finish()
                 ;;
             [3-6])
                 echo
-                echo " -> $(ShowAsFailed 'All done! (with errors)')"
+                echo " -> $(ShowFail 'All done! (with errors)')"
                 ;;
             *)
                 ;;
@@ -2133,7 +2133,7 @@ DebugScriptNow()
 DebugScriptVal()
     {
 
-    # $1 = function variable name to log
+    # $1 = script variable name to log
     # $2 = value
 
     [[ -z $1 || -z $2 ]] && return 1
@@ -2175,25 +2175,25 @@ DebugScriptComment()
 
     }
 
-DebugScriptFailure()
+DebugScriptFail()
     {
 
     # $1 = message
 
     [[ -z $1 ]] && return 1
 
-    DebugFailed "$(FormatScript)" "$1"
+    DebugFail "$(FormatScript)" "$1"
 
     }
 
-DebugScriptWarning()
+DebugScriptWarn()
     {
 
     # $1 = message
 
     [[ -z $1 ]] && return 1
 
-    DebugWarning "$(FormatScript)" "$1"
+    DebugWarn "$(FormatScript)" "$1"
 
     }
 
@@ -2245,7 +2245,7 @@ DebugFuncSuccess()
 
     }
 
-DebugFuncFailure()
+DebugFuncFail()
     {
 
     # $1 = operation
@@ -2253,7 +2253,7 @@ DebugFuncFailure()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugFailed "$(FormatFunc) $1" "$2"
+    DebugFail "$(FormatFunc) $1" "$2"
 
     }
 
@@ -2315,7 +2315,7 @@ DebugSearchSuccess()
 
     }
 
-DebugSearchFailure()
+DebugSearchFail()
     {
 
     # $1 = search index
@@ -2323,7 +2323,7 @@ DebugSearchFailure()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugFailed "$(FormatSearch $1)" "$2"
+    DebugFail "$(FormatSearch $1)" "$2"
 
     }
 
@@ -2398,7 +2398,7 @@ DebugLinkSuccess()
 
     }
 
-DebugLinkFailure()
+DebugLinkFail()
     {
 
     # $1 = link index
@@ -2406,7 +2406,7 @@ DebugLinkFailure()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugFailed "$(FormatLink $1)" "$2"
+    DebugFail "$(FormatLink $1)" "$2"
 
     }
 
@@ -2546,7 +2546,7 @@ DebugSuccess()
 
     }
 
-DebugWarning()
+DebugWarn()
     {
 
     # $1 = section
@@ -2563,7 +2563,7 @@ DebugWarning()
 
     }
 
-DebugFailed()
+DebugFail()
     {
 
     # $1 = section
@@ -2905,7 +2905,7 @@ CurlReturnCodes()
             echo "Failed sending network data"
             ;;
         56)
-            echo "Failure in receiving network data"
+            echo "Fail in receiving network data"
             ;;
         58)
             echo "Problem with the local certificate"
@@ -3087,7 +3087,7 @@ RemoveColourCodes()
 
     }
 
-ShowAsFailed()
+ShowFail()
     {
 
     # $1 = message to show in colour if colour is set
@@ -3100,7 +3100,7 @@ ShowAsFailed()
 
     }
 
-ShowAsSucceed()
+ShowSuccess()
     {
 
     # $1 = message to show in colour if colour is set
@@ -3205,7 +3205,7 @@ case "$OSTYPE" in
         if [[ $(basename $PACKAGER_BIN) = brew ]]; then
             GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         else
-            DebugThis "! 'brew' executable" "not found"
+            DebugScriptFail "'brew' executable was not found"
             echo " 'brew' executable was not found!"
             echo -e "\n On this platform, you can try installing it with:"
             echo ' $ xcode-select --install && ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
@@ -3234,10 +3234,10 @@ if [[ $exitcode -eq 0 ]]; then
                     user_query="$file_query"
                     ProcessQuery
                 else
-                    DebugThis '! ignoring $file_query' 'comment'
+                    DebugScriptFail 'ignoring phrase listfile comment line'
                 fi
             else
-                DebugThis '! ignoring $file_query' 'null'
+                DebugScriptFail 'ignoring phrase listfile empty line'
             fi
         done < "$input_pathfile"
     else
