@@ -923,6 +923,8 @@ ProcSingleQuery()
 
     DebugFuncEntry
 
+    local func_startseconds=$(date +%s)
+
     echo
     DebugFuncComment 'user query parameters'
 
@@ -1038,6 +1040,7 @@ ProcSingleQuery()
         fi
     fi
 
+    DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
     return 0
@@ -1119,6 +1122,7 @@ DownloadResultGroup_auto()
     local group_index="$2"
     local response=''
     local result=0
+    local func_startseconds=$(date +%s)
 
     local run_pathfile="$results_run_count_path/$group_index"
     local success_pathfile="$results_success_count_path/$group_index"
@@ -1137,6 +1141,7 @@ DownloadResultGroup_auto()
         DebugSearchFailure "$group_index" "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
     fi
 
+    DebugSearchElapsedTime "$group_index" "$func_startseconds"
     DebugSearchChildEnd "$group_index"
 
     return 0
@@ -1278,6 +1283,7 @@ DownloadImage_auto()
     local result=0
     local download_speed=''
     local actual_size=0
+    local func_startseconds=$(date +%s)
 
     local run_pathfile="$download_run_count_path/$link_index"
     local success_pathfile="$download_success_count_path/$link_index"
@@ -1382,6 +1388,7 @@ DownloadImage_auto()
         DebugLinkFailure "$link_index" 'image download'
     fi
 
+    DebugLinkElapsedTime "$link_index" "$func_startseconds"
     DebugLinkChildEnd "$link_index"
 
     return 0
@@ -2142,7 +2149,7 @@ DebugScriptElapsedTime()
 
     [[ -z $1 ]] && return 1
 
-    DebugThis "T $(FormatScript) elapsed time" "$(ConvertSecs "$(($(date +%s)-$1))")"
+    DebugElapsedTime "$(FormatScript)" "$1"
 
     }
 
@@ -2178,7 +2185,7 @@ DebugFuncElapsedTime()
 
     [[ -z $1 ]] && return 1
 
-    DebugThis "T" "$(FormatFunc) elapsed time:" "$(ConvertSecs "$(($(date +%s)-$1))")"
+    DebugElapsedTime "$(FormatFunc)" "$1"
 
     }
 
@@ -2325,6 +2332,17 @@ DebugSearchExec()
 
     }
 
+DebugSearchElapsedTime()
+    {
+
+    # $1 = number of seconds to count from
+
+    [[ -z $1 || -z $2 ]] && return 1
+
+    DebugElapsedTime "$(FormatSearch $1)" "$2"
+
+    }
+
 DebugLinkSuccess()
     {
 
@@ -2390,6 +2408,17 @@ DebugLinkExec()
     [[ -z $1 || -z $2 ]] && return 1
 
     DebugExec "$(FormatLink $1) $2" "$3"
+
+    }
+
+DebugLinkElapsedTime()
+    {
+
+    # $1 = number of seconds to count from
+
+    [[ -z $1 || -z $2 ]] && return 1
+
+    DebugElapsedTime "$(FormatLink $1)" "$2"
 
     }
 
@@ -2496,6 +2525,18 @@ DebugComment()
     # record comment in debug log
 
     DebugThis '#' "$1" "*** $2 ***"
+
+    }
+
+DebugElapsedTime()
+    {
+
+    # $1 = section
+    # $2 = number of seconds to count from
+
+    [[ -z $1 || -z $2 ]] && return 1
+
+    DebugThis 'T' "$1 elapsed time:" "$(ConvertSecs "$(($(date +%s)-$2))")"
 
     }
 
