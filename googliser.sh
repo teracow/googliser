@@ -195,7 +195,7 @@ BuildWorkPaths()
 
     }
 
-ProcEnvironment()
+CheckEnvironment()
     {
 
     DebugFuncEntry
@@ -215,73 +215,75 @@ ProcEnvironment()
         DisplayHelp
         return 1
     else
-        ValidateParameters
+        ValidateParams
     fi
 
-    DebugScriptComment 'runtime parameters after validation and adjustment'
-    DebugScriptVar images_required
-    DebugScriptVar user_fail_limit
-    DebugScriptVar max_results_required
-    DebugScriptVar parallel_limit
-    DebugScriptVal '$timeout (seconds)' "$timeout"
-    DebugScriptVar retries
-    DebugScriptVal '$upper_size_limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
-    DebugScriptVal '$lower_size_limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
-    DebugScriptVar recent
-    DebugScriptVar create_gallery
-    DebugScriptVar condensed_gallery
-    DebugScriptVar save_links
-    DebugScriptVar colour
-    DebugScriptVar verbose
-    DebugScriptVar debug
-    DebugScriptVar skip_no_size
-    DebugScriptVar remove_after
-    DebugScriptVar lightning
-    DebugScriptVar min_pixels
-    DebugScriptVar aspect_ratio
-    DebugScriptVar image_type
-    DebugScriptVar usage_rights
-    DebugScriptVar input_pathfile
-    DebugScriptVar output_path
-    DebugScriptVar links_only
-    #DebugScriptVar dimensions
-    DebugScriptVal '$border_thickness (pixels)' "$border_thickness"
-    DebugScriptComment 'internal parameters'
-    DebugScriptVar OSTYPE
-    DebugScriptVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
-    DebugScriptVar PACKAGER_BIN
-    DebugScriptVar TEMP_PATH
+    if [[ $exitcode -eq 0 ]]; then
+        DebugFuncComment 'runtime parameters after validation and adjustment'
+        DebugFuncVar images_required
+        DebugFuncVar user_fail_limit
+        DebugFuncVar max_results_required
+        DebugFuncVar parallel_limit
+        DebugFuncVal '$timeout (seconds)' "$timeout"
+        DebugFuncVar retries
+        DebugFuncVal '$upper_size_limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+        DebugFuncVal '$lower_size_limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
+        DebugFuncVar recent
+        DebugFuncVar create_gallery
+        DebugFuncVar condensed_gallery
+        DebugFuncVar save_links
+        DebugFuncVar colour
+        DebugFuncVar verbose
+        DebugFuncVar debug
+        DebugFuncVar skip_no_size
+        DebugFuncVar remove_after
+        DebugFuncVar lightning
+        DebugFuncVar min_pixels
+        DebugFuncVar aspect_ratio
+        DebugFuncVar image_type
+        DebugFuncVar usage_rights
+        DebugFuncVar input_pathfile
+        DebugFuncVar output_path
+        DebugFuncVar links_only
+        #DebugFuncVar dimensions
+        DebugFuncVal '$border_thickness (pixels)' "$border_thickness"
+        DebugFuncComment 'internal parameters'
+        DebugFuncVar OSTYPE
+        DebugFuncVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
+        DebugFuncVar PACKAGER_BIN
+        DebugFuncVar TEMP_PATH
 
-    if ! DOWNLOADER_BIN=$(which wget); then
-        if ! DOWNLOADER_BIN=$(which curl); then
-            SuggestInstall wget
-            exitcode=1
-            return 1
+        if ! DOWNLOADER_BIN=$(which wget); then
+            if ! DOWNLOADER_BIN=$(which curl); then
+                SuggestInstall wget
+                exitcode=1
+                return 1
+            fi
         fi
-    fi
 
-    DebugScriptVar DOWNLOADER_BIN
+        DebugFuncVar DOWNLOADER_BIN
 
-    if [[ $create_gallery = true && $show_help_only = false ]]; then
-        if ! MONTAGE_BIN=$(which montage); then
-            SuggestInstall montage imagemagick
-            exitcode=1
-            return 1
-        elif ! CONVERT_BIN=$(which convert); then
-            SuggestInstall convert imagemagick
-            exitcode=1
-            return 1
+        if [[ $create_gallery = true && $show_help_only = false ]]; then
+            if ! MONTAGE_BIN=$(which montage); then
+                SuggestInstall montage imagemagick
+                exitcode=1
+                return 1
+            elif ! CONVERT_BIN=$(which convert); then
+                SuggestInstall convert imagemagick
+                exitcode=1
+                return 1
+            fi
         fi
+
+        DebugFuncVar MONTAGE_BIN
+        DebugFuncVar CONVERT_BIN
+
+        ! IDENTIFY_BIN=$(which identify) && DebugScriptWarning "no recognised 'identify' binary found"
+
+        DebugFuncVar IDENTIFY_BIN
+
+        trap CTRL_C_Captured INT
     fi
-
-    DebugScriptVar MONTAGE_BIN
-    DebugScriptVar CONVERT_BIN
-
-    ! IDENTIFY_BIN=$(which identify) && DebugScriptWarning "no recognised 'identify' binary found"
-
-    DebugScriptVar IDENTIFY_BIN
-
-    trap CTRL_C_Captured INT
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -293,7 +295,7 @@ ProcEnvironment()
 WhatAreMyOptions()
     {
 
-    DebugScriptVar user_parameters_raw
+    DebugFuncVar user_parameters_raw
 
     [[ $user_parameters_result -ne 0 ]] && { echo; exitcode=2; return 1 ;}
     [[ $user_parameters = ' --' ]] && { show_help_only=true; exitcode=2; return 1 ;}
@@ -440,7 +442,7 @@ WhatAreMyOptions()
 DisplayHelp()
     {
 
-    DebugThis "\ [${FUNCNAME[0]}]" 'entry'
+    DebugFuncEntry
 
     local SAMPLE_USER_QUERY=cows
 
@@ -550,11 +552,11 @@ DisplayHelp()
     echo
     echo " This will download the first $IMAGES_REQUIRED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
 
-    DebugThis "/ [${FUNCNAME[0]}]" 'exit'
+    DebugFuncExit
 
     }
 
-ValidateParameters()
+ValidateParams()
     {
 
     DebugFuncEntry
@@ -593,7 +595,7 @@ ValidateParameters()
 
     case ${images_required#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $images_required' 'invalid'
+            DebugScriptFailure 'specified $images_required is invalid'
             echo
             echo "$(ShowAsFailed " !! number specified after (-n, --number) must be a valid integer")"
             exitcode=2
@@ -614,7 +616,7 @@ ValidateParameters()
 
     if [[ -n $input_pathfile ]]; then
         if [[ ! -e $input_pathfile ]]; then
-            DebugThis '! $input_pathfile' 'not found'
+            DebugScriptFailure '$input_pathfile was not found'
             echo
             echo "$(ShowAsFailed ' !! input file  (-i, --input) was not found')"
             exitcode=2
@@ -624,7 +626,7 @@ ValidateParameters()
 
     case ${user_fail_limit#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $user_fail_limit' 'invalid'
+            DebugScriptFailure 'specified $user_fail_limit is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-f, --failures) must be a valid integer')"
             exitcode=2
@@ -645,7 +647,7 @@ ValidateParameters()
 
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $parallel_limit' 'invalid'
+            DebugScriptFailure 'specified $parallel_limit is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-P, --parallel) must be a valid integer')"
             exitcode=2
@@ -666,7 +668,7 @@ ValidateParameters()
 
     case ${timeout#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $timeout' 'invalid'
+            DebugScriptFailure 'specified $timeout is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-t, --timeout) must be a valid integer')"
             exitcode=2
@@ -687,7 +689,7 @@ ValidateParameters()
 
     case ${retries#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $retries' 'invalid'
+            DebugScriptFailure 'specified $retries is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-r, --retries) must be a valid integer')"
             exitcode=2
@@ -708,7 +710,7 @@ ValidateParameters()
 
     case ${upper_size_limit#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $upper_size_limit' 'invalid'
+            DebugScriptFailure 'specified $upper_size_limit is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-u, --upper-size) must be a valid integer')"
             exitcode=2
@@ -724,7 +726,7 @@ ValidateParameters()
 
     case ${lower_size_limit#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $lower_size_limit' 'invalid'
+            DebugScriptFailure 'specified $lower_size_limit is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-l, --lower-size) must be a valid integer')"
             exitcode=2
@@ -745,7 +747,7 @@ ValidateParameters()
 
     case ${border_thickness#[-+]} in
         *[!0-9]*)
-            DebugThis '! specified $border_thickness' 'invalid'
+            DebugScriptFailure 'specified $border_thickness is invalid'
             echo
             echo "$(ShowAsFailed ' !! number specified after (-b, --border-thickness) must be a valid integer')"
             exitcode=2
@@ -810,6 +812,7 @@ ValidateParameters()
                 min_pixels_search='isz:i'
                 ;;
             *)
+                DebugScriptFailure 'specified $min_pixels is invalid'
                 echo
                 echo "$(ShowAsFailed ' !! (-m, --minimum-pixels) preset invalid')"
                 exitcode=2
@@ -834,6 +837,7 @@ ValidateParameters()
                 ar_type='xw'
                 ;;
             *)
+                DebugScriptFailure 'specified $aspect_ratio is invalid'
                 echo
                 echo "$(ShowAsFailed ' !! (-a, --aspect-ratio) preset invalid')"
                 exitcode=2
@@ -850,6 +854,7 @@ ValidateParameters()
                 image_type_search="itp:$image_type"
                 ;;
             *)
+                DebugScriptFailure 'specified $image_type is invalid'
                 echo
                 echo "$(ShowAsFailed ' !! (--type) preset invalid')"
                 exitcode=2
@@ -874,6 +879,7 @@ ValidateParameters()
                 usage_rights_search='sur:f'
                 ;;
             *)
+                DebugScriptFailure 'specified $usage_rights is invalid'
                 echo
                 echo "$(ShowAsFailed ' !! (--usage-rights) preset invalid')"
                 exitcode=2
@@ -903,6 +909,7 @@ ValidateParameters()
                 recent_search='qdr:y'
                 ;;
             *)
+                DebugScriptFailure 'specified $recent is invalid'
                 echo
                 echo "$(ShowAsFailed ' !! (--recent) preset invalid')"
                 exitcode=2
@@ -916,12 +923,11 @@ ValidateParameters()
     fi
 
     DebugFuncExit
-
     return 0
 
     }
 
-ProcSingleQuery()
+ProcessQuery()
     {
 
     DebugFuncEntry
@@ -1316,11 +1322,11 @@ DownloadImage_auto()
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugLinkFailure "$link_index" 'image size range validation'
+                    DebugLinkFailure "$link_index" 'image size'
                     size_ok=false
                     get_download=false
                 else
-                    DebugLinkSuccess "$link_index" 'image size range validation'
+                    DebugLinkSuccess "$link_index" 'image size'
                 fi
             else
                 if [[ $skip_no_size = true ]]; then
@@ -1363,20 +1369,20 @@ DownloadImage_auto()
             fi
 
             if [[ $size_ok = true ]]; then
-                DebugLinkSuccess "$link_index" 'image size range validation'
+                DebugLinkSuccess "$link_index" 'image size'
                 RenameExtAsType "$targetimage_pathfileext"
 
                 if [[ $? -eq 0 ]]; then
                     mv "$run_pathfile" "$success_pathfile"
-                    DebugLinkSuccess "$link_index" 'image type validation'
+                    DebugLinkSuccess "$link_index" 'image type'
                     DebugLinkSuccess "$link_index" 'image download'
                 else
-                    DebugLinkFailure "$link_index" 'image type validation'
+                    DebugLinkFailure "$link_index" 'image type'
                 fi
             else
                 # files that were outside size limits still count as failures
                 mv "$run_pathfile" "$fail_pathfile"
-                DebugLinkFailure "$link_index" 'image size range validation'
+                DebugLinkFailure "$link_index" 'image size'
             fi
         else
             mv "$run_pathfile" "$fail_pathfile"
@@ -3218,7 +3224,7 @@ user_parameters=$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:
 user_parameters_result=$?
 user_parameters_raw="$@"
 
-ProcEnvironment
+CheckEnvironment
 
 if [[ $exitcode -eq 0 ]]; then
     if [[ -n $input_pathfile ]]; then
@@ -3226,7 +3232,7 @@ if [[ $exitcode -eq 0 ]]; then
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
                     user_query="$file_query"
-                    ProcSingleQuery
+                    ProcessQuery
                 else
                     DebugThis '! ignoring $file_query' 'comment'
                 fi
@@ -3235,7 +3241,7 @@ if [[ $exitcode -eq 0 ]]; then
             fi
         done < "$input_pathfile"
     else
-        ProcSingleQuery
+        ProcessQuery
     fi
 fi
 
