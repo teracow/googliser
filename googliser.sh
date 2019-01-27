@@ -1329,19 +1329,12 @@ DownloadImage_auto()
                     DebugLinkSuccess "$link_index" 'image size'
                 fi
             else
-                if [[ $skip_no_size = true ]]; then
-                    DebugLinkFail "$link_index" 'pre-download image size is UNKNOWN'
-                    get_download=false
-                fi
+                [[ $skip_no_size = true ]] && get_download=false
             fi
         else
             DebugLinkFail "$link_index" "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
-            if [[ $skip_no_size = true ]]; then
-                get_download=false
-            else
-                estimated_size=unknown
-            fi
+            [[ $skip_no_size = true ]] && get_download=false || estimated_size=unknown
         fi
     fi
 
