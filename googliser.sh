@@ -1535,24 +1535,24 @@ ParseResults()
         if [[ $result_count -gt 0 ]]; then
             if [[ $colour = true ]]; then
                 if [[ $result_count -ge $max_results_required ]]; then
-                    echo "$(ColourTextBrightGreen "$result_count") results!"
+                    echo "($(ColourTextBrightGreen "$result_count") results)"
                 fi
 
                 if [[ $result_count -ge $images_required && $result_count -lt $max_results_required ]]; then
-                    echo "$(ColourTextBrightOrange "$result_count") results!"
+                    echo "($(ColourTextBrightOrange "$result_count") results)"
                 fi
 
                 if [[ $result_count -lt $images_required ]]; then
-                    echo "$(ColourTextBrightRed "$result_count") results!"
+                    echo "($(ColourTextBrightRed "$result_count") results)"
                 fi
             else
-                echo "$result_count results!"
+                echo "($result_count results)"
             fi
         else
             if [[ $colour = true ]]; then
-                echo "$(ColourTextBrightRed 'No results!')"
+                echo "($(ColourTextBrightRed 'no results!'))"
             else
-                echo "No results!"
+                echo "(no results!)"
             fi
         fi
     fi
@@ -1888,7 +1888,7 @@ ShowResultDownloadProgress()
             progress_message="$success_count/$groups_max"
         fi
 
-        progress_message+=' result groups downloaded.'
+        progress_message+=' result groups downloaded:'
         ProgressUpdater "$progress_message"
     fi
 
@@ -1942,7 +1942,7 @@ ShowImageDownloadProgress()
             progress_message+=' failed'
         fi
 
-        progress_message+='.'
+        progress_message+=':'
         ProgressUpdater "$progress_message"
     fi
 
