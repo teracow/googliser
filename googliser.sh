@@ -35,7 +35,7 @@
 #   7   unable to create a temporary build directory
 
 # debug log first character notation:
-#   >   child process spawned
+#   >   child process forked
 #   <   child-process ended
 #   \   function entry
 #   /   function exit
@@ -51,7 +51,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190127
+    local SCRIPT_VERSION=190130
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1091,7 +1091,7 @@ DownloadResultGroups()
 
         # create run file here as it takes too long to happen in background function
         touch "$results_run_count_path/$group_index"
-        { DownloadResultGroup_auto "$group" "$group_index" & } 2>/dev/null
+        { _DownloadResultGroup_ "$group" "$group_index" & } 2>/dev/null
 
         RefreshResultsCounts
         ShowResultDownloadProgress
@@ -1119,10 +1119,10 @@ DownloadResultGroups()
 
     }
 
-DownloadResultGroup_auto()
+_DownloadResultGroup_()
     {
 
-    # *** This function runs as a background process ***
+    # * This function runs as a forked process *
     # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
     # $2 = debug index identifier       e.g. (02)
 
@@ -1136,9 +1136,9 @@ DownloadResultGroup_auto()
     local success_pathfile="$results_success_count_path/$group_index"
     local fail_pathfile="$results_fail_count_path/$group_index"
 
-    DebugSearchChildSpawned "$group_index"
+    DebugSearchChildForked "$group_index"
 
-    response=$(Downloader_GetResultsGroup "$page_group" "$group_index")
+    response=$(_GetResultsGroup_ "$page_group" "$group_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
@@ -1206,7 +1206,7 @@ DownloadImages()
 
                 # create run file here as it takes too long to happen in background function
                 touch "$download_run_count_path/$link_index"
-                { DownloadImage_auto "$imagelink" "$link_index" & } 2>/dev/null
+                { _DownloadImage_ "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
             fi
@@ -1276,10 +1276,10 @@ DownloadImages()
 
     }
 
-DownloadImage_auto()
+_DownloadImage_()
     {
 
-    # *** This function runs as a background process ***
+    # * This function runs as a forked process *
     # $1 = URL to download
     # $2 = debug index identifier e.g. "0026"
 
@@ -1297,7 +1297,7 @@ DownloadImage_auto()
     local success_pathfile="$download_success_count_path/$link_index"
     local fail_pathfile="$download_fail_count_path/$link_index"
 
-    DebugLinkChildSpawned "$link_index"
+    DebugFuncLinkChildForked "$link_index"
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo ${1:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
@@ -1311,7 +1311,7 @@ DownloadImage_auto()
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        response=$(Downloader_GetHeader "$URL" "$link_index" "$testimage_pathfileext")
+        response=$(_GetHeader_ "$URL" "$link_index" "$testimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1340,7 +1340,7 @@ DownloadImage_auto()
 
     # perform image download
     if [[ $get_download = true ]]; then
-        response=$(Downloader_GetFile "$URL" "$link_index" "$targetimage_pathfileext")
+        response=$(_GetFile_ "$URL" "$link_index" "$targetimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1390,13 +1390,13 @@ DownloadImage_auto()
     fi
 
     DebugLinkElapsedTime "$link_index" "$func_startseconds"
-    DebugLinkChildEnd "$link_index"
+    DebugFuncLinkChildEnd "$link_index"
 
     return 0
 
     }
 
-Downloader_GetResultsGroup()
+_GetResultsGroup_()
     {
 
     # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
@@ -1435,7 +1435,7 @@ Downloader_GetResultsGroup()
 
     }
 
-Downloader_GetHeader()
+_GetHeader_()
     {
 
     # $1 = URL to check
@@ -1458,13 +1458,13 @@ Downloader_GetHeader()
         return 1
     fi
 
-    DebugLinkExec "$link_index" "get image size" "$get_headers_cmd"
+    DebugFuncLinkChildExec "$link_index" "get image size" "$get_headers_cmd"
 
     eval "$get_headers_cmd" 2>&1
 
     }
 
-Downloader_GetFile()
+_GetFile_()
     {
 
     # $1 = URL to check
@@ -2086,7 +2086,7 @@ CTRL_C_Captured()
     RefreshDownloadCounts
 
     if [[ $parallel_count -gt 0 ]]; then
-        # remove any image files where processing by [DownloadImage_auto] was incomplete
+        # remove any image files where processing by [_DownloadImage_] was incomplete
         for currentfile in $(ls -1 "$download_run_count_path"); do
             rm -f "$target_path/$image_file_prefix($currentfile)".*
             DebugThis "= link ($currentfile) was partially processed" 'deleted!'
@@ -2250,6 +2250,41 @@ DebugFuncFail()
 
     }
 
+DebugFuncLinkChildForked()
+    {
+
+    # record $1 (link name) as forked process in debug log
+
+    [[ -z $1 ]] && return 1
+
+    DebugChildForked "$(FormatFunc) $(FormatLink $1)"
+
+    }
+
+DebugFuncLinkChildEnd()
+    {
+
+    # record $1 (link name) as ended process in debug log
+
+    [[ -z $1 ]] && return 1
+
+    DebugChildEnded "$(FormatFunc) $(FormatLink $1)"
+
+    }
+
+DebugFuncLinkChildExec()
+    {
+
+    # $1 = link index
+    # $2 = reason
+    # $3 = command string to execute
+
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
+
+    DebugExec "$(FormatFunc) $(FormatLink $1) $2" "$3"
+
+    }
+
 DebugFuncVar()
     {
 
@@ -2320,21 +2355,21 @@ DebugSearchFail()
 
     }
 
-DebugSearchChildSpawned()
+DebugSearchChildForked()
     {
 
-    # record $1 (search group index) as spawned process in debug log
+    # record $1 (search group index) as forked process in debug log
 
     [[ -z $1 ]] && return 1
 
-    DebugChildSpawned "$(FormatSearch $1)"
+    DebugChildForked "$(FormatSearch $1)"
 
     }
 
 DebugSearchChildEnd()
     {
 
-    # record $1 (search group index) as spawned process in debug log
+    # record $1 (search group index) as forked process in debug log
 
     [[ -z $1 ]] && return 1
 
@@ -2400,28 +2435,6 @@ DebugLinkFail()
     [[ -z $1 || -z $2 ]] && return 1
 
     DebugFail "$(FormatLink $1)" "$2"
-
-    }
-
-DebugLinkChildSpawned()
-    {
-
-    # record $1 (link name) as spawned process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugChildSpawned "$(FormatLink $1)"
-
-    }
-
-DebugLinkChildEnd()
-    {
-
-    # record $1 (link name) as ended process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugChildEnded "$(FormatLink $1)"
 
     }
 
@@ -2607,14 +2620,14 @@ DebugElapsedTime()
 
     }
 
-DebugChildSpawned()
+DebugChildForked()
     {
 
-    # record $1 as spawned process in debug log
+    # record $1 as forked process in debug log
 
     [[ -z $1 ]] && return 1
 
-    DebugThis '>' "$1" "processor spawned"
+    DebugThis '>' "$1" "processor forked"
 
     }
 
