@@ -1301,12 +1301,14 @@ DownloadImages()
         fi
     fi
 
+    DebugFuncVal 'downloads OK' "$success_count"
+    DebugFuncVal 'downloads failed' "$fail_count"
+
     if [[ $result -ne 1 ]]; then
         download_bytes="$($DU_BIN "$target_path/$image_file_prefix"* -cb | tail -n1 | cut -f1)"
         DebugFuncVal 'downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
         download_seconds="$(($(date +%s)-func_startseconds))"
-        DebugFuncVal 'download seconds' "$(DisplayThousands "$download_seconds")"
         if [[ $download_seconds -lt 1 ]]; then
             download_seconds=1
             DebugFuncVarAdjust "\$download_seconds TOO LOW so set to a usable minimum" "$download_seconds"
@@ -1315,8 +1317,6 @@ DownloadImages()
         DebugFuncVal 'average download speed' "$(DisplayISO "$((download_bytes/download_seconds))")B/s"
     fi
 
-    DebugFuncVal 'downloads OK' "$success_count"
-    DebugFuncVal 'downloads failed' "$fail_count"
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
@@ -1477,6 +1477,7 @@ _DownloadImage_()
                     DebugChildSuccess 'image type'
                     DebugChildSuccess 'image download'
                 else
+                    mv "$run_pathfile" "$fail_pathfile"
                     DebugChildFail 'image type'
                 fi
             else
@@ -2337,7 +2338,7 @@ DebugChildElapsedTime()
 
     [[ -z $1 ]] && return 1
 
-    DebugElapsedTime "$_forkname_" "$2"
+    DebugElapsedTime "$_forkname_" "$1"
 
     }
 
