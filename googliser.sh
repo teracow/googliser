@@ -195,13 +195,13 @@ BuildWorkPaths()
 
     }
 
-CheckEnvironment()
+CheckEnv()
     {
 
     DebugFuncEntry
     local func_startseconds=$(date +%s)
 
-    WhatAreMyOptions
+    WhatAreMyArgs
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
@@ -292,7 +292,7 @@ CheckEnvironment()
 
     }
 
-WhatAreMyOptions()
+WhatAreMyArgs()
     {
 
     DebugFuncVar user_parameters_raw
@@ -989,7 +989,7 @@ ProcessQuery()
     fi
 
     # download search results pages
-    DownloadResultGroups
+    GetResultPages
     if [[ $? -gt 0 ]]; then
         echo "$(ShowFail " !! couldn't download Google search results")"
         exitcode=4
@@ -1016,7 +1016,7 @@ ProcessQuery()
     # download images
     if [[ $exitcode -eq 0 ]]; then
         if [[ $links_only = false ]]; then
-            DownloadImages
+            GetImages
             [[ $? -gt 0 ]] && exitcode=5
         fi
     fi
@@ -1055,7 +1055,7 @@ ProcessQuery()
 
     }
 
-DownloadResultGroups()
+GetResultPages()
     {
 
     DebugFuncEntry
@@ -1088,17 +1088,17 @@ DownloadResultGroups()
             sleep 0.5
 
             RefreshResultsCounts
-            ShowResultDownloadProgress
+            ShowGetResultProgress
         done
 
         group_index=$(printf "%02d" $group)
 
         # create run file here as it takes too long to happen in background function
         touch "$results_run_count_path/$group_index"
-        { _DownloadResultGroup_ "$group" "$group_index" & } 2>/dev/null
+        { _GetResultPage_ "$group" "$group_index" & } 2>/dev/null
 
         RefreshResultsCounts
-        ShowResultDownloadProgress
+        ShowGetResultProgress
 
         [[ $((group*100)) -gt $max_results_required ]] && break
     done
@@ -1107,7 +1107,7 @@ DownloadResultGroups()
     wait 2>/dev/null
 
     RefreshResultsCounts
-    ShowResultDownloadProgress
+    ShowGetResultProgress
 
     # build all groups into a single file
     cat ${searchresults_pathfile}.* > "$searchresults_pathfile"
@@ -1123,7 +1123,7 @@ DownloadResultGroups()
 
     }
 
-_DownloadResultGroup_()
+_GetResultPage_()
     {
 
     # * This function runs as a forked process *
@@ -1200,7 +1200,7 @@ _DownloadResultGroup_()
 
     }
 
-DownloadImages()
+GetImages()
     {
 
     DebugFuncEntry
@@ -1227,7 +1227,7 @@ DownloadImages()
     while read imagelink; do
         while true; do
             RefreshDownloadCounts
-            ShowImageDownloadProgress
+            ShowGetImagesProgress
 
             # abort downloading if too many failures
             if [[ $fail_count -ge $fail_limit ]]; then
@@ -1254,7 +1254,7 @@ DownloadImages()
 
                 # create run file here as it takes too long to happen in background function
                 touch "$download_run_count_path/$link_index"
-                { _DownloadImage_ "$imagelink" "$link_index" & } 2>/dev/null
+                { _GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
             fi
@@ -1264,7 +1264,7 @@ DownloadImages()
     wait 2>/dev/null
 
     RefreshDownloadCounts
-    ShowImageDownloadProgress
+    ShowGetImagesProgress
 
     if [[ $fail_count -gt 0 ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -1324,7 +1324,7 @@ DownloadImages()
 
     }
 
-_DownloadImage_()
+_GetImage_()
     {
 
     # * This function runs as a forked process *
@@ -1856,7 +1856,7 @@ RefreshResultsCounts()
 
     }
 
-ShowResultDownloadProgress()
+ShowGetResultProgress()
     {
 
     if [[ $verbose = true ]]; then
@@ -1885,7 +1885,7 @@ RefreshDownloadCounts()
 
     }
 
-ShowImageDownloadProgress()
+ShowGetImagesProgress()
     {
 
     if [[ $verbose = true ]]; then
@@ -2075,7 +2075,7 @@ CTRL_C_Captured()
     RefreshDownloadCounts
 
     if [[ $parallel_count -gt 0 ]]; then
-        # remove any image files where processing by [_DownloadImage_] was incomplete
+        # remove any image files where processing by [_GetImage_] was incomplete
         for currentfile in $(ls -1 "$download_run_count_path"); do
             rm -f "$target_path/$image_file_prefix($currentfile)".*
             DebugThis "= link ($currentfile) was partially processed" 'deleted!'
@@ -2277,14 +2277,14 @@ DebugFuncComment()
 DebugChildForked()
     {
 
-    [[ -n $_forkname_ ]] && DebugThis '>' "$_forkname_" "processor forked"
+    [[ -n $_forkname_ ]] && DebugThis '>' "$_forkname_" "> fork"
 
     }
 
 DebugChildEnded()
     {
 
-    [[ -n $_forkname_ ]] && DebugThis '<' "$_forkname_" "processor ended"
+    [[ -n $_forkname_ ]] && DebugThis '<' "$_forkname_" "< end"
 
     }
 
@@ -3125,7 +3125,7 @@ user_parameters=$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:
 user_parameters_result=$?
 user_parameters_raw="$@"
 
-CheckEnvironment
+CheckEnv
 
 if [[ $exitcode -eq 0 ]]; then
     if [[ -n $input_pathfile ]]; then
