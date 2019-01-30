@@ -2109,56 +2109,35 @@ DebugScriptNow()
 DebugScriptVal()
     {
 
-    # $1 = script variable name to log
-    # $2 = value
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugVal "$(FormatScript)" "$1: $2"
+    [[ -n $1 && -n $2 ]] && DebugVal "$(FormatScript)" "$1: $2"
 
     }
 
 DebugScriptVar()
     {
 
-    # $1 = script variable name and value to log
-
-    [[ -z $1 ]] && return 1
-
-    DebugVar "$(FormatScript)" "$1"
+    [[ -n $1 ]] && DebugVar "$(FormatScript)" "$1"
 
     }
 
 DebugScriptElapsedTime()
     {
 
-    # $1 = number of seconds to count from
-
-    [[ -z $1 ]] && return 1
-
-    DebugElapsedTime "$(FormatScript)" "$1"
+    [[ -n $1 ]] && DebugElapsedTime "$(FormatScript)" "$1"
 
     }
 
 DebugScriptFail()
     {
 
-    # $1 = message
-
-    [[ -z $1 ]] && return 1
-
-    DebugFail "$(FormatScript)" "$1"
+    [[ -n $1 ]] && DebugFail "$(FormatScript)" "$1"
 
     }
 
 DebugScriptWarn()
     {
 
-    # $1 = message
-
-    [[ -z $1 ]] && return 1
-
-    DebugWarn "$(FormatScript)" "$1"
+    [[ -n $1 ]] && DebugWarn "$(FormatScript)" "$1"
 
     }
 
@@ -2179,194 +2158,126 @@ DebugFuncExit()
 DebugFuncElapsedTime()
     {
 
-    # $1 = number of seconds to count from
-
-    [[ -z $1 ]] && return 1
-
-    DebugElapsedTime "$(FormatFunc "${FUNCNAME[1]}")" "$1"
+    [[ -n $1 ]] && DebugElapsedTime "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
 DebugFuncVarAdjust()
     {
 
-    # $1 = reason
-    # $2 = result
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugVarAdjust "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
+    [[ -n $1 && -n $2 ]] && DebugVarAdjust "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
 DebugFuncSuccess()
     {
 
-    # $1 = operation
-
-    [[ -z $1 ]] && return 1
-
-    DebugSuccess "$(FormatFunc "${FUNCNAME[1]}")" "$1"
+    [[ -n $1 ]] && DebugSuccess "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
 DebugFuncFail()
     {
 
-    # $1 = operation
-    # $2 = reason
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugFail "$(FormatFunc "${FUNCNAME[1]}") $1" "$2"
+    [[ -n $1 && -n $2 ]] && DebugFail "$(FormatFunc "${FUNCNAME[1]}") $1" "$2"
 
     }
 
 DebugFuncVar()
     {
 
-    # $1 = function variable name and value to log
-
-    [[ -z $1 ]] && return 1
-
-    DebugVar "$(FormatFunc "${FUNCNAME[1]}")" "$1"
+    [[ -n $1 ]] && DebugVar "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
 DebugFuncExec()
     {
 
-    # $1 = description
-    # $2 = command string to execute
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugExec "$(FormatFunc ${FUNCNAME[1]})" "$1" "$2"
+    [[ -n $1 && -n $2 ]] && DebugExec "$(FormatFunc ${FUNCNAME[1]})" "$1" "$2"
 
     }
 
 DebugFuncVal()
     {
 
-    # $1 = function variable name to log
-    # $2 = value
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugVal "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
+    [[ -n $1 && -n $2 ]] && DebugVal "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
 DebugFuncComment()
     {
 
-    # $1 = function comment to log
-
-    [[ -z $1 ]] && return 1
-
-    DebugComment "$1"
+    [[ -n $1 ]] && DebugComment "$1"
 
     }
 
 DebugChildForked()
     {
 
-    [[ -n $_forkname_ ]] && DebugThis '>' "$_forkname_" "> fork"
+    [[ -n $_forkname_ ]] && DebugThis '>' "$_forkname_" 'fork'
 
     }
 
 DebugChildEnded()
     {
 
-    [[ -n $_forkname_ ]] && DebugThis '<' "$_forkname_" "< end"
+    [[ -n $_forkname_ ]] && DebugThis '<' "$_forkname_" 'exit'
 
     }
 
 DebugChildExec()
     {
 
-    [[ -z $1 || -z $2 ]] && return 1
-
-    [[ -n $_forkname_ ]] && DebugExec "$_forkname_" "$1" "$2"
+    [[ -n $_forkname_ && -n $1 && -n $2 ]] && DebugExec "$_forkname_" "$1" "$2"
 
     }
 
 DebugChildSuccess()
     {
 
-    # $1 = operation
-
-    [[ -z $1 ]] && return 1
-
-    DebugSuccess "$_forkname_" "$1"
+    [[ -n $_forkname_ && -n $1 ]] && DebugSuccess "$_forkname_" "$1"
 
     }
 
 DebugChildFail()
     {
 
-    # $2 = operation
-
-    [[ -z $1 ]] && return 1
-
-    DebugFail "$_forkname_" "$1"
+    [[ -n $_forkname_ && -n $1 ]] && DebugFail "$_forkname_" "$1"
 
     }
 
 DebugChildVal()
     {
 
-    # $1 = variable
-    # $2 = value
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugVal "$_forkname_" "$1" "$2"
+    [[ -n $_forkname_ && -n $1 && -n $2 ]] && DebugVal "$_forkname_" "$1" "$2"
 
     }
 
 DebugChildElapsedTime()
     {
 
-    # $1 = number of seconds to count from
-
-    [[ -z $1 ]] && return 1
-
-    DebugElapsedTime "$_forkname_" "$1"
+    [[ -n $_forkname_ && -n $1 ]] && DebugElapsedTime "$_forkname_" "$1"
 
     }
 
 DebugEntry()
     {
 
-    # record $1 as a function or script name name in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugThis '\' "$1" "entry"
+    [[ -n $1 ]] && DebugThis '\' "$1" 'entry'
 
     }
 
 DebugExit()
     {
 
-    # record $1 as a function or script name name in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugThis '/' "$1" "exit"
+    [[ -n $1 ]] && DebugThis '/' "$1" 'exit'
 
     }
 
 DebugSuccess()
     {
 
-    # $1 = section
-    # $2 = operation
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugThis '$' "$1" "$2" "OK"
+    [[ -n $1 && -n $2 ]] && DebugThis '$' "$1" "$2" 'OK'
 
     }
 
@@ -2380,9 +2291,9 @@ DebugWarn()
     [[ -z $1 ]] && return 1
 
     if [[ -n $3 ]]; then
-        DebugThis 'x' "$1" "$2" "$3" "warning"
+        DebugThis 'x' "$1" "$2" "$3" 'warning'
     else
-        DebugThis 'x' "$1" "$2" "warning"
+        DebugThis 'x' "$1" "$2" 'warning'
     fi
 
     }
@@ -2397,9 +2308,9 @@ DebugFail()
     [[ -z $1 ]] && return 1
 
     if [[ -n $3 ]]; then
-        DebugThis '!' "$1" "$2" "$3" "failed"
+        DebugThis '!' "$1" "$2" "$3" 'failed'
     else
-        DebugThis '!' "$1" "$2" "failed"
+        DebugThis '!' "$1" "$2" 'failed'
     fi
 
     }
@@ -2407,25 +2318,18 @@ DebugFail()
 DebugExec()
     {
 
-    # record process execution start in debug log
     # $1 = process name (function/child/link/search)
     # $2 = command description
     # $3 = command string to be executed
 
-    [[ -z $1 || -z $2 || -z $3 ]] && return 1
-
-    DebugThis '=' "$1" "$2" "'$3'"
+    [[ -n $1 && -n $2 && -n $3 ]] && DebugThis '=' "$1" "$2" "'$3'"
 
     }
 
 DebugNow()
     {
 
-    # record variable name and value in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugThis '=' "$1" "it's now" "$(date)"
+    [[ -n $1 ]] && DebugThis '=' "$1" "it's now" "$(date)"
 
     }
 
@@ -2482,23 +2386,14 @@ DebugVal()
 DebugComment()
     {
 
-    # record comment in debug log
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugThis '#' "$1" "*** $2 ***"
+    [[ -n $1 && -n $2 ]] && DebugThis '#' "$1" "*** $2 ***"
 
     }
 
 DebugElapsedTime()
     {
 
-    # $1 = section
-    # $2 = number of seconds to count from
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugThis 'T' "$1" "elapsed time" "$(ConvertSecs "$(($(date +%s)-$2))")"
+    [[ -n $1 && -n $2 ]] && DebugThis 'T' "$1" "elapsed time" "$(ConvertSecs "$(($(date +%s)-$2))")"
 
     }
 
@@ -2526,67 +2421,42 @@ DebugThis()
 FormatFuncSearch()
     {
 
-    [[ -z $1 || -z $2 ]] && return 1
-
-    echo "$(FormatFunc "$1"): $(FormatSearch "$2")"
+    [[ -n $1 && -n $2 ]] && echo "$(FormatFunc "$1"): $(FormatSearch "$2")"
 
     }
 
 FormatFuncLink()
     {
 
-    # $1 = function name
-    # $2 = link index
-    # stdout = formatted function and link name
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    echo "$(FormatFunc "$1"): $(FormatLink "$2")"
+    [[ -n $1 && -n $2 ]] && echo "$(FormatFunc "$1"): $(FormatLink "$2")"
 
     }
 
 FormatScript()
     {
 
-    # stdout = formatted script filename
-
-    echo "[$SCRIPT_FILE]"
+    [[ -n $SCRIPT_FILE ]] && echo "($SCRIPT_FILE)"
 
     }
 
 FormatFunc()
     {
 
-    # $1 = function name
-    # stdout = formatted function name
-
-    [[ -z $1 ]] && return 1
-
-    echo "[$1]"
+    [[ -n $1 ]] && echo "($1)"
 
     }
 
 FormatSearch()
     {
 
-    # $1 = search index
-    # stdout = formatted search index
-
-    [[ -z $1 ]] && return 1
-
-    echo "search ($1)"
+    [[ -n $1 ]] && echo "search ($1)"
 
     }
 
 FormatLink()
     {
 
-    # $1 = link index
-    # stdout = formatted link index
-
-    [[ -z $1 ]] && return 1
-
-    echo "link ($1)"
+    [[ -n $1 ]] && echo "link ($1)"
 
     }
 
