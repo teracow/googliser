@@ -604,7 +604,7 @@ ValidateParams()
         *)
             if [[ $images_required -lt 1 ]]; then
                 images_required=1
-                DebugFuncVarAdjustment '$images_required TOO LOW so set to a sensible minimum' "$images_required"
+                DebugFuncVarAdjust '$images_required TOO LOW so set to a sensible minimum' "$images_required"
             fi
 
             if [[ $images_required -gt $GOOGLE_MAX ]]; then
@@ -763,7 +763,7 @@ ValidateParams()
 
     if [[ $max_results_required -lt $((images_required+user_fail_limit)) ]]; then
         max_results_required=$((images_required+user_fail_limit))
-        DebugFuncVarAdjustment '$max_results_required TOO LOW so set as $images_required + $user_fail_limit' "$max_results_required"
+        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $images_required + $user_fail_limit' "$max_results_required"
     fi
 
     dimensions_search=''
@@ -967,7 +967,7 @@ ProcessQuery()
 
     if [[ $exitcode -eq 0 && -z $gallery_title ]]; then
         gallery_title="$user_query"
-        DebugFuncVarAdjustment 'gallery title unspecified so set as' "'$gallery_title'"
+        DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
     fi
 
     # create directory for search phrase
@@ -998,17 +998,17 @@ ProcessQuery()
         fail_limit=$user_fail_limit
         if [[ $fail_limit -gt $result_count ]]; then
             fail_limit=$result_count
-            DebugFuncVarAdjustment '$fail_limit TOO HIGH so set as $result_count' "$fail_limit"
+            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $result_count' "$fail_limit"
         fi
 
         if [[ $images_required -gt $result_count ]]; then
             images_required=$result_count
-            DebugFuncVarAdjustment '$images_required TOO HIGH so set as $result_count' "$result_count"
+            DebugFuncVarAdjust '$images_required TOO HIGH so set as $result_count' "$result_count"
         fi
     fi
 
     if [[ $result_count -eq 0 ]]; then
-        DebugLinkVal 'zero results returned?' 'Oops...'
+        DebugFuncVal 'zero results returned?' 'Oops...'
         exitcode=4
         return 1
     fi
@@ -1068,7 +1068,11 @@ DownloadResultGroups()
     local fail_count=0
 
     InitProgress
-    InitResultsCounts
+
+    # clears the paths used to count the search result pages
+    [[ -d $results_run_count_path ]] && rm -f ${results_run_count_path}/*
+    [[ -d $results_success_count_path ]] && rm -f ${results_success_count_path}/*
+    [[ -d $results_fail_count_path ]] && rm -f ${results_fail_count_path}/*
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
@@ -1126,8 +1130,48 @@ _DownloadResultGroup_()
     # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
     # $2 = debug index identifier       e.g. (02)
 
+    _GetResultsGroup_()
+        {
+
+        # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
+        # $2 = debug log link index         e.g. (02)
+        # echo = downloader stdout & stderr
+        # $? = downloader return code
+
+        local page_group="$1"
+        local group_index="$2"
+        local search_group="&ijn=$((page_group-1))"
+        local search_start="&start=$(((page_group-1)*100))"
+        local SERVER=www.google.com
+        local get_results_cmd=''
+
+        # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
+        local search_type='&tbm=isch'       # search for images
+        local search_language='&hl=en'      # language
+        local search_style='&site=imghp'    # result layout style
+        local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+
+        # compiled search string
+        local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+
+        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+            get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
+        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+            get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
+        else
+            DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+            return 1
+        fi
+
+        DebugChildExec "get search results" "$get_results_cmd"
+
+        eval "$get_results_cmd" 2>&1
+
+        }
+
     local page_group="$1"
     local group_index="$2"
+    _forkname_="$(FormatFuncSearch "${FUNCNAME[0]}" "$group_index")"    # global: used by various debug logging functions
     local response=''
     local result=0
     local func_startseconds=$(date +%s)
@@ -1136,21 +1180,21 @@ _DownloadResultGroup_()
     local success_pathfile="$results_success_count_path/$group_index"
     local fail_pathfile="$results_fail_count_path/$group_index"
 
-    DebugSearchChildForked "$group_index"
+    DebugChildForked
 
     response=$(_GetResultsGroup_ "$page_group" "$group_index")
     result=$?
 
     if [[ $result -eq 0 ]]; then
         mv "$run_pathfile" "$success_pathfile"
-        DebugSearchSuccess "$group_index" 'get search results'
+        DebugChildSuccess 'get search results'
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugSearchFail "$group_index" "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+        DebugChildFail "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
     fi
 
-    DebugSearchElapsedTime "$group_index" "$func_startseconds"
-    DebugSearchChildEnd "$group_index"
+    DebugChildElapsedTime "$func_startseconds"
+    DebugChildEnded
 
     return 0
 
@@ -1174,7 +1218,11 @@ DownloadImages()
     [[ $verbose = true ]] && echo -n " -> acquiring images: "
 
     InitProgress
-    InitDownloadsCounts
+
+    # clears the paths used to count the downloaded images
+    [[ -d $download_run_count_path ]] && rm -f ${download_run_count_path}/*
+    [[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
+    [[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
 
     while read imagelink; do
         while true; do
@@ -1261,7 +1309,7 @@ DownloadImages()
         DebugFuncVal 'download seconds' "$(DisplayThousands "$download_seconds")"
         if [[ $download_seconds -lt 1 ]]; then
             download_seconds=1
-            DebugFuncVarAdjustment "\$download_seconds TOO LOW so set to a usable minimum" "$download_seconds"
+            DebugFuncVarAdjust "\$download_seconds TOO LOW so set to a usable minimum" "$download_seconds"
         fi
 
         DebugFuncVal 'average download speed' "$(DisplayISO "$((download_bytes/download_seconds))")B/s"
@@ -1283,8 +1331,67 @@ _DownloadImage_()
     # $1 = URL to download
     # $2 = debug index identifier e.g. "0026"
 
+    _GetHeader_()
+        {
+
+        # $1 = URL to check
+        # $2 = debug index identifier e.g. (0002)
+        # $3 = temporary filename to download to (only used by Wget)
+        # echo = header string
+        # $? = downloader return code
+
+        local URL="$1"
+    #    local link_index="$2"
+        local output_pathfile="$2"
+        local get_headers_cmd=''
+
+        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+            get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+            get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
+        else
+            DebugThis "! $_forkname_" 'unknown downloader'
+            return 1
+        fi
+
+        DebugChildExec "get image size" "$get_headers_cmd"
+
+        eval "$get_headers_cmd" 2>&1
+
+        }
+
+    _GetFile_()
+        {
+
+        # $1 = URL to check
+        # $2 = debug index identifier e.g. (0002)
+        # $3 = filename to download to
+        # echo = downloader stdout & stderr
+        # $? = downloader return code
+
+        local URL="$1"
+    #    local link_index="$2"
+        local output_pathfile="$2"
+        local get_image_cmd=''
+
+        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+            get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+            get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
+        else
+            DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+            return 1
+        fi
+
+        DebugChildExec "get image" "$get_image_cmd"
+
+        eval "$get_image_cmd" 2>&1
+
+        }
+
     local URL="$1"
     local link_index="$2"
+    _forkname_="$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")"   # global: used by various debug logging functions
     local get_download=true
     local size_ok=true
     local response=''
@@ -1297,7 +1404,7 @@ _DownloadImage_()
     local success_pathfile="$download_success_count_path/$link_index"
     local fail_pathfile="$download_fail_count_path/$link_index"
 
-    DebugFuncLinkChildForked "$link_index"
+    DebugChildForked
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo ${1:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
@@ -1311,28 +1418,28 @@ _DownloadImage_()
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        response=$(_GetHeader_ "$URL" "$link_index" "$testimage_pathfileext")
+        response=$(_GetHeader_ "$URL" "$testimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
             estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
-            DebugLinkVal "$link_index" 'pre-download image size' "$(DisplayThousands "$estimated_size") bytes"
+            DebugChildVal 'pre-download image size' "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugLinkFail "$link_index" 'image size'
+                    DebugChildFail 'image size'
                     size_ok=false
                     get_download=false
                 else
-                    DebugLinkSuccess "$link_index" 'image size'
+                    DebugChildSuccess 'image size'
                 fi
             else
                 [[ $skip_no_size = true ]] && get_download=false
             fi
         else
-            DebugLinkFail "$link_index" "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            DebugChildFail "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
             [[ $skip_no_size = true ]] && get_download=false || estimated_size=unknown
         fi
@@ -1340,7 +1447,7 @@ _DownloadImage_()
 
     # perform image download
     if [[ $get_download = true ]]; then
-        response=$(_GetFile_ "$URL" "$link_index" "$targetimage_pathfileext")
+        response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1349,8 +1456,8 @@ _DownloadImage_()
                 # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
                 download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
 
-                DebugLinkVal "$link_index" 'post-download image size' "$(DisplayThousands "$actual_size") bytes"
-                DebugLinkVal "$link_index" 'average download speed' "$download_speed"
+                DebugChildVal 'post-download image size' "$(DisplayThousands "$actual_size") bytes"
+                DebugChildVal 'average download speed' "$download_speed"
 
                 if [[ $actual_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
                     rm -f "$targetimage_pathfileext"
@@ -1362,134 +1469,37 @@ _DownloadImage_()
             fi
 
             if [[ $size_ok = true ]]; then
-                DebugLinkSuccess "$link_index" 'image size'
+                DebugChildSuccess 'image size'
                 RenameExtAsType "$targetimage_pathfileext"
 
                 if [[ $? -eq 0 ]]; then
                     mv "$run_pathfile" "$success_pathfile"
-                    DebugLinkSuccess "$link_index" 'image type'
-                    DebugLinkSuccess "$link_index" 'image download'
+                    DebugChildSuccess 'image type'
+                    DebugChildSuccess 'image download'
                 else
-                    DebugLinkFail "$link_index" 'image type'
+                    DebugChildFail 'image type'
                 fi
             else
                 # files that were outside size limits still count as failures
                 mv "$run_pathfile" "$fail_pathfile"
-                DebugLinkFail "$link_index" 'image size'
+                DebugChildFail 'image size'
             fi
         else
             mv "$run_pathfile" "$fail_pathfile"
-            DebugLinkFail "$link_index" "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            DebugChildFail "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
             # delete temp file if one was created
             [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
         fi
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugLinkFail "$link_index" 'image download'
+        DebugChildFail 'image download'
     fi
 
-    DebugLinkElapsedTime "$link_index" "$func_startseconds"
-    DebugFuncLinkChildEnd "$link_index"
+    DebugChildElapsedTime "$func_startseconds"
+    DebugChildEnded
 
     return 0
-
-    }
-
-_GetResultsGroup_()
-    {
-
-    # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
-    # $2 = debug log link index         e.g. (02)
-    # echo = downloader stdout & stderr
-    # $? = downloader return code
-
-    local page_group="$1"
-    local group_index="$2"
-    local search_group="&ijn=$((page_group-1))"
-    local search_start="&start=$(((page_group-1)*100))"
-    local SERVER=www.google.com
-    local get_results_cmd=''
-
-    # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-    local search_type='&tbm=isch'       # search for images
-    local search_language='&hl=en'      # language
-    local search_style='&site=imghp'    # result layout style
-    local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
-
-    # compiled search string
-    local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
-
-    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
-    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
-    else
-        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
-        return 1
-    fi
-
-    DebugSearchExec "$group_index" "get search results" "$get_results_cmd"
-
-    eval "$get_results_cmd" 2>&1
-
-    }
-
-_GetHeader_()
-    {
-
-    # $1 = URL to check
-    # $2 = debug index identifier e.g. (0002)
-    # $3 = temporary filename to download to (only used by Wget)
-    # echo = header string
-    # $? = downloader return code
-
-    local URL="$1"
-    local link_index="$2"
-    local output_pathfile="$3"
-    local get_headers_cmd=''
-
-    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
-    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
-    else
-        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
-        return 1
-    fi
-
-    DebugFuncLinkChildExec "$link_index" "get image size" "$get_headers_cmd"
-
-    eval "$get_headers_cmd" 2>&1
-
-    }
-
-_GetFile_()
-    {
-
-    # $1 = URL to check
-    # $2 = debug index identifier e.g. (0002)
-    # $3 = filename to download to
-    # echo = downloader stdout & stderr
-    # $? = downloader return code
-
-    local URL="$1"
-    local link_index="$2"
-    local output_pathfile="$3"
-    local get_image_cmd=''
-
-    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
-        get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
-    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
-        get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
-    else
-        DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
-        return 1
-    fi
-
-    DebugLinkExec "$link_index" "get image" "$get_image_cmd"
-
-    eval "$get_image_cmd" 2>&1
 
     }
 
@@ -1517,7 +1527,7 @@ ParseResults()
 
         # if too many results then trim
         if [[ $result_count -gt $max_results_required ]]; then
-            DebugFuncVarAdjustment "trimming results back to required amount" "$max_results_required"
+            DebugFuncVarAdjust "trimming results back to required amount" "$max_results_required"
             head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             result_count=$max_results_required
@@ -1836,28 +1846,6 @@ ProgressUpdater()
 
     }
 
-InitResultsCounts()
-    {
-
-    # clears the paths used to count the search result pages
-
-    [[ -d $results_run_count_path ]] && rm -f ${results_run_count_path}/*
-    [[ -d $results_success_count_path ]] && rm -f ${results_success_count_path}/*
-    [[ -d $results_fail_count_path ]] && rm -f ${results_fail_count_path}/*
-
-    }
-
-InitDownloadsCounts()
-    {
-
-    # clears the paths used to count the downloaded images
-
-    [[ -d $download_run_count_path ]] && rm -f ${download_run_count_path}/*
-    [[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
-    [[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
-
-    }
-
 RefreshResultsCounts()
     {
 
@@ -2157,17 +2145,6 @@ DebugScriptElapsedTime()
 
     }
 
-DebugScriptComment()
-    {
-
-    # $1 = script comment to log
-
-    [[ -z $1 ]] && return 1
-
-    DebugComment "$(FormatScript)" "$1"
-
-    }
-
 DebugScriptFail()
     {
 
@@ -2193,14 +2170,14 @@ DebugScriptWarn()
 DebugFuncEntry()
     {
 
-    DebugEntry "$(FormatFunc)"
+    DebugEntry "$(FormatFunc "${FUNCNAME[1]}")"
 
     }
 
 DebugFuncExit()
     {
 
-    DebugExit "$(FormatFunc)"
+    DebugExit "$(FormatFunc "${FUNCNAME[1]}")"
 
     }
 
@@ -2211,11 +2188,11 @@ DebugFuncElapsedTime()
 
     [[ -z $1 ]] && return 1
 
-    DebugElapsedTime "$(FormatFunc)" "$1"
+    DebugElapsedTime "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
-DebugFuncVarAdjustment()
+DebugFuncVarAdjust()
     {
 
     # $1 = reason
@@ -2223,7 +2200,7 @@ DebugFuncVarAdjustment()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugThis '~' "$(FormatFunc) $1:" "$2"
+    DebugVarAdjust "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
@@ -2234,7 +2211,7 @@ DebugFuncSuccess()
 
     [[ -z $1 ]] && return 1
 
-    DebugSuccess "$(FormatFunc)" "$1"
+    DebugSuccess "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
@@ -2246,42 +2223,7 @@ DebugFuncFail()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugFail "$(FormatFunc) $1" "$2"
-
-    }
-
-DebugFuncLinkChildForked()
-    {
-
-    # record $1 (link name) as forked process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugChildForked "$(FormatFunc) $(FormatLink $1)"
-
-    }
-
-DebugFuncLinkChildEnd()
-    {
-
-    # record $1 (link name) as ended process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugChildEnded "$(FormatFunc) $(FormatLink $1)"
-
-    }
-
-DebugFuncLinkChildExec()
-    {
-
-    # $1 = link index
-    # $2 = reason
-    # $3 = command string to execute
-
-    [[ -z $1 || -z $2 || -z $3 ]] && return 1
-
-    DebugExec "$(FormatFunc) $(FormatLink $1) $2" "$3"
+    DebugFail "$(FormatFunc "${FUNCNAME[1]}") $1" "$2"
 
     }
 
@@ -2292,7 +2234,7 @@ DebugFuncVar()
 
     [[ -z $1 ]] && return 1
 
-    DebugVar "$(FormatFunc)" "$1"
+    DebugVar "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
@@ -2304,7 +2246,7 @@ DebugFuncExec()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugExec "$(FormatFunc) $1" "$2"
+    DebugExec "$(FormatFunc ${FUNCNAME[1]})" "$1" "$2"
 
     }
 
@@ -2316,7 +2258,7 @@ DebugFuncVal()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugVal "$(FormatFunc)" "$1: $2"
+    DebugVal "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
@@ -2327,194 +2269,75 @@ DebugFuncComment()
 
     [[ -z $1 ]] && return 1
 
-    DebugComment "$(FormatFunc)" "$1"
+    DebugComment "$1"
 
     }
 
-DebugSearchSuccess()
+DebugChildForked()
     {
 
-    # $1 = search index
-    # $2 = operation
+    [[ -n $_forkname_ ]] && DebugThis '>' "$_forkname_" "processor forked"
+
+    }
+
+DebugChildEnded()
+    {
+
+    [[ -n $_forkname_ ]] && DebugThis '<' "$_forkname_" "processor ended"
+
+    }
+
+DebugChildExec()
+    {
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugSuccess "$(FormatSearch $1)" "$2"
+    [[ -n $_forkname_ ]] && DebugExec "$_forkname_" "$1" "$2"
 
     }
 
-DebugSearchFail()
+DebugChildSuccess()
     {
 
-    # $1 = search index
-    # $2 = operation
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugFail "$(FormatSearch $1)" "$2"
-
-    }
-
-DebugSearchChildForked()
-    {
-
-    # record $1 (search group index) as forked process in debug log
+    # $1 = operation
 
     [[ -z $1 ]] && return 1
 
-    DebugChildForked "$(FormatSearch $1)"
+    DebugSuccess "$_forkname_" "$1"
 
     }
 
-DebugSearchChildEnd()
+DebugChildFail()
     {
 
-    # record $1 (search group index) as forked process in debug log
+    # $2 = operation
 
     [[ -z $1 ]] && return 1
 
-    DebugChildEnded "$(FormatSearch $1)"
+    DebugFail "$_forkname_" "$1"
 
     }
 
-DebugSearchVal()
+DebugChildVal()
     {
 
-    # $1 = search index
-    # $2 = variable
-    # $3 = value
+    # $1 = variable
+    # $2 = value
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugVal "$(FormatSearch $1) $2:" "$3"
+    DebugVal "$_forkname_" "$1" "$2"
 
     }
 
-DebugSearchExec()
-    {
-
-    # $1 = search index
-    # $2 = reason
-    # $3 = command string to execute
-
-    [[ -z $1 || -z $2 || -z $3 ]] && return 1
-
-    DebugExec "$(FormatSearch $1) $2" "$3"
-
-    }
-
-DebugSearchElapsedTime()
+DebugChildElapsedTime()
     {
 
     # $1 = number of seconds to count from
 
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugElapsedTime "$(FormatSearch $1)" "$2"
-
-    }
-
-DebugLinkSuccess()
-    {
-
-    # $1 = link index
-    # $2 = operation
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugSuccess "$(FormatLink $1)" "$2"
-
-    }
-
-DebugLinkFail()
-    {
-
-    # $1 = link index
-    # $2 = operation
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugFail "$(FormatLink $1)" "$2"
-
-    }
-
-DebugLinkVal()
-    {
-
-    # $1 = link index
-    # $2 = variable
-    # $3 = value
-
-    [[ -z $1 || -z $2 || -z $3 ]] && return 1
-
-    DebugVal "$(FormatLink $1) $2:" "$3"
-
-    }
-
-DebugLinkExec()
-    {
-
-    # $1 = link index
-    # $2 = reason
-    # $3 = command string to execute
-
-    [[ -z $1 || -z $2 || -z $3 ]] && return 1
-
-    DebugExec "$(FormatLink $1) $2" "$3"
-
-    }
-
-DebugLinkElapsedTime()
-    {
-
-    # $1 = number of seconds to count from
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    DebugElapsedTime "$(FormatLink $1)" "$2"
-
-    }
-
-DebugNow()
-    {
-
-    # record variable name and value in debug log
-
     [[ -z $1 ]] && return 1
 
-    DebugThis '=' "$1 now:" "$(date)"
-
-    }
-
-DebugVar()
-    {
-
-    # $1 = scope
-    # $2 = variable name and value to log
-
-    if [[ -n ${!2} ]]; then
-        DebugVal "$1" "\$$2" "${!2}"
-    else
-        DebugVal "$1" "\$$2" "''"
-    fi
-
-    }
-
-DebugVal()
-    {
-
-    # make a record of name and value in debug log
-    # $1 = section
-    # $2 = name
-    # $3 = value (optional)
-
-    [[ -z $1 || -z $2 ]] && return 1
-
-    if [[ -n $3 ]]; then
-        DebugThis '?' "$1" "$2: $3"
-    else
-        DebugThis '?' "$1" "$2"
-    fi
+    DebugElapsedTime "$_forkname_" "$2"
 
     }
 
@@ -2548,7 +2371,7 @@ DebugSuccess()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugThis '$' "$1 $2:" "OK"
+    DebugThis '$' "$1" "$2" "OK"
 
     }
 
@@ -2562,9 +2385,9 @@ DebugWarn()
     [[ -z $1 ]] && return 1
 
     if [[ -n $3 ]]; then
-        DebugThis 'x' "$1 $2: $3:" "warning"
+        DebugThis 'x' "$1" "$2" "$3" "warning"
     else
-        DebugThis 'x' "$1 $2:" "warning"
+        DebugThis 'x' "$1" "$2" "warning"
     fi
 
     }
@@ -2579,9 +2402,9 @@ DebugFail()
     [[ -z $1 ]] && return 1
 
     if [[ -n $3 ]]; then
-        DebugThis '!' "$1 $2: $3:" "failed"
+        DebugThis '!' "$1" "$2" "$3" "failed"
     else
-        DebugThis '!' "$1 $2:" "failed"
+        DebugThis '!' "$1" "$2" "failed"
     fi
 
     }
@@ -2590,10 +2413,74 @@ DebugExec()
     {
 
     # record process execution start in debug log
+    # $1 = process name (function/child/link/search)
+    # $2 = command description
+    # $3 = command string to be executed
+
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
+
+    DebugThis '=' "$1" "$2" "'$3'"
+
+    }
+
+DebugNow()
+    {
+
+    # record variable name and value in debug log
+
+    [[ -z $1 ]] && return 1
+
+    DebugThis '=' "$1" "it's now" "$(date)"
+
+    }
+
+DebugVar()
+    {
+
+    # $1 = scope
+    # $2 = variable name and value to log
+
+    if [[ -n ${!2} ]]; then
+        DebugVal "$1" "\$$2" "${!2}"
+    else
+        DebugVal "$1" "\$$2" "''"
+    fi
+
+    }
+
+DebugVarAdjust()
+    {
+
+    # make a record of name and value in debug log
+    # $1 = section
+    # $2 = name
+    # $3 = value (optional)
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugThis '=' "$1:" "'$2'"
+    if [[ -n $3 ]]; then
+        DebugThis '~' "$1" "$2" "$3"
+    else
+        DebugThis '~' "$1" "$2"
+    fi
+
+    }
+
+DebugVal()
+    {
+
+    # make a record of name and value in debug log
+    # $1 = section
+    # $2 = name
+    # $3 = value (optional)
+
+    [[ -z $1 || -z $2 ]] && return 1
+
+    if [[ -n $3 ]]; then
+        DebugThis '?' "$1" "$2" "$3"
+    else
+        DebugThis '?' "$1" "$2"
+    fi
 
     }
 
@@ -2616,29 +2503,7 @@ DebugElapsedTime()
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    DebugThis 'T' "$1 elapsed time:" "$(ConvertSecs "$(($(date +%s)-$2))")"
-
-    }
-
-DebugChildForked()
-    {
-
-    # record $1 as forked process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugThis '>' "$1" "processor forked"
-
-    }
-
-DebugChildEnded()
-    {
-
-    # record $1 as ended process in debug log
-
-    [[ -z $1 ]] && return 1
-
-    DebugThis '<' "$1" "processor ended"
+    DebugThis 'T' "$1" "elapsed time" "$(ConvertSecs "$(($(date +%s)-$2))")"
 
     }
 
@@ -2648,14 +2513,40 @@ DebugThis()
     # $1 = symbol
     # $2 = item
     # $3 = value
+    # $4 = optional value
+    # $5 = optional value
+
+    [[ -z $1 || -z $2 || -z $3 ]] && return 1
+
+    { if [[ -n $5 ]]; then
+        echo "$1 $2: $3: $4: $5"
+    elif [[ -n $4 ]]; then
+        echo "$1 $2: $3: $4"
+    else
+        echo "$1 $2: $3"
+    fi } >> "$debug_pathfile"
+
+    }
+
+FormatFuncSearch()
+    {
 
     [[ -z $1 || -z $2 ]] && return 1
 
-    if [[ -n $3 ]]; then
-        echo "$1 $2 $3" >> "$debug_pathfile"
-    else
-        echo "$1 $2" >> "$debug_pathfile"
-    fi
+    echo "$(FormatFunc "$1"): $(FormatSearch "$2")"
+
+    }
+
+FormatFuncLink()
+    {
+
+    # $1 = function name
+    # $2 = link index
+    # stdout = formatted function and link name
+
+    [[ -z $1 || -z $2 ]] && return 1
+
+    echo "$(FormatFunc "$1"): $(FormatLink "$2")"
 
     }
 
@@ -2671,9 +2562,12 @@ FormatScript()
 FormatFunc()
     {
 
-    # stdout = formatted function name 2 steps back in stack
+    # $1 = function name
+    # stdout = formatted function name
 
-    echo "[${FUNCNAME[2]}]"
+    [[ -z $1 ]] && return 1
+
+    echo "[$1]"
 
     }
 
@@ -3214,7 +3108,7 @@ case "$OSTYPE" in
             DebugScriptFail "'brew' executable was not found"
             echo " 'brew' executable was not found!"
             echo -e "\n On this platform, you can try installing it with:"
-            echo ' $ xcode-select --install && ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+            echo ' $ xcode-select --install && ruby -e "$(curl -fsSL git.io/get-brew)"'
             exit 1
         fi
         ;;
