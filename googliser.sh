@@ -991,7 +991,7 @@ ProcessQuery()
     # download search results pages
     GetResultPages
     if [[ $? -gt 0 ]]; then
-        echo "$(ShowFail " !! couldn't download Google search results")"
+        echo "$(ShowFail " !! unable to download enough Google search results")"
         exitcode=4
         return 1
     else
@@ -1176,11 +1176,11 @@ _GetResultPage_()
     local result=0
     local func_startseconds=$(date +%s)
 
+    DebugChildForked
+
     local run_pathfile="$results_run_count_path/$group_index"
     local success_pathfile="$results_success_count_path/$group_index"
     local fail_pathfile="$results_fail_count_path/$group_index"
-
-    DebugChildForked
 
     response=$(_GetResultsGroup_ "$page_group" "$group_index")
     result=$?
@@ -1335,13 +1335,11 @@ _GetImage_()
         {
 
         # $1 = URL to check
-        # $2 = debug index identifier e.g. (0002)
-        # $3 = temporary filename to download to (only used by Wget)
+        # $2 = temporary filename to download to (only used by Wget)
         # echo = header string
         # $? = downloader return code
 
         local URL="$1"
-    #    local link_index="$2"
         local output_pathfile="$2"
         local get_headers_cmd=''
 
@@ -1364,13 +1362,11 @@ _GetImage_()
         {
 
         # $1 = URL to check
-        # $2 = debug index identifier e.g. (0002)
-        # $3 = filename to download to
+        # $2 = filename to download to
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
         local URL="$1"
-    #    local link_index="$2"
         local output_pathfile="$2"
         local get_image_cmd=''
 
@@ -1400,25 +1396,23 @@ _GetImage_()
     local actual_size=0
     local func_startseconds=$(date +%s)
 
+    DebugChildForked
+
     local run_pathfile="$download_run_count_path/$link_index"
     local success_pathfile="$download_success_count_path/$link_index"
     local fail_pathfile="$download_fail_count_path/$link_index"
-
-    DebugChildForked
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo ${1:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
     [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
-    local testimage_pathfileext="$testimage_pathfile($link_index)$ext"
-    local targetimage_pathfile="$target_path/$image_file_prefix"
-    local targetimage_pathfileext="$targetimage_pathfile($link_index)$ext"
+    local targetimage_pathfileext="$target_path/$image_file_prefix($link_index)$ext"
 
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
         # try to get file size from server
-        response=$(_GetHeader_ "$URL" "$testimage_pathfileext")
+        response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
         result=$?
 
         if [[ $result -eq 0 ]]; then
