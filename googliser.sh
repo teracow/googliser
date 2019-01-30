@@ -2412,11 +2412,11 @@ DebugThis()
     [[ -z $1 || -z $2 || -z $3 ]] && return 1
 
     { if [[ -n $5 ]]; then
-        echo "$1 $2: $3: $4: $5"
+        echo "$1$1 $2: $3: $4: $5"
     elif [[ -n $4 ]]; then
-        echo "$1 $2: $3: $4"
+        echo "$1$1 $2: $3: $4"
     else
-        echo "$1 $2: $3"
+        echo "$1$1 $2: $3"
     fi } >> "$debug_pathfile"
 
     }
