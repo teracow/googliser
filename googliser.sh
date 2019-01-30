@@ -35,23 +35,23 @@
 #   7   unable to create a temporary build directory
 
 # debug log first character notation:
-#   >   child process forked
-#   <   child-process ended
-#   \   function entry
-#   /   function exit
-#   ?   variable value
-#   =   execution
-#   ~   variable was reset within bounds
-#   $   success
-#   x   warning
-#   !   failure
-#   T   elapsed time
-#   #   comment
+#   >>  child process forked
+#   <<  child-process ended
+#   \\  function entry
+#   //  function exit
+#   ??  variable value
+#   ==  execution
+#   ~~  variable was reset within bounds
+#   $$  success
+#   xx  warning
+#   !!  failure
+#   TT  elapsed time
+#   ##  comment
 
 Init()
     {
 
-    local SCRIPT_VERSION=190130
+    local SCRIPT_VERSION=190131
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
