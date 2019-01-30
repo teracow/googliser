@@ -2025,7 +2025,10 @@ AllowableFileType()
 ScrapeSearchResults()
     {
 
-    #------------- these regexes will need updating when Google change their web-code again --------------
+    #-------------------------- "These are the regexes you're looking for" -------------------------------------
+    # They turn a single, long file of Google HTML, CSS and Javascript into a nice, neat textfile,
+    # one URL per row and each pointing to an original image address found by Google.
+    #-----------------------------------------------------------------------------------------------------------
     #
     # sed   1. add 2 x newline chars before each occurence of '<div',
     #       2. remove ' notranslate' (if this is one of the odd times Google have added it),
@@ -2039,7 +2042,7 @@ ScrapeSearchResults()
     #       8. remove from '","ow"' to end of line,
     #       9. remove from '?' to end of line.
     #
-    #---------------------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------------------
 
     cat "$searchresults_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
