@@ -45,7 +45,7 @@ Debian:
 macOS:
 
     $ xcode-select --install
-    $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    $ ruby -e "$(curl -fsSL git.io/get-brew)"
     $ brew install coreutils ghostscript gnu-sed gnu-getopt imagemagick
 
 ---
