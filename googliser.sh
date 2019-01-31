@@ -51,7 +51,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190131
+    local SCRIPT_VERSION=190201
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -248,7 +248,7 @@ CheckEnv()
         #DebugFuncVar dimensions
         DebugFuncVal '$border_thickness (pixels)' "$border_thickness"
         DebugFuncComment 'internal parameters'
-        DebugFuncVar RUNFILE
+        DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
         DebugFuncVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
         DebugFuncVar PACKAGER_BIN
@@ -2230,7 +2230,7 @@ DebugFuncVal()
 DebugFuncComment()
     {
 
-    [[ -n $1 ]] && DebugComment "$1"
+    [[ -n $1 ]] && DebugComment "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
@@ -2993,7 +2993,7 @@ FirstPreferredFont()
 
 #OSTYPE="darwin"
 
-RUNFILE="$(basename "$_")"
+ORIGIN="$_"
 
 Init
 
@@ -3018,7 +3018,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,timeout:,title:,type:,upper-size:,usage-rights: -n "$RUNFILE" -- "$@")"
+user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
