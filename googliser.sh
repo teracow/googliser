@@ -1514,7 +1514,6 @@ ParseResults()
         DebugFuncVar result_count
 
         # check against allowable file types
-        DebugFuncOpr "removing disallowed image types"
         while read imagelink; do
             AllowableFileType "$imagelink"
             [[ $? -eq 0 ]] && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
@@ -1523,23 +1522,22 @@ ParseResults()
 
         # get link count
         result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
-        DebugFuncVar result_count
+        DebugFuncVarAdjust 'after removing disallowed image types' "$result_count"
 
         # remove duplicate URLs, but retain current order
-        DebugFuncOpr "removing duplicate URLs"
         cat -n "$imagelinks_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$imagelinks_pathfile.tmp"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
 
         # get link count
         result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
-        DebugFuncVar result_count
+        DebugFuncVarAdjust 'after removing duplicate URLs' "$result_count"
 
         # if too many results then trim
         if [[ $result_count -gt $max_results_required ]]; then
-            DebugFuncVarAdjust "trimming results back to required amount" "$max_results_required"
             head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             result_count=$max_results_required
+            DebugFuncVarAdjust "after reducing to required amount" "$result_count"
         fi
     fi
 
