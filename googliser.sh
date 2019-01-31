@@ -1508,6 +1508,10 @@ ParseResults()
     ScrapeSearchResults
 
     if [[ -e $imagelinks_pathfile ]]; then
+        # get link count
+        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
+        DebugFuncVar result_count
+
         # check against allowable file types
         DebugFuncOpr "removing disallowed image types"
         while read imagelink; do
@@ -1516,6 +1520,10 @@ ParseResults()
         done < "$imagelinks_pathfile"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
 
+        # get link count
+        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
+        DebugFuncVar result_count
+
         # remove duplicate URLs, but retain current order
         DebugFuncOpr "removing duplicate URLs"
         cat -n "$imagelinks_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$imagelinks_pathfile.tmp"
@@ -1523,6 +1531,7 @@ ParseResults()
 
         # get link count
         result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
+        DebugFuncVar result_count
 
         # if too many results then trim
         if [[ $result_count -gt $max_results_required ]]; then
@@ -1532,8 +1541,6 @@ ParseResults()
             result_count=$max_results_required
         fi
     fi
-
-    DebugFuncVar result_count
 
     if [[ $verbose = true ]]; then
         if [[ $result_count -gt 0 ]]; then
