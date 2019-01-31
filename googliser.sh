@@ -80,8 +80,8 @@ Init()
     show_help_only=false
     exitcode=0
     local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
-    script_details_colour="$(ColourBackgroundBlack "$(ColourTextBrightWhite " $SCRIPT_FILE ")") $SCRIPT_VERSION_PID"
-    script_details_plain="$SCRIPT_FILE $SCRIPT_VERSION_PID"
+    script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
+    script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"'
 
     # user-changeable parameters
@@ -205,9 +205,9 @@ CheckEnv()
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
-            echo " $script_details_colour"
+            echo "$script_details_colour"
         else
-            echo " $script_details_plain"
+            echo "$script_details_plain"
         fi
     fi
 
