@@ -248,6 +248,7 @@ CheckEnv()
         #DebugFuncVar dimensions
         DebugFuncVal '$border_thickness (pixels)' "$border_thickness"
         DebugFuncComment 'internal parameters'
+        DebugFuncVar RUNFILE
         DebugFuncVar OSTYPE
         DebugFuncVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
         DebugFuncVar PACKAGER_BIN
@@ -2992,11 +2993,12 @@ FirstPreferredFont()
 
 #OSTYPE="darwin"
 
+RUNFILE="$(basename "$_")"
+
 Init
 
 case "$OSTYPE" in
     "darwin"*)
-        READLINK_BIN=greadlink
         SED_BIN=gsed
         DU_BIN=gdu
         if [[ $(basename $PACKAGER_BIN) = brew ]]; then
@@ -3010,14 +3012,13 @@ case "$OSTYPE" in
         fi
         ;;
     *)
-        READLINK_BIN=readlink
         SED_BIN=sed
         DU_BIN=du
         GETOPT_BIN=getopt
         ;;
 esac
 
-user_parameters=$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,timeout:,title:,type:,upper-size:,usage-rights: -n $($READLINK_BIN -f -- "$0") -- "$@")
+user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,timeout:,title:,type:,upper-size:,usage-rights: -n "$RUNFILE" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
