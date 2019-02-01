@@ -76,7 +76,7 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 ***Required:***
 
 `-p` or `--phrase [STRING]`
-The search-phrase to look for. Enclose whitespace in quotes e.g. *"small brown cows"*
+The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "small brown cows"`
 
 
 ***Optional:***
@@ -111,7 +111,7 @@ How many download failures before exiting? Default is 40. Enter 0 for unlimited 
 Display this help then exit.
 
 `-i` or `--input [FILE]`
-Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a #.
+Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`.
 
 `-l` or `--lower-size [INTEGER]`
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
@@ -181,7 +181,7 @@ Specify the maximum dimensions of thumbnails used in the gallery image. Width-by
 Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes).
 
 `-T` or `--title [STRING]`
-Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify title as 'false'. Enclose whitespace in single or double-quotes according to taste. e.g. *'This is what cows look like!'*
+Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title false`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
 
 `--type [PRESET]`
 Image type to download. Preset values are:
