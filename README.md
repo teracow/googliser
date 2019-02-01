@@ -70,7 +70,7 @@ These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-cCDhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-cCdDhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required:***

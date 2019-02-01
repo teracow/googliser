@@ -307,131 +307,131 @@ WhatAreMyArgs()
     eval set -- "$user_parameters"
 
     while true; do
-        case "$1" in
-            -n|--number)
-                images_required="$2"
-                shift 2
-                ;;
-            -f|--failures)
-                user_fail_limit="$2"
-                shift 2
-                ;;
+        case $1 in
             -p|--phrase)
-                user_query="$2"
+                user_query=$2
                 shift 2
                 ;;
-            -P|--parallel)
-                parallel_limit="$2"
+            -a|--aspect-ratio)
+                aspect_ratio=$2
                 shift 2
                 ;;
-            -t|--timeout)
-                timeout="$2"
+            -b|--border-thickness)
+                border_thickness=$2
                 shift 2
-                ;;
-            -r|--retries)
-                retries="$2"
-                shift 2
-                ;;
-            -u|--upper-size)
-                upper_size_limit="$2"
-                shift 2
-                ;;
-            -l|--lower-size)
-                lower_size_limit="$2"
-                shift 2
-                ;;
-            -T|--title)
-                if [[ $(Lowercase "$2") = false ]]; then
-                    gallery_title="_false_"
-                else
-                    gallery_title="$2"
-                fi
-                shift 2
-                ;;
-            -o|--output)
-                output_path="$2"
-                shift 2
-                ;;
-            -i|--input)
-                input_pathfile="$2"
-                shift 2
-                ;;
-            #--dimensions)
-            #   dimensions="$2"
-            #   shift 2
-            #   ;;
-            -S|--skip-no-size)
-                skip_no_size=true
-                shift
-                ;;
-            -s|--save-links)
-                save_links=true
-                shift
-                ;;
-            -D|--delete-after)
-                remove_after=true
-                shift
-                ;;
-            -z|--lightning)
-                lightning=true
-                shift
-                ;;
-            -h|--help)
-                show_help_only=true
-                exitcode=2
-                return 1
                 ;;
             -c|--colour)
                 colour=true
-                shift
-                ;;
-            -N|--no-gallery)
-                create_gallery=false
                 shift
                 ;;
             -C|--condensed)
                 condensed_gallery=true
                 shift
                 ;;
-            -q|--quiet)
-                verbose=false
-                shift
-                ;;
             -d|--debug)
                 debug=true
                 shift
+                ;;
+            -D|--delete-after)
+                remove_after=true
+                shift
+                ;;
+            #--dimensions)
+            #   dimensions="$2"
+            #   shift 2
+            #   ;;
+            -f|--failures)
+                user_fail_limit=$2
+                shift 2
+                ;;
+            -h|--help)
+                show_help_only=true
+                exitcode=2
+                return 1
+                ;;
+            -i|--input)
+                input_pathfile=$2
+                shift 2
+                ;;
+            -l|--lower-size)
+                lower_size_limit=$2
+                shift 2
                 ;;
             -L|--links-only)
                 links_only=true
                 shift
                 ;;
             -m|--minimum-pixels)
-                min_pixels="$2"
+                min_pixels=$2
                 shift 2
                 ;;
-            -a|--aspect-ratio)
-                aspect_ratio="$2"
+            -n|--number)
+                images_required=$2
                 shift 2
                 ;;
-            -b|--border-thickness)
-                border_thickness="$2"
+            -N|--no-gallery)
+                create_gallery=false
+                shift
+                ;;
+            -o|--output)
+                output_path=$2
                 shift 2
                 ;;
-            --thumbnails)
-                thumbnail_dimensions="$2"
+            -P|--parallel)
+                parallel_limit=$2
+                shift 2
+                ;;
+            -q|--quiet)
+                verbose=false
+                shift
+                ;;
+            -r|--retries)
+                retries=$2
                 shift 2
                 ;;
             -R|--recent)
-                recent="$2"
+                recent=$2
+                shift 2
+                ;;
+            -s|--save-links)
+                save_links=true
+                shift
+                ;;
+            -S|--skip-no-size)
+                skip_no_size=true
+                shift
+                ;;
+            --thumbnails)
+                thumbnail_dimensions=$2
+                shift 2
+                ;;
+            -t|--timeout)
+                timeout=$2
+                shift 2
+                ;;
+            -T|--title)
+                if [[ $(Lowercase "$2") = false ]]; then
+                    gallery_title='_false_'
+                else
+                    gallery_title=$2
+                fi
                 shift 2
                 ;;
             --type)
-                image_type="$2"
+                image_type=$2
+                shift 2
+                ;;
+            -u|--upper-size)
+                upper_size_limit=$2
                 shift 2
                 ;;
             --usage-rights)
-                usage_rights="$2"
+                usage_rights=$2
                 shift 2
+                ;;
+            -z|--lightning)
+                lightning=true
+                shift
                 ;;
             --)
                 shift       # shift to next parameter in $1
