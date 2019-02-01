@@ -39,7 +39,8 @@
 #   <<  child-process ended
 #   \\  function entry
 #   //  function exit
-#   ??  variable value
+#   VV  variable value
+#   ??  other value
 #   ==  execution
 #   ~~  variable was reset within bounds
 #   $$  success
@@ -121,7 +122,7 @@ Init()
 
     DebugScriptEntry
     DebugScriptNow
-    DebugScriptVar SCRIPT_VERSION
+    DebugScriptVal 'version' "$SCRIPT_VERSION"
     DebugScriptVal 'PID' "$$"
 
     }
@@ -226,10 +227,10 @@ CheckEnv()
         DebugFuncVar user_fail_limit
         DebugFuncVar max_results_required
         DebugFuncVar parallel_limit
-        DebugFuncVal '$timeout (seconds)' "$timeout"
+        DebugFuncVal 'timeout (seconds)' "$timeout"
         DebugFuncVar retries
-        DebugFuncVal '$upper_size_limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
-        DebugFuncVal '$lower_size_limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
+        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
         DebugFuncVar recent
         DebugFuncVar create_gallery
         DebugFuncVar condensed_gallery
@@ -248,12 +249,12 @@ CheckEnv()
         DebugFuncVar output_path
         DebugFuncVar links_only
         #DebugFuncVar dimensions
-        DebugFuncVal '$border_thickness (pixels)' "$border_thickness"
-        DebugFuncVal '$thumbnail_dimensions (pixels W x H)' "$thumbnail_dimensions"
+        DebugFuncVal 'border thickness (pixels)' "$border_thickness"
+        DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
-        DebugFuncVal '$GOOGLE_MAX (number of images)' "$(DisplayThousands "$GOOGLE_MAX")"
+        DebugFuncVal 'maximum number of image results' "$(DisplayThousands "$GOOGLE_MAX")"
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
 
@@ -2367,7 +2368,7 @@ DebugOpr()
 DebugNow()
     {
 
-    [[ -n $1 ]] && DebugThis '=' "$1" "it's now" "$(date)"
+    [[ -n $1 ]] && DebugVal "$1" "it's now" "$(date)"
 
     }
 
@@ -2378,10 +2379,11 @@ DebugVar()
     # $2 = variable name and value to log
 
     if [[ -n ${!2} ]]; then
-        DebugVal "$1" "\$$2" "${!2}"
+        DebugThis 'V' "$1" "\$$2" "${!2}"
     else
-        DebugVal "$1" "\$$2" "''"
+        DebugThis 'V' "$1" "\$$2" "''"
     fi
+
 
     }
 
