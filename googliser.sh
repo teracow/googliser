@@ -253,7 +253,7 @@ CheckEnv()
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
-        DebugFuncVal 'maximum number of image results' "$(DisplayThousands "$GOOGLE_MAX")"
+        DebugFuncVal 'maximum results possible' "$(DisplayThousands "$GOOGLE_MAX")"
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
         DebugFuncVar max_results_required
