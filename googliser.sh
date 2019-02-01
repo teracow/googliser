@@ -96,7 +96,7 @@ Init()
     upper_size_limit=$UPPER_SIZE_LIMIT_DEFAULT
     lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
     recent=$RECENT_DEFAULT
-    create_gallery=true
+    no_gallery=false
     gallery_title=''
     condensed_gallery=false
     save_links=false
@@ -104,7 +104,7 @@ Init()
     verbose=true
     debug=false
     skip_no_size=false
-    remove_after=false
+    delete_after=false
     lightning=false
     min_pixels=''
     aspect_ratio=''
@@ -223,40 +223,40 @@ CheckEnv()
 
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
-        DebugFuncVar images_required
-        DebugFuncVar user_fail_limit
-        DebugFuncVar max_results_required
-        DebugFuncVar parallel_limit
-        DebugFuncVal 'timeout (seconds)' "$timeout"
-        DebugFuncVar retries
-        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
-        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
-        DebugFuncVar recent
-        DebugFuncVar create_gallery
-        DebugFuncVar condensed_gallery
-        DebugFuncVar save_links
-        DebugFuncVar colour
-        DebugFuncVar verbose
-        DebugFuncVar debug
-        DebugFuncVar skip_no_size
-        DebugFuncVar remove_after
-        DebugFuncVar lightning
-        DebugFuncVar min_pixels
         DebugFuncVar aspect_ratio
-        DebugFuncVar image_type
-        DebugFuncVar usage_rights
-        DebugFuncVar input_pathfile
-        DebugFuncVar output_path
-        DebugFuncVar links_only
-        #DebugFuncVar dimensions
         DebugFuncVal 'border thickness (pixels)' "$border_thickness"
+        DebugFuncVar colour
+        DebugFuncVar condensed_gallery
+        DebugFuncVar debug
+        DebugFuncVar delete_after
+        DebugFuncVar user_fail_limit
+        DebugFuncVar input_pathfile
+        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
+        DebugFuncVar links_only
+        DebugFuncVar min_pixels
+        DebugFuncVar images_required
+        DebugFuncVar no_gallery
+        DebugFuncVar output_path
+        DebugFuncVar parallel_limit
+        DebugFuncVar verbose
+        DebugFuncVar retries
+        DebugFuncVar recent
+        DebugFuncVar save_links
+        DebugFuncVar skip_no_size
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
+        DebugFuncVal 'timeout (seconds)' "$timeout"
+        DebugFuncVar image_type
+        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+        DebugFuncVar usage_rights
+        DebugFuncVar lightning
+        #DebugFuncVar dimensions
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
         DebugFuncVal 'maximum number of image results' "$(DisplayThousands "$GOOGLE_MAX")"
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
+        DebugFuncVar max_results_required
 
         if ! DOWNLOADER_BIN=$(which wget); then
             if ! DOWNLOADER_BIN=$(which curl); then
@@ -268,7 +268,7 @@ CheckEnv()
 
         DebugFuncVar DOWNLOADER_BIN
 
-        if [[ $create_gallery = true && $show_help_only = false ]]; then
+        if [[ $no_gallery = false && $show_help_only = false ]]; then
             if ! MONTAGE_BIN=$(which montage); then
                 SuggestInstall montage imagemagick
                 exitcode=1
@@ -334,7 +334,7 @@ WhatAreMyArgs()
                 shift
                 ;;
             -D|--delete-after)
-                remove_after=true
+                delete_after=true
                 shift
                 ;;
             #--dimensions)
@@ -371,7 +371,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -N|--no-gallery)
-                create_gallery=false
+                no_gallery=true
                 shift
                 ;;
             -o|--output)
@@ -571,7 +571,7 @@ ValidateParams()
 
     DebugFuncEntry
 
-    if [[ $create_gallery = false && $remove_after = true && $links_only = false ]]; then
+    if [[ $no_gallery = true && $delete_after = true && $links_only = false ]]; then
         echo
         echo " Hmmm, so you've requested:"
         echo " 1. don't create a gallery,"
@@ -589,18 +589,18 @@ ValidateParams()
         skip_no_size=true
         parallel_limit=16
         links_only=false
-        create_gallery=false
+        no_gallery=true
         user_fail_limit=0
     fi
 
     if [[ $links_only = true ]]; then
-        create_gallery=false
+        no_gallery=true
         save_links=true
         user_fail_limit=0
     fi
 
     if [[ $condensed_gallery = true ]]; then
-        create_gallery=true
+        no_gallery=false
     fi
 
     case ${images_required#[-+]} in
@@ -1033,14 +1033,14 @@ ProcessQuery()
 
     # build thumbnail gallery even if fail_limit was reached
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
-        if [[ $create_gallery = true ]]; then
+        if [[ $no_gallery = false ]]; then
             BuildGallery
             if [[ $? -gt 0 ]]; then
                 echo
                 echo "$(ShowFail ' !! unable to build thumbnail gallery')"
                 exitcode=6
             else
-                if [[ $remove_after = true ]]; then
+                if [[ $delete_after = true ]]; then
                     rm -f "$target_path/$image_file_prefix"*
                 fi
             fi
