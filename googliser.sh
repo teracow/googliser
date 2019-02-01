@@ -66,6 +66,7 @@ Init()
     fail_limit=$FAIL_LIMIT_DEFAULT
     BORDER_THICKNESS_DEFAULT=30
     RECENT_DEFAULT=any
+    THUMBNAILS_DEFAULT=400x400
 
     # parameter limits
     GOOGLE_MAX=1000
@@ -113,6 +114,7 @@ Init()
     links_only=false
     dimensions=''
     border_thickness=$BORDER_THICKNESS_DEFAULT
+    thumbnails=$THUMBNAILS_DEFAULT
 
     FindPackageManager
     BuildWorkPaths
@@ -247,6 +249,7 @@ CheckEnv()
         DebugFuncVar links_only
         #DebugFuncVar dimensions
         DebugFuncVal '$border_thickness (pixels)' "$border_thickness"
+        DebugFuncVal '$thumbnail_dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
@@ -414,6 +417,10 @@ WhatAreMyArgs()
                 border_thickness="$2"
                 shift 2
                 ;;
+            --thumbnails)
+                thumbnail_dimensions="$2"
+                shift 2
+                ;;
             -R|--recent)
                 recent="$2"
                 shift 2
@@ -525,6 +532,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'year'"
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
+    FormatHelpLine '' thumbnails "Ensure gallery thumbnails are not larger than these dimensions: width x height [400x400]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_DEFAULT]. Maximum of $TIMEOUT_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
@@ -1576,7 +1584,6 @@ BuildGallery()
 
     DebugFuncEntry
 
-    local thumbnail_dimensions='400x400'
     local func_startseconds=$(date +%s)
     local reserve_for_border="-border $border_thickness"
     local title_height=100
@@ -3016,7 +3023,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 

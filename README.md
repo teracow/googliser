@@ -96,7 +96,7 @@ Thickness of border surrounding the generated gallery image in pixels. Default i
 Display with nice ANSI coloured text.
 
 `-C` or `--condensed`
-Create the gallery in condensed mode. All thumbnails are square with no padding between each thumbnail.
+Create the gallery in condensed mode. No padding between each thumbnail.
 
 `-d` or `--debug`
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
@@ -173,6 +173,9 @@ Put the URL results file into the image sub-directory afterward. If selected, th
 
 `-S` or `--skip-no-size`
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
+
+`--thumbnails [STRING]`
+Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.
 
 `-t` or `--timeout [INTEGER]`
 Number of seconds before Wget gives up. Default is 5. Maximum is 600 (10 minutes).
