@@ -52,18 +52,19 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190201
+    local SCRIPT_VERSION=190203
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
-    IMAGES_REQUIRED_DEFAULT=25
+    IMAGES_REQUESTED_DEFAULT=25
     PARALLEL_LIMIT_DEFAULT=10
     FAIL_LIMIT_DEFAULT=40
     UPPER_SIZE_LIMIT_DEFAULT=0
     LOWER_SIZE_LIMIT_DEFAULT=1000
     TIMEOUT_DEFAULT=8
     RETRIES_DEFAULT=3
-    max_results_required=$IMAGES_REQUIRED_DEFAULT
+    images_required=$IMAGES_REQUESTED_DEFAULT
+    max_results_required=$IMAGES_REQUESTED_DEFAULT
     fail_limit=$FAIL_LIMIT_DEFAULT
     BORDER_THICKNESS_DEFAULT=30
     RECENT_DEFAULT=any
@@ -88,7 +89,7 @@ Init()
 
     # user-changeable parameters
     user_query=''
-    images_required=$IMAGES_REQUIRED_DEFAULT
+    images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
     timeout=$TIMEOUT_DEFAULT
@@ -116,6 +117,7 @@ Init()
     dimensions=''
     border_thickness=$BORDER_THICKNESS_DEFAULT
     thumbnails=$THUMBNAILS_DEFAULT
+    random_image=false
 
     FindPackageManager
     BuildWorkPaths
@@ -234,11 +236,13 @@ CheckEnv()
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
         DebugFuncVar links_only
         DebugFuncVar min_pixels
+        DebugFuncVar images_requested
         DebugFuncVar images_required
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
         DebugFuncVar verbose
+        DebugFuncVar random_image
         DebugFuncVar retries
         DebugFuncVar recent
         DebugFuncVar save_links
@@ -337,10 +341,10 @@ WhatAreMyArgs()
                 delete_after=true
                 shift
                 ;;
-            #--dimensions)
-            #   dimensions="$2"
-            #   shift 2
-            #   ;;
+#             --dimensions)
+#               dimensions="$2"
+#               shift 2
+#               ;;
             -f|--failures)
                 user_fail_limit=$2
                 shift 2
@@ -367,7 +371,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -n|--number)
-                images_required=$2
+                images_requested=$2
                 shift 2
                 ;;
             -N|--no-gallery)
@@ -386,6 +390,10 @@ WhatAreMyArgs()
                 verbose=false
                 shift
                 ;;
+#             --random)
+#                 random_image=true
+#                 shift
+#                 ;;
             -r|--retries)
                 retries=$2
                 shift 2
@@ -518,11 +526,12 @@ DisplayHelp()
     FormatHelpLine '' '' "'large'"
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
-    FormatHelpLine n number "Number of images to download [$IMAGES_REQUIRED_DEFAULT]. Maximum of $GOOGLE_MAX."
+    FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
     FormatHelpLine o output "The image output directory [phrase]."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
+#     FormatHelpLine '' random "Download a single random image only"
     FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -543,7 +552,6 @@ DisplayHelp()
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
     FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_LIMIT_DEFAULT]. Use '0' for unlimited."
-    #FormatHelpLine '?' random "Download a single random image only"
     FormatHelpLine '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
     FormatHelpLine '' '' "'reuse-with-mod'"
@@ -560,7 +568,7 @@ DisplayHelp()
     fi
 
     echo
-    echo " This will download the first $IMAGES_REQUIRED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
+    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
 
     DebugFuncExit
 
@@ -603,26 +611,32 @@ ValidateParams()
         no_gallery=false
     fi
 
-    case ${images_required#[-+]} in
+    case ${images_requested#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $images_required is invalid'
+            DebugScriptFail 'specified $images_requested is invalid'
             echo
             echo "$(ShowFail " !! number specified after (-n, --number) must be a valid integer")"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $images_required -lt 1 ]]; then
-                images_required=1
-                DebugFuncVarAdjust '$images_required TOO LOW so set to a sensible minimum' "$images_required"
+            if [[ $images_requested -lt 1 ]]; then
+                images_requested=1
+                DebugFuncVarAdjust '$images_requested TOO LOW so set to a sensible minimum' "$images_requested"
             fi
 
-            if [[ $images_required -gt $GOOGLE_MAX ]]; then
-                images_required=$GOOGLE_MAX
-                DebugThis '~ $images_required TOO HIGH so set as $GOOGLE_MAX' "$images_required"
+            if [[ $images_requested -gt $GOOGLE_MAX ]]; then
+                images_requested=$GOOGLE_MAX
+                DebugThis '~ $images_requested TOO HIGH so set as $GOOGLE_MAX' "$images_requested"
             fi
             ;;
     esac
+
+    if [[ $random_image = true ]]; then
+        images_required=1
+    else
+        images_required=$images_requested
+    fi
 
     if [[ -n $input_pathfile ]]; then
         if [[ ! -e $input_pathfile ]]; then
@@ -771,9 +785,9 @@ ValidateParams()
             ;;
     esac
 
-    if [[ $max_results_required -lt $((images_required+user_fail_limit)) ]]; then
-        max_results_required=$((images_required+user_fail_limit))
-        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $images_required + $user_fail_limit' "$max_results_required"
+    if [[ $max_results_required -lt $((images_requested+user_fail_limit)) ]]; then
+        max_results_required=$((images_requested+user_fail_limit))
+        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $images_requested + $user_fail_limit' "$max_results_required"
     fi
 
     dimensions_search=''
@@ -1006,18 +1020,18 @@ ProcessQuery()
         return 1
     else
         fail_limit=$user_fail_limit
-        if [[ $fail_limit -gt $result_count ]]; then
-            fail_limit=$result_count
-            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $result_count' "$fail_limit"
+        if [[ $fail_limit -gt $results_received ]]; then
+            fail_limit=$results_received
+            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $results_received' "$fail_limit"
         fi
 
-        if [[ $images_required -gt $result_count ]]; then
-            images_required=$result_count
-            DebugFuncVarAdjust '$images_required TOO HIGH so set as $result_count' "$result_count"
+        if [[ $max_results_required -gt $results_received ]]; then
+            max_results_required=$results_received
+            DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
         fi
     fi
 
-    if [[ $result_count -eq 0 ]]; then
+    if [[ $results_received -eq 0 ]]; then
         DebugFuncVal 'zero results returned?' 'Oops...'
         exitcode=4
         return 1
@@ -1234,6 +1248,12 @@ GetImages()
     [[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
     [[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
 
+#     if [[ $random=true ]]; then
+#       # pick a single image at random from links file
+#     else
+#       # iterate through $imagelinks_pathfile
+#     fi
+
     while read imagelink; do
         while true; do
             RefreshDownloadCounts
@@ -1256,7 +1276,7 @@ GetImages()
             done
 
             # have enough images now so exit loop
-            [[ $success_count -eq $images_required ]] &&    break 2
+            [[ $success_count -eq $images_required ]] && break 2
 
             if [[ $((success_count+parallel_count)) -lt $images_required ]]; then
                 ((result_index++))
@@ -1296,8 +1316,8 @@ GetImages()
             echo "Too many failures!"
         fi
     else
-        if [[ $result_index -eq $result_count ]]; then
-            DebugFuncFail '! ran out of images to download!' "$result_index/$result_count"
+        if [[ $result_index -eq $results_received ]]; then
+            DebugFuncFail '! ran out of images to download!' "$result_index/$results_received"
 
             if [[ $colour = true ]]; then
                 echo "$(ColourTextBrightRed 'Ran out of images to download!')"
@@ -1513,14 +1533,14 @@ ParseResults()
 
     DebugFuncEntry
 
-    result_count=0
+    results_received=0
 
     ScrapeSearchResults
 
     if [[ -e $imagelinks_pathfile ]]; then
         # get link count
-        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
-        DebugFuncVar result_count
+        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        DebugFuncVar results_received
 
         # check against allowable file types
         while read imagelink; do
@@ -1530,42 +1550,42 @@ ParseResults()
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
 
         # get link count
-        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
-        DebugFuncVarAdjust 'after removing disallowed image types' "$result_count"
+        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
         cat -n "$imagelinks_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$imagelinks_pathfile.tmp"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
 
         # get link count
-        result_count=$(wc -l < "$imagelinks_pathfile"); result_count=${result_count##* }
-        DebugFuncVarAdjust 'after removing duplicate URLs' "$result_count"
+        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
 
         # if too many results then trim
-        if [[ $result_count -gt $max_results_required ]]; then
+        if [[ $results_received -gt $max_results_required ]]; then
             head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
-            result_count=$max_results_required
-            DebugFuncVarAdjust "after reducing to required amount" "$result_count"
+            results_received=$max_results_required
+            DebugFuncVarAdjust "after reducing to required amount" "$results_received"
         fi
     fi
 
     if [[ $verbose = true ]]; then
-        if [[ $result_count -gt 0 ]]; then
+        if [[ $results_received -gt 0 ]]; then
             if [[ $colour = true ]]; then
-                if [[ $result_count -ge $max_results_required ]]; then
-                    echo "($(ColourTextBrightGreen "$result_count") results)"
+                if [[ $results_received -ge $max_results_required ]]; then
+                    echo "($(ColourTextBrightGreen "$results_received") results)"
                 fi
 
-                if [[ $result_count -ge $images_required && $result_count -lt $max_results_required ]]; then
-                    echo "($(ColourTextBrightOrange "$result_count") results)"
+                if [[ $results_received -ge $max_results_required && $results_received -lt $max_results_required ]]; then
+                    echo "($(ColourTextBrightOrange "$results_received") results)"
                 fi
 
-                if [[ $result_count -lt $images_required ]]; then
-                    echo "($(ColourTextBrightRed "$result_count") results)"
+                if [[ $results_received -lt $max_results_required ]]; then
+                    echo "($(ColourTextBrightRed "$results_received") results)"
                 fi
             else
-                echo "($result_count results)"
+                echo "($results_received results)"
             fi
         else
             if [[ $colour = true ]]; then
@@ -3025,7 +3045,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
