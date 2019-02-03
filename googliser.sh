@@ -68,7 +68,7 @@ Init()
     fail_limit=$FAIL_LIMIT_DEFAULT
     BORDER_THICKNESS_DEFAULT=30
     RECENT_DEFAULT=any
-    THUMBNAILS_DEFAULT=400x400
+    THUMBNAIL_DIMENSIONS_DEFAULT=400x400
 
     # parameter limits
     GOOGLE_MAX=1000
@@ -116,7 +116,7 @@ Init()
     links_only=false
     dimensions=''
     border_thickness=$BORDER_THICKNESS_DEFAULT
-    thumbnails=$THUMBNAILS_DEFAULT
+    thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
     random_image=false
 
     FindPackageManager
@@ -390,10 +390,10 @@ WhatAreMyArgs()
                 verbose=false
                 shift
                 ;;
-#             --random)
-#                 random_image=true
-#                 shift
-#                 ;;
+            --random)
+                random_image=true
+                shift
+                ;;
             -r|--retries)
                 retries=$2
                 shift 2
@@ -531,7 +531,7 @@ DisplayHelp()
     FormatHelpLine o output "The image output directory [phrase]."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
-#     FormatHelpLine '' random "Download a single random image only"
+    FormatHelpLine '' random "Download a single random image only"
     FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -542,7 +542,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'year'"
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
-    FormatHelpLine '' thumbnails "Ensure gallery thumbnails are not larger than these dimensions: width x height [400x400]. Specify like '--thumbnails 200x100'."
+    FormatHelpLine '' thumbnails "Ensure gallery thumbnails are not larger than these dimensions: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_DEFAULT]. Maximum of $TIMEOUT_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
@@ -1248,12 +1248,6 @@ GetImages()
     [[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
     [[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
 
-#     if [[ $random=true ]]; then
-#       # pick a single image at random from links file
-#     else
-#       # iterate through $imagelinks_pathfile
-#     fi
-
     while read imagelink; do
         while true; do
             RefreshDownloadCounts
@@ -1596,6 +1590,11 @@ ParseResults()
         fi
     fi
 
+    if [[ $random_image = true ]]; then
+        local op='shuffle links'
+        shuf "$imagelinks_pathfile" -o "$imagelinks_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
+    fi
+
     DebugFuncExit
 
     }
@@ -1609,6 +1608,7 @@ BuildGallery()
     local reserve_for_border="-border $border_thickness"
     local title_height=100
     local stage_description=''
+    local runmsg=''
 
     InitProgress
 
@@ -1641,13 +1641,14 @@ BuildGallery()
 
     DebugFuncExec "$stage_description" "$build_foreground_cmd"
 
-    eval $build_foreground_cmd 2>/dev/null
+    runmsg=$(eval $build_foreground_cmd 2>&1)
     result=$?
 
     if [[ $result -eq 0 ]]; then
         DebugFuncSuccess "$stage_description"
     else
         DebugFuncFail "$stage_description" "($result)"
+        DebugFuncVar runmsg
     fi
 
     if [[ $result -eq 0 ]]; then
@@ -1672,7 +1673,7 @@ BuildGallery()
 
         DebugFuncExec "$stage_description" "$build_background_cmd"
 
-        eval $build_background_cmd 2>/dev/null
+        runmsg=$(eval $build_background_cmd 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1703,7 +1704,7 @@ BuildGallery()
 
             DebugFuncExec "$stage_description" "$build_title_cmd"
 
-            eval $build_title_cmd 2>/dev/null
+            runmsg=$(eval $build_title_cmd 2>&1)
             result=$?
 
             if [[ $result -eq 0 ]]; then
@@ -1739,7 +1740,7 @@ BuildGallery()
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
-        eval $build_compose_cmd 2>/dev/null
+        runmsg=$(eval $build_compose_cmd 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then

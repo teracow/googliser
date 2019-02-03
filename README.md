@@ -155,6 +155,9 @@ How many parallel image downloads? Default is 10. Maximum is 40.
 `-q` or `--quiet`
 Suppress standard display output. Error messages are still shown.
 
+`--random`
+Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
+
 `-r` or `--retries [INTEGER]`
 Number of download retries for each image. Default is 3. Maximum is 100.
 
