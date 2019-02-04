@@ -1034,6 +1034,11 @@ ProcessQuery()
             max_results_required=$results_received
             DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
         fi
+
+        if [[ $images_required -gt $results_received ]]; then
+            images_required=$results_received
+            DebugFuncVarAdjust '$images_required TOO HIGH so set as $results_received' "$results_received"
+        fi
     fi
 
     if [[ $results_received -eq 0 ]]; then
