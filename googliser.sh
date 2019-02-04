@@ -1095,6 +1095,8 @@ GetResultPages()
     local parallel_count=0
     local success_count=0
     local fail_count=0
+    local max_search_result_groups=$((max_results_required*2))
+    [[ $max_search_result_groups -gt $GOOGLE_MAX ]] && max_search_result_groups=$GOOGLE_MAX
 
     InitProgress
 
@@ -1129,7 +1131,7 @@ GetResultPages()
         RefreshResultsCounts
         ShowGetResultProgress
 
-        [[ $((group*100)) -gt $max_results_required ]] && break
+        [[ $((group*100)) -ge $max_search_result_groups ]] && break
     done
 
     # wait here while all running downloads finish
