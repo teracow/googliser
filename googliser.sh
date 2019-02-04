@@ -990,7 +990,7 @@ ProcessQuery()
 
     DebugFuncVar target_path
 
-    if [[ $exitcode -eq 0 ]]; then
+    if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
         if [[ -n $user_gallery_title ]]; then
             gallery_title=$user_gallery_title
         else
@@ -1314,7 +1314,7 @@ GetImages()
     fi
 
     if [[ $result -eq 1 ]]; then
-        DebugFuncFail '! failure limit reached' "$fail_count/$fail_limit"
+        DebugFuncFail 'failure limit reached' "$fail_count/$fail_limit"
 
         if [[ $colour = true ]]; then
             echo "$(ColourTextBrightRed 'Too many failures!')"
@@ -1323,7 +1323,7 @@ GetImages()
         fi
     else
         if [[ $result_index -eq $results_received ]]; then
-            DebugFuncFail '! ran out of images to download!' "$result_index/$results_received"
+            DebugFuncFail 'ran out of images to download' "$result_index/$results_received"
 
             if [[ $colour = true ]]; then
                 echo "$(ColourTextBrightRed 'Ran out of images to download!')"
@@ -2227,14 +2227,14 @@ DebugFuncVarAdjust()
 DebugFuncSuccess()
     {
 
-    [[ -n $1 ]] && DebugSuccess "$(FormatFunc "${FUNCNAME[1]}")" "$1"
+    DebugSuccess "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
 DebugFuncFail()
     {
 
-    [[ -n $1 && -n $2 ]] && DebugFail "$(FormatFunc "${FUNCNAME[1]}") $1" "$2"
+    DebugFail "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
