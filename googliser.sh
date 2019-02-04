@@ -1340,7 +1340,7 @@ GetImages()
     DebugFuncVal 'downloads OK' "$success_count"
     DebugFuncVal 'downloads failed' "$fail_count"
 
-    if [[ $result -ne 1 ]]; then
+    if [[ $result -le 1 ]]; then
         download_bytes="$($DU_BIN "$target_path/$image_file_prefix"* -cb | tail -n1 | cut -f1)"
         DebugFuncVal 'downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
