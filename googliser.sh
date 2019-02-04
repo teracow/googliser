@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190203
+    local SCRIPT_VERSION=190204
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -233,11 +233,12 @@ CheckEnv()
         DebugFuncVar delete_after
         DebugFuncVar user_fail_limit
         DebugFuncVar input_pathfile
-        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
-        DebugFuncVar links_only
-        DebugFuncVar min_pixels
         DebugFuncVar images_requested
         DebugFuncVar images_required
+        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
+        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+        DebugFuncVar links_only
+        DebugFuncVar min_pixels
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
@@ -250,7 +251,6 @@ CheckEnv()
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncVal 'timeout (seconds)' "$timeout"
         DebugFuncVar image_type
-        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
         DebugFuncVar usage_rights
         DebugFuncVar lightning
         #DebugFuncVar dimensions
@@ -3034,7 +3034,7 @@ case "$OSTYPE" in
         else
             DebugScriptFail "'brew' executable was not found"
             echo " 'brew' executable was not found!"
-            echo -e "\n On this platform, you can try installing it with:"
+            echo -e "\n On this platform, try installing it with:"
             echo ' $ xcode-select --install && ruby -e "$(curl -fsSL git.io/get-brew)"'
             exit 1
         fi
@@ -3060,10 +3060,10 @@ if [[ $exitcode -eq 0 ]]; then
                     user_query="$file_query"
                     ProcessQuery
                 else
-                    DebugScriptFail 'ignoring phrase listfile comment line'
+                    DebugScriptWarn 'ignoring phrase listfile comment line'
                 fi
             else
-                DebugScriptFail 'ignoring phrase listfile empty line'
+                DebugScriptWarn 'ignoring phrase listfile empty line'
             fi
         done < "$input_pathfile"
     else
