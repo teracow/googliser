@@ -69,6 +69,7 @@ Init()
     BORDER_THICKNESS_DEFAULT=30
     RECENT_DEFAULT=any
     THUMBNAIL_DIMENSIONS_DEFAULT=400x400
+    gallery_title=''
 
     # parameter limits
     GOOGLE_MAX=1000
@@ -98,7 +99,7 @@ Init()
     lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
     recent=$RECENT_DEFAULT
     no_gallery=false
-    gallery_title=''
+    user_gallery_title=''
     condensed_gallery=false
     save_links=false
     colour=false
@@ -420,9 +421,9 @@ WhatAreMyArgs()
                 ;;
             -T|--title)
                 if [[ $(Lowercase "$2") = false ]]; then
-                    gallery_title='_false_'
+                    user_gallery_title='_false_'
                 else
-                    gallery_title=$2
+                    user_gallery_title=$2
                 fi
                 shift 2
                 ;;
@@ -989,9 +990,13 @@ ProcessQuery()
 
     DebugFuncVar target_path
 
-    if [[ $exitcode -eq 0 && -z $gallery_title ]]; then
-        gallery_title="$user_query"
-        DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+    if [[ $exitcode -eq 0 ]]; then
+        if [[ -n $user_gallery_title ]]; then
+            gallery_title=$user_gallery_title
+        else
+            gallery_title="$user_query"
+            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+        fi
     fi
 
     # create directory for search phrase
