@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190204
+    local SCRIPT_VERSION=190213
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -102,7 +102,7 @@ Init()
     user_gallery_title=''
     condensed_gallery=false
     save_links=false
-    colour=false
+    colour=true
     verbose=true
     debug=false
     skip_no_size=false
@@ -326,10 +326,6 @@ WhatAreMyArgs()
                 border_thickness=$2
                 shift 2
                 ;;
-            -c|--colour)
-                colour=true
-                shift
-                ;;
             -C|--condensed)
                 condensed_gallery=true
                 shift
@@ -374,6 +370,10 @@ WhatAreMyArgs()
             -n|--number)
                 images_requested=$2
                 shift 2
+                ;;
+            --no-colour|--no-color)
+                colour=false
+                shift
                 ;;
             -N|--no-gallery)
                 no_gallery=true
@@ -499,7 +499,6 @@ DisplayHelp()
     FormatHelpLine '' '' "'wide'"
     FormatHelpLine '' '' "'panoramic'"
     FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
-    FormatHelpLine c colour "Display with ANSI coloured text."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
     FormatHelpLine d debug "Save the debug file [$debug_file] into the output directory."
     #FormatHelpLine '' dimensions "Specify exact image dimensions to download."
@@ -528,6 +527,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
+    FormatHelpLine '' no-colour "Runtime display in bland, uncoloured text."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
     FormatHelpLine o output "The image output directory [phrase]."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
@@ -3058,7 +3058,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o c,C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l colour,condensed,debug,delete-after,help,lightning,links-only,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 

@@ -92,9 +92,6 @@ The shape of the image to download. Preset values are:
 `-b` or `--border-thickness [INTEGER]`
 Thickness of border surrounding the generated gallery image in pixels. Default is 30. Enter 0 for no border.
 
-`-c` or `--colour`
-Display with nice ANSI coloured text.
-
 `-C` or `--condensed`
 Create the gallery in condensed mode. No padding between each thumbnail.
 
@@ -142,6 +139,9 @@ Only download images with at least this many pixels. Preset values are:
 
 `-n` or `--number [INTEGER]`
 Number of images to download. Default is 25. Maximum is 1,000.
+
+`--no-colour` or `--no-color`
+Runtime display in bland, uncoloured text.
 
 `-N` or `--no-gallery`
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
@@ -223,9 +223,9 @@ This will download the first 250 available images for the search-phrase *"kitten
 
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
 
-    $ ./googliser.sh -n80 -p "storm clouds" -scN --debug
+    $ ./googliser.sh -n80 -p "storm clouds" -sN --debug
 
-This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory, use coloured display output and won't create a thumbnail gallery.
+This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory and won't create a thumbnail gallery.
 
 ---
 ## ![#c5f015](images/lime.png) Return Values ($?)
@@ -273,7 +273,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.6 Stretch 64b*
+- [Debian](https://www.debian.org/) - *9.7 Stretch 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*
