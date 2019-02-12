@@ -1019,11 +1019,7 @@ ProcessQuery()
 
     # download search results pages
     GetResultPages
-    if [[ $? -gt 0 ]]; then
-        echo "$(ShowFail " !! unable to download enough Google search results")"
-        exitcode=4
-        return 1
-    else
+    if [[ $exitcode -eq 0 ]]; then
         fail_limit=$user_fail_limit
         if [[ $fail_limit -gt $results_received ]]; then
             fail_limit=$results_received
@@ -1149,13 +1145,10 @@ GetResultPages()
     cat ${searchresults_pathfile}.* > "$searchresults_pathfile"
 
     ParseResults
-
-    [[ $fail_count -gt 0 ]] && result=1 || result=0
-
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
-    return $result
+    return
 
     }
 
@@ -1581,17 +1574,18 @@ ParseResults()
             if [[ $colour = true ]]; then
                 if [[ $results_received -ge $max_results_required ]]; then
                     echo "($(ColourTextBrightGreen "$results_received") results)"
-                fi
-
-                if [[ $results_received -ge $max_results_required && $results_received -lt $max_results_required ]]; then
+                elif [[ $results_received -ge $max_results_required && $results_received -lt $max_results_required ]]; then
                     echo "($(ColourTextBrightOrange "$results_received") results)"
-                fi
-
-                if [[ $results_received -lt $max_results_required ]]; then
+                elif [[ $results_received -lt $max_results_required ]]; then
                     echo "($(ColourTextBrightRed "$results_received") results)"
                 fi
             else
                 echo "($results_received results)"
+            fi
+
+            if [[ $results_received -lt $max_results_required ]]; then
+                echo "$(ShowFail " !! unable to download enough Google search results")"
+                exitcode=4
             fi
         else
             if [[ $colour = true ]]; then
@@ -1602,7 +1596,7 @@ ParseResults()
         fi
     fi
 
-    if [[ $random_image = true ]]; then
+    if [[ -e $imagelinks_pathfile && $random_image = true ]]; then
         local op='shuffle links'
         shuf "$imagelinks_pathfile" -o "$imagelinks_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
     fi
