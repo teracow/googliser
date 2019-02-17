@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190213
+    local SCRIPT_VERSION=190217
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -591,6 +591,17 @@ ValidateParams()
         return 1
     fi
 
+    local dimensions_search=''
+    local min_pixels_type=''
+    local min_pixels_search=''
+    local aspect_ratio_type=''
+    local aspect_ratio_search=''
+    local image_type_search=''
+    local usage_rights_type=''
+    local usage_rights_search=''
+    local recent_type=''
+    local recent_search=''
+
     if [[ $lightning = true ]]; then
         # Yeah!
         timeout=1
@@ -791,7 +802,6 @@ ValidateParams()
         DebugFuncVarAdjust '$max_results_required TOO LOW so set as $images_requested + $user_fail_limit' "$max_results_required"
     fi
 
-    dimensions_search=''
     if [[ -n $dimensions ]]; then
         # parse dimensions strings like '1920x1080' or '1920' or 'x1080'
         echo "dimensions: [$dimensions]"
@@ -821,20 +831,19 @@ ValidateParams()
         DebugThis '~ $dimensions was specified so cleared $min_pixels'
     fi
 
-    min_pixels_search=''
     if [[ -n $min_pixels ]]; then
         case "$min_pixels" in
             qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
-                min_pixels_search="isz:lt,islt:$min_pixels"
+                min_pixels_type="lt,islt:$min_pixels"
                 ;;
             large)
-                min_pixels_search='isz:l'
+                min_pixels_type='l'
                 ;;
             medium)
-                min_pixels_search='isz:m'
+                min_pixels_type='m'
                 ;;
             icon)
-                min_pixels_search='isz:i'
+                min_pixels_type='i'
                 ;;
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
@@ -844,22 +853,23 @@ ValidateParams()
                 return 1
                 ;;
         esac
+        [[ -n $min_pixels_type ]] && min_pixels_search="isz:$min_pixels_type"
+
     fi
 
-    aspect_ratio_search=''
     if [[ -n $aspect_ratio ]]; then
         case "$aspect_ratio" in
             tall)
-                ar_type='t'
+                aspect_ratio_type='t'
                 ;;
             square)
-                ar_type='s'
+                aspect_ratio_type='s'
                 ;;
             wide)
-                ar_type='w'
+                aspect_ratio_type='w'
                 ;;
             panoramic)
-                ar_type='xw'
+                aspect_ratio_type='xw'
                 ;;
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
@@ -869,10 +879,9 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $ar_type ]] && aspect_ratio_search="iar:$ar_type"
+        [[ -n $aspect_ratio_type ]] && aspect_ratio_search="iar:$aspect_ratio_type"
     fi
 
-    image_type_search=''
     if [[ -n $image_type ]]; then
         case "$image_type" in
             face|photo|clipart|lineart|animated)
@@ -888,20 +897,19 @@ ValidateParams()
         esac
     fi
 
-    usage_rights_search=''
     if [[ -n $usage_rights ]]; then
         case "$usage_rights" in
             reuse-with-mod)
-                usage_rights_search='sur:fmc'
+                usage_rights_type='fmc'
                 ;;
             reuse)
-                usage_rights_search='sur:fc'
+                usage_rights_type='fc'
                 ;;
             noncomm-reuse-with-mod)
-                usage_rights_search='sur:fm'
+                usage_rights_type='fm'
                 ;;
             noncomm-reuse)
-                usage_rights_search='sur:f'
+                usage_rights_type='f'
                 ;;
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
@@ -911,27 +919,28 @@ ValidateParams()
                 return 1
                 ;;
         esac
+        [[ -n $usage_rights_type ]] && usage_rights_search="sur:$usage_rights_type"
     fi
 
     if [[ -n $recent ]]; then
         case "$recent" in
             any)
-                recent_search=''
+                recent_type=''
                 ;;
             hour)
-                recent_search='qdr:h'
+                recent_type='h'
                 ;;
             day)
-                recent_search='qdr:d'
+                recent_type='d'
                 ;;
             week)
-                recent_search='qdr:w'
+                recent_type='w'
                 ;;
             month)
-                recent_search='qdr:m'
+                recent_type='m'
                 ;;
             year)
-                recent_search='qdr:y'
+                recent_type='y'
                 ;;
             *)
                 DebugScriptFail 'specified $recent is invalid'
@@ -941,6 +950,7 @@ ValidateParams()
                 return 1
                 ;;
         esac
+        [[ -n $recent_type ]] && recent_search="qdr:$recent_type"
     fi
 
     if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search || -n $recent_search ]]; then
