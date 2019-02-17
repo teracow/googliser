@@ -70,7 +70,7 @@ These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-cCdDhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-CdDhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required:***
@@ -273,7 +273,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.7 Stretch 64b*
+- [Debian](https://www.debian.org/) - *9.8 Stretch 64b*
 - GNU BASH - *v4.4.12*
 - GNU sed - *v4.4*
 - GNU grep - *v2.27*
