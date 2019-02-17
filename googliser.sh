@@ -57,15 +57,15 @@ Init()
 
     # parameter defaults
     IMAGES_REQUESTED_DEFAULT=25
-    PARALLEL_LIMIT_DEFAULT=10
+    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of image to end up in gallery. This is ideally same as $user_images_requested except when performing random (single) image download.
     FAIL_LIMIT_DEFAULT=40
+    fail_limit=$FAIL_LIMIT_DEFAULT
+    max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
+    PARALLEL_LIMIT_DEFAULT=10
     UPPER_SIZE_LIMIT_DEFAULT=0
     LOWER_SIZE_LIMIT_DEFAULT=1000
     TIMEOUT_DEFAULT=8
     RETRIES_DEFAULT=3
-    images_required=$IMAGES_REQUESTED_DEFAULT
-    max_results_required=$IMAGES_REQUESTED_DEFAULT
-    fail_limit=$FAIL_LIMIT_DEFAULT
     BORDER_THICKNESS_DEFAULT=30
     RECENT_DEFAULT=any
     THUMBNAIL_DIMENSIONS_DEFAULT=400x400
@@ -90,7 +90,7 @@ Init()
 
     # user-changeable parameters
     user_query=''
-    images_requested=$IMAGES_REQUESTED_DEFAULT
+    user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
     timeout=$TIMEOUT_DEFAULT
@@ -234,8 +234,8 @@ CheckEnv()
         DebugFuncVar delete_after
         DebugFuncVar user_fail_limit
         DebugFuncVar input_pathfile
-        DebugFuncVar images_requested
-        DebugFuncVar images_required
+        DebugFuncVar user_images_requested
+        DebugFuncVar gallery_images_required
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
         DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
         DebugFuncVar links_only
@@ -368,7 +368,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -n|--number)
-                images_requested=$2
+                user_images_requested=$2
                 shift 2
                 ;;
             --no-colour|--no-color)
@@ -623,31 +623,31 @@ ValidateParams()
         no_gallery=false
     fi
 
-    case ${images_requested#[-+]} in
+    case ${user_images_requested#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $images_requested is invalid'
+            DebugScriptFail 'specified $user_images_requested is invalid'
             echo
             echo "$(ShowFail " !! number specified after (-n, --number) must be a valid integer")"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $images_requested -lt 1 ]]; then
-                images_requested=1
-                DebugFuncVarAdjust '$images_requested TOO LOW so set to a sensible minimum' "$images_requested"
+            if [[ $user_images_requested -lt 1 ]]; then
+                user_images_requested=1
+                DebugFuncVarAdjust '$user_images_requested TOO LOW so set to a sensible minimum' "$user_images_requested"
             fi
 
-            if [[ $images_requested -gt $GOOGLE_MAX ]]; then
-                images_requested=$GOOGLE_MAX
-                DebugThis '~ $images_requested TOO HIGH so set as $GOOGLE_MAX' "$images_requested"
+            if [[ $user_images_requested -gt $GOOGLE_MAX ]]; then
+                user_images_requested=$GOOGLE_MAX
+                DebugThis '~ $user_images_requested TOO HIGH so set as $GOOGLE_MAX' "$user_images_requested"
             fi
             ;;
     esac
 
     if [[ $random_image = true ]]; then
-        images_required=1
+        gallery_images_required=1
     else
-        images_required=$images_requested
+        gallery_images_required=$user_images_requested
     fi
 
     if [[ -n $input_pathfile ]]; then
@@ -797,9 +797,9 @@ ValidateParams()
             ;;
     esac
 
-    if [[ $max_results_required -lt $((images_requested+user_fail_limit)) ]]; then
-        max_results_required=$((images_requested+user_fail_limit))
-        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $images_requested + $user_fail_limit' "$max_results_required"
+    if [[ $max_results_required -lt $((user_images_requested+user_fail_limit)) ]]; then
+        max_results_required=$((user_images_requested+user_fail_limit))
+        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $user_images_requested + $user_fail_limit' "$max_results_required"
     fi
 
     if [[ -n $dimensions ]]; then
@@ -1041,9 +1041,9 @@ ProcessQuery()
             DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
         fi
 
-        if [[ $images_required -gt $results_received ]]; then
-            images_required=$results_received
-            DebugFuncVarAdjust '$images_required TOO HIGH so set as $results_received' "$results_received"
+        if [[ $gallery_images_required -gt $results_received ]]; then
+            gallery_images_required=$results_received
+            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
         fi
     fi
 
@@ -1285,9 +1285,9 @@ GetImages()
             done
 
             # have enough images now so exit loop
-            [[ $success_count -eq $images_required ]] && break 2
+            [[ $success_count -eq $gallery_images_required ]] && break 2
 
-            if [[ $((success_count+parallel_count)) -lt $images_required ]]; then
+            if [[ $((success_count+parallel_count)) -lt $gallery_images_required ]]; then
                 ((result_index++))
                 local link_index=$(printf "%04d" $result_index)
 
@@ -1575,7 +1575,7 @@ ParseResults()
             head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             results_received=$max_results_required
-            DebugFuncVarAdjust "after reducing to required amount" "$results_received"
+            DebugFuncVarAdjust "after trimming to \$max_results_required" "$results_received"
         fi
     fi
 
@@ -1941,9 +1941,9 @@ ShowGetImagesProgress()
     if [[ $verbose = true ]]; then
         # number of image downloads that are OK
         if [[ $colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "$success_count/$images_required")"
+            progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required")"
         else
-            progress_message="$success_count/$images_required"
+            progress_message="$success_count/$gallery_images_required"
         fi
 
         progress_message+=' downloaded'
