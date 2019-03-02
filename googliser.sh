@@ -34,7 +34,7 @@
 #   6   thumbnail gallery build failed
 #   7   unable to create a temporary build directory
 
-# debug log first character notation:
+# debug log first characters notation:
 #   >>  child process forked
 #   <<  child-process ended
 #   \\  function entry
@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190217
+    local SCRIPT_VERSION=190302
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1584,16 +1584,16 @@ ParseResults()
             if [[ $colour = true ]]; then
                 if [[ $results_received -ge $max_results_required ]]; then
                     echo "($(ColourTextBrightGreen "$results_received") results)"
-                elif [[ $results_received -ge $max_results_required && $results_received -lt $max_results_required ]]; then
+                elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
                     echo "($(ColourTextBrightOrange "$results_received") results)"
-                elif [[ $results_received -lt $max_results_required ]]; then
+                elif [[ $results_received -lt $user_images_requested ]]; then
                     echo "($(ColourTextBrightRed "$results_received") results)"
                 fi
             else
                 echo "($results_received results)"
             fi
 
-            if [[ $results_received -lt $max_results_required ]]; then
+            if [[ $results_received -lt $user_images_requested ]]; then
                 echo "$(ShowFail " !! unable to download enough Google search results")"
                 exitcode=4
             fi
