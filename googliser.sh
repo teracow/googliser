@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190302
+    local SCRIPT_VERSION=190811
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1970,6 +1970,7 @@ ShowGetImagesProgress()
             else
                 progress_message+="$fail_count/$fail_limit"
             fi
+            [[ $parallel_count -gt 0 ]] && progress_message+=' have'
 
             progress_message+=' failed'
         fi
