@@ -2,7 +2,7 @@
 ---
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of original image URLs to [Wget](https://en.wikipedia.org/wiki/Wget) (or [cURL](https://github.com/curl/curl)) to download images in parallel, then combine them using ImageMagick's [montage](http://www.imagemagick.org/Usage/montage/#montage) into a single gallery image. The idea is to build a picture of a phrase.
 
-This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from  April 2016 to June 2018.
+This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from April 2016 to the present.
 
 Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) and [stevemart](https://github.com/stevemart) for their work on macOS compatibility. Their mods have been incorporated into this script.
 
@@ -273,17 +273,17 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *9.8 Stretch 64b*
-- GNU BASH - *v4.4.12*
-- GNU sed - *v4.4*
-- GNU grep - *v2.27*
-- GNU Wget - *v1.18*
-- [ImageMagick](http://www.imagemagick.org) - *v6.9.7-4 Q16*
-- Geany - *v1.29*
-- [ReText](https://github.com/retext-project/retext) - *v6.0.2*
-- Konsole - *v16.12.0*
-- KDE Development Platform - *v4.14.2*
-- QT - *v5.7.1*
+- [Debian](https://www.debian.org/) - *10.0 Buster 64b*
+- GNU BASH - *v5.0.3*
+- GNU sed - *v4.7*
+- GNU grep - *v3.3*
+- GNU Wget - *v1.20.1*
+- [ImageMagick](http://www.imagemagick.org) - *v6.9.10-23 Q16*
+- Geany - *v1.33*
+- [ReText](https://github.com/retext-project/retext) - *v7.0.4*
+- Konsole - *v18.04.0*
+- KDE Development Platform - *v5.54.0*
+- QT - *v5.11.3*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
 **Also tested on:**
