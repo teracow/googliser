@@ -46,7 +46,7 @@ macOS:
 
     $ xcode-select --install
     $ ruby -e "$(curl -fsSL git.io/get-brew)"
-    $ brew install coreutils ghostscript gnu-sed gnu-getopt imagemagick
+    $ brew install coreutils ghostscript gnu-sed imagemagick
 
 ---
 ## ![#c5f015](images/lime.png) Outputs
