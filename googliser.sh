@@ -1110,9 +1110,9 @@ GetResultPages()
     InitProgress
 
     # clears the paths used to count the search result pages
-    [[ -d $results_run_count_path ]] && rm -f "$results_run_count_path/*"
-    [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path/*"
-    [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path/*"
+    [[ -d $results_run_count_path ]] && rm -f "$results_run_count_path"/*
+    [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
+    [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
