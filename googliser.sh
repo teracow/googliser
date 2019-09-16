@@ -3,7 +3,7 @@
 ###############################################################################
 # googliser.sh
 #
-# (C)opyright 2016-2019 Teracow Software
+# (C)opyright 2016-2019 teracow software
 #
 # If you find this script useful, please send me an email to let me know. :)
 #   teracow@gmail.com
@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190811
+    local SCRIPT_VERSION=190916
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -78,7 +78,6 @@ Init()
     RETRIES_MAX=100
 
     # internals
-    local script_starttime=$(date)
     script_startseconds=$(date +%s)
     target_path_created=false
     show_help_only=false
@@ -135,12 +134,12 @@ FindPackageManager()
 
     case "$OSTYPE" in
         "darwin"*)
-            PACKAGER_BIN=$(which brew)
+            PACKAGER_BIN=$(command -v brew)
             ;;
         "linux"*)
-            if ! PACKAGER_BIN=$(which apt); then
-                if ! PACKAGER_BIN=$(which yum); then
-                    if ! PACKAGER_BIN=$(which opkg); then
+            if ! PACKAGER_BIN=$(command -v apt); then
+                if ! PACKAGER_BIN=$(command -v yum); then
+                    if ! PACKAGER_BIN=$(command -v opkg); then
                         PACKAGER_BIN=''
                     fi
                 fi
@@ -263,8 +262,8 @@ CheckEnv()
         DebugFuncVar TEMP_PATH
         DebugFuncVar max_results_required
 
-        if ! DOWNLOADER_BIN=$(which wget); then
-            if ! DOWNLOADER_BIN=$(which curl); then
+        if ! DOWNLOADER_BIN=$(command -v wget); then
+            if ! DOWNLOADER_BIN=$(command -v curl); then
                 SuggestInstall wget
                 exitcode=1
                 return 1
@@ -274,11 +273,11 @@ CheckEnv()
         DebugFuncVar DOWNLOADER_BIN
 
         if [[ $no_gallery = false && $show_help_only = false ]]; then
-            if ! MONTAGE_BIN=$(which montage); then
+            if ! MONTAGE_BIN=$(command -v montage); then
                 SuggestInstall montage imagemagick
                 exitcode=1
                 return 1
-            elif ! CONVERT_BIN=$(which convert); then
+            elif ! CONVERT_BIN=$(command -v convert); then
                 SuggestInstall convert imagemagick
                 exitcode=1
                 return 1
@@ -288,7 +287,7 @@ CheckEnv()
         DebugFuncVar MONTAGE_BIN
         DebugFuncVar CONVERT_BIN
 
-        ! IDENTIFY_BIN=$(which identify) && DebugScriptWarn "no recognised 'identify' binary found"
+        ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary found"
 
         DebugFuncVar IDENTIFY_BIN
 
@@ -1071,7 +1070,7 @@ ProcessQuery()
                 exitcode=6
             else
                 if [[ $delete_after = true ]]; then
-                    rm -f "$target_path/$image_file_prefix"*
+                    rm -f "$target_path/$image_file_prefix*"
                 fi
             fi
         fi
@@ -1102,8 +1101,7 @@ GetResultPages()
 
     local func_startseconds=$(date +%s)
     local groups_max=$((GOOGLE_MAX/100))
-    local pointer=0
-    local parallel_count=0
+    local run_count=0
     local success_count=0
     local fail_count=0
     local max_search_result_groups=$((max_results_required*2))
@@ -1112,9 +1110,9 @@ GetResultPages()
     InitProgress
 
     # clears the paths used to count the search result pages
-    [[ -d $results_run_count_path ]] && rm -f ${results_run_count_path}/*
-    [[ -d $results_success_count_path ]] && rm -f ${results_success_count_path}/*
-    [[ -d $results_fail_count_path ]] && rm -f ${results_fail_count_path}/*
+    [[ -d $results_run_count_path ]] && rm -f "$results_run_count_path/*"
+    [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path/*"
+    [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path/*"
 
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
@@ -1124,9 +1122,9 @@ GetResultPages()
         fi
     fi
 
-    for ((group=1; group<=$groups_max; group++)); do
+    for ((group=1; group<=groups_max; group++)); do
         # wait here until a download slot becomes available
-        while [[ $parallel_count -eq $parallel_limit ]]; do
+        while [[ $run_count -eq $parallel_limit ]]; do
             sleep 0.5
 
             RefreshResultsCounts
@@ -1152,7 +1150,7 @@ GetResultPages()
     ShowGetResultProgress
 
     # build all groups into a single file
-    cat ${searchresults_pathfile}.* > "$searchresults_pathfile"
+    cat "$searchresults_pathfile".* > "$searchresults_pathfile"
 
     ParseResults
     DebugFuncElapsedTime "$func_startseconds"
@@ -1193,9 +1191,9 @@ _GetResultPage_()
         # compiled search string
         local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
 
-        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
-        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
         else
             DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
@@ -1248,7 +1246,7 @@ GetImages()
     local result_index=0
     local message=''
     local result=0
-    local parallel_count=0
+    local run_count=0
     local success_count=0
     local fail_count=0
     local imagelink=''
@@ -1259,11 +1257,11 @@ GetImages()
     InitProgress
 
     # clears the paths used to count the downloaded images
-    [[ -d $download_run_count_path ]] && rm -f ${download_run_count_path}/*
-    [[ -d $download_success_count_path ]] && rm -f ${download_success_count_path}/*
-    [[ -d $dowload_fail_count_path ]] && rm -f ${download_fail_count_path}/*
+    [[ -d $download_run_count_path ]] && rm -f "$download_run_count_path/*"
+    [[ -d $download_success_count_path ]] && rm -f "$download_success_count_path/*"
+    [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path/*"
 
-    while read imagelink; do
+    while read -r imagelink; do
         while true; do
             RefreshDownloadCounts
             ShowGetImagesProgress
@@ -1278,7 +1276,7 @@ GetImages()
             fi
 
             # wait here until a download slot becomes available
-            while [[ $parallel_count -eq $parallel_limit ]]; do
+            while [[ $run_count -eq $parallel_limit ]]; do
                 sleep 0.5
 
                 RefreshDownloadCounts
@@ -1287,7 +1285,7 @@ GetImages()
             # have enough images now so exit loop
             [[ $success_count -eq $gallery_images_required ]] && break 2
 
-            if [[ $((success_count+parallel_count)) -lt $gallery_images_required ]]; then
+            if [[ $((success_count+run_count)) -lt $gallery_images_required ]]; then
                 ((result_index++))
                 local link_index=$(printf "%04d" $result_index)
 
@@ -1382,9 +1380,9 @@ _GetImage_()
         local output_pathfile="$2"
         local get_headers_cmd=''
 
-        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
-        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
         else
             DebugThis "! $_forkname_" 'unknown downloader'
@@ -1409,9 +1407,9 @@ _GetImage_()
         local output_pathfile="$2"
         local get_image_cmd=''
 
-        if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+        if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
-        elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+        elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
         else
             DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
@@ -1442,7 +1440,7 @@ _GetImage_()
     local fail_pathfile="$download_fail_count_path/$link_index"
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
-    local ext=$(echo ${1:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
+    local ext=$(echo "${1:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
     [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
@@ -1552,7 +1550,7 @@ ParseResults()
         DebugFuncVar results_received
 
         # check against allowable file types
-        while read imagelink; do
+        while read -r imagelink; do
             AllowableFileType "$imagelink"
             [[ $? -eq 0 ]] && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
         done < "$imagelinks_pathfile"
@@ -1657,7 +1655,7 @@ BuildGallery()
 
     DebugFuncExec "$stage_description" "$build_foreground_cmd"
 
-    runmsg=$(eval $build_foreground_cmd 2>&1)
+    runmsg=$(eval "$build_foreground_cmd" 2>&1)
     result=$?
 
     if [[ $result -eq 0 ]]; then
@@ -1682,20 +1680,21 @@ BuildGallery()
         fi
 
         # get image dimensions
-        read -r width height <<< $($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)
+        read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
 
         # create a dark image with light sphere in centre
         build_background_cmd="$CONVERT_BIN -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
 
         DebugFuncExec "$stage_description" "$build_background_cmd"
 
-        runmsg=$(eval $build_background_cmd 2>&1)
+        runmsg=$(eval "$build_background_cmd" 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
             DebugFuncSuccess "$stage_description"
         else
             DebugFuncFail "$stage_description" "($result)"
+            DebugFuncVar runmsg
         fi
     fi
 
@@ -1720,13 +1719,14 @@ BuildGallery()
 
             DebugFuncExec "$stage_description" "$build_title_cmd"
 
-            runmsg=$(eval $build_title_cmd 2>&1)
+            runmsg=$(eval "$build_title_cmd" 2>&1)
             result=$?
 
             if [[ $result -eq 0 ]]; then
                 DebugFuncSuccess "$stage_description"
             else
                 DebugFuncFail "$stage_description" "($result)"
+                DebugFuncVar runmsg
             fi
         fi
     fi
@@ -1756,13 +1756,14 @@ BuildGallery()
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
-        runmsg=$(eval $build_compose_cmd 2>&1)
+        runmsg=$(eval "$build_compose_cmd" 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
             DebugFuncSuccess "$stage_description"
         else
             DebugFuncFail "$stage_description" "($result)"
+            DebugFuncVar runmsg
         fi
     fi
 
@@ -1878,7 +1879,7 @@ ProgressUpdater()
 
     # $1 = message to display
 
-    if [[ $1 != $previous_msg ]]; then
+    if [[ $1 != "$previous_msg" ]]; then
         temp=$(RemoveColourCodes "$1")
         current_length=$((${#temp}+1))
 
@@ -1900,9 +1901,9 @@ ProgressUpdater()
 RefreshResultsCounts()
     {
 
-    parallel_count=$(ls -1 "$results_run_count_path" | wc -l); parallel_count=${parallel_count##* }
-    success_count=$(ls -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }
-    fail_count=$(ls -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }
+    run_count=$(ls -1 "$results_run_count_path" | wc -l)
+    success_count=$(ls -1 "$results_success_count_path" | wc -l)
+    fail_count=$(ls -1 "$results_fail_count_path" | wc -l)
 
     }
 
@@ -1929,9 +1930,9 @@ ShowGetResultProgress()
 RefreshDownloadCounts()
     {
 
-    parallel_count=$(ls -1 "$download_run_count_path" | wc -l); parallel_count=${parallel_count##* }
-    success_count=$(ls -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }
-    fail_count=$(ls -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }
+    run_count=$(ls -1 "$download_run_count_path" | wc -l)
+    success_count=$(ls -1 "$download_success_count_path" | wc -l)
+    fail_count=$(ls -1 "$download_fail_count_path" | wc -l)
 
     }
 
@@ -1949,13 +1950,13 @@ ShowGetImagesProgress()
         progress_message+=' downloaded'
 
         # show the number of files currently downloading (if any)
-        if [[ $parallel_count -gt 0 ]]; then
+        if [[ $run_count -gt 0 ]]; then
             progress_message+=', '
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightOrange "$parallel_count/$parallel_limit")"
+                progress_message+="$(ColourTextBrightOrange "$run_count/$parallel_limit")"
             else
-                progress_message+="$parallel_count/$parallel_limit"
+                progress_message+="$run_count/$parallel_limit"
             fi
 
             progress_message+=' are in progress'
@@ -1970,7 +1971,7 @@ ShowGetImagesProgress()
             else
                 progress_message+="$fail_count/$fail_limit"
             fi
-            [[ $parallel_count -gt 0 ]] && progress_message+=' have'
+            [[ $run_count -gt 0 ]] && progress_message+=' have'
 
             progress_message+=' failed'
         fi
@@ -2061,10 +2062,10 @@ AllowableFileType()
     # $? = 0 if OK, 1 if not
 
     local lcase=$(Lowercase "$1")
-    local ext=$(echo ${lcase:(-5)} | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
+    local ext=$(echo "${lcase:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
     # if string does not have a '.' then assume no extension present
-    [[ ! "$ext" =~ '.' ]] && ext=''
+    [[ ! "$ext" = *"."* ]] && ext=''
 
     case "$ext" in
         .jpg|.jpeg|.gif|.png|.bmp|.ico)
@@ -2112,7 +2113,7 @@ ScrapeSearchResults()
 CTRL_C_Captured()
     {
 
-    DebugThis "! [SIGINT]" "detected"
+    DebugScriptWarn "[SIGINT] detected" "detected"
 
     echo
 
@@ -2123,20 +2124,20 @@ CTRL_C_Captured()
     fi
 
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
-    kill $(jobs -p) 2>/dev/null
-    wait $(jobs -p) 2>/dev/null
+    kill "$(jobs -p)" 2>/dev/null
+    wait "$(jobs -p)" 2>/dev/null
 
     RefreshDownloadCounts
 
-    if [[ $parallel_count -gt 0 ]]; then
+    if [[ $run_count -gt 0 ]]; then
         # remove any image files where processing by [_GetImage_] was incomplete
         for currentfile in $(ls -1 "$download_run_count_path"); do
             rm -f "$target_path/$image_file_prefix($currentfile)".*
-            DebugThis "= link ($currentfile) was partially processed" 'deleted!'
+            DebugScriptWarn "$(FormatFuncLink "$currentfile") partially processed" 'deleted!'
         done
     fi
 
-    DebugThis "< finished" "$(date)"
+    DebugScriptWarn "< finished" "$(date)"
 
     echo
     echo " -> And ... we're done."
@@ -2253,14 +2254,14 @@ DebugFuncVar()
 DebugFuncExec()
     {
 
-    [[ -n $1 && -n $2 ]] && DebugExec "$(FormatFunc ${FUNCNAME[1]})" "$1" "$2"
+    [[ -n $1 && -n $2 ]] && DebugExec "$(FormatFunc "${FUNCNAME[1]}")" "$1" "$2"
 
     }
 
 DebugFuncOpr()
     {
 
-    [[ -n $1 ]] && DebugOpr "$(FormatFunc ${FUNCNAME[1]})" "$1"
+    [[ -n $1 ]] && DebugOpr "$(FormatFunc "${FUNCNAME[1]}")" "$1"
 
     }
 
@@ -2544,9 +2545,9 @@ Downloader_ReturnCodes()
     # $1 = downloader return code
     # echo = return code description
 
-    if [[ $(basename $DOWNLOADER_BIN) = wget ]]; then
+    if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
         WgetReturnCodes "$1"
-    elif [[ $(basename $DOWNLOADER_BIN) = curl ]]; then
+    elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
         CurlReturnCodes "$1"
     else
         DebugThis "! no return codes available for this downloader"
@@ -2736,7 +2737,7 @@ CurlReturnCodes()
             echo "The server's SSL/TLS certificate or SSH fingerprint failed verification"
             ;;
         52)
-            echo "The server did not reply anything, which in this context is considered an error"
+            echo "The server did not reply anything, command -v in this context is considered an error"
             ;;
         53)
             echo "SSL crypto engine not found"
@@ -2979,7 +2980,7 @@ DisplayISO()
 
     # show $1 formatted with 'k', 'M', 'G'
 
-    echo $1 | awk 'BEGIN{ u[0]=""; u[1]=" k"; u[2]=" M"; u[3]=" G"} { n = $1; i = 0; while(n > 1000) { i+=1; n= int((n/1000)+0.5) } print n u[i] } '
+    echo "$1" | awk 'BEGIN{ u[0]=""; u[1]=" k"; u[2]=" M"; u[3]=" G"} { n = $1; i = 0; while(n > 1000) { i+=1; n= int((n/1000)+0.5) } print n u[i] } '
 
     }
 
@@ -3017,9 +3018,9 @@ FirstPreferredFont()
     local available_fonts=$($CONVERT_BIN -list font | grep "Font:" | $SED_BIN 's| Font: ||')
     local first_available_font=''
 
-    while read preferred_font; do
-        while read available_font; do
-            [[ $preferred_font = $available_font ]] && break 2
+    while read -r preferred_font; do
+        while read -r available_font; do
+            [[ $preferred_font = "$available_font" ]] && break 2
         done <<< "$available_fonts"
     done <<< "$preferred_fonts"
 
@@ -3044,8 +3045,8 @@ Init
 
 case "$OSTYPE" in
     "darwin"*)
-        SED_BIN=gsed
-        DU_BIN=gdu
+        SED_BIN='gsed'
+        DU_BIN='gdu'
         if [[ $(basename $PACKAGER_BIN) = brew ]]; then
             GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
         else
@@ -3057,9 +3058,9 @@ case "$OSTYPE" in
         fi
         ;;
     *)
-        SED_BIN=sed
-        DU_BIN=du
-        GETOPT_BIN=getopt
+        SED_BIN='sed'
+        DU_BIN='du'
+        GETOPT_BIN='getopt'
         ;;
 esac
 
