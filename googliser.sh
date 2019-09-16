@@ -2737,7 +2737,7 @@ CurlReturnCodes()
             echo "The server's SSL/TLS certificate or SSH fingerprint failed verification"
             ;;
         52)
-            echo "The server did not reply anything, command -v in this context is considered an error"
+            echo "The server did not reply anything, which in this context is considered an error"
             ;;
         53)
             echo "SSL crypto engine not found"
