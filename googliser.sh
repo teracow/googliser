@@ -1903,9 +1903,9 @@ ProgressUpdater()
 RefreshResultsCounts()
     {
 
-    run_count=$(ls -1 "$results_run_count_path" | wc -l)
-    success_count=$(ls -1 "$results_success_count_path" | wc -l)
-    fail_count=$(ls -1 "$results_fail_count_path" | wc -l)
+    run_count=$(ls -1 "$results_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
+    success_count=$(ls -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
+    fail_count=$(ls -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
 
     }
 
@@ -1932,9 +1932,9 @@ ShowGetResultProgress()
 RefreshDownloadCounts()
     {
 
-    run_count=$(ls -1 "$download_run_count_path" | wc -l)
-    success_count=$(ls -1 "$download_success_count_path" | wc -l)
-    fail_count=$(ls -1 "$download_fail_count_path" | wc -l)
+    run_count=$(ls -1 "$download_run_count_path" | wc -l); run_count=${run_count##* }                   # remove leading space in 'wc' output on macOS
+    success_count=$(ls -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
+    fail_count=$(ls -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
 
     }
 
