@@ -1826,15 +1826,14 @@ Finish()
     DebugScriptElapsedTime "$script_startseconds"
     DebugScriptExit
 
-    # copy debug file into target directory if possible. If not, then copy to current directory.
+    # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
     if [[ $debug = true ]]; then
-        if [[ $target_path_created = true ]]; then
-            [[ -e $target_path/$debug_file ]] && echo "" >> "$target_path/$debug_file"
-            cp -f "$debug_pathfile" "$target_path/$debug_file"
-        else
-            # append to current path debug file (if it exists)
+        if [[ -n $input_pathfile || $target_path_created = false ]]; then
             [[ -e $current_path/$debug_file ]] && echo "" >> "$current_path/$debug_file"
             cat "$debug_pathfile" >> "$current_path/$debug_file"
+        else
+            [[ -e $target_path/$debug_file ]] && echo "" >> "$target_path/$debug_file"
+            cp -f "$debug_pathfile" "$target_path/$debug_file"
         fi
     fi
 
