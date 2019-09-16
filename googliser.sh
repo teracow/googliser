@@ -1840,6 +1840,8 @@ Finish()
 
     [[ $show_help_only = true ]] && exitcode=0
 
+    exit $exitcode
+
     }
 
 SuggestInstall()
@@ -2113,7 +2115,7 @@ ScrapeSearchResults()
 CTRL_C_Captured()
     {
 
-    DebugScriptWarn "[SIGINT] detected" "detected"
+    DebugFuncEntry
 
     echo
 
@@ -2133,16 +2135,12 @@ CTRL_C_Captured()
         # remove any image files where processing by [_GetImage_] was incomplete
         for currentfile in $(ls -1 "$download_run_count_path"); do
             rm -f "$target_path/$image_file_prefix($currentfile)".*
-            DebugScriptWarn "$(FormatFuncLink "$currentfile") partially processed" 'deleted!'
+            DebugFuncSuccess "delete incomplete $(FormatLink "$currentfile")"
         done
     fi
 
-    DebugScriptWarn "< finished" "$(date)"
-
-    echo
-    echo " -> And ... we're done."
-
-    exit
+    DebugFuncExit
+    Finish
 
     }
 
@@ -3090,5 +3088,3 @@ if [[ $exitcode -eq 0 ]]; then
 fi
 
 Finish
-
-exit $exitcode
