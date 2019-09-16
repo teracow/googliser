@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190916
+    local SCRIPT_VERSION=190917
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1257,9 +1257,9 @@ GetImages()
     InitProgress
 
     # clears the paths used to count the downloaded images
-    [[ -d $download_run_count_path ]] && rm -f "$download_run_count_path/*"
-    [[ -d $download_success_count_path ]] && rm -f "$download_success_count_path/*"
-    [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path/*"
+    [[ -d $download_run_count_path ]] && rm -f "$download_run_count_path"/*
+    [[ -d $download_success_count_path ]] && rm -f "$download_success_count_path"/*
+    [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path"/*
 
     while read -r imagelink; do
         while true; do
