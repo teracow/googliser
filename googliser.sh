@@ -2116,6 +2116,9 @@ CTRL_C_Captured()
 
     DebugFuncEntry
 
+    local existing_pathfile=''
+    local existing_file=''
+
     echo
 
     if [[ $colour = true ]]; then
@@ -2132,9 +2135,10 @@ CTRL_C_Captured()
 
     if [[ $run_count -gt 0 ]]; then
         # remove any image files where processing by [_GetImage_] was incomplete
-        for currentfile in $(ls -1 "$download_run_count_path"); do
-            rm -f "$target_path/$image_file_prefix($currentfile)".*
-            DebugFuncSuccess "delete incomplete $(FormatLink "$currentfile")"
+        for existing_pathfile in "$download_run_count_path"/*; do
+            existing_file="$(basename "$existing_pathfile")"
+            rm -f "$target_path/$image_file_prefix($existing_file)".*
+            DebugFuncSuccess "delete incomplete $(FormatLink "$existing_file")"
         done
     fi
 
