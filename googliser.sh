@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190917
+    local SCRIPT_VERSION=190918
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -85,9 +85,9 @@ Init()
     local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
-    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:64.0) Gecko/20100101 Firefox/64.0"'
+    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0"'
 
-    # user-changeable parameters
+    # user-modifiable parameters
     user_query=''
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
@@ -557,7 +557,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'reuse-with-mod'"
     FormatHelpLine '' '' "'noncomm-reuse'"
     FormatHelpLine '' '' "'noncomm-reuse-with-mod'"
-    FormatHelpLine z lightning "Download images even faster by using an optimized set of parameters. For those who really can't wait!"
+    FormatHelpLine z lightning "Download images even faster by using an optimised set of parameters. For those who really can't wait!"
     echo
     echo " Example:"
 
