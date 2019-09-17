@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-shellcheck --shell=bash --exclude=SC2016,SC2005,SC2209,SC2012,SC1003,SC2076,SC2181,SC1117,SC2002,SC2155,SC2015 googliser.sh
+shellcheck --shell=bash --exclude=1003,1117,2002,2005,2012,2015,2016,2018,2019,2076,2155,2181,2209 googliser.sh
 #shellcheck --shell=bash googliser.sh

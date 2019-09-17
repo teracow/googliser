@@ -2958,21 +2958,12 @@ ShowSuccess()
 
     }
 
-Uppercase()
-    {
-
-    # $1 = some text to convert to uppercase
-
-    echo "$1" | tr "[a-z]" "[A-Z]"
-
-    }
-
 Lowercase()
     {
 
     # $1 = some text to convert to lowercase
 
-    echo "$1" | tr "[A-Z]" "[a-z]"
+    tr 'A-Z' 'a-z' <<< "$1"
 
     }
 
