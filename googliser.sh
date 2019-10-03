@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190918
+    local SCRIPT_VERSION=190920
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1422,14 +1422,35 @@ _GetImage_()
 
         }
 
+    _MoveToSuccess_()
+        {
+
+        mv "$run_pathfile" "$success_pathfile"
+
+        }
+
+    _MoveToFail_()
+        {
+
+        # $1 = error message to write to failure runfile
+
+        [[ -z $1 ]] && return 1
+
+        mv "$run_pathfile" "$fail_pathfile"
+        echo "$1" > "$fail_pathfile"
+
+        }
+
+
     local URL="$1"
     local link_index="$2"
     _forkname_="$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")"   # global: used by various debug logging functions
     local get_download=true
-    local size_ok=true
+    local size_ok=false
     local response=''
     local result=0
     local download_speed=''
+    local estimated_size=0
     local actual_size=0
     local func_startseconds=$(date +%s)
 
@@ -1460,10 +1481,10 @@ _GetImage_()
 
             if [[ $estimated_size != unknown ]]; then
                 if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
-                    DebugChildFail 'image size'
-                    size_ok=false
                     get_download=false
+                    DebugChildFail 'image size'
                 else
+                    size_ok=true
                     DebugChildSuccess 'image size'
                 fi
             else
@@ -1504,27 +1525,27 @@ _GetImage_()
                 RenameExtAsType "$targetimage_pathfileext"
 
                 if [[ $? -eq 0 ]]; then
-                    mv "$run_pathfile" "$success_pathfile"
+                    _MoveToSuccess_
                     DebugChildSuccess 'image type'
                     DebugChildSuccess 'image download'
                 else
-                    mv "$run_pathfile" "$fail_pathfile"
+                    _MoveToFail_ 'image-type:post-download'
                     DebugChildFail 'image type'
                 fi
             else
-                # files that were outside size limits still count as failures
-                mv "$run_pathfile" "$fail_pathfile"
+                # files that were outside size limits count as failures
+                _MoveToFail_ 'image-size:post-download'
                 DebugChildFail 'image size'
             fi
         else
-            mv "$run_pathfile" "$fail_pathfile"
+            _MoveToFail_ "image-download:result:$(Downloader_ReturnCodes "$result")"
             DebugChildFail "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
 
             # delete temp file if one was created
             [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
         fi
     else
-        mv "$run_pathfile" "$fail_pathfile"
+        _MoveToFail_ "image-size:pre-download:$(Downloader_ReturnCodes "$result")"
         DebugChildFail 'image download'
     fi
 
@@ -2138,7 +2159,7 @@ CTRL_C_Captured()
         for existing_pathfile in "$download_run_count_path"/*; do
             existing_file="$(basename "$existing_pathfile")"
             rm -f "$target_path/$image_file_prefix($existing_file)".*
-            DebugFuncSuccess "delete incomplete $(FormatLink "$existing_file")"
+            DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
         done
     fi
 
