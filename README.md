@@ -101,6 +101,9 @@ Put the debug log into the image sub-directory afterward. If selected, debugging
 `-D` or `--delete-after`
 Delete the downloaded images after building the thumbnail gallery. Umm, don't specify this and `--no-gallery` at the same time.
 
+`--exclude [FILE]`
+Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
+
 `-f` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 40. Enter 0 for unlimited (this can potentially try to download every result so only use this if you've previously had a lot of failures).
 
@@ -194,9 +197,6 @@ Image type to download. Preset values are:
 - `clipart`
 - `lineart`
 - `animated`
-
-`--unique [FILE]`
-Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
 `-u` or `--upper-size [INTEGER]`
 Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).

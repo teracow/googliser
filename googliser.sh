@@ -112,7 +112,7 @@ Init()
     usage_rights=''
     image_type=''
     input_pathfile=''
-    unique_pathfile=''
+    exclude_links_pathfile=''
     output_path=''
     links_only=false
     dimensions=''
@@ -234,7 +234,7 @@ CheckEnv()
         DebugFuncVar delete_after
         DebugFuncVar user_fail_limit
         DebugFuncVar input_pathfile
-        DebugFuncVar unique_pathfile
+        DebugFuncVar exclude_links_pathfile
         DebugFuncVar user_images_requested
         DebugFuncVar gallery_images_required
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
@@ -343,6 +343,10 @@ WhatAreMyArgs()
 #               dimensions="$2"
 #               shift 2
 #               ;;
+            --exclude)
+                exclude_links_pathfile=$2
+                shift 2
+                ;;
             -f|--failures)
                 user_fail_limit=$2
                 shift 2
@@ -432,10 +436,6 @@ WhatAreMyArgs()
                 image_type=$2
                 shift 2
                 ;;
-            --unique)
-                unique_pathfile=$2
-                shift 2
-                ;;
             -u|--upper-size)
                 upper_size_limit=$2
                 shift 2
@@ -508,6 +508,7 @@ DisplayHelp()
     FormatHelpLine d debug "Save the debug file [$debug_file] into the output directory."
     #FormatHelpLine '' dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
+    FormatHelpLine '' exclude "A text file containing previously processed URLs. Any URLs in this file are not downloaded again."
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
@@ -557,7 +558,6 @@ DisplayHelp()
     FormatHelpLine '' '' "'clipart'"
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
-    FormatHelpLine '' unique "A text file containing previously processed URLs. Any URLs in this file are not downloaded again."
     FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_LIMIT_DEFAULT]. Use '0' for unlimited."
     FormatHelpLine '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
@@ -666,8 +666,8 @@ ValidateParams()
         fi
     fi
 
-    if [[ -n $unique_pathfile ]]; then
-        [[ ! -e $unique_pathfile ]] && touch "$unique_pathfile"
+    if [[ -n $exclude_links_pathfile ]]; then
+        [[ ! -e $exclude_links_pathfile ]] && touch "$exclude_links_pathfile"
     fi
 
     case ${user_fail_limit#[-+]} in
@@ -1560,7 +1560,7 @@ _GetImage_()
         DebugChildFail 'image download'
     fi
 
-    [[ -n $unique_pathfile ]] && echo "$URL" >> "$unique_pathfile"
+    [[ -n $exclude_links_pathfile ]] && echo "$URL" >> "$exclude_links_pathfile"
 
     DebugChildElapsedTime "$func_startseconds"
     DebugChildEnded
@@ -1606,8 +1606,8 @@ ParseResults()
         DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
 
         # remove previously downloaded URLs
-        if [[ -n $unique_pathfile ]]; then
-            [[ -e $unique_pathfile ]] && grep -axvFf "$unique_pathfile" "$imagelinks_pathfile" > "$imagelinks_pathfile.tmp"
+        if [[ -n $exclude_links_pathfile ]]; then
+            [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$imagelinks_pathfile" > "$imagelinks_pathfile.tmp"
             [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
             _GetLinkCount_
             DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
@@ -3101,7 +3101,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,unique:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
