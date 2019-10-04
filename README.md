@@ -195,6 +195,9 @@ Image type to download. Preset values are:
 - `lineart`
 - `animated`
 
+`--unique [FILE]`
+Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
+
 `-u` or `--upper-size [INTEGER]`
 Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
 

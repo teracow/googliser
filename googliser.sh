@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=190920
+    local SCRIPT_VERSION=191004
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -112,6 +112,7 @@ Init()
     usage_rights=''
     image_type=''
     input_pathfile=''
+    unique_pathfile=''
     output_path=''
     links_only=false
     dimensions=''
@@ -233,6 +234,7 @@ CheckEnv()
         DebugFuncVar delete_after
         DebugFuncVar user_fail_limit
         DebugFuncVar input_pathfile
+        DebugFuncVar unique_pathfile
         DebugFuncVar user_images_requested
         DebugFuncVar gallery_images_required
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
@@ -430,6 +432,10 @@ WhatAreMyArgs()
                 image_type=$2
                 shift 2
                 ;;
+            --unique)
+                unique_pathfile=$2
+                shift 2
+                ;;
             -u|--upper-size)
                 upper_size_limit=$2
                 shift 2
@@ -551,6 +557,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'clipart'"
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
+    FormatHelpLine '' unique "A text file containing previously processed URLs. Any URLs in this file are not downloaded again."
     FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_LIMIT_DEFAULT]. Use '0' for unlimited."
     FormatHelpLine '' usage-rights "Usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
@@ -657,6 +664,10 @@ ValidateParams()
             exitcode=2
             return 1
         fi
+    fi
+
+    if [[ -n $unique_pathfile ]]; then
+        [[ ! -e $unique_pathfile ]] && touch "$unique_pathfile"
     fi
 
     case ${user_fail_limit#[-+]} in
@@ -1549,6 +1560,8 @@ _GetImage_()
         DebugChildFail 'image download'
     fi
 
+    [[ -n $unique_pathfile ]] && echo "$URL" >> "$unique_pathfile"
+
     DebugChildElapsedTime "$func_startseconds"
     DebugChildEnded
 
@@ -1559,6 +1572,14 @@ _GetImage_()
 ParseResults()
     {
 
+    _GetLinkCount_()
+        {
+
+        # get link count
+        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+
+        }
+
     DebugFuncEntry
 
     results_received=0
@@ -1566,8 +1587,7 @@ ParseResults()
     ScrapeSearchResults
 
     if [[ -e $imagelinks_pathfile ]]; then
-        # get link count
-        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        _GetLinkCount_
         DebugFuncVar results_received
 
         # check against allowable file types
@@ -1576,18 +1596,22 @@ ParseResults()
             [[ $? -eq 0 ]] && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
         done < "$imagelinks_pathfile"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
-
-        # get link count
-        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        _GetLinkCount_
         DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
         cat -n "$imagelinks_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$imagelinks_pathfile.tmp"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
-
-        # get link count
-        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        _GetLinkCount_
         DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
+
+        # remove previously downloaded URLs
+        if [[ -n $unique_pathfile ]]; then
+            [[ -e $unique_pathfile ]] && grep -axvFf "$unique_pathfile" "$imagelinks_pathfile" > "$imagelinks_pathfile.tmp"
+            [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
+            _GetLinkCount_
+            DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
+        fi
 
         # if too many results then trim
         if [[ $results_received -gt $max_results_required ]]; then
@@ -3077,7 +3101,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,unique:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
