@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191004
+    local SCRIPT_VERSION=191005
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1081,7 +1081,7 @@ ProcessQuery()
                 exitcode=6
             else
                 if [[ $delete_after = true ]]; then
-                    rm -f "$target_path/$image_file_prefix*"
+                    rm -f "$target_path/$image_file_prefix"*
                 fi
             fi
         fi
