@@ -30,8 +30,8 @@
 #   2   required parameter unspecified or wrong
 #   3   could not create output directory for 'phrase'
 #   4   could not get a list of search results from Google
-#   5   image download aborted as failure limit was reached or ran out of images
-#   6   thumbnail gallery build failed
+#   5   image download failure limit was reached or URL links list has been exhausted
+#   6   thumbnail gallery building failed
 #   7   unable to create a temporary build directory
 
 # debug log first characters notation:
@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191005
+    local SCRIPT_VERSION=191017
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -107,6 +107,7 @@ Init()
     skip_no_size=false
     delete_after=false
     lightning=false
+    continue_with_short_results=false           # download images even if we don't have enough image links
     min_pixels=''
     aspect_ratio=''
     usage_rights=''
@@ -255,6 +256,7 @@ CheckEnv()
         DebugFuncVar image_type
         DebugFuncVar usage_rights
         DebugFuncVar lightning
+        DebugFuncVar continue_with_short_results
         #DebugFuncVar dimensions
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
@@ -318,6 +320,10 @@ WhatAreMyArgs()
             -p|--phrase)
                 user_query=$2
                 shift 2
+                ;;
+            --always-download)
+                continue_with_short_results=true
+                shift
                 ;;
             -a|--aspect-ratio)
                 aspect_ratio=$2
@@ -498,6 +504,7 @@ DisplayHelp()
     FormatHelpLine "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
     echo
     echo " Optional"
+    FormatHelpLine '' always-download "Download images, even if number of original image links is less than requested."
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '-a square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
     FormatHelpLine '' '' "'square'"
@@ -608,6 +615,12 @@ ValidateParams()
     local recent_type=''
     local recent_search=''
 
+    if [[ $links_only = true ]]; then
+        no_gallery=true
+        save_links=true
+        user_fail_limit=0
+    fi
+
     if [[ $lightning = true ]]; then
         # Yeah!
         timeout=1
@@ -616,12 +629,6 @@ ValidateParams()
         parallel_limit=16
         links_only=false
         no_gallery=true
-        user_fail_limit=0
-    fi
-
-    if [[ $links_only = true ]]; then
-        no_gallery=true
-        save_links=true
         user_fail_limit=0
     fi
 
@@ -1334,13 +1341,13 @@ GetImages()
             echo "Too many failures!"
         fi
     else
-        if [[ $result_index -eq $results_received ]]; then
-            DebugFuncFail 'ran out of images to download' "$result_index/$results_received"
+        if [[ $result_index -eq $results_received && $continue_with_short_results = false ]]; then
+            DebugFuncFail 'links list exhausted' "$result_index/$results_received"
 
             if [[ $colour = true ]]; then
-                echo "$(ColourTextBrightRed 'Ran out of images to download!')"
+                echo "$(ColourTextBrightRed 'Links list exhausted!')"
             else
-                echo "Ran out of images to download!"
+                echo "Links list exhausted!"
             fi
 
             result=1
@@ -1636,7 +1643,7 @@ ParseResults()
                 echo "($results_received results)"
             fi
 
-            if [[ $results_received -lt $user_images_requested ]]; then
+            if [[ $results_received -lt $user_images_requested && $continue_with_short_results = false ]]; then
                 echo "$(ShowFail " !! unable to download enough Google search results")"
                 exitcode=4
             fi
@@ -3101,7 +3108,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
