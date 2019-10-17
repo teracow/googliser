@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191017
+    local SCRIPT_VERSION=191018
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -116,7 +116,6 @@ Init()
     exclude_links_pathfile=''
     output_path=''
     links_only=false
-    dimensions=''
     border_thickness=$BORDER_THICKNESS_DEFAULT
     thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
     random_image=false
@@ -257,7 +256,6 @@ CheckEnv()
         DebugFuncVar usage_rights
         DebugFuncVar lightning
         DebugFuncVar continue_with_short_results
-        #DebugFuncVar dimensions
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
@@ -345,10 +343,6 @@ WhatAreMyArgs()
                 delete_after=true
                 shift
                 ;;
-#             --dimensions)
-#               dimensions="$2"
-#               shift 2
-#               ;;
             --exclude)
                 exclude_links_pathfile=$2
                 shift 2
@@ -517,7 +511,6 @@ DisplayHelp()
     FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All square images with no tile padding."
     FormatHelpLine d debug "Save the debug file [$debug_file] into the output directory."
-    #FormatHelpLine '' dimensions "Specify exact image dimensions to download."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. Any URLs in this file are not downloaded again."
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
@@ -608,7 +601,6 @@ ValidateParams()
         return 1
     fi
 
-    local dimensions_search=''
     local min_pixels_type=''
     local min_pixels_search=''
     local aspect_ratio_type=''
@@ -821,35 +813,6 @@ ValidateParams()
     if [[ $max_results_required -lt $((user_images_requested+user_fail_limit)) ]]; then
         max_results_required=$((user_images_requested+user_fail_limit))
         DebugFuncVarAdjust '$max_results_required TOO LOW so set as $user_images_requested + $user_fail_limit' "$max_results_required"
-    fi
-
-    if [[ -n $dimensions ]]; then
-        # parse dimensions strings like '1920x1080' or '1920' or 'x1080'
-        echo "dimensions: [$dimensions]"
-
-        if grep -q 'x' <<< $dimensions; then
-            echo "found a separator"
-            image_width=${dimensions%x*}
-            image_height=${dimensions#*x}
-        else
-            image_width=$dimensions
-        fi
-
-        [[ $image_width =~ ^-?[0-9]+$ ]] && echo "image_width is a number" || echo "image_width is NOT a number"
-        [[ $image_height =~ ^-?[0-9]+$ ]] && echo "image_height is a number" || echo "image_height is NOT a number"
-
-        echo "image_width: [$image_width]"
-        echo "image_height: [$image_height]"
-        echo "dimensions_search: [$dimensions_search]"
-
-        # only while debugging - remove for release
-        exitcode=2
-        return 1
-    fi
-
-    if [[ -n $dimensions && -n $min_pixels ]]; then
-        min_pixels=''
-        DebugThis '~ $dimensions was specified so cleared $min_pixels'
     fi
 
     if [[ -n $min_pixels ]]; then
@@ -3118,7 +3081,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,dimensions:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
