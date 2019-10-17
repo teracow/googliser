@@ -36,7 +36,7 @@
 
 # debug log first characters notation:
 #   >>  child process forked
-#   <<  child-process ended
+#   <<  child process ended
 #   \\  function entry
 #   //  function exit
 #   VV  variable value
@@ -57,7 +57,7 @@ Init()
 
     # parameter defaults
     IMAGES_REQUESTED_DEFAULT=25
-    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of image to end up in gallery. This is ideally same as $user_images_requested except when performing random (single) image download.
+    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     FAIL_LIMIT_DEFAULT=40
     fail_limit=$FAIL_LIMIT_DEFAULT
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
@@ -291,7 +291,7 @@ CheckEnv()
         DebugFuncVar MONTAGE_BIN
         DebugFuncVar CONVERT_BIN
 
-        ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary found"
+        ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary was found"
 
         DebugFuncVar IDENTIFY_BIN
 
@@ -546,7 +546,7 @@ DisplayHelp()
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
     FormatHelpLine '' no-colour "Display progress in boring, uncoloured text."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
-    FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes. Whitespaces will be converted to underscores."
+    FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
     FormatHelpLine '' random "Download a single, random image only"
@@ -1008,14 +1008,12 @@ ProcessQuery()
     safe_search_query="&q=$safe_search_phrase"
 
     if [[ -z $output_path ]]; then
-        target_path="$current_path/$safe_path_phrase"
+        target_path="$current_path/$user_query"
     else
-        safe_path="${output_path// /_}"                 # replace whitepace with '_' so less issues later on!
-        DebugFuncVar safe_path
         if [[ -n $input_pathfile ]]; then
-            target_path="$safe_path/$safe_path_phrase"
+            target_path="$output_path/$user_query"
         else
-            target_path="$safe_path"
+            target_path="$output_path"
         fi
     fi
 
@@ -1023,7 +1021,7 @@ ProcessQuery()
 
     if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
         if [[ -n $user_gallery_title ]]; then
-            gallery_title=$user_gallery_title
+            gallery_title="$user_gallery_title"
         else
             gallery_title="$user_query"
             DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
@@ -2472,10 +2470,18 @@ DebugVar()
     {
 
     # $1 = scope
-    # $2 = variable name and value to log
+    # $2 = variable name to log the value of
 
     if [[ -n ${!2} ]]; then
-        DebugThis 'V' "$1" "\$$2" "${!2}"
+        value="${!2}"
+
+        if [[ $value = *" "* ]]; then
+            displayvalue="'$value'"         # if variable contains whitespace, surround with single quotes
+        else
+            displayvalue="$value"
+        fi
+
+        DebugThis 'V' "$1" "\$$2" "$displayvalue"
     else
         DebugThis 'V' "$1" "\$$2" "''"
     fi

@@ -153,7 +153,7 @@ Runtime display in bland, uncoloured text.
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
 `-o` or `--output [PATH]`
-The output directory. If unspecified, the search phrase is used.
+The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
 `-P` or `--parallel [INTEGER]`
 How many parallel image downloads? Default is 10. Maximum is 40.
