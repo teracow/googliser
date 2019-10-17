@@ -28,7 +28,7 @@ or use:
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 40 images can be downloaded in parallel (concurrently). If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded or the download failure-limit is reached.
+5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 512 images can be downloaded in parallel (concurrently). If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded or the download failure-limit is reached.
 
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (see below for examples).
 
@@ -156,7 +156,7 @@ Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` a
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
 `-P` or `--parallel [INTEGER]`
-How many parallel image downloads? Default is 10. Maximum is 40.
+How many parallel image downloads? Default is 64. Maximum is 512.
 
 `-q` or `--quiet`
 Suppress standard display output. Error messages are still shown.
@@ -213,7 +213,7 @@ Usage rights. Preset values are:
 - `noncomm-reuse-with-mod` (labeled for noncommercial reuse with modification)
 
 `-z` or `--lightning`
-Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 16 images at the same time, and don't create a gallery afterward.
+Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 512 images at the same time, and don't create a gallery afterward.
 
 **Usage Examples:**
 
