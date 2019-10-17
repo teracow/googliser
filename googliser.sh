@@ -503,7 +503,11 @@ DisplayHelp()
 
     FormatHelpLine "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory is created with this name unless '--output' is specified."
     echo
-    echo " Optional"
+    if [[ $colour = true ]]; then
+        echo " $(ColourTextBrightOrange "* Optional *")"
+    else
+        echo " * Optional *"
+    fi
     FormatHelpLine '' always-download "Download images, even if number of original image links is less than requested."
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '-a square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
@@ -540,12 +544,12 @@ DisplayHelp()
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
-    FormatHelpLine '' no-colour "Runtime display in bland, uncoloured text."
+    FormatHelpLine '' no-colour "Display progress in boring, uncoloured text."
     FormatHelpLine N no-gallery "Don't create thumbnail gallery."
-    FormatHelpLine o output "The image output directory [phrase]."
+    FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes. Whitespaces will be converted to underscores."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
-    FormatHelpLine '' random "Download a single random image only"
+    FormatHelpLine '' random "Download a single, random image only"
     FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -571,7 +575,7 @@ DisplayHelp()
     FormatHelpLine '' '' "'reuse-with-mod'"
     FormatHelpLine '' '' "'noncomm-reuse'"
     FormatHelpLine '' '' "'noncomm-reuse-with-mod'"
-    FormatHelpLine z lightning "Download images even faster by using an optimised set of parameters. For those who really can't wait!"
+    FormatHelpLine z lightning "Download images even faster by using an optimised set of parameters. For when you really can't wait!"
     echo
     echo " Example:"
 
