@@ -1950,20 +1950,28 @@ RefreshDownloadCounts()
 ShowGetImagesProgress()
     {
 
-    local gallery_images_required_display=''
-    local fail_limit_display=''
+    local success_display=''
+    local gallery_images_required_adjusted=''
+    local fail_display=''
+    local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
         if [[ $continue_with_short_results = true ]]; then
-            gallery_images_required_display=$((gallery_images_required-fail_count))
+            gallery_images_required_adjusted=$((gallery_images_required-fail_count))
         else
-            gallery_images_required_display=$gallery_images_required
+            gallery_images_required_adjusted=$gallery_images_required
+        fi
+
+        if [[ $success_count -eq $gallery_images_required_adjusted ]]; then
+            success_display="$success_count"
+        else
+            success_display="$success_count/$gallery_images_required_adjusted"
         fi
 
         if [[ $colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required_display")"
+            progress_message="$(ColourTextBrightGreen "$success_display")"
         else
-            progress_message="$success_count/$gallery_images_required_display"
+            progress_message="$success_display"
         fi
 
         progress_message+=' downloaded'
@@ -1984,15 +1992,21 @@ ShowGetImagesProgress()
             progress_message+=' and '
 
             if [[ $continue_with_short_results = true ]]; then
-                fail_limit_display=$((fail_limit-success_count))
+                fail_limit_adjusted=$((fail_limit-success_count))
             else
-                fail_limit_display=$fail_limit
+                fail_limit_adjusted=$fail_limit
+            fi
+
+            if [[ $fail_count -eq $fail_limit_adjusted ]]; then
+                fail_display="$fail_count"
+            else
+                fail_display="$fail_count/$fail_limit_adjusted"
             fi
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightRed "$fail_count/$fail_limit_display")"
+                progress_message+="$(ColourTextBrightRed "$fail_display")"
             else
-                progress_message+="$fail_count/$fail_limit_display"
+                progress_message+="$fail_display"
             fi
             [[ $run_count -gt 0 ]] && progress_message+=' have'
 
