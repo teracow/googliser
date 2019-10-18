@@ -57,7 +57,7 @@ These sample images have been scaled down for easier distribution.
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC -n16
+    $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
@@ -108,7 +108,7 @@ Delete the downloaded images after building the thumbnail gallery. Umm, don't sp
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
 `-f` or `--failures [INTEGER]`
-How many download failures before exiting? Default is 64. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
+How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
 `-h` or `--help`
 Display this help then exit.
@@ -144,7 +144,7 @@ Only download images with at least this many pixels. Preset values are:
 - `icon`
 
 `-n` or `--number [INTEGER]`
-Number of images to download. Default is 32. Maximum is 1,000.
+Number of images to download. Default is 16. Maximum is 1,000.
 
 `--no-colour` or `--no-color`
 Runtime display in bland, uncoloured text.
@@ -219,11 +219,11 @@ Lightning mode! For those who really can't wait! Lightning mode downloads images
 
     $ ./googliser.sh -p "cows"
 
-This will download the first 25 available images for the search-phrase *"cows"*
+This will download the first 16 available images for the search-phrase *"cows"*
 
-    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 12 --failures 0
+    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 128 --failures 0
 
-This will download the first 250 available images for the search-phrase *"kittens"*, download up to 12 images at once and ignore the failures limit.
+This will download the first 250 available images for the search-phrase *"kittens"*, download up to 128 images at once and ignore the failures limit.
 
     $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
 
@@ -262,7 +262,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - The failures percentage shown after download is the number of failed downloads as a percentage of the total number of image downloads attempted - this includes successful downloads. e.g. 25 images downloaded OK with 8 download failures yields a total of 33 downloads attempted. And 8 / 33 = **24%**.
 
-- The final search results count is determined by adding together the number of images required (default is 32) with the number of allowable failures (default is 64). Search results initially download in groups of 100. So, for the defaults shown, the script downloads the first two groups totalling 200. Then trims it so only the first 96 results remain. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. The count can also change between searches as Google don't always return the same results - even for identical searches.
+- The final search results count is determined by adding together the number of images required (default is 16) with the number of allowable failures (default is 32). Search results initially download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 48 results remain. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. The count can also change between searches as Google don't always return the same results - even for identical searches.
 
 - Only the first image of a multi-image file (like an animated **GIF**) will be used for its gallery image.
 

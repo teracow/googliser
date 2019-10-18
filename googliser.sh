@@ -56,9 +56,9 @@ Init()
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
-    IMAGES_REQUESTED_DEFAULT=32
+    IMAGES_REQUESTED_DEFAULT=16
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
-    FAIL_LIMIT_DEFAULT=64
+    FAIL_LIMIT_DEFAULT=32
     fail_limit=$FAIL_LIMIT_DEFAULT
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
     PARALLEL_LIMIT_DEFAULT=64
