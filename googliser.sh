@@ -1248,10 +1248,8 @@ GetImages()
         while true; do
             RefreshDownloadCounts; ShowGetImagesProgress
 
-            # have enough images now so exit loop
             [[ $success_count -eq $gallery_images_required ]] && break 2
 
-            # if too many failures, then abort downloading
             if [[ $fail_count -ge $fail_limit ]]; then
                 wait 2>/dev/null            # wait here until all forked downloaders have completed
                 result=1
@@ -1259,10 +1257,7 @@ GetImages()
             fi
 
             # don't proceed until a download slot becomes available
-            if [[ $run_count -eq $parallel_limit ]]; then
-                sleep 0.5
-                continue
-            fi
+            [[ $run_count -eq $parallel_limit ]] && continue
 
             if [[ $((success_count+run_count)) -lt $gallery_images_required ]]; then
                 # fork a new downloader
@@ -1279,7 +1274,6 @@ GetImages()
     done < "$imagelinks_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        sleep 0.5
         RefreshDownloadCounts; ShowGetImagesProgress
     done
 
