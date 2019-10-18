@@ -1952,7 +1952,9 @@ ShowGetImagesProgress()
 
     if [[ $verbose = true ]]; then
         # number of image downloads that are OK, but subtract number of failed downloads from total available
-        local gallery_images_required_display=$((gallery_images_required-fail_count))
+
+        #local gallery_images_required_display=$((gallery_images_required-fail_count))
+        local gallery_images_required_display=$gallery_images_required
 
         if [[ $colour = true ]]; then
             progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required_display")"
