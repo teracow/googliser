@@ -1951,11 +1951,13 @@ ShowGetImagesProgress()
     {
 
     if [[ $verbose = true ]]; then
-        # number of image downloads that are OK
+        # number of image downloads that are OK, but subtract number of failed downloads from total available
+        local gallery_images_required_display=$((gallery_images_required-fail_count))
+
         if [[ $colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required")"
+            progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required_display")"
         else
-            progress_message="$success_count/$gallery_images_required"
+            progress_message="$success_count/$gallery_images_required_display"
         fi
 
         progress_message+=' downloaded'
@@ -1973,14 +1975,15 @@ ShowGetImagesProgress()
             progress_message+=' are in progress'
         fi
 
-        # include failures (if any)
+        # include failures (if any), but subtract number of successful downloads from total available
         if [[ $fail_count -gt 0 ]]; then
             progress_message+=' and '
+            local fail_limit_display=$((fail_limit-success_count))
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightRed "$fail_count/$fail_limit")"
+                progress_message+="$(ColourTextBrightRed "$fail_count/$fail_limit_display")"
             else
-                progress_message+="$fail_count/$fail_limit"
+                progress_message+="$fail_count/$fail_limit_display"
             fi
             [[ $run_count -gt 0 ]] && progress_message+=' have'
 
