@@ -61,7 +61,7 @@ Init()
     FAIL_LIMIT_DEFAULT=40
     fail_limit=$FAIL_LIMIT_DEFAULT
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
-    PARALLEL_LIMIT_DEFAULT=64
+    PARALLEL_LIMIT_DEFAULT=10
     UPPER_SIZE_LIMIT_DEFAULT=0
     LOWER_SIZE_LIMIT_DEFAULT=1000
     TIMEOUT_DEFAULT=8
@@ -73,7 +73,7 @@ Init()
 
     # parameter limits
     GOOGLE_MAX=1000
-    PARALLEL_MAX=512
+    PARALLEL_MAX=40
     TIMEOUT_MAX=600
     RETRIES_MAX=100
 
@@ -622,7 +622,7 @@ ValidateParams()
         timeout=1
         retries=0
         skip_no_size=true
-        parallel_limit=512
+        parallel_limit=16
         links_only=false
         no_gallery=true
         user_fail_limit=0
@@ -1245,46 +1245,46 @@ GetImages()
     [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path"/*
 
     while read -r imagelink; do
-        RefreshDownloadCounts
-        ShowGetImagesProgress
-
-        # wait here until a download slot becomes available
-        while [[ $run_count -eq $parallel_limit ]]; do
-            sleep 0.5
+        while true; do
             RefreshDownloadCounts
             ShowGetImagesProgress
+
+            # abort downloading if too many failures
+            if [[ $fail_count -ge $fail_limit ]]; then
+                result=1
+
+                wait 2>/dev/null
+
+                break 2
+            fi
+
+            # wait here until a download slot becomes available
+            while [[ $run_count -eq $parallel_limit ]]; do
+                sleep 0.5
+
+                RefreshDownloadCounts
+            done
+
+            # have enough images now so exit loop
+            [[ $success_count -eq $gallery_images_required ]] && break 2
+
+            if [[ $((success_count+run_count)) -lt $gallery_images_required ]]; then
+                ((result_index++))
+                local link_index=$(printf "%04d" $result_index)
+
+                # create run file here as it takes too long to happen in background function
+                touch "$download_run_count_path/$link_index"
+                { _GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
+
+                break
+            fi
         done
-
-        # abort downloading if too many failures
-        if [[ $fail_count -ge $fail_limit ]]; then
-            result=1
-
-            wait 2>/dev/null
-
-            break 2
-        fi
-
-        # have enough images now so exit both loops
-        [[ $success_count -eq $gallery_images_required ]] && break 2
-
-        if [[ $((success_count+run_count)) -lt $gallery_images_required ]]; then
-            ((result_index++))
-            local link_index=$(printf "%04d" $result_index)
-
-            # create run file here as it takes too long to happen in background function
-            touch "$download_run_count_path/$link_index"
-            { _GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
-
-        fi
     done < "$imagelinks_pathfile"
 
-    while [[ $run_count -gt 0 ]]; do
-        sleep 0.5
-        RefreshDownloadCounts
-        ShowGetImagesProgress
-    done
+    wait 2>/dev/null
 
-    wait 2>/dev/null;                   # wait here until all forked downloaders have completed
+    RefreshDownloadCounts
+    ShowGetImagesProgress
 
     if [[ $fail_count -gt 0 ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
