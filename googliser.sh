@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191018
+    local SCRIPT_VERSION=191019
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1924,12 +1924,12 @@ ShowGetResultProgress()
     if [[ $verbose = true ]]; then
         if [[ $colour = true ]]; then
             if [[ $success_count -eq $groups_max ]]; then
-                progress_message="$(ColourTextBrightGreen "$success_count/$groups_max")"
+                progress_message="$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")"
             else
-                progress_message="$(ColourTextBrightOrange "$success_count/$groups_max")"
+                progress_message="$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")"
             fi
         else
-            progress_message="$success_count/$groups_max"
+            progress_message="$(Display2to1 "$success_count" "$groups_max")"
         fi
 
         progress_message+=' result groups downloaded:'
@@ -1950,9 +1950,7 @@ RefreshDownloadCounts()
 ShowGetImagesProgress()
     {
 
-    local success_display=''
     local gallery_images_required_adjusted=''
-    local fail_display=''
     local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
@@ -1962,16 +1960,10 @@ ShowGetImagesProgress()
             gallery_images_required_adjusted=$gallery_images_required
         fi
 
-        if [[ $success_count -eq $gallery_images_required_adjusted ]]; then
-            success_display="$success_count"
-        else
-            success_display="$success_count/$gallery_images_required_adjusted"
-        fi
-
         if [[ $colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "$success_display")"
+            progress_message="$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")"
         else
-            progress_message="$success_display"
+            progress_message="$(Display2to1 "$success_count" "$gallery_images_required_adjusted")"
         fi
 
         progress_message+=' downloaded'
@@ -1980,9 +1972,9 @@ ShowGetImagesProgress()
             progress_message+=', '
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightOrange "$run_count/$parallel_limit")"
+                progress_message+="$(ColourTextBrightOrange "$(Display2to1 "$run_count" "$parallel_limit")")"
             else
-                progress_message+="$run_count/$parallel_limit"
+                progress_message+="$(Display2to1 "$run_count" "$parallel_limit")"
             fi
 
             progress_message+=' are in progress'
@@ -1997,16 +1989,10 @@ ShowGetImagesProgress()
                 fail_limit_adjusted=$fail_limit
             fi
 
-            if [[ $fail_count -eq $fail_limit_adjusted ]]; then
-                fail_display="$fail_count"
-            else
-                fail_display="$fail_count/$fail_limit_adjusted"
-            fi
-
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightRed "$fail_display")"
+                progress_message+="$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")"
             else
-                progress_message+="$fail_display"
+                progress_message+="$(Display2to1 "$fail_count" "$fail_limit_adjusted")"
             fi
             [[ $run_count -gt 0 ]] && progress_message+=' have'
 
@@ -2015,6 +2001,17 @@ ShowGetImagesProgress()
 
         progress_message+=':'
         ProgressUpdater "$progress_message"
+    fi
+
+    }
+
+Display2to1()
+    {
+
+    if [[ $1 -eq $2 ]]; then
+        echo "$1"
+    else
+        echo "$1/$2"
     fi
 
     }
