@@ -1950,11 +1950,15 @@ RefreshDownloadCounts()
 ShowGetImagesProgress()
     {
 
-    if [[ $verbose = true ]]; then
-        # number of image downloads that are OK, but subtract number of failed downloads from total available
+    local gallery_images_required_display=''
+    local fail_limit_display=''
 
-        #local gallery_images_required_display=$((gallery_images_required-fail_count))
-        local gallery_images_required_display=$gallery_images_required
+    if [[ $verbose = true ]]; then
+        if [[ $continue_with_short_results = true ]]; then
+            gallery_images_required_display=$((gallery_images_required-fail_count))
+        else
+            gallery_images_required_display=$gallery_images_required
+        fi
 
         if [[ $colour = true ]]; then
             progress_message="$(ColourTextBrightGreen "$success_count/$gallery_images_required_display")"
@@ -1964,7 +1968,6 @@ ShowGetImagesProgress()
 
         progress_message+=' downloaded'
 
-        # show the number of files currently downloading (if any)
         if [[ $run_count -gt 0 ]]; then
             progress_message+=', '
 
@@ -1977,10 +1980,14 @@ ShowGetImagesProgress()
             progress_message+=' are in progress'
         fi
 
-        # include failures (if any), but subtract number of successful downloads from total available
         if [[ $fail_count -gt 0 ]]; then
             progress_message+=' and '
-            local fail_limit_display=$((fail_limit-success_count))
+
+            if [[ $continue_with_short_results = true ]]; then
+                fail_limit_display=$((fail_limit-success_count))
+            else
+                fail_limit_display=$fail_limit
+            fi
 
             if [[ $colour = true ]]; then
                 progress_message+="$(ColourTextBrightRed "$fail_count/$fail_limit_display")"
