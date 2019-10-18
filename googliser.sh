@@ -1415,6 +1415,9 @@ _GetImage_()
         mv "$run_pathfile" "$fail_pathfile"
         echo "$1" > "$fail_pathfile"
 
+        # delete temp file if one was created
+        [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
+
         }
 
 
@@ -1516,9 +1519,6 @@ _GetImage_()
         else
             _MoveToFail_ "image-download:result:$(Downloader_ReturnCodes "$result")"
             DebugChildFail "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
-
-            # delete temp file if one was created
-            [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
         fi
     else
         _MoveToFail_ "image-size:pre-download:$(Downloader_ReturnCodes "$result")"
