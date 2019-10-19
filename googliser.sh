@@ -1972,9 +1972,9 @@ ShowGetImagesProgress()
             progress_message+=', '
 
             if [[ $colour = true ]]; then
-                progress_message+="$(ColourTextBrightOrange "$(Display2to1 "$run_count" "$parallel_limit")")"
+                progress_message+="$(ColourTextBrightOrange "$run_count/$parallel_limit")"
             else
-                progress_message+="$(Display2to1 "$run_count" "$parallel_limit")"
+                progress_message+="$run_count/$parallel_limit"
             fi
 
             progress_message+=' are in progress'
