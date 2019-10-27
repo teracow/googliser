@@ -296,8 +296,8 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
 - [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS*
-- [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*
-- [Fedora](https://getfedora.org/) - *28 Workstation*
+- [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*, *10.15 Catalina*
+- [Fedora](https://getfedora.org/) - *28, 30 Workstation*
 - [Mint](https://linuxmint.com/) - *19.1 Tessa XFCE*
 - [Manjaro](https://manjaro.org/) - *18.0.2 XFCE*
 
