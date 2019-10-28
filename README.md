@@ -46,7 +46,7 @@ macOS:
 
     $ xcode-select --install
     $ ruby -e "$(curl -fsSL git.io/get-brew)"
-    $ brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt 
+    $ brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
 
 ---
 ## ![#c5f015](images/lime.png) Outputs
@@ -109,6 +109,18 @@ Any previously downloaded URLs will be saved into this file (if specified). Spec
 
 `-f` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
+
+`--format [PRESET]`
+Image format to download. Preset values are:
+
+- `jpg`
+- `png`
+- `gif`
+- `bmp`
+- `svg`
+- `webp`
+- `ico`
+- `craw`
 
 `-h` or `--help`
 Display this help then exit.
@@ -272,7 +284,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - Sometimes, you may also see a slowdown when downloading the last image (e.g. when something like 24 out of 25 images have downloaded without issue). This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
 
-- The temporary build directory is `/tmp/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters. 
+- The temporary build directory is `/tmp/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters.
 
 - This script will need to be updated from time-to-time as Google periodically change their search results page-code. The latest copy can be found **[here](https://github.com/teracow/googliser)**.
 
