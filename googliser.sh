@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191019
+    local SCRIPT_VERSION=191029
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -2099,8 +2099,11 @@ RenameExtAsType()
             # exception to handle identify's output for BMP i.e. "BMP3"
             [[ $imagetype = 'BMP3' ]] && imagetype='BMP'
 
+            # exception to handle identify's output for RAW i.e. "CRAW"
+            [[ $imagetype = 'CRAW' ]] && imagetype='RAW'
+
             case "$imagetype" in
-                JPEG|GIF|PNG|BMP|ICO|WEBP)
+                JPEG|GIF|PNG|BMP|ICO|WEBP|RAW)
                     # move file into temp file
                     mv "$1" "$1".tmp
 
@@ -3128,7 +3131,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,format:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
