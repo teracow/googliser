@@ -112,6 +112,7 @@ Init()
     aspect_ratio=''
     usage_rights=''
     image_type=''
+    image_format=''
     input_pathfile=''
     exclude_links_pathfile=''
     output_path=''
@@ -253,6 +254,7 @@ CheckEnv()
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncVal 'timeout (seconds)' "$timeout"
         DebugFuncVar image_type
+        DebugFuncVar image_format
         DebugFuncVar usage_rights
         DebugFuncVar lightning
         DebugFuncVar continue_with_short_results
@@ -349,6 +351,10 @@ WhatAreMyArgs()
                 ;;
             -f|--failures)
                 user_fail_limit=$2
+                shift 2
+                ;;
+            --format)
+                image_format=$2
                 shift 2
                 ;;
             -h|--help)
@@ -513,6 +519,15 @@ DisplayHelp()
     FormatHelpLine d debug "Save the debug file [$debug_file] into the output directory."
     FormatHelpLine D delete-after "Remove all downloaded images afterwards."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. Any URLs in this file are not downloaded again."
+    FormatHelpLine '' format "Image file format. Specify like '--format svg'. Presets are:"
+    FormatHelpLine '' '' "'jpg'"
+    FormatHelpLine '' '' "'png'"
+    FormatHelpLine '' '' "'gif'"
+    FormatHelpLine '' '' "'bmp'"
+    FormatHelpLine '' '' "'svg'"
+    FormatHelpLine '' '' "'webp'"
+    FormatHelpLine '' '' "'ico'"
+    FormatHelpLine '' '' "'craw'"
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
@@ -606,6 +621,7 @@ ValidateParams()
     local aspect_ratio_type=''
     local aspect_ratio_search=''
     local image_type_search=''
+    local image_format_search=''
     local usage_rights_type=''
     local usage_rights_search=''
     local recent_type=''
@@ -881,6 +897,21 @@ ValidateParams()
         esac
     fi
 
+    if [[ -n $image_format ]]; then
+        case "$image_format" in
+            jpg|svg|gif|png|bmp|svg|webp|ico|craw)
+                image_format_search="ift:$image_format"
+                ;;
+            *)
+                DebugScriptFail 'specified $image_format is invalid'
+                echo
+                echo "$(ShowFail ' !! (--format) preset invalid')"
+                exitcode=2
+                return 1
+                ;;
+        esac
+    fi
+
     if [[ -n $usage_rights ]]; then
         case "$usage_rights" in
             reuse-with-mod)
@@ -937,8 +968,8 @@ ValidateParams()
         [[ -n $recent_type ]] && recent_search="qdr:$recent_type"
     fi
 
-    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $usage_rights_search || -n $recent_search ]]; then
-        advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$usage_rights_search,$recent_search"
+    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search ||-n $usage_rights_search || -n $recent_search ]]; then
+        advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search"
     fi
 
     DebugFuncExit
@@ -3097,7 +3128,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,input:,failures:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,format:,exclude:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
@@ -3123,3 +3154,4 @@ if [[ $exitcode -eq 0 ]]; then
 fi
 
 Finish
+
