@@ -199,7 +199,7 @@ Some servers do not report a byte file-size, so this parameter will ensure these
 Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.
 
 `-t` or `--timeout [INTEGER]`
-Number of seconds before Wget gives up. Default is 30. Maximum is 600 (10 minutes).
+Number of seconds before the downloader stops trying to get each image. Default is 30. Maximum is 600 (10 minutes).
 
 `-T` or `--title [STRING]`
 Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title false`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
