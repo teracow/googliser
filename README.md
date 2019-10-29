@@ -189,6 +189,9 @@ Only get images published this far back in time. Default is any. Preset values a
 - `month`
 - `year`
 
+`--reindex-rename`
+Downloaded image files are reindexed and renamed into a contiguous block. Note: this breaks the 1:1 relationship between URLs and downloaded file names.
+
 `-s` or `--save-links`
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
 

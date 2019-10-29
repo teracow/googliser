@@ -98,7 +98,6 @@ Init()
     lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
     recent=$RECENT_DEFAULT
     no_gallery=false
-    user_gallery_title=''
     condensed_gallery=false
     save_links=false
     colour=true
@@ -108,6 +107,10 @@ Init()
     delete_after=false
     lightning=false
     continue_with_short_results=false           # download images even if we don't have enough image links
+    links_only=false
+    reindex_rename=false                        # reindex and rename all downloaded image files
+    random_image=false
+    user_gallery_title=''
     min_pixels=''
     aspect_ratio=''
     usage_rights=''
@@ -116,10 +119,8 @@ Init()
     input_pathfile=''
     exclude_links_pathfile=''
     output_path=''
-    links_only=false
     border_thickness=$BORDER_THICKNESS_DEFAULT
     thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
-    random_image=false
 
     FindPackageManager
     BuildWorkPaths
@@ -231,6 +232,7 @@ CheckEnv()
         DebugFuncVal 'border thickness (pixels)' "$border_thickness"
         DebugFuncVar colour
         DebugFuncVar condensed_gallery
+        DebugFuncVar continue_with_short_results
         DebugFuncVar debug
         DebugFuncVar delete_after
         DebugFuncVar user_fail_limit
@@ -238,8 +240,11 @@ CheckEnv()
         DebugFuncVar exclude_links_pathfile
         DebugFuncVar user_images_requested
         DebugFuncVar gallery_images_required
+        DebugFuncVar image_type
+        DebugFuncVar image_format
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
         DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
+        DebugFuncVar lightning
         DebugFuncVar links_only
         DebugFuncVar min_pixels
         DebugFuncVar no_gallery
@@ -253,11 +258,7 @@ CheckEnv()
         DebugFuncVar skip_no_size
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncVal 'timeout (seconds)' "$timeout"
-        DebugFuncVar image_type
-        DebugFuncVar image_format
         DebugFuncVar usage_rights
-        DebugFuncVar lightning
-        DebugFuncVar continue_with_short_results
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
@@ -414,6 +415,10 @@ WhatAreMyArgs()
                 recent=$2
                 shift 2
                 ;;
+            --reindex-rename)
+                reindex_rename=true
+                shift
+                ;;
             -s|--save-links)
                 save_links=true
                 shift
@@ -558,7 +563,6 @@ DisplayHelp()
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX. Use wisely!"
     FormatHelpLine q quiet "Suppress standard output. Errors are still shown."
     FormatHelpLine '' random "Download a single, random image only"
-    FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
     FormatHelpLine '' '' "'hour'"
@@ -566,6 +570,8 @@ DisplayHelp()
     FormatHelpLine '' '' "'week'"
     FormatHelpLine '' '' "'month'"
     FormatHelpLine '' '' "'year'"
+    FormatHelpLine '' reindex-rename "Downloaded image files are reindexed and renamed into a contiguous block."
+    FormatHelpLine r retries "Retry image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine s save-links "Save URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined."
     FormatHelpLine '' thumbnails "Ensure gallery thumbnails are not larger than these dimensions: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
@@ -1071,6 +1077,17 @@ ProcessQuery()
         if [[ $links_only = false ]]; then
             GetImages
             [[ $? -gt 0 ]] && exitcode=5
+        fi
+    fi
+
+    # reindex and rename downloaded images if specified
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
+        if [[ $reindex_rename = true ]]; then
+            local reindex=0
+            for targetfile in "$target_path/"*; do
+                ((reindex++))
+                mv "$targetfile" "$target_path/$image_file_prefix($(printf "%04d" $reindex)).${targetfile##*.}"
+            done
         fi
     fi
 
@@ -3131,7 +3148,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,save-links,skip-no-size,aspect-ratio:,border-thickness:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
