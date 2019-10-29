@@ -1084,6 +1084,7 @@ ProcessQuery()
     # reindex and rename downloaded images if specified
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
         if [[ $reindex_rename = true ]]; then
+            DebugFuncOpr 'reindexing and renaming downloaded files'
             local reindex=0
             for targetfile in "$target_path/"*; do
                 ((reindex++))
