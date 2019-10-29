@@ -12,7 +12,7 @@ then
 elif [ "$OSTYPE" == "Linux" ];
 then
      LINUX_DIST=$(cat /etc/os-release | grep "^NAME=" | cut -d '=' -f2 | tr -d '"')
-     if [[ $LINUX_DIST =~ "Debian" ]]
+     if [[ $LINUX_DIST =~ "Debian" ]] || [[ $LINUX_DIST =~ "Ubuntu" ]]
      then 
          sudo apt install wget imagemagick
      fi  
