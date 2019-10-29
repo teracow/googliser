@@ -250,15 +250,16 @@ CheckEnv()
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
-        DebugFuncVar verbose
         DebugFuncVar random_image
         DebugFuncVar retries
         DebugFuncVar recent
+        DebugFuncVar reindex_rename
         DebugFuncVar save_links
         DebugFuncVar skip_no_size
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
         DebugFuncVal 'timeout (seconds)' "$timeout"
         DebugFuncVar usage_rights
+        DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
