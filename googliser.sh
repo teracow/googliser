@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191029
+    local SCRIPT_VERSION=191030
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -80,7 +80,7 @@ Init()
     # internals
     script_startseconds=$(date +%s)
     target_path_created=false
-    show_help_only=false
+    show_help=false
     exitcode=0
     local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
@@ -219,12 +219,19 @@ CheckEnv()
         fi
     fi
 
-    if [[ $show_help_only = true ]]; then
-        DisplayHelp
+    if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
+        DisplayBasicHelp
+        exitcode=2
         return 1
-    else
-        ValidateParams
     fi
+
+    if [[ $show_help = true ]]; then
+        DisplayBasicHelp
+        DisplayFullHelp
+        return 1
+    fi
+
+    ValidateParams
 
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
@@ -278,7 +285,7 @@ CheckEnv()
 
         DebugFuncVar DOWNLOADER_BIN
 
-        if [[ $no_gallery = false && $show_help_only = false ]]; then
+        if [[ $no_gallery = false && $show_help = false ]]; then
             if ! MONTAGE_BIN=$(command -v montage); then
                 SuggestInstall montage imagemagick
                 exitcode=1
@@ -311,9 +318,6 @@ WhatAreMyArgs()
     {
 
     DebugFuncVar user_parameters_raw
-
-    [[ $user_parameters_result -ne 0 ]] && { echo; exitcode=2; return 1 ;}
-    [[ $user_parameters = ' --' ]] && { show_help_only=true; exitcode=2; return 1 ;}
 
     eval set -- "$user_parameters"
 
@@ -360,7 +364,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -h|--help)
-                show_help_only=true
+                show_help=true
                 exitcode=2
                 return 1
                 ;;
@@ -474,24 +478,33 @@ WhatAreMyArgs()
 
     }
 
-DisplayHelp()
+DisplayBasicHelp()
     {
-
-    DebugFuncEntry
-
-    local SAMPLE_USER_QUERY=cows
 
     echo
     if [[ $colour = true ]]; then
-        echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
         message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
     else
-        echo " Usage: ./$SCRIPT_FILE [PARAMETERS] ..."
         message='Google images'
     fi
 
+    echo " Search '$message', download from each of the image URLs, then create a gallery image using ImageMagick."
     echo
-    echo " search '$message', download from each of the image URLs, then create a gallery image using ImageMagick."
+
+    if [[ $colour = true ]]; then
+        echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
+    else
+        echo " Usage: ./$SCRIPT_FILE [PARAMETERS] ..."
+    fi
+
+    }
+
+
+DisplayFullHelp()
+    {
+
+    local SAMPLE_USER_QUERY=cows
+
     echo
     echo " External requirements: Wget or cURL"
     echo " and optionally: identify, montage & convert (from ImageMagick)"
@@ -602,8 +615,6 @@ DisplayHelp()
 
     echo
     echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
-
-    DebugFuncExit
 
     }
 
@@ -1867,7 +1878,7 @@ Finish()
                 echo " -> $(ShowSuccess 'All done!')"
                 ;;
             [1-2])
-                if [[ $show_help_only != true ]]; then
+                if [[ $show_help != true ]]; then
                     echo
                     echo " use '-h' or '--help' to display parameter list."
                 fi
@@ -1897,7 +1908,7 @@ Finish()
         fi
     fi
 
-    [[ $show_help_only = true ]] && exitcode=0
+    [[ $show_help = true ]] && exitcode=0
 
     exit $exitcode
 
