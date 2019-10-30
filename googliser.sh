@@ -80,6 +80,7 @@ Init()
     # internals
     script_startseconds=$(date +%s)
     target_path_created=false
+    install_googliser=false
     show_help=false
     exitcode=0
     local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
@@ -130,6 +131,26 @@ Init()
     DebugScriptVal 'version' "$SCRIPT_VERSION"
     DebugScriptVal 'PID' "$$"
 
+    }
+
+InstallGoogliser()
+    {
+      case "$OSTYPE" in
+          "darwin"*)
+              xcode-select --install
+              ruby -e "$(curl -fsSL git.io/get-brew)"
+              brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
+              ;;
+          "linux"*)
+              if [ $PACKAGER_BIN != unknown ]; then
+                  sudo $PACKAGER_BIN install wget imagemagick
+              else
+                  echo "Unsupported package manager. Please install the dependencies manually"
+                  exit 1
+              fi
+              ;;
+      esac
+      sudo ln -sf googliser.sh /usr/local/bin/googliser
     }
 
 FindPackageManager()
@@ -223,6 +244,11 @@ CheckEnv()
         DisplayBasicHelp
         exitcode=2
         return 1
+    fi
+
+    if [[ $install_googliser = true ]]; then
+        InstallGoogliser
+        return 0
     fi
 
     if [[ $show_help = true ]]; then
@@ -323,6 +349,10 @@ WhatAreMyArgs()
 
     while true; do
         case $1 in
+            --install)
+                install_googliser=true
+                return 0
+                ;;
             -p|--phrase)
                 user_query=$2
                 shift 2
@@ -549,6 +579,7 @@ DisplayFullHelp()
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help then exit."
     FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
+    FormatHelpLine '' install "Install dependencies of Googliser and make googliser available globally on CLI"
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_LIMIT_DEFAULT]."
     FormatHelpLine L links-only "Only get image file URLs. Don't download any images."
     FormatHelpLine m minimum-pixels "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
@@ -3160,14 +3191,16 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,install,condensed,debug,delete-after,help,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
 CheckEnv
 
 if [[ $exitcode -eq 0 ]]; then
-    if [[ -n $input_pathfile ]]; then
+    if [[ $install_googliser ]]; then
+        :
+    elif [[ -n $input_pathfile ]]; then
         while read -r file_query; do
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
@@ -3186,4 +3219,3 @@ if [[ $exitcode -eq 0 ]]; then
 fi
 
 Finish
-
