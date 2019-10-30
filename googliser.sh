@@ -947,7 +947,7 @@ ValidateParams()
 
     if [[ -n $image_format ]]; then
         case "$image_format" in
-            jpg|svg|gif|png|bmp|svg|webp|ico|craw)
+            jpg|gif|png|bmp|svg|webp|ico|craw)
                 image_format_search="ift:$image_format"
                 ;;
             *)
@@ -2163,7 +2163,7 @@ RenameExtAsType()
             [[ $imagetype = 'CRAW' ]] && imagetype='RAW'
 
             case "$imagetype" in
-                JPEG|GIF|PNG|BMP|ICO|WEBP|RAW)
+                JPEG|GIF|PNG|BMP|SVG|ICO|WEBP|RAW)
                     # move file into temp file
                     mv "$1" "$1".tmp
 
@@ -2196,7 +2196,7 @@ AllowableFileType()
     [[ ! "$ext" = *"."* ]] && ext=''
 
     case "$ext" in
-        .jpg|.jpeg|.gif|.png|.bmp|.ico|.raw)
+        .jpg|.jpeg|.gif|.png|.bmp|.svg|.ico|.raw)
             # valid image type
             return 0
             ;;
