@@ -3198,9 +3198,10 @@ user_parameters_raw="$@"
 CheckEnv
 
 if [[ $exitcode -eq 0 ]]; then
-    if [[ $install_googliser ]]; then
-        :
-    elif [[ -n $input_pathfile ]]; then
+#    if [[ $install_googliser ]]; then
+#        :
+#    elif [[ -n $input_pathfile ]]; then
+    if [[ -n $input_pathfile ]]; then
         while read -r file_query; do
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
