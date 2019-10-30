@@ -142,7 +142,7 @@ InstallGoogliser()
               brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
               ;;
           "linux"*)
-              if [ $PACKAGER_BIN != unknown ]; then
+              if [[ $PACKAGER_BIN != unknown ]]; then
                   sudo $PACKAGER_BIN install wget imagemagick
               else
                   echo "Unsupported package manager. Please install the dependencies manually"
