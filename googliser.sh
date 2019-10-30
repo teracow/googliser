@@ -2196,7 +2196,7 @@ AllowableFileType()
     [[ ! "$ext" = *"."* ]] && ext=''
 
     case "$ext" in
-        .jpg|.jpeg|.gif|.png|.bmp|.ico)
+        .jpg|.jpeg|.gif|.png|.bmp|.ico|.raw)
             # valid image type
             return 0
             ;;
