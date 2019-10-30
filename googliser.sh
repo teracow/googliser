@@ -2195,8 +2195,8 @@ AllowableFileType()
     # if string does not have a '.' then assume no extension present
     [[ ! "$ext" = *"."* ]] && ext=''
 
-    case "$ext" in
-        .png|.jpg|.jpeg|.gif|.bmp|.svg|.ico|.webp|.raw)
+    case "${ext#.}" in
+        png|jpg|jpeg|gif|bmp|svg|ico|webp|raw)
             # valid image type
             return 0
             ;;
