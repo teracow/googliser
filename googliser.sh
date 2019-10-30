@@ -488,7 +488,7 @@ DisplayBasicHelp()
         message='Google images'
     fi
 
-    echo " Search '$message', download from each of the image URLs, then create a gallery image using ImageMagick."
+    echo " Search '$message', download each original image, then build them into a gallery image."
     echo
 
     if [[ $colour = true ]]; then
@@ -498,7 +498,6 @@ DisplayBasicHelp()
     fi
 
     }
-
 
 DisplayFullHelp()
     {
