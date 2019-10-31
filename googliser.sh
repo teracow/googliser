@@ -523,7 +523,7 @@ DisplayBasicHelp()
         message='Google images'
     fi
 
-    echo " Search '$message', download each original image, then build them into a gallery image."
+    echo " Search '$message' for images matching a phrase, then build them into a gallery image."
     echo
 
     if [[ $colour = true ]]; then
