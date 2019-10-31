@@ -135,6 +135,11 @@ Init()
 
 InstallGoogliser()
     {
+      SUDO='sudo'
+      if [[ $EUID -eq 0 ]]; then
+          SUDO=''
+      fi
+
       case "$OSTYPE" in
           "darwin"*)
               xcode-select --install
@@ -143,14 +148,14 @@ InstallGoogliser()
               ;;
           "linux"*)
               if [[ $PACKAGER_BIN != unknown ]]; then
-                  sudo $PACKAGER_BIN install wget imagemagick
+                  $SUDO $PACKAGER_BIN install wget imagemagick
               else
                   echo "Unsupported package manager. Please install the dependencies manually"
                   exit 1
               fi
               ;;
       esac
-      sudo ln -sf googliser.sh /usr/local/bin/googliser
+      $SUDO ln -sf $PWD/googliser.sh /usr/local/bin/googliser
     }
 
 FindPackageManager()
@@ -3198,10 +3203,10 @@ user_parameters_raw="$@"
 CheckEnv
 
 if [[ $exitcode -eq 0 ]]; then
-#    if [[ $install_googliser ]]; then
-#        :
-#    elif [[ -n $input_pathfile ]]; then
-    if [[ -n $input_pathfile ]]; then
+   if [[ "$install_googliser" = true ]]; then
+       :
+   elif [[ -n $input_pathfile ]]; then
+    # if [[ -n $input_pathfile ]]; then
         while read -r file_query; do
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
