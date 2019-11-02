@@ -102,18 +102,18 @@ Create the gallery in condensed mode. No padding between each thumbnail.
 Image format to download. Preset values are:
 
 - `any`
-- `black-white`
-- `transparent`
+- `black-white` or `bw`
+- `transparent` or `clear`
 - `red`
 - `orange`
 - `yellow`
 - `green`
-- `teal`
+- `teal` or `cyan`
 - `blue`
-- `purple`
+- `purple` or `magenta`
 - `pink`
 - `white`
-- `gray`
+- `gray` or `grey`
 - `black`
 - `brown`
 

@@ -577,22 +577,22 @@ DisplayFullHelp()
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All gallery images are square with no tile-padding."
     FormatHelpLine '' 'colour|color' "Image colour. Specify like '--colour green'. Presets are:"
     FormatHelpLine '' '' "'any'"
-    FormatHelpLine '' '' "'black-white'"
-    FormatHelpLine '' '' "'transparent'"
+    FormatHelpLine '' '' "'black-white' or 'bw'"
+    FormatHelpLine '' '' "'transparent' or 'clear'"
     FormatHelpLine '' '' "'red'"
     FormatHelpLine '' '' "'orange'"
     FormatHelpLine '' '' "'yellow'"
     FormatHelpLine '' '' "'green'"
-    FormatHelpLine '' '' "'teal'"
+    FormatHelpLine '' '' "'teal' or 'cyan'"
     FormatHelpLine '' '' "'blue'"
-    FormatHelpLine '' '' "'purple'"
+    FormatHelpLine '' '' "'purple' or 'magenta'"
     FormatHelpLine '' '' "'pink'"
     FormatHelpLine '' '' "'white'"
-    FormatHelpLine '' '' "'gray'"
+    FormatHelpLine '' '' "'gray' or 'grey'"
     FormatHelpLine '' '' "'black'"
     FormatHelpLine '' '' "'brown'"
-    FormatHelpLine d debug "Save the runtime debug file [$debug_file] into output directory."
-    FormatHelpLine D delete-after "Remove all downloaded images after building thumbnail gallery."
+    FormatHelpLine d debug "Save the runtime debug log [$debug_file] into output directory."
+    FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. URLs in this file will not be downloaded again."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
     FormatHelpLine '' '' "'jpg'"
@@ -1050,14 +1050,23 @@ ValidateParams()
             any)
                 image_colour_type=''
                 ;;
-            black-white)
+            black-white|bw)
                 image_colour_type='gray'
                 ;;
-            transparent)
+            transparent|clear)
                 image_colour_type='trans'
                 ;;
             red|orange|yellow|green|teal|blue|purple|pink|white|gray|black|brown)
                 image_colour_type="specific,isc:$image_colour"
+                ;;
+            cyan)
+                image_colour_type="specific,isc:teal"
+                ;;
+            magenta)
+                image_colour_type="specific,isc:purple"
+                ;;
+            grey)
+                image_colour_type="specific,isc:gray"
                 ;;
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
