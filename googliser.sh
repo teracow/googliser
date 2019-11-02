@@ -86,7 +86,7 @@ Init()
     local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
-    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0"'
+    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
 
     # user-modifiable parameters
     user_query=''
