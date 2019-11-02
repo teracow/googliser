@@ -148,7 +148,7 @@ Display this help then exit.
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`.
 
 `-l [INTEGER]` or `--lower-size [INTEGER]`
-Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but give you HTML instead.
 
 `-L` or `--links-only`
 Only get image file URLs. Don't download any images.
@@ -286,7 +286,7 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - The downloader prefers to use [GNU Wget](https://en.wikipedia.org/wiki/Wget) but can also use [cURL](https://github.com/curl/curl) if it's available.
 
-- To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually had Google return 1,000 results. Best was about 986.
+- To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually seen Google return 1,000 results. My best was about 986.
 
 - Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF), [BMP](https://en.wikipedia.org/wiki/BMP_file_format), [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), [ICO](https://en.wikipedia.org/wiki/ICO_(file_format)), [WebP](https://en.wikipedia.org/wiki/WebP) and [RAW](https://en.wikipedia.org/wiki/Raw_image_format) files are available for download.
 
@@ -300,11 +300,9 @@ This will download the first 80 available images for the phrase *"storm clouds"*
 
 - Only the first image of a multi-image file (like an animated **GIF**) will be used for its gallery image.
 
-- Thumbnail gallery building can be disabled if not required by using `--no-gallery`. Why? As a test, I built a gallery from 380 images (totalling 32.6MB) which created a file of 201MB with dimensions of 8,064 x 7,876 (63.5MP). This took **montage** a bit over 20 minutes to render on my old Atom D510 CPU. ![smiley](images/smiley.png)
+- Typically, downloads run quite fast, then get slower as the required number of images is reached because less parallel downloads are running (which I'll refer to as download slots). Sometimes downloads will appear to stall as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
 
-- Typically, downloads run quite fast and then get slower as the required number of images is reached, as less parallel downloads are running (which I'll refer to as download slots). Sometimes downloads will appear to stall, as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
-
-- Sometimes, you may also see a slowdown when downloading the last image (e.g. when something like 24 out of 25 images have downloaded without issue). This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Grab a danish to go with that coffee. ![smiley](images/smiley.png)
+- Sometimes, you may also see a slowdown when downloading the last image (e.g. when something like 24 out of 25 images have downloaded without issue). This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Grab a danish to go with that coffee.
 
 - The temporary build directory is `/tmp/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters.
 
