@@ -99,7 +99,7 @@ Thickness of border surrounding the generated gallery image in pixels. Default i
 Create the gallery in condensed mode. No padding between each thumbnail and they're all square. The default leaves some space between each thumbnail, but each thumbnail can be a different shape.
 
 `--colour [PRESET]` or `--color [PRESET]`
-Image colour. Preset values are:
+The dominant image colour. Preset values are:
 
 - `any`
 - `black-white` or `bw`
