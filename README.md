@@ -183,6 +183,9 @@ Runtime display in bland, uncoloured text.
 `-N` or `--no-gallery`
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
+`--no-safesearch`
+Disable Google's SafeSearch content-filtering. Default is enabled.
+
 `-o [PATH]` or `--output [PATH]`
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 

@@ -111,6 +111,7 @@ Init()
     links_only=false
     reindex_rename=false                        # reindex and rename all downloaded image files
     random_image=false
+    safesearch=true
     user_gallery_title=''
     min_pixels=''
     aspect_ratio=''
@@ -294,6 +295,7 @@ CheckEnv()
         DebugFuncVar retries
         DebugFuncVar recent
         DebugFuncVar reindex_rename
+        DebugFuncVar safesearch
         DebugFuncVar save_links
         DebugFuncVar skip_no_size
         DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
@@ -435,6 +437,10 @@ WhatAreMyArgs()
                 ;;
             -N|--no-gallery)
                 no_gallery=true
+                shift
+                ;;
+            --no-safesearch)
+                safesearch=false
                 shift
                 ;;
             -o|--output)
@@ -630,6 +636,7 @@ DisplayFullHelp()
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
     FormatHelpLine '' 'no-colour|no-color' "Runtime display will be in boring, uncoloured text. :("
     FormatHelpLine N no-gallery "Don't create a thumbnail gallery after downloading images."
+    FormatHelpLine '' no-safesearch "Disable Google's SafeSearch content-filtering. Default is enabled."
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
@@ -1324,8 +1331,14 @@ _GetResultPage_()
         local search_style='&site=imghp'    # result layout style
         local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
 
+        if [[ $safesearch = true ]]; then
+            local safesearch_flag='&safe=active'
+        else
+            local safesearch_flag='&safe=inactive'
+        fi
+
         # compiled search string
-        local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}\""
+        local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
@@ -3253,7 +3266,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,install,lightning,links-only,no-colour,no-color,no-gallery,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 
