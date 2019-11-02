@@ -118,7 +118,7 @@ The dominant image colour. Preset values are:
 - `brown`
 
 `-d` or `--debug`
-Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
+Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for discovering the external commands and parameters used!
 
 `-D` or `--delete-after`
 Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files. Umm, don't specify this and `--no-gallery` at the same time.
@@ -130,7 +130,7 @@ Any previously downloaded URLs will be saved into this file (if specified). Spec
 How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
 `--format [PRESET]`
-Image format to download. Preset values are:
+Only download images encoded in this file format. Preset values are:
 
 - `jpg`
 - `png`
@@ -142,13 +142,13 @@ Image format to download. Preset values are:
 - `craw`
 
 `-h` or `--help`
-Display the extended parameter help.
+Display the complete parameter list.
 
 `-i [FILE]` or `--input [FILE]`
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`.
 
 `-l [INTEGER]` or `--lower-size [INTEGER]`
-Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but give you HTML instead.
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but send HTML instead.
 
 `-L` or `--links-only`
 Only get image file URLs, don't download any images. Default is to compile a list of image file URLs, then download them.
@@ -193,7 +193,7 @@ The output directory. If unspecified, the search phrase is used. Enclose whitesp
 How many parallel image downloads? Default is 64. Maximum is 512.
 
 `-q` or `--quiet`
-Suppress standard display output. Error messages are still shown.
+Suppress stdout. stderr is still shown.
 
 `--random`
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
