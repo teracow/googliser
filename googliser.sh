@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191102
+    local SCRIPT_VERSION=191103
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -1330,11 +1330,12 @@ _GetResultPage_()
         local search_language='&hl=en'      # language
         local search_style='&site=imghp'    # result layout style
         local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+        local safesearch_flag='&safe='      # Google's SafeSearch content filter
 
         if [[ $safesearch = true ]]; then
-            local safesearch_flag='&safe=active'
+            safesearch_flag+='active'
         else
-            local safesearch_flag='&safe=inactive'
+            safesearch_flag+='inactive'
         fi
 
         # compiled search string
