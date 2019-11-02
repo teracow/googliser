@@ -75,7 +75,7 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 ***Required:***
 
-`-p` or `--phrase [STRING]`
+`-p [STRING]` or `--phrase [STRING]`
 The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "small brown cows"`
 
 
@@ -84,7 +84,7 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "smal
 `--always-download`
 Download images, even if number of original image links is less than requested.
 
-`-a` or `--aspect-ratio [PRESET]`
+`-a [PRESET]` or `--aspect-ratio [PRESET]`
 The shape of the image to download. Preset values are:
 
 - `tall`
@@ -92,11 +92,30 @@ The shape of the image to download. Preset values are:
 - `wide`
 - `panoramic`
 
-`-b` or `--border-thickness [INTEGER]`
+`-b [INTEGER]` or `--border-thickness [INTEGER]`
 Thickness of border surrounding the generated gallery image in pixels. Default is 30. Enter 0 for no border.
 
 `-C` or `--condensed`
 Create the gallery in condensed mode. No padding between each thumbnail.
+
+`--colour [PRESET]` or `--color [PRESET]`
+Image format to download. Preset values are:
+
+- `any`
+- `black-white`
+- `transparent`
+- `red`
+- `orange`
+- `yellow`
+- `green`
+- `teal`
+- `blue`
+- `purple`
+- `pink`
+- `white`
+- `gray`
+- `black`
+- `brown`
 
 `-d` or `--debug`
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for finding out what external commands and parameters were used!
@@ -107,7 +126,7 @@ Delete the downloaded images after building the thumbnail gallery. Umm, don't sp
 `--exclude [FILE]`
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
-`-f` or `--failures [INTEGER]`
+`-f [INTEGER]` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
 `--format [PRESET]`
@@ -125,16 +144,16 @@ Image format to download. Preset values are:
 `-h` or `--help`
 Display this help then exit.
 
-`-i` or `--input [FILE]`
+`-i [FILE]` or `--input [FILE]`
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`.
 
-`-l` or `--lower-size [INTEGER]`
+`-l [INTEGER]` or `--lower-size [INTEGER]`
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. I've found this setting useful for skipping files sent by servers that give me HTML instead of the JPG I requested. ![smiley](images/smiley.png)
 
 `-L` or `--links-only`
 Only get image file URLs. Don't download any images.
 
-`-m` or `--minimum-pixels [PRESET]`
+`-m [PRESET]` or `--minimum-pixels [PRESET]`
 Only download images with at least this many pixels. Preset values are:
 
 - `qsvga` (400 x 300)
@@ -155,7 +174,7 @@ Only download images with at least this many pixels. Preset values are:
 - `medium`
 - `icon`
 
-`-n` or `--number [INTEGER]`
+`-n [INTEGER]` or `--number [INTEGER]`
 Number of images to download. Default is 16. Maximum is 1,000.
 
 `--no-colour` or `--no-color`
@@ -164,10 +183,10 @@ Runtime display in bland, uncoloured text.
 `-N` or `--no-gallery`
 Don't create a thumbnail gallery. Err, don't specify this and `--delete-after` at the same time.
 
-`-o` or `--output [PATH]`
+`-o [PATH]` or `--output [PATH]`
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
-`-P` or `--parallel [INTEGER]`
+`-P [INTEGER]` or `--parallel [INTEGER]`
 How many parallel image downloads? Default is 64. Maximum is 512.
 
 `-q` or `--quiet`
@@ -176,10 +195,10 @@ Suppress standard display output. Error messages are still shown.
 `--random`
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
 
-`-r` or `--retries [INTEGER]`
+`-r [INTEGER]` or `--retries [INTEGER]`
 Number of download retries for each image. Default is 3. Maximum is 100.
 
-`-R` or `--recent [PRESET]`
+`-R [PRESET]` or `--recent [PRESET]`
 Only get images published this far back in time. Default is any. Preset values are:
 
 - `any`
@@ -201,10 +220,10 @@ Some servers do not report a byte file-size, so this parameter will ensure these
 `--thumbnails [STRING]`
 Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.
 
-`-t` or `--timeout [INTEGER]`
+`-t [INTEGER]` or `--timeout [INTEGER]`
 Number of seconds before the downloader stops trying to get each image. Default is 30. Maximum is 600 (10 minutes).
 
-`-T` or `--title [STRING]`
+`-T [STRING]` or `--title [STRING]`
 Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title false`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
 
 `--type [PRESET]`
@@ -216,7 +235,7 @@ Image type to download. Preset values are:
 - `lineart`
 - `animated`
 
-`-u` or `--upper-size [INTEGER]`
+`-u [INTEGER]` or `--upper-size [INTEGER]`
 Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
 
 `--usage-rights [PRESET]`
