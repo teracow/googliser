@@ -99,7 +99,7 @@ Thickness of border surrounding the generated gallery image in pixels. Default i
 Create the gallery in condensed mode. No padding between each thumbnail.
 
 `--colour [PRESET]` or `--color [PRESET]`
-Image format to download. Preset values are:
+Image colour. Preset values are:
 
 - `any`
 - `black-white` or `bw`
