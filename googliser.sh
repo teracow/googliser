@@ -1113,10 +1113,9 @@ ProcessQuery()
     fi
 
     echo " -> processing query: \"$user_query\""
-    local safe_search_phrase="${user_query// /+}"       # replace whitepace with '+' to suit curl/wget
+    safe_search_phrase="${user_query// /+}"     # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
-    safe_path_phrase="${user_query// /_}"               # replace whitepace with '_' so less issues later on!
-    safe_search_query="&q=$safe_search_phrase"
+    safe_path_phrase="${user_query// /_}"       # replace whitepace with '_' so less issues later on!
 
     if [[ -z $output_path ]]; then
         target_path="$current_path/$user_query"
@@ -1322,14 +1321,18 @@ _GetResultPage_()
         local group_index="$2"
         local search_group="&ijn=$((page_group-1))"
         local search_start="&start=$(((page_group-1)*100))"
-        local SERVER=www.google.com
+        local SERVER='https://www.google.com'
+        local safe_search_query="&q=$safe_search_phrase"
         local get_results_cmd=''
 
         # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-        local search_type='&tbm=isch'       # search for images
-        local search_language='&hl=en'      # language
-        local search_style='&site=imghp'    # result layout style
+        local SEARCH_TYPE='&tbm=isch'       # search for images
+        local SEARCH_LANGUAGE='&hl=en'      # language
+        local SEARCH_STYLE='&site=imghp'    # result layout style
+        local SEARCH_SIMILAR='&filter=0'    # don't omit similar results
+
         local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+
         local safesearch_flag='&safe='      # Google's SafeSearch content filter
 
         if [[ $safesearch = true ]]; then
@@ -1339,7 +1342,7 @@ _GetResultPage_()
         fi
 
         # compiled search string
-        local search_string="\"https://$SERVER/search?${search_type}${search_match_type}${safe_search_query}${search_language}${search_style}${search_group}${search_start}${advanced_search}${safesearch_flag}\""
+        local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_group}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
