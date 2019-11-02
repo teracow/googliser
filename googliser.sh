@@ -529,7 +529,7 @@ DisplayBasicHelp()
         message='Google images'
     fi
 
-    echo " Search '$message' for images matching a phrase, then build them into a gallery image."
+    echo " Search '$message' for a number of images matching a phrase, then compile them into a gallery."
     echo
 
     if [[ $display_colour = true ]]; then
@@ -560,7 +560,7 @@ DisplayFullHelp()
         echo " * Required *"
     fi
 
-    FormatHelpLine "p" "phrase" "Phrase to search for. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
+    FormatHelpLine "p" "phrase" "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
     if [[ $display_colour = true ]]; then
         echo " $(ColourTextBrightOrange "* Optional *")"
@@ -671,8 +671,7 @@ DisplayFullHelp()
     fi
 
     echo
-    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY' and build them into a gallery image."
-
+    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY', and build them into a gallery image."
     }
 
 ValidateParams()
@@ -1973,7 +1972,7 @@ Finish()
             [1-2])
                 if [[ $show_help != true ]]; then
                     echo
-                    echo " use '-h' or '--help' to display parameter list."
+                    echo " use '-h' or '--help' to display the complete parameter list."
                 fi
                 ;;
             [3-6])
