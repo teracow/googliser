@@ -579,7 +579,7 @@ DisplayFullHelp()
     else
         echo " * Optional *"
     fi
-    FormatHelpLine A always-download "Continue to download images, even if number of original image links is less than requested."
+    FormatHelpLine A always-download "Always download images, no matter what else happens. Unlimited failures!"
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '--aspect-ratio square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
     FormatHelpLine '' '' "'square'"
@@ -716,6 +716,10 @@ ValidateParams()
     local recent_search=''
     local image_colour_type=''
     local image_colour_search=''
+
+    if [[ $continue_with_short_results = true ]]; then
+        user_fail_limit=0
+    fi
 
     if [[ $links_only = true ]]; then
         no_gallery=true
@@ -1787,7 +1791,6 @@ ParseResults()
                 echo " Try your search again with additional options:"
                 [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
                 echo "    - grab as many images as possible: '-A'"
-                echo "    - consider raising the failure limit: '-f0'"
                 exitcode=4
             fi
         fi

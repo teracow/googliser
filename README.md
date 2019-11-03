@@ -82,7 +82,7 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "smal
 ***Optional:***
 
 `-A` or `--always-download`
-Download images, even if number of original image links is less than requested. Default is to abort if the number of image links found is insufficient.
+Let nothing stand in your way! Download images, even if the number of original image links is less than requested. Default is to abort if the number of image links found is insufficient. Unlimited failures are also permitted.
 
 `-a [PRESET]` or `--aspect-ratio [PRESET]`
 The shape of the image to download. Preset values are:
