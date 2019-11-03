@@ -151,14 +151,14 @@ InstallGoogliser()
               ;;
           "linux"*)
               if [[ $PACKAGER_BIN != unknown ]]; then
-                  $SUDO $PACKAGER_BIN install wget imagemagick
+                  $SUDO "$PACKAGER_BIN" install wget imagemagick
               else
                   echo "Unsupported package manager. Please install the dependencies manually"
                   exit 1
               fi
               ;;
       esac
-      $SUDO ln -sf $PWD/googliser.sh /usr/local/bin/googliser
+      $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
     }
 
 FindPackageManager()
@@ -3290,7 +3290,7 @@ esac
 
 user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
-user_parameters_raw="$@"
+user_parameters_raw="$*"
 
 CheckEnv
 
