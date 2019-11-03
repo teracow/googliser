@@ -2169,8 +2169,14 @@ ShowGetImagesProgress()
 #            if [[ $continue_with_short_results = true ]]; then
 #                fail_limit_adjusted=$((fail_limit-success_count))
 #            else
-                fail_limit_adjusted=$fail_limit
+#                fail_limit_adjusted=$fail_limit
 #            fi
+
+            if [[ $user_fail_limit -ge $results_received ]]; then
+                fail_limit_adjusted=$fail_count
+            else
+                fail_limit_adjusted=$fail_limit
+            fi
 
             if [[ $display_colour = true ]]; then
                 progress_message+="$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")"
