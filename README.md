@@ -148,8 +148,8 @@ Only download images encoded in this file format. Preset values are:
 `-h` or `--help`
 Display the complete parameter list.
 
-`-i [FILE]` or `--input [FILE]`
-Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`.
+`-i [FILE]` or `--input-phrases [FILE]`
+Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`. One phrase per line.
 
 `-l [INTEGER]` or `--lower-size [INTEGER]`
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but send HTML instead.

@@ -52,7 +52,7 @@
 Init()
     {
 
-    local SCRIPT_VERSION=191103
+    local SCRIPT_VERSION=191104
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
@@ -417,7 +417,7 @@ WhatAreMyArgs()
                 exitcode=2
                 return 1
                 ;;
-            -i|--input)
+            -i|--input-phrases)
                 input_pathfile=$2
                 shift 2
                 ;;
@@ -619,7 +619,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'craw'"
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help."
-    FormatHelpLine i input "A text file containing a list of phrases to download. One phrase per line."
+    FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_LIMIT_DEFAULT]."
     FormatHelpLine L links-only "Compile a list of image URLs, but don't download any images."
@@ -3292,7 +3292,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
