@@ -1475,12 +1475,10 @@ GetImages()
 
     if [[ $result -eq 1 ]]; then
         DebugFuncFail 'failure limit reached' "$fail_count/$fail_limit"
-
-        if [[ $display_colour = true ]]; then
-            echo "$(ColourTextBrightRed 'Too many failures!')"
-        else
-            echo "Too many failures!"
-        fi
+        echo; echo
+        echo " Try your search again with additional options:"
+        [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
+        echo "    - consider raising the failure limit: '-f0'"
     else
         if [[ $result_index -eq $results_received && $continue_with_short_results = false ]]; then
             DebugFuncFail 'links list exhausted' "$result_index/$results_received"
@@ -1771,28 +1769,26 @@ ParseResults()
     fi
 
     if [[ $verbose = true ]]; then
-        if [[ $results_received -gt 0 ]]; then
-            if [[ $display_colour = true ]]; then
-                if [[ $results_received -ge $max_results_required ]]; then
-                    echo "($(ColourTextBrightGreen "$results_received") results)"
-                elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
-                    echo "($(ColourTextBrightOrange "$results_received") results)"
-                elif [[ $results_received -lt $user_images_requested ]]; then
-                    echo "($(ColourTextBrightRed "$results_received") results)"
-                fi
-            else
-                echo "($results_received results)"
-            fi
-
-            if [[ $results_received -lt $user_images_requested && $continue_with_short_results = false ]]; then
-                echo "$(ShowFail " !! unable to download enough Google search results")"
-                exitcode=4
+        if [[ $display_colour = true ]]; then
+            if [[ $results_received -ge $max_results_required ]]; then
+                echo "($(ColourTextBrightGreen "$results_received") results)"
+            elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
+                echo "($(ColourTextBrightOrange "$results_received") results)"
+            elif [[ $results_received -lt $user_images_requested ]]; then
+                echo "($(ColourTextBrightRed "$results_received") results)"
             fi
         else
-            if [[ $display_colour = true ]]; then
-                echo "($(ColourTextBrightRed 'no results!'))"
-            else
-                echo "(no results!)"
+            echo "($results_received results)"
+        fi
+
+        if [[ $results_received -lt $user_images_requested ]]; then
+            if [[ $continue_with_short_results = false ]]; then
+                echo
+                echo " Try your search again with additional options:"
+                [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
+                echo "    - grab as many images as possible: '-A'"
+                echo "    - consider raising the failure limit: '-f0'"
+                exitcode=4
             fi
         fi
     fi
