@@ -2137,11 +2137,11 @@ ShowGetImagesProgress()
     local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
-        if [[ $continue_with_short_results = true ]]; then
-            gallery_images_required_adjusted=$((gallery_images_required-fail_count))
-        else
+#        if [[ $continue_with_short_results = true ]]; then
+#            gallery_images_required_adjusted=$((gallery_images_required-fail_count))
+#        else
             gallery_images_required_adjusted=$gallery_images_required
-        fi
+#        fi
 
         if [[ $display_colour = true ]]; then
             progress_message="$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")"
@@ -2166,11 +2166,11 @@ ShowGetImagesProgress()
         if [[ $fail_count -gt 0 ]]; then
             progress_message+=' and '
 
-            if [[ $continue_with_short_results = true ]]; then
-                fail_limit_adjusted=$((fail_limit-success_count))
-            else
+#            if [[ $continue_with_short_results = true ]]; then
+#                fail_limit_adjusted=$((fail_limit-success_count))
+#            else
                 fail_limit_adjusted=$fail_limit
-            fi
+#            fi
 
             if [[ $display_colour = true ]]; then
                 progress_message+="$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")"
