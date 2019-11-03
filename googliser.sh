@@ -120,7 +120,8 @@ Init()
     image_colour=''
     image_type=''
     image_format=''
-    input_pathfile=''
+    input_phrases_pathfile=''
+    input_links_pathfile=''
     exclude_links_pathfile=''
     output_path=''
     border_thickness=$BORDER_THICKNESS_DEFAULT
@@ -279,7 +280,8 @@ CheckEnv()
         DebugFuncVar delete_after
         DebugFuncVar exact_search
         DebugFuncVar user_fail_limit
-        DebugFuncVar input_pathfile
+        DebugFuncVar input_phrases_pathfile
+        DebugFuncVar input_links_pathfile
         DebugFuncVar exclude_links_pathfile
         DebugFuncVar user_images_requested
         DebugFuncVar gallery_images_required
@@ -360,10 +362,6 @@ WhatAreMyArgs()
 
     while true; do
         case $1 in
-            --install)
-                install_googliser=true
-                return 0
-                ;;
             -p|--phrase)
                 user_query=$2
                 shift 2
@@ -417,9 +415,17 @@ WhatAreMyArgs()
                 exitcode=2
                 return 1
                 ;;
-            -i|--input-phrases)
-                input_pathfile=$2
+            --input-links)
+                input_links_pathfile=$2
                 shift 2
+                ;;
+            -i|--input-phrases)
+                input_phrases_pathfile=$2
+                shift 2
+                ;;
+            --install)
+                install_googliser=true
+                return 0
                 ;;
             -l|--lower-size)
                 lower_size_limit=$2
@@ -619,6 +625,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'craw'"
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
     FormatHelpLine h help "Display this help."
+    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_LIMIT_DEFAULT]."
@@ -770,11 +777,21 @@ ValidateParams()
         gallery_images_required=$user_images_requested
     fi
 
-    if [[ -n $input_pathfile ]]; then
-        if [[ ! -e $input_pathfile ]]; then
-            DebugScriptFail '$input_pathfile was not found'
+    if [[ -n $input_links_pathfile ]]; then
+        if [[ ! -e $input_links_pathfile ]]; then
+            DebugScriptFail '$input_links_pathfile was not found'
             echo
-            echo "$(ShowFail ' !! input file  (-i, --input) was not found')"
+            echo "$(ShowFail ' !! input links file  (--input-links) was not found')"
+            exitcode=2
+            return 1
+        fi
+    fi
+
+    if [[ -n $input_phrases_pathfile ]]; then
+        if [[ ! -e $input_phrases_pathfile ]]; then
+            DebugScriptFail '$input_phrases_pathfile was not found'
+            echo
+            echo "$(ShowFail ' !! input phrases file  (-i, --input-phrases) was not found')"
             exitcode=2
             return 1
         fi
@@ -1135,7 +1152,7 @@ ProcessQuery()
     if [[ -z $output_path ]]; then
         target_path="$current_path/$user_query"
     else
-        if [[ -n $input_pathfile ]]; then
+        if [[ -n $input_phrases_pathfile ]]; then
             target_path="$output_path/$user_query"
         else
             target_path="$output_path"
@@ -2024,7 +2041,7 @@ Finish()
 
     # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
     if [[ $debug = true ]]; then
-        if [[ -n $input_pathfile || $target_path_created = false ]]; then
+        if [[ -n $input_phrases_pathfile || $target_path_created = false ]]; then
             [[ -e $current_path/$debug_file ]] && echo "" >> "$current_path/$debug_file"
             cat "$debug_pathfile" >> "$current_path/$debug_file"
         else
@@ -3292,7 +3309,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
@@ -3301,19 +3318,19 @@ CheckEnv
 if [[ $exitcode -eq 0 ]]; then
     if [[ "$install_googliser" = true ]]; then
         :
-    elif [[ -n $input_pathfile ]]; then
+    elif [[ -n $input_phrases_pathfile ]]; then
         while read -r file_query; do
             if [[ -n $file_query ]]; then
                 if [[ $file_query != \#* ]]; then
                     user_query="$file_query"
                     ProcessQuery
                 else
-                    DebugScriptWarn 'ignoring phrase listfile comment line'
+                    DebugScriptWarn 'ignoring comment line in input phrases file'
                 fi
             else
-                DebugScriptWarn 'ignoring phrase listfile empty line'
+                DebugScriptWarn 'ignoring empty line in input phrases file'
             fi
-        done < "$input_pathfile"
+        done < "$input_phrases_pathfile"
     else
         ProcessQuery
     fi
