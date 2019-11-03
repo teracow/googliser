@@ -1397,7 +1397,7 @@ _GetResultPage_()
         DebugChildSuccess 'get search results'
     else
         mv "$run_pathfile" "$fail_pathfile"
-        DebugChildFail "downloader returned \"$result: $(Downloader_ReturnCodes "$result")\""
+        DebugChildFail "downloader returned \"$result: $(DownloaderReturnCodes "$result")\""
     fi
 
     DebugChildElapsedTime "$func_startseconds"
@@ -1655,7 +1655,7 @@ _GetImage_()
                 [[ $skip_no_size = true ]] && get_download=false
             fi
         else
-            DebugChildFail "pre-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            DebugChildFail "pre-downloader returned: \"$result: $(DownloaderReturnCodes "$result")\""
 
             [[ $skip_no_size = true ]] && get_download=false || estimated_size=unknown
         fi
@@ -1702,11 +1702,11 @@ _GetImage_()
                 DebugChildFail 'image size'
             fi
         else
-            _MoveToFail_ "image-download:result:$(Downloader_ReturnCodes "$result")"
-            DebugChildFail "post-downloader returned: \"$result: $(Downloader_ReturnCodes "$result")\""
+            _MoveToFail_ "image-download:result:$(DownloaderReturnCodes "$result")"
+            DebugChildFail "post-downloader returned: \"$result: $(DownloaderReturnCodes "$result")\""
         fi
     else
-        _MoveToFail_ "image-size:pre-download:$(Downloader_ReturnCodes "$result")"
+        _MoveToFail_ "image-size:pre-download:$(DownloaderReturnCodes "$result")"
         DebugChildFail 'image download'
     fi
 
@@ -2772,7 +2772,7 @@ FormatLink()
 
     }
 
-Downloader_ReturnCodes()
+DownloaderReturnCodes()
     {
 
     # $1 = downloader return code
