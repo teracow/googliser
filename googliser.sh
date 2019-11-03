@@ -104,6 +104,7 @@ Init()
     display_colour=true
     verbose=true
     debug=false
+    exact_search=false
     skip_no_size=false
     delete_after=false
     lightning=false
@@ -276,6 +277,7 @@ CheckEnv()
         DebugFuncVar continue_with_short_results
         DebugFuncVar debug
         DebugFuncVar delete_after
+        DebugFuncVar exact_search
         DebugFuncVar user_fail_limit
         DebugFuncVar input_pathfile
         DebugFuncVar exclude_links_pathfile
@@ -366,7 +368,7 @@ WhatAreMyArgs()
                 user_query=$2
                 shift 2
                 ;;
-            --always-download)
+            -A|--always-download)
                 continue_with_short_results=true
                 shift
                 ;;
@@ -392,6 +394,10 @@ WhatAreMyArgs()
                 ;;
             -D|--delete-after)
                 delete_after=true
+                shift
+                ;;
+            -E|--exact-search)
+                exact_search=true
                 shift
                 ;;
             --exclude)
@@ -566,14 +572,14 @@ DisplayFullHelp()
         echo " * Required *"
     fi
 
-    FormatHelpLine "p" "phrase" "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
+    FormatHelpLine p phrase "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
     if [[ $display_colour = true ]]; then
         echo " $(ColourTextBrightOrange "* Optional *")"
     else
         echo " * Optional *"
     fi
-    FormatHelpLine '' always-download "Continue to download images, even if number of original image links is less than requested."
+    FormatHelpLine A always-download "Continue to download images, even if number of original image links is less than requested."
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '--aspect-ratio square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
     FormatHelpLine '' '' "'square'"
@@ -599,6 +605,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'brown'"
     FormatHelpLine d debug "Save the runtime debug log [$debug_file] into output directory."
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
+    FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. URLs in this file will not be downloaded again."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
     FormatHelpLine '' '' "'jpg'"
@@ -1331,7 +1338,13 @@ _GetResultPage_()
         local SEARCH_STYLE='&site=imghp'    # result layout style
         local SEARCH_SIMILAR='&filter=0'    # don't omit similar results
 
-        local search_match_type='&nfpr=1'   # perform exact string search - does not show most likely match results or suggested search.
+        local search_match_type='&nfpr='    # exact or loose (suggested) search
+
+        if [[ $exact_search = true ]]; then
+            search_match_type+='1'
+        else
+            search_match_type+='0'
+        fi
 
         local safesearch_flag='&safe='      # Google's SafeSearch content filter
 
@@ -3270,7 +3283,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o C,d,D,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$@"
 

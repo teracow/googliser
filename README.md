@@ -70,7 +70,7 @@ These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-CdDhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-ACdDEhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required:***
@@ -81,7 +81,7 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "smal
 
 ***Optional:***
 
-`--always-download`
+`-A` or `--always-download`
 Download images, even if number of original image links is less than requested. Default is to abort if the number of image links found is insufficient.
 
 `-a [PRESET]` or `--aspect-ratio [PRESET]`
@@ -122,6 +122,9 @@ Put the debug log into the image sub-directory afterward. If selected, debugging
 
 `-D` or `--delete-after`
 Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files. Umm, don't specify this and `--no-gallery` at the same time.
+
+`-E` or `--exact-search`
+Perform an exact search only. Disregard Google suggestions and loose matches. Default is to perform a loose search.
 
 `--exclude [FILE]`
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
