@@ -587,8 +587,9 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'panoramic'"
     FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All gallery images are square with no tile-padding."
-    FormatHelpLine '' 'colour|color' "The dominant image colour. Specify like '--colour green'. Presets are:"
+    FormatHelpLine '' 'colour|color' "The dominant image colour. Specify like '--colour green'. Default is 'any'. Presets are:"
     FormatHelpLine '' '' "'any'"
+    FormatHelpLine '' '' "'full' (colour images only)"
     FormatHelpLine '' '' "'black-white' or 'bw'"
     FormatHelpLine '' '' "'transparent' or 'clear'"
     FormatHelpLine '' '' "'red'"
@@ -1066,6 +1067,9 @@ ValidateParams()
         case "$image_colour" in
             any)
                 image_colour_type=''
+                ;;
+            full)
+                image_colour_type='color'
                 ;;
             black-white|bw)
                 image_colour_type='gray'

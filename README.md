@@ -99,9 +99,10 @@ Thickness of border surrounding the generated gallery image in pixels. Default i
 Create the gallery in condensed mode. No padding between each thumbnail and they're all square. The default leaves some space between each thumbnail, but each thumbnail can be a different shape.
 
 `--colour [PRESET]` or `--color [PRESET]`
-The dominant image colour. Preset values are:
+The dominant image colour. Specify like `--colour green`. Default is 'any'. Preset values are:
 
 - `any`
+- `full` (colour images only)
 - `black-white` or `bw`
 - `transparent` or `clear`
 - `red`
@@ -205,7 +206,7 @@ Download a single random image. Use `-n --number` to set the size of the image p
 Number of download retries for each image. Default is 3. Maximum is 100.
 
 `-R [PRESET]` or `--recent [PRESET]`
-Only get images published this far back in time. Default is any. Preset values are:
+Only get images published this far back in time. Default is 'any'. Preset values are:
 
 - `any`
 - `hour`
