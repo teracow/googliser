@@ -52,10 +52,17 @@
 Init()
     {
 
+    # script constants
     local SCRIPT_VERSION=191104
     SCRIPT_FILE=googliser.sh
+    IMAGE_FILE_PREFIX=google-image
+    GALLERY_FILE_PREFIX=googliser-gallery
+    DEBUG_FILE=debug.log
+    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
+    local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    SCRIPT_STARTSECONDS=$(date +%s)
 
-    # parameter defaults
+    # parameter default constants
     BORDER_THICKNESS_DEFAULT=30
     FAIL_LIMIT_DEFAULT=32
     IMAGES_REQUESTED_DEFAULT=16
@@ -66,29 +73,27 @@ Init()
     UPPER_SIZE_LIMIT_DEFAULT=0
     RETRIES_DEFAULT=3
 
-    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
-    fail_limit=$FAIL_LIMIT_DEFAULT
-    max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
-    gallery_title=''
-
-    # parameter limits
+    # limits
     GOOGLE_MAX=1000
     PARALLEL_MAX=512
     TIMEOUT_MAX=600
     RETRIES_MAX=100
 
-    # internals
-    script_startseconds=$(date +%s)
-    target_path_created=false
-    install_googliser=false
-    show_help=false
-    exitcode=0
-    local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    # script-variables
+    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
+    fail_limit=$FAIL_LIMIT_DEFAULT
+    max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
-    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
+    imagelinks_file=download.links.list
+    gallery_title=''
+    current_path="$PWD"
+    exitcode=0
 
-    # user-modifiable parameters
+    # script-variable flags
+    target_path_created=false
+
+    # user-variable parameters
     border_thickness=$BORDER_THICKNESS_DEFAULT
     lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
@@ -99,12 +104,14 @@ Init()
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
 
+    # user-variable options
     always_download=false
     condensed_gallery=false
     debug=false
     delete_after=false
     display_colour=true
     exact_search=false
+    install_googliser=false
     lightning_mode=false
     links_only=false
     no_gallery=false
@@ -112,9 +119,11 @@ Init()
     reindex_rename=false
     safesearch=true
     save_links=false
+    show_help=false
     skip_no_size=false
     verbose=true
 
+    # user-variable strings
     aspect_ratio=''
     exclude_links_pathfile=''
     image_colour=''
@@ -208,12 +217,7 @@ BuildWorkPaths()
 
         }
 
-    image_file_prefix=google-image
-    test_file=test-image          # this is used during size testing
-    imagelinks_file=download.links.list
-    debug_file=debug.log
-    gallery_name=googliser-gallery
-    current_path="$PWD"
+    local test_file=test-image          # used during image filesize testing
 
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
@@ -241,7 +245,7 @@ BuildWorkPaths()
     gallery_thumbnails_pathfile="$TEMP_PATH/gallery.thumbnails.png"
     gallery_background_pathfile="$TEMP_PATH/gallery.background.png"
     imagelinks_pathfile="$TEMP_PATH/$imagelinks_file"
-    debug_pathfile="$TEMP_PATH/$debug_file"
+    debug_pathfile="$TEMP_PATH/$DEBUG_FILE"
 
     unset -f Flee
 
@@ -624,7 +628,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'gray' or 'grey'"
     FormatHelpLine '' '' "'black'"
     FormatHelpLine '' '' "'brown'"
-    FormatHelpLine d debug "Save the runtime debug log [$debug_file] into output directory."
+    FormatHelpLine d debug "Save the runtime debug log [$DEBUG_FILE] into output directory."
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. URLs in this file will not be downloaded again."
@@ -1244,7 +1248,7 @@ ProcessPhrase()
             local reindex=0
             for targetfile in "$target_path/"*; do
                 ((reindex++))
-                mv "$targetfile" "$target_path/$image_file_prefix($(printf "%04d" $reindex)).${targetfile##*.}"
+                mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
             done
         fi
     fi
@@ -1259,7 +1263,7 @@ ProcessPhrase()
                 exitcode=6
             else
                 if [[ $delete_after = true ]]; then
-                    rm -f "$target_path/$image_file_prefix"*
+                    rm -f "$target_path/$IMAGE_FILE_PREFIX"*
                 fi
             fi
         fi
@@ -1539,7 +1543,7 @@ GetImages()
     DebugFuncVal 'downloads failed' "$fail_count"
 
     if [[ $result -le 1 ]]; then
-        download_bytes="$($DU_BIN "$target_path/$image_file_prefix"* -cb | tail -n1 | cut -f1)"
+        download_bytes="$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)"
         DebugFuncVal 'downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
         download_seconds="$(($(date +%s)-func_startseconds))"
@@ -1665,7 +1669,7 @@ _GetImage_()
 
     [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
-    local targetimage_pathfileext="$target_path/$image_file_prefix($link_index)$ext"
+    local targetimage_pathfileext="$target_path/$IMAGE_FILE_PREFIX($link_index)$ext"
 
     # apply file size limits before download?
     if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
@@ -1980,7 +1984,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$gallery_name-($safe_path_phrase).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-($safe_path_phrase).png\""
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
@@ -2051,17 +2055,17 @@ Finish()
 
     # write results into debug file
     DebugScriptNow
-    DebugScriptElapsedTime "$script_startseconds"
+    DebugScriptElapsedTime "$SCRIPT_STARTSECONDS"
     DebugScriptExit
 
     # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
     if [[ $debug = true ]]; then
         if [[ -n $input_phrases_pathfile || $target_path_created = false ]]; then
-            [[ -e $current_path/$debug_file ]] && echo "" >> "$current_path/$debug_file"
-            cat "$debug_pathfile" >> "$current_path/$debug_file"
+            [[ -e $current_path/$DEBUG_FILE ]] && echo "" >> "$current_path/$DEBUG_FILE"
+            cat "$debug_pathfile" >> "$current_path/$DEBUG_FILE"
         else
-            [[ -e $target_path/$debug_file ]] && echo "" >> "$target_path/$debug_file"
-            cp -f "$debug_pathfile" "$target_path/$debug_file"
+            [[ -e $target_path/$DEBUG_FILE ]] && echo "" >> "$target_path/$DEBUG_FILE"
+            cp -f "$debug_pathfile" "$target_path/$DEBUG_FILE"
         fi
     fi
 
@@ -2397,7 +2401,7 @@ CTRL_C_Captured()
         # remove any image files where processing by [_GetImage_] was incomplete
         for existing_pathfile in "$download_run_count_path"/*; do
             existing_file="$(basename "$existing_pathfile")"
-            rm -f "$target_path/$image_file_prefix($existing_file)".*
+            rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
             DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
         done
     fi
