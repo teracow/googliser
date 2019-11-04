@@ -63,25 +63,25 @@ Init()
     SCRIPT_STARTSECONDS=$(date +%s)
 
     # parameter default constants
-    BORDER_THICKNESS_DEFAULT=30
     FAIL_LIMIT_DEFAULT=32
+    GALLERY_BORDER_PIXELS_DEFAULT=30
     IMAGES_REQUESTED_DEFAULT=16
-    LOWER_SIZE_LIMIT_DEFAULT=1000
+    LOWER_SIZE_BYTES_DEFAULT=1000
     PARALLEL_LIMIT_DEFAULT=64
     THUMBNAIL_DIMENSIONS_DEFAULT=400x400
-    TIMEOUT_DEFAULT=30
-    UPPER_SIZE_LIMIT_DEFAULT=0
+    TIMEOUT_SECONDS_DEFAULT=30
+    UPPER_SIZE_BYTES_DEFAULT=0
     RETRIES_DEFAULT=3
 
     # limits
-    GOOGLE_MAX=1000
+    GOOGLE_RESULTS_MAX=1000
     PARALLEL_MAX=512
-    TIMEOUT_MAX=600
+    TIMEOUT_SECONDS_MAX=600
     RETRIES_MAX=100
 
     # script-variables
-    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     fail_limit=$FAIL_LIMIT_DEFAULT
+    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
@@ -94,13 +94,13 @@ Init()
     target_path_created=false
 
     # user-variable parameters
-    border_thickness=$BORDER_THICKNESS_DEFAULT
-    lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
+    gallery_border_pixels=$GALLERY_BORDER_PIXELS_DEFAULT
+    lower_size_bytes=$LOWER_SIZE_BYTES_DEFAULT
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
     retries=$RETRIES_DEFAULT
     thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
-    timeout=$TIMEOUT_DEFAULT
-    upper_size_limit=$UPPER_SIZE_LIMIT_DEFAULT
+    timeout_seconds=$TIMEOUT_SECONDS_DEFAULT
+    upper_size_bytes=$UPPER_SIZE_BYTES_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
 
@@ -288,46 +288,46 @@ CheckEnv()
 
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
-        DebugFuncVar aspect_ratio
-        DebugFuncVal 'border thickness (pixels)' "$border_thickness"
-        DebugFuncVar display_colour
-        DebugFuncVar image_colour
-        DebugFuncVar condensed_gallery
         DebugFuncVar always_download
+        DebugFuncVar aspect_ratio
+        DebugFuncVar condensed_gallery
         DebugFuncVar debug
         DebugFuncVar delete_after
+        DebugFuncVar display_colour
         DebugFuncVar exact_search
-        DebugFuncVar user_fail_limit
+        DebugFuncVar exclude_links_pathfile
+        DebugFuncVar image_colour
+        DebugFuncVar image_format
+        DebugFuncVar image_type
         DebugFuncVar input_phrases_pathfile
         DebugFuncVar input_links_pathfile
-        DebugFuncVar exclude_links_pathfile
-        DebugFuncVar user_images_requested
+        DebugFuncVar gallery_border_pixels
         DebugFuncVar gallery_images_required
-        DebugFuncVar image_type
-        DebugFuncVar image_format
-        DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
-        DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
         DebugFuncVar lightning_mode
         DebugFuncVar links_only
+        DebugFuncVar lower_size_bytes
         DebugFuncVar min_pixels
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
         DebugFuncVar random_image
-        DebugFuncVar retries
         DebugFuncVar recent
         DebugFuncVar reindex_rename
+        DebugFuncVar retries
         DebugFuncVar safesearch
         DebugFuncVar save_links
         DebugFuncVar skip_no_size
-        DebugFuncVal 'thumbnail dimensions (pixels W x H)' "$thumbnail_dimensions"
-        DebugFuncVal 'timeout (seconds)' "$timeout"
+        DebugFuncVar thumbnail_dimensions
+        DebugFuncVar timeout_seconds
+        DebugFuncVar upper_size_bytes
         DebugFuncVar usage_rights
+        DebugFuncVar user_fail_limit
+        DebugFuncVar user_images_requested
         DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
-        DebugFuncVal 'maximum results possible' "$(DisplayThousands "$GOOGLE_MAX")"
+        DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
         DebugFuncVar max_results_required
@@ -393,7 +393,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -b|--border-thickness)
-                border_thickness=$2
+                gallery_border_pixels=$2
                 shift 2
                 ;;
             -C|--condensed)
@@ -446,7 +446,7 @@ WhatAreMyArgs()
                 return 0
                 ;;
             -l|--lower-size)
-                lower_size_limit=$2
+                lower_size_bytes=$2
                 shift 2
                 ;;
             -L|--links-only)
@@ -514,7 +514,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -t|--timeout)
-                timeout=$2
+                timeout_seconds=$2
                 shift 2
                 ;;
             -T|--title)
@@ -530,7 +530,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -u|--upper-size)
-                upper_size_limit=$2
+                upper_size_bytes=$2
                 shift 2
                 ;;
             --usage-rights)
@@ -609,7 +609,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'square'"
     FormatHelpLine '' '' "'wide'"
     FormatHelpLine '' '' "'panoramic'"
-    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
+    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$GALLERY_BORDER_PIXELS_DEFAULT]. Use '0' for no border."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All gallery images are square with no tile-padding."
     FormatHelpLine '' 'colour|color' "The dominant image colour [any]. Specify like '--colour green'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -641,12 +641,12 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'webp'"
     FormatHelpLine '' '' "'ico'"
     FormatHelpLine '' '' "'craw'"
-    FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_MAX)."
+    FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_RESULTS_MAX)."
     FormatHelpLine h help "Display this help."
     FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
-    FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_LIMIT_DEFAULT]."
+    FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_BYTES_DEFAULT]."
     FormatHelpLine L links-only "Compile a list of image URLs, but don't download any images."
     FormatHelpLine m minimum-pixels "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
     FormatHelpLine '' '' "'qsvga' (400 x 300)"
@@ -666,7 +666,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'large'"
     FormatHelpLine '' '' "'medium'"
     FormatHelpLine '' '' "'icon'"
-    FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_MAX."
+    FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_RESULTS_MAX."
     FormatHelpLine '' 'no-colour|no-color' "Runtime display will be in boring, uncoloured text. :("
     FormatHelpLine N no-gallery "Don't create a thumbnail gallery after downloading images."
     FormatHelpLine '' no-safesearch "Disable Google's SafeSearch content-filtering. Default is enabled."
@@ -686,7 +686,7 @@ DisplayFullHelp()
     FormatHelpLine s save-links "Save image URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
-    FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_DEFAULT]. Maximum of $TIMEOUT_MAX."
+    FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
     FormatHelpLine '' '' "'face'"
@@ -694,7 +694,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'clipart'"
     FormatHelpLine '' '' "'lineart'"
     FormatHelpLine '' '' "'animated'"
-    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_LIMIT_DEFAULT]. Use '0' for unlimited."
+    FormatHelpLine u upper-size "Only download images that are smaller than this many bytes [$UPPER_SIZE_BYTES_DEFAULT]. Use '0' for unlimited."
     FormatHelpLine '' usage-rights "Original image usage rights. Specify like '--usage-rights reuse'. Presets are:"
     FormatHelpLine '' '' "'reuse'"
     FormatHelpLine '' '' "'reuse-with-mod'"
@@ -755,7 +755,7 @@ ValidateParams()
 
     if [[ $lightning_mode = true ]]; then
         # Yeah!
-        timeout=1
+        timeout_seconds=1
         retries=0
         skip_no_size=true
         parallel_limit=512
@@ -782,9 +782,9 @@ ValidateParams()
                 DebugFuncVarAdjust '$user_images_requested TOO LOW so set to a sensible minimum' "$user_images_requested"
             fi
 
-            if [[ $user_images_requested -gt $GOOGLE_MAX ]]; then
-                user_images_requested=$GOOGLE_MAX
-                DebugThis '~ $user_images_requested TOO HIGH so set as $GOOGLE_MAX' "$user_images_requested"
+            if [[ $user_images_requested -gt $GOOGLE_RESULTS_MAX ]]; then
+                user_images_requested=$GOOGLE_RESULTS_MAX
+                DebugThis '~ $user_images_requested TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_images_requested"
             fi
             ;;
     esac
@@ -829,13 +829,13 @@ ValidateParams()
             ;;
         *)
             if [[ $user_fail_limit -le 0 ]]; then
-                user_fail_limit=$GOOGLE_MAX
-                DebugThis '~ $user_fail_limit TOO LOW so set as $GOOGLE_MAX' "$user_fail_limit"
+                user_fail_limit=$GOOGLE_RESULTS_MAX
+                DebugThis '~ $user_fail_limit TOO LOW so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
             fi
 
-            if [[ $user_fail_limit -gt $GOOGLE_MAX ]]; then
-                user_fail_limit=$GOOGLE_MAX
-                DebugThis '~ $user_fail_limit TOO HIGH so set as $GOOGLE_MAX' "$user_fail_limit"
+            if [[ $user_fail_limit -gt $GOOGLE_RESULTS_MAX ]]; then
+                user_fail_limit=$GOOGLE_RESULTS_MAX
+                DebugThis '~ $user_fail_limit TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
             fi
             ;;
     esac
@@ -861,23 +861,23 @@ ValidateParams()
             ;;
     esac
 
-    case ${timeout#[-+]} in
+    case ${timeout_seconds#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $timeout is invalid'
+            DebugScriptFail 'specified $timeout_seconds is invalid'
             echo
             echo "$(ShowFail ' !! number specified after (-t, --timeout) must be a valid integer')"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $timeout -lt 1 ]]; then
-                timeout=1
-                DebugThis '~ $timeout TOO LOW so set as' "$timeout"
+            if [[ $timeout_seconds -lt 1 ]]; then
+                timeout_seconds=1
+                DebugThis '~ $timeout_seconds TOO LOW so set as' "$timeout_seconds"
             fi
 
-            if [[ $timeout -gt $TIMEOUT_MAX ]]; then
-                timeout=$TIMEOUT_MAX
-                DebugThis '~ $timeout TOO HIGH so set as' "$timeout"
+            if [[ $timeout_seconds -gt $TIMEOUT_SECONDS_MAX ]]; then
+                timeout_seconds=$TIMEOUT_SECONDS_MAX
+                DebugThis '~ $timeout_seconds TOO HIGH so set as' "$timeout_seconds"
             fi
             ;;
     esac
@@ -903,55 +903,55 @@ ValidateParams()
             ;;
     esac
 
-    case ${upper_size_limit#[-+]} in
+    case ${upper_size_bytes#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $upper_size_limit is invalid'
+            DebugScriptFail 'specified $upper_size_bytes is invalid'
             echo
             echo "$(ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer')"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $upper_size_limit -lt 0 ]]; then
-                upper_size_limit=0
-                DebugThis '~ $upper_size_limit TOO LOW so set as' "$upper_size_limit (unlimited)"
+            if [[ $upper_size_bytes -lt 0 ]]; then
+                upper_size_bytes=0
+                DebugThis '~ $upper_size_bytes TOO LOW so set as' "$upper_size_bytes (unlimited)"
             fi
             ;;
     esac
 
-    case ${lower_size_limit#[-+]} in
+    case ${lower_size_bytes#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $lower_size_limit is invalid'
+            DebugScriptFail 'specified $lower_size_bytes is invalid'
             echo
             echo "$(ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer')"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $lower_size_limit -lt 0 ]]; then
-                lower_size_limit=0
-                DebugThis '~ $lower_size_limit TOO LOW so set as' "$lower_size_limit"
+            if [[ $lower_size_bytes -lt 0 ]]; then
+                lower_size_bytes=0
+                DebugThis '~ $lower_size_bytes TOO LOW so set as' "$lower_size_bytes"
             fi
 
-            if [[ $upper_size_limit -gt 0 && $lower_size_limit -gt $upper_size_limit ]]; then
-                lower_size_limit=$((upper_size_limit-1))
-                DebugThis "~ \$lower_size_limit larger than \$upper_size_limit ($upper_size_limit) so set as" "$lower_size_limit"
+            if [[ $upper_size_bytes -gt 0 && $lower_size_bytes -gt $upper_size_bytes ]]; then
+                lower_size_bytes=$((upper_size_bytes-1))
+                DebugThis "~ \$lower_size_bytes larger than \$upper_size_bytes ($upper_size_bytes) so set as" "$lower_size_bytes"
             fi
             ;;
     esac
 
-    case ${border_thickness#[-+]} in
+    case ${gallery_border_pixels#[-+]} in
         *[!0-9]*)
-            DebugScriptFail 'specified $border_thickness is invalid'
+            DebugScriptFail 'specified $gallery_border_pixels is invalid'
             echo
             echo "$(ShowFail ' !! number specified after (-b, --border-thickness) must be a valid integer')"
             exitcode=2
             return 1
             ;;
         *)
-            if [[ $border_thickness -lt 0 ]]; then
-                border_thickness=0
-                DebugThis '~ $border_thickness TOO LOW so set as' "$border_thickness"
+            if [[ $gallery_border_pixels -lt 0 ]]; then
+                gallery_border_pixels=0
+                DebugThis '~ $gallery_border_pixels TOO LOW so set as' "$gallery_border_pixels"
             fi
             ;;
     esac
@@ -1207,66 +1207,27 @@ ProcessPhrase()
         fi
     fi
 
-    # download search results pages
-    GetResultPages
-    if [[ $exitcode -eq 0 ]]; then
-        fail_limit=$user_fail_limit
-        if [[ $fail_limit -gt $results_received ]]; then
-            fail_limit=$results_received
-            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $results_received' "$fail_limit"
-        fi
-
-        if [[ $max_results_required -gt $results_received ]]; then
-            max_results_required=$results_received
-            DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
-        fi
-
-        if [[ $gallery_images_required -gt $results_received ]]; then
-            gallery_images_required=$results_received
-            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
-        fi
-    fi
-
-    if [[ $results_received -eq 0 ]]; then
-        DebugFuncVal 'zero results returned?' 'Oops...'
-        exitcode=4
-        return 1
-    fi
+    # download search results
+    GetResultPages || exitcode=4
 
     # download images
-    if [[ $exitcode -eq 0 ]]; then
-        if [[ $links_only = false ]]; then
-            GetImages
-            [[ $? -gt 0 ]] && exitcode=5
-        fi
+    if [[ $exitcode -eq 0 && $links_only = false ]]; then
+        GetImages || exitcode=5
     fi
 
     # reindex and rename downloaded images if specified
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
-        if [[ $reindex_rename = true ]]; then
-            DebugFuncOpr 'reindexing and renaming downloaded files'
-            local reindex=0
-            for targetfile in "$target_path/"*; do
-                ((reindex++))
-                mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
-            done
-        fi
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $reindex_rename = true ]]; then
+        DebugFuncOpr 'reindexing and renaming downloaded files'
+        local reindex=0
+        for targetfile in "$target_path/"*; do
+            ((reindex++))
+            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
+        done
     fi
 
     # build thumbnail gallery even if fail_limit was reached
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
-        if [[ $no_gallery = false ]]; then
-            BuildGallery
-            if [[ $? -gt 0 ]]; then
-                echo
-                echo "$(ShowFail ' !! unable to build thumbnail gallery')"
-                exitcode=6
-            else
-                if [[ $delete_after = true ]]; then
-                    rm -f "$target_path/$IMAGE_FILE_PREFIX"*
-                fi
-            fi
-        fi
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
+        BuildGallery || exitcode=6
     fi
 
     # copy links file into target directory if possible. If not, then copy to current directory.
@@ -1293,12 +1254,13 @@ GetResultPages()
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
-    local groups_max=$((GOOGLE_MAX/100))
+    local groups_max=$((GOOGLE_RESULTS_MAX/100))
     local run_count=0
     local success_count=0
     local fail_count=0
     local max_search_result_groups=$((max_results_required*2))
-    [[ $max_search_result_groups -gt $GOOGLE_MAX ]] && max_search_result_groups=$GOOGLE_MAX
+    [[ $max_search_result_groups -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_groups=$GOOGLE_RESULTS_MAX
+    local returncode=0
 
     InitProgress
 
@@ -1346,10 +1308,11 @@ GetResultPages()
     cat "$searchresults_pathfile".* > "$searchresults_pathfile"
 
     ParseResults
+
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
-    return
+    return $returncode
 
     }
 
@@ -1582,7 +1545,7 @@ _GetImage_()
         local get_headers_cmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+            get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
         else
@@ -1609,7 +1572,7 @@ _GetImage_()
         local get_image_cmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+            get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
         else
@@ -1672,7 +1635,7 @@ _GetImage_()
     local targetimage_pathfileext="$target_path/$IMAGE_FILE_PREFIX($link_index)$ext"
 
     # apply file size limits before download?
-    if [[ $upper_size_limit -gt 0 || $lower_size_limit -gt 0 ]]; then
+    if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
         # try to get file size from server
         response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
         result=$?
@@ -1684,7 +1647,7 @@ _GetImage_()
             DebugChildVal 'pre-download image size' "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size != unknown ]]; then
-                if [[ $estimated_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $estimated_size -gt $upper_size_limit ]]; then
+                if [[ $estimated_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
                     get_download=false
                     DebugChildFail 'image size'
                 else
@@ -1715,7 +1678,7 @@ _GetImage_()
                 DebugChildVal 'post-download image size' "$(DisplayThousands "$actual_size") bytes"
                 DebugChildVal 'average download speed' "$download_speed"
 
-                if [[ $actual_size -lt $lower_size_limit ]] || [[ $upper_size_limit -gt 0 && $actual_size -gt $upper_size_limit ]]; then
+                if [[ $actual_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
                     rm -f "$targetimage_pathfileext"
                     size_ok=false
                 fi
@@ -1773,6 +1736,7 @@ ParseResults()
     DebugFuncEntry
 
     results_received=0
+    local returncode=0
 
     ScrapeSearchResults
 
@@ -1841,7 +1805,31 @@ ParseResults()
         shuf "$imagelinks_pathfile" -o "$imagelinks_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
     fi
 
+    if [[ $exitcode -eq 0 ]]; then
+        fail_limit=$user_fail_limit
+        if [[ $fail_limit -gt $results_received ]]; then
+            fail_limit=$results_received
+            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $results_received' "$fail_limit"
+        fi
+
+        if [[ $max_results_required -gt $results_received ]]; then
+            max_results_required=$results_received
+            DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
+        fi
+
+        if [[ $gallery_images_required -gt $results_received ]]; then
+            gallery_images_required=$results_received
+            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
+        fi
+    fi
+
+    if [[ $results_received -eq 0 ]]; then
+        DebugFuncVal 'zero results returned?' 'Oops...'
+        returncode=1
+    fi
+
     DebugFuncExit
+    return $returncode
 
     }
 
@@ -1851,7 +1839,7 @@ BuildGallery()
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
-    local reserve_for_border="-border $border_thickness"
+    local reserve_for_border="-border $gallery_border_pixels"
     local title_height=100
     local stage_description=''
     local runmsg=''
@@ -1876,7 +1864,7 @@ BuildGallery()
     if [[ $gallery_title = '_false_' ]]; then
         reserve_for_title=''
     else
-        reserve_for_title="-gravity north -splice 0x$((title_height+border_thickness+10))"
+        reserve_for_title="-gravity north -splice 0x$((title_height+gallery_border_pixels+10))"
     fi
 
     if [[ $condensed_gallery = true ]]; then
@@ -1980,7 +1968,7 @@ BuildGallery()
         if [[ $gallery_title = '_false_' ]]; then
             include_title=''
         else
-            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((border_thickness+10))"
+            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
@@ -2017,7 +2005,11 @@ BuildGallery()
         else
             ProgressUpdater 'failed!'
         fi
+        echo
+        echo "$(ShowFail ' !! unable to build thumbnail gallery')"
     fi
+
+    [[ $result -eq 0 && $delete_after = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
 
     [[ $verbose = true ]] && echo
 
