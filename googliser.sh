@@ -106,7 +106,7 @@ Init()
 
     # user-variable options
     always_download=false
-    condensed_gallery=false
+    compact_gallery=false
     debug=false
     delete_after=false
     display_colour=true
@@ -290,7 +290,7 @@ CheckEnv()
         DebugFuncComment 'runtime parameters after validation and adjustment'
         DebugFuncVar always_download
         DebugFuncVar aspect_ratio
-        DebugFuncVar condensed_gallery
+        DebugFuncVar compact_gallery
         DebugFuncVar debug
         DebugFuncVar delete_after
         DebugFuncVar display_colour
@@ -380,39 +380,35 @@ WhatAreMyArgs()
 
     while true; do
         case $1 in
-            -p|--phrase)
-                user_phrase=$2
-                shift 2
-                ;;
-            -A|--always-download)
+            --always-download|-A)
                 always_download=true
                 shift
                 ;;
-            -a|--aspect-ratio)
+            --aspect-ratio|-a)
                 aspect_ratio=$2
                 shift 2
                 ;;
-            -b|--border-thickness)
+            --border-thickness|-b)
                 gallery_border_pixels=$2
                 shift 2
-                ;;
-            -C|--condensed)
-                condensed_gallery=true
-                shift
                 ;;
             --colour|--color)
                 image_colour=$2
                 shift 2
                 ;;
-            -d|--debug)
+            --condensed|-C)
+                compact_gallery=true
+                shift
+                ;;
+            --debug|-d)
                 debug=true
                 shift
                 ;;
-            -D|--delete-after)
+            --delete-after|-D)
                 delete_after=true
                 shift
                 ;;
-            -E|--exact-search)
+            --exact-search|-E)
                 exact_search=true
                 shift
                 ;;
@@ -420,7 +416,7 @@ WhatAreMyArgs()
                 exclude_links_pathfile=$2
                 shift 2
                 ;;
-            -f|--failures)
+            --failures|-f)
                 user_fail_limit=$2
                 shift 2
                 ;;
@@ -428,7 +424,7 @@ WhatAreMyArgs()
                 image_format=$2
                 shift 2
                 ;;
-            -h|--help)
+            --help|-h)
                 show_help=true
                 exitcode=2
                 return 1
@@ -437,7 +433,7 @@ WhatAreMyArgs()
                 input_links_pathfile=$2
                 shift 2
                 ;;
-            -i|--input-phrases)
+            --input-phrases|-i)
                 input_phrases_pathfile=$2
                 shift 2
                 ;;
@@ -445,27 +441,27 @@ WhatAreMyArgs()
                 install_googliser=true
                 return 0
                 ;;
-            -l|--lower-size)
-                lower_size_bytes=$2
-                shift 2
+            --lightning|-z)
+                lightning_mode=true
+                shift
                 ;;
-            -L|--links-only)
+            --links-only|-L)
                 links_only=true
                 shift
                 ;;
-            -m|--minimum-pixels)
-                min_pixels=$2
+            --lower-size|-l)
+                lower_size_bytes=$2
                 shift 2
                 ;;
-            -n|--number)
-                user_images_requested=$2
+            --minimum-pixels|-m)
+                min_pixels=$2
                 shift 2
                 ;;
             --no-colour|--no-color)
                 display_colour=false
                 shift
                 ;;
-            -N|--no-gallery)
+            --no-gallery|-N)
                 no_gallery=true
                 shift
                 ;;
@@ -473,15 +469,23 @@ WhatAreMyArgs()
                 safesearch=false
                 shift
                 ;;
-            -o|--output)
+            --number|-n)
+                user_images_requested=$2
+                shift 2
+                ;;
+            --output|-o)
                 output_path=$2
                 shift 2
                 ;;
-            -P|--parallel)
+            --parallel|-P)
                 parallel_limit=$2
                 shift 2
                 ;;
-            -q|--quiet)
+            --phrase|-p)
+                user_phrase=$2
+                shift 2
+                ;;
+            --quiet|-q)
                 verbose=false
                 shift
                 ;;
@@ -489,11 +493,7 @@ WhatAreMyArgs()
                 random_image=true
                 shift
                 ;;
-            -r|--retries)
-                retries=$2
-                shift 2
-                ;;
-            -R|--recent)
+            --recent|-R)
                 recent=$2
                 shift 2
                 ;;
@@ -501,11 +501,15 @@ WhatAreMyArgs()
                 reindex_rename=true
                 shift
                 ;;
-            -s|--save-links)
+            --retries|-r)
+                retries=$2
+                shift 2
+                ;;
+            --save-links|-s)
                 save_links=true
                 shift
                 ;;
-            -S|--skip-no-size)
+            --skip-no-size|-S)
                 skip_no_size=true
                 shift
                 ;;
@@ -513,11 +517,11 @@ WhatAreMyArgs()
                 thumbnail_dimensions=$2
                 shift 2
                 ;;
-            -t|--timeout)
+            --timeout|-t)
                 timeout_seconds=$2
                 shift 2
                 ;;
-            -T|--title)
+            --title|-T)
                 if [[ $(Lowercase "$2") = false ]]; then
                     user_gallery_title='_false_'
                 else
@@ -529,17 +533,13 @@ WhatAreMyArgs()
                 image_type=$2
                 shift 2
                 ;;
-            -u|--upper-size)
+            --upper-size|-u)
                 upper_size_bytes=$2
                 shift 2
                 ;;
             --usage-rights)
                 usage_rights=$2
                 shift 2
-                ;;
-            -z|--lightning)
-                lightning_mode=true
-                shift
                 ;;
             --)
                 shift       # shift to next parameter in $1
@@ -764,7 +764,7 @@ ValidateParams()
         user_fail_limit=0
     fi
 
-    if [[ $condensed_gallery = true ]]; then
+    if [[ $compact_gallery = true ]]; then
         no_gallery=false
     fi
 
@@ -1840,7 +1840,7 @@ BuildGallery()
 
     local func_startseconds=$(date +%s)
     local reserve_for_border="-border $gallery_border_pixels"
-    local title_height=100
+    local title_height_pixels=100
     local stage_description=''
     local runmsg=''
 
@@ -1864,10 +1864,10 @@ BuildGallery()
     if [[ $gallery_title = '_false_' ]]; then
         reserve_for_title=''
     else
-        reserve_for_title="-gravity north -splice 0x$((title_height+gallery_border_pixels+10))"
+        reserve_for_title="-gravity north -splice 0x$((title_height_pixels+gallery_border_pixels+10))"
     fi
 
-    if [[ $condensed_gallery = true ]]; then
+    if [[ $compact_gallery = true ]]; then
         build_foreground_cmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
         build_foreground_cmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
@@ -1935,7 +1935,7 @@ BuildGallery()
         if [[ $gallery_title != '_false_' ]]; then
             # create title image
             # let's try a fixed height of 100 pixels
-            build_title_cmd="$CONVERT_BIN -size x$title_height -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+            build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
             DebugFuncExec "$stage_description" "$build_title_cmd"
 
