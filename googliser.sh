@@ -139,27 +139,35 @@ Init()
 
 InstallGoogliser()
     {
-      SUDO='sudo'
-      if [[ $EUID -eq 0 ]]; then
-          SUDO=''
-      fi
 
-      case "$OSTYPE" in
-          "darwin"*)
-              xcode-select --install
-              ruby -e "$(curl -fsSL git.io/get-brew)"
-              brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
-              ;;
-          "linux"*)
-              if [[ $PACKAGER_BIN != unknown ]]; then
-                  $SUDO "$PACKAGER_BIN" install wget imagemagick
-              else
-                  echo "Unsupported package manager. Please install the dependencies manually"
-                  exit 1
-              fi
-              ;;
-      esac
-      $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+    echo -e " -> installing googliser ...\n"
+
+    SUDO='sudo'
+    if [[ $EUID -eq 0 ]]; then
+        SUDO=''
+    fi
+
+    case "$OSTYPE" in
+        "darwin"*)
+            xcode-select --install
+            ruby -e "$(curl -fsSL git.io/get-brew)"
+            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
+            ;;
+        "linux"*)
+            if [[ $PACKAGER_BIN != unknown ]]; then
+                $SUDO "$PACKAGER_BIN" install wget imagemagick
+            else
+                echo "Unsupported package manager. Please install the dependencies manually"
+                exit 1
+            fi
+            ;;
+        *)
+            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            exit 1
+            ;;
+    esac
+    $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+
     }
 
 FindPackageManager()
@@ -177,6 +185,10 @@ FindPackageManager()
                     fi
                 fi
             fi
+            ;;
+        *)
+            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            exit 1
             ;;
     esac
 
@@ -241,6 +253,11 @@ CheckEnv()
 
     WhatAreMyArgs
 
+    if [[ $install_googliser = true ]]; then
+        InstallGoogliser
+        return 1
+    fi
+
     if [[ $verbose = true ]]; then
         if [[ $display_colour = true ]]; then
             echo "$script_details_colour"
@@ -252,11 +269,6 @@ CheckEnv()
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
         DisplayBasicHelp
         exitcode=2
-        return 1
-    fi
-
-    if [[ $install_googliser = true ]]; then
-        InstallGoogliser
         return 1
     fi
 
@@ -2018,7 +2030,7 @@ Finish()
         case $exitcode in
             0)
                 echo
-                echo " -> $(ShowSuccess 'All done!')"
+                echo " -> $(ShowSuccess 'done!')"
                 ;;
             [1-2])
                 if [[ $show_help != true ]]; then
@@ -2028,7 +2040,7 @@ Finish()
                 ;;
             [3-6])
                 echo
-                echo " -> $(ShowFail 'All done! (with errors)')"
+                echo " -> $(ShowFail 'done! (with errors)')"
                 ;;
             *)
                 ;;
