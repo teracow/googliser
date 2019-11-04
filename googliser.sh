@@ -89,7 +89,7 @@ Init()
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
 
     # user-modifiable parameters
-    user_query=''
+    user_phrase=''
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
@@ -363,7 +363,7 @@ WhatAreMyArgs()
     while true; do
         case $1 in
             -p|--phrase)
-                user_query=$2
+                user_phrase=$2
                 shift 2
                 ;;
             -A|--always-download)
@@ -561,7 +561,7 @@ DisplayBasicHelp()
 DisplayFullHelp()
     {
 
-    local SAMPLE_USER_QUERY=cows
+    local SAMPLE_USER_PHRASE=cows
 
     echo
     echo " External requirements: Wget or cURL"
@@ -687,13 +687,13 @@ DisplayFullHelp()
     echo " Example:"
 
     if [[ $display_colour = true ]]; then
-        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_QUERY'")"
+        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'")"
     else
-        echo " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_QUERY'"
+        echo " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"
     fi
 
     echo
-    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_QUERY', and build them into a gallery image."
+    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_PHRASE', and build them into a gallery image."
     }
 
 ValidateParams()
@@ -1126,34 +1126,35 @@ ValidateParams()
 
     }
 
-ProcessQuery()
+ProcessPhrase()
     {
+
+    # $1 = phrase to search Google Images for. Enclose whitespace in quotes.
 
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
 
     echo
-    DebugFuncComment 'user query parameters'
+    DebugFuncComment 'user phrase parameters'
 
-    # some last-minute parameter validation - needed when reading phrases from text file
-    if [[ -z $user_query ]]; then
-        DebugFuncFail '$user_query' 'unspecified'
+    if [[ -z $1 ]]; then
+        DebugFuncFail 'phrase' 'unspecified'
         echo "$(ShowFail ' !! search phrase (-p, --phrase) was unspecified')"
         exitcode=2
         return 1
     fi
 
-    echo " -> processing query: \"$user_query\""
-    safe_search_phrase="${user_query// /+}"     # replace whitepace with '+' to suit curl/wget
+    echo " -> requested phrase: \"$1\""
+    safe_search_phrase="${1// /+}"     # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
-    safe_path_phrase="${user_query// /_}"       # replace whitepace with '_' so less issues later on!
+    safe_path_phrase="${1// /_}"       # replace whitepace with '_' so less issues later on!
 
     if [[ -z $output_path ]]; then
-        target_path="$current_path/$user_query"
+        target_path="$current_path/$1"
     else
         if [[ -n $input_phrases_pathfile ]]; then
-            target_path="$output_path/$user_query"
+            target_path="$output_path/$1"
         else
             target_path="$output_path"
         fi
@@ -1165,7 +1166,7 @@ ProcessQuery()
         if [[ -n $user_gallery_title ]]; then
             gallery_title="$user_gallery_title"
         else
-            gallery_title="$user_query"
+            gallery_title="$1"
             DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
         fi
     fi
@@ -2367,9 +2368,9 @@ CTRL_C_Captured()
     echo
 
     if [[ $display_colour = true ]]; then
-        echo " -> $(ColourTextBrightRed '[SIGINT]') - let's cleanup now ..."
+        echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
     else
-        echo " -> [SIGINT] - let's cleanup now ..."
+        echo " -> [SIGINT] cleanup ..."
     fi
 
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
@@ -3316,23 +3317,14 @@ user_parameters_raw="$*"
 CheckEnv
 
 if [[ $exitcode -eq 0 ]]; then
-    if [[ "$install_googliser" = true ]]; then
+    if [[ $install_googliser = true ]]; then
         :
     elif [[ -n $input_phrases_pathfile ]]; then
-        while read -r file_query; do
-            if [[ -n $file_query ]]; then
-                if [[ $file_query != \#* ]]; then
-                    user_query="$file_query"
-                    ProcessQuery
-                else
-                    DebugScriptWarn 'ignoring comment line in input phrases file'
-                fi
-            else
-                DebugScriptWarn 'ignoring empty line in input phrases file'
-            fi
+        while read -r file_phrase; do
+            [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
         done < "$input_phrases_pathfile"
     else
-        ProcessQuery
+        ProcessPhrase "$user_phrase"
     fi
 fi
 
