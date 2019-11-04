@@ -127,8 +127,8 @@ Init()
     border_thickness=$BORDER_THICKNESS_DEFAULT
     thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
 
-    FindPackageManager
     BuildWorkPaths
+    FindPackageManager
 
     DebugScriptEntry
     DebugScriptNow
@@ -257,7 +257,7 @@ CheckEnv()
 
     if [[ $install_googliser = true ]]; then
         InstallGoogliser
-        return 0
+        return 1
     fi
 
     if [[ $show_help = true ]]; then
@@ -3316,10 +3316,8 @@ user_parameters_raw="$*"
 
 CheckEnv
 
-if [[ $exitcode -eq 0 ]]; then
-    if [[ $install_googliser = true ]]; then
-        :
-    elif [[ -n $input_phrases_pathfile ]]; then
+if [[ $? -eq 0 ]]; then
+    if [[ -n $input_phrases_pathfile ]]; then
         while read -r file_phrase; do
             [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
         done < "$input_phrases_pathfile"
