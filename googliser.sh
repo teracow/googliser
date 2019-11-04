@@ -56,19 +56,19 @@ Init()
     SCRIPT_FILE=googliser.sh
 
     # parameter defaults
-    IMAGES_REQUESTED_DEFAULT=16
-    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
+    BORDER_THICKNESS_DEFAULT=30
     FAIL_LIMIT_DEFAULT=32
+    IMAGES_REQUESTED_DEFAULT=16
+    LOWER_SIZE_LIMIT_DEFAULT=1000
+    PARALLEL_LIMIT_DEFAULT=64
+    THUMBNAIL_DIMENSIONS_DEFAULT=400x400
+    TIMEOUT_DEFAULT=30
+    UPPER_SIZE_LIMIT_DEFAULT=0
+    RETRIES_DEFAULT=3
+
+    gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     fail_limit=$FAIL_LIMIT_DEFAULT
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
-    PARALLEL_LIMIT_DEFAULT=64
-    UPPER_SIZE_LIMIT_DEFAULT=0
-    LOWER_SIZE_LIMIT_DEFAULT=1000
-    TIMEOUT_DEFAULT=30
-    RETRIES_DEFAULT=3
-    BORDER_THICKNESS_DEFAULT=30
-    RECENT_DEFAULT=any
-    THUMBNAIL_DIMENSIONS_DEFAULT=400x400
     gallery_title=''
 
     # parameter limits
@@ -89,43 +89,45 @@ Init()
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
 
     # user-modifiable parameters
-    user_phrase=''
+    border_thickness=$BORDER_THICKNESS_DEFAULT
+    lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
+    parallel_limit=$PARALLEL_LIMIT_DEFAULT
+    retries=$RETRIES_DEFAULT
+    thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
+    timeout=$TIMEOUT_DEFAULT
+    upper_size_limit=$UPPER_SIZE_LIMIT_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
     user_fail_limit=$fail_limit
-    parallel_limit=$PARALLEL_LIMIT_DEFAULT
-    timeout=$TIMEOUT_DEFAULT
-    retries=$RETRIES_DEFAULT
-    upper_size_limit=$UPPER_SIZE_LIMIT_DEFAULT
-    lower_size_limit=$LOWER_SIZE_LIMIT_DEFAULT
-    recent=$RECENT_DEFAULT
-    no_gallery=false
+
+    always_download=false
     condensed_gallery=false
-    save_links=false
-    display_colour=true
-    verbose=true
     debug=false
-    exact_search=false
-    skip_no_size=false
     delete_after=false
-    lightning=false
-    continue_with_short_results=false           # download images even if we don't have enough image links
+    display_colour=true
+    exact_search=false
+    lightning_mode=false
     links_only=false
-    reindex_rename=false                        # reindex and rename all downloaded image files
+    no_gallery=false
     random_image=false
+    reindex_rename=false
     safesearch=true
-    user_gallery_title=''
-    min_pixels=''
+    save_links=false
+    skip_no_size=false
+    verbose=true
+
     aspect_ratio=''
-    usage_rights=''
-    image_colour=''
-    image_type=''
-    image_format=''
-    input_phrases_pathfile=''
-    input_links_pathfile=''
     exclude_links_pathfile=''
+    image_colour=''
+    image_format=''
+    image_type=''
+    input_links_pathfile=''
+    input_phrases_pathfile=''
+    min_pixels=''
     output_path=''
-    border_thickness=$BORDER_THICKNESS_DEFAULT
-    thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
+    recent=''
+    usage_rights=''
+    user_gallery_title=''
+    user_phrase=''
 
     BuildWorkPaths
     FindPackageManager
@@ -287,7 +289,7 @@ CheckEnv()
         DebugFuncVar display_colour
         DebugFuncVar image_colour
         DebugFuncVar condensed_gallery
-        DebugFuncVar continue_with_short_results
+        DebugFuncVar always_download
         DebugFuncVar debug
         DebugFuncVar delete_after
         DebugFuncVar exact_search
@@ -301,7 +303,7 @@ CheckEnv()
         DebugFuncVar image_format
         DebugFuncVal 'lower size limit (bytes)' "$(DisplayThousands "$lower_size_limit")"
         DebugFuncVal 'upper size limit (bytes)' "$(DisplayThousands "$upper_size_limit")"
-        DebugFuncVar lightning
+        DebugFuncVar lightning_mode
         DebugFuncVar links_only
         DebugFuncVar min_pixels
         DebugFuncVar no_gallery
@@ -379,7 +381,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -A|--always-download)
-                continue_with_short_results=true
+                always_download=true
                 shift
                 ;;
             -a|--aspect-ratio)
@@ -532,7 +534,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             -z|--lightning)
-                lightning=true
+                lightning_mode=true
                 shift
                 ;;
             --)
@@ -605,7 +607,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'panoramic'"
     FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$BORDER_THICKNESS_DEFAULT]. Use '0' for no border."
     FormatHelpLine C condensed "Create a condensed thumbnail gallery. All gallery images are square with no tile-padding."
-    FormatHelpLine '' 'colour|color' "The dominant image colour. Specify like '--colour green'. Default is 'any'. Presets are:"
+    FormatHelpLine '' 'colour|color' "The dominant image colour [any]. Specify like '--colour green'. Presets are:"
     FormatHelpLine '' '' "'any'"
     FormatHelpLine '' '' "'full' (colour images only)"
     FormatHelpLine '' '' "'black-white' or 'bw'"
@@ -668,7 +670,7 @@ DisplayFullHelp()
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
     FormatHelpLine '' random "Download a single, random image."
-    FormatHelpLine R recent "Only get images published this far back in time [$RECENT_DEFAULT]. Specify like '--recent month'. Presets are:"
+    FormatHelpLine R recent "Only get images published this far back in time [any]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
     FormatHelpLine '' '' "'hour'"
     FormatHelpLine '' '' "'day'"
@@ -724,20 +726,20 @@ ValidateParams()
         return 1
     fi
 
-    local min_pixels_type=''
-    local min_pixels_search=''
     local aspect_ratio_type=''
     local aspect_ratio_search=''
-    local image_type_search=''
-    local image_format_search=''
-    local usage_rights_type=''
-    local usage_rights_search=''
-    local recent_type=''
-    local recent_search=''
     local image_colour_type=''
     local image_colour_search=''
+    local image_type_search=''
+    local image_format_search=''
+    local min_pixels_type=''
+    local min_pixels_search=''
+    local recent_type=''
+    local recent_search=''
+    local usage_rights_type=''
+    local usage_rights_search=''
 
-    if [[ $continue_with_short_results = true ]]; then
+    if [[ $always_download = true ]]; then
         user_fail_limit=0
     fi
 
@@ -747,7 +749,7 @@ ValidateParams()
         user_fail_limit=0
     fi
 
-    if [[ $lightning = true ]]; then
+    if [[ $lightning_mode = true ]]; then
         # Yeah!
         timeout=1
         retries=0
@@ -1518,7 +1520,7 @@ GetImages()
         [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
         echo "    - consider raising the failure limit: '-f0'"
     else
-        if [[ $result_index -eq $results_received && $continue_with_short_results = false ]]; then
+        if [[ $result_index -eq $results_received && $always_download = false ]]; then
             DebugFuncFail 'links list exhausted' "$result_index/$results_received"
 
             if [[ $display_colour = true ]]; then
@@ -1820,7 +1822,7 @@ ParseResults()
         fi
 
         if [[ $results_received -lt $user_images_requested ]]; then
-            if [[ $continue_with_short_results = false ]]; then
+            if [[ $always_download = false ]]; then
                 echo
                 echo " Try your search again with additional options:"
                 [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
@@ -2170,7 +2172,7 @@ ShowGetImagesProgress()
     local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
-#        if [[ $continue_with_short_results = true ]]; then
+#        if [[ $always_download = true ]]; then
 #            gallery_images_required_adjusted=$((gallery_images_required-fail_count))
 #        else
             gallery_images_required_adjusted=$gallery_images_required
@@ -2199,7 +2201,7 @@ ShowGetImagesProgress()
         if [[ $fail_count -gt 0 ]]; then
             progress_message+=' and '
 
-#            if [[ $continue_with_short_results = true ]]; then
+#            if [[ $always_download = true ]]; then
 #                fail_limit_adjusted=$((fail_limit-success_count))
 #            else
 #                fail_limit_adjusted=$fail_limit
