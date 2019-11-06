@@ -53,7 +53,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191104
+    local SCRIPT_VERSION=191107
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -1596,18 +1596,28 @@ _GetImage_()
     _MoveToFail_()
         {
 
-        # $1 = error message to write to failure runfile
+        # append a message into the current runfile, then move that runfile to the failures directory
+        # $1 = error message to append to runfile
 
-        [[ -z $1 ]] && return 1
-
+        _UpdateRunLog_ "failed" "$1"
         mv "$run_pathfile" "$fail_pathfile"
-        echo "$1" > "$fail_pathfile"
 
         # delete temp file if one was created
         [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
 
         }
 
+    _UpdateRunLog_()
+        {
+
+        # $1 = title
+        # $2 = message to append to runfile log
+
+        [[ -z $1 || -z $2 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
+
+        printf "> %s:\n'%s'\n\n" "$1" "$2" >> "$run_pathfile"
+
+        }
 
     local URL="$1"
     local link_index="$2"
@@ -1639,6 +1649,7 @@ _GetImage_()
         # try to get file size from server
         response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
         result=$?
+        _UpdateRunLog_ 'pre-download response' "$response"
 
         if [[ $result -eq 0 ]]; then
             estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
@@ -1668,6 +1679,7 @@ _GetImage_()
     if [[ $get_download = true ]]; then
         response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
         result=$?
+        _UpdateRunLog_ 'post-download response' "$response"
 
         if [[ $result -eq 0 ]]; then
             if [[ -e $targetimage_pathfileext ]]; then
