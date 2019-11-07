@@ -1665,7 +1665,7 @@ _GetImage_()
             estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
-            DebugChildVal "$section: $action" "$(DisplayThousands "$estimated_size") bytes"
+            DebugChildVal "$section" "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size = unknown ]]; then
                 _UpdateRunLog_ "$section" "$action" '' '1' 'size unknown'
@@ -1718,7 +1718,7 @@ _GetImage_()
         # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
         download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
 
-        DebugChildVal "$section: $action" "$(DisplayThousands "$actual_size") bytes"
+        DebugChildVal "$section" "$(DisplayThousands "$actual_size") bytes"
         DebugChildVal 'average download speed' "$download_speed"
 
         if [[ $actual_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
