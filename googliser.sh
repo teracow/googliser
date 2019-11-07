@@ -1612,7 +1612,7 @@ _GetImage_()
         # $2 = action
         # $3 = stdout from function (optional)
         # $4 = resultcode
-        # $4 = extended description of result
+        # $5 = extended description of resultcode
 
         [[ -z $1 || -z $2 || -z $4 || -z $5 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
