@@ -1596,10 +1596,8 @@ _GetImage_()
     _MoveToFail_()
         {
 
-        # append a message into the current runfile, then move that runfile to the failures directory
-        # $1 = error message to append to runfile
+        # move runfile to the failures directory
 
-        _UpdateRunLog_ "failed" "$1"
         mv "$run_pathfile" "$fail_pathfile"
 
         # delete temp file if one was created
@@ -1610,26 +1608,36 @@ _GetImage_()
     _UpdateRunLog_()
         {
 
-        # $1 = title
-        # $2 = message to append to runfile log
+        # $1 = section
+        # $2 = action
+        # $3 = stdout from function (optional)
+        # $4 = resultcode
+        # $4 = extended description of result
 
-        [[ -z $1 || -z $2 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
+        [[ -z $1 || -z $2 || -z $4 || -z $5 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
-        printf "> %s:\n'%s'\n\n" "$1" "$2" >> "$run_pathfile"
+        printf "> section: %s\n= action: %s\n= stdout:'%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
 
         }
 
     local URL="$1"
     local link_index="$2"
     _forkname_="$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")"   # global: used by various debug logging functions
-    local get_download=true
-    local size_ok=false
+    local pre_download_ok=''
+    local size_ok=''
+    local download_ok=''
     local response=''
     local result=0
     local download_speed=''
     local estimated_size=0
     local actual_size=0
     local func_startseconds=$(date +%s)
+    local section=''
+    local action=''
+    local logmessage=''
+    local get_size_result=0
+    local get_image_result=0
+    local get_type_result=0
 
     DebugChildForked
 
@@ -1644,85 +1652,100 @@ _GetImage_()
 
     local targetimage_pathfileext="$target_path/$IMAGE_FILE_PREFIX($link_index)$ext"
 
+    section='pre-download'
     # apply file size limits before download?
     if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
-        # try to get file size from server
+        action='ask for remote image file size'
         response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
-        result=$?
-        _UpdateRunLog_ 'pre-download response' "$response"
+        get_size_result=$?
+        _UpdateRunLog_ "$section" "$action" "$response" "$get_size_result" "$(DownloaderReturnCodes "$get_size_result")"
 
-        if [[ $result -eq 0 ]]; then
+        if [[ $get_size_result -eq 0 ]]; then
+            action='check remote image file size'
             estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
-            DebugChildVal 'pre-download image size' "$(DisplayThousands "$estimated_size") bytes"
+            DebugChildVal "$section: $action" "$(DisplayThousands "$estimated_size") bytes"
 
-            if [[ $estimated_size != unknown ]]; then
+            if [[ $estimated_size = unknown ]]; then
+                _UpdateRunLog_ "$section" "$action" '' '1' 'size unknown'
+                pre_download_ok=$skip_no_size
+            else
                 if [[ $estimated_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
-                    get_download=false
-                    DebugChildFail 'image size'
+                    pre_download_ok=false
+                    DebugChildFail "$action"
+                    _UpdateRunLog_ "$section" "$action" '' '1' 'size is out-of-bounds'
                 else
-                    size_ok=true
-                    DebugChildSuccess 'image size'
+                    pre_download_ok=true
+                    DebugChildSuccess "$action"
+                    _UpdateRunLog_ "$section" "$action" '' '0' 'size OK'
                 fi
-            else
-                [[ $skip_no_size = true ]] && get_download=false
             fi
         else
-            DebugChildFail "pre-downloader returned: \"$result: $(DownloaderReturnCodes "$result")\""
-
-            [[ $skip_no_size = true ]] && get_download=false || estimated_size=unknown
-        fi
-    fi
-
-    # perform image download
-    if [[ $get_download = true ]]; then
-        response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
-        result=$?
-        _UpdateRunLog_ 'post-download response' "$response"
-
-        if [[ $result -eq 0 ]]; then
-            if [[ -e $targetimage_pathfileext ]]; then
-                actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
-                # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
-                download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
-
-                DebugChildVal 'post-download image size' "$(DisplayThousands "$actual_size") bytes"
-                DebugChildVal 'average download speed' "$download_speed"
-
-                if [[ $actual_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
-                    rm -f "$targetimage_pathfileext"
-                    size_ok=false
-                fi
-            else
-                # file does not exist
-                size_ok=false
-            fi
-
-            if [[ $size_ok = true ]]; then
-                DebugChildSuccess 'image size'
-                RenameExtAsType "$targetimage_pathfileext"
-
-                if [[ $? -eq 0 ]]; then
-                    _MoveToSuccess_
-                    DebugChildSuccess 'image type'
-                    DebugChildSuccess 'image download'
-                else
-                    _MoveToFail_ 'image-type:post-download'
-                    DebugChildFail 'image type'
-                fi
-            else
-                # files that were outside size limits count as failures
-                _MoveToFail_ 'image-size:post-download'
-                DebugChildFail 'image size'
-            fi
-        else
-            _MoveToFail_ "image-download:result:$(DownloaderReturnCodes "$result")"
-            DebugChildFail "post-downloader returned: \"$result: $(DownloaderReturnCodes "$result")\""
+            pre_download_ok=false
+            _MoveToFail_
+            DebugChildFail "$section returned: \"$get_size_result: $(DownloaderReturnCodes "$get_size_result")\""
         fi
     else
-        _MoveToFail_ "image-size:pre-download:$(DownloaderReturnCodes "$result")"
-        DebugChildFail 'image download'
+        pre_download_ok=true
+    fi
+
+    section='mid-download'
+    if [[ $pre_download_ok = true ]]; then
+        action='download image'
+        response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
+        get_image_result=$?
+        _UpdateRunLog_ "$section" "$action" "$response" "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
+        if [[ $get_image_result -eq 0 && -e $targetimage_pathfileext ]]; then
+            download_ok=true
+            DebugChildSuccess "$action"
+        else
+            download_ok=false
+            _MoveToFail_
+            DebugChildFail "$action"
+        fi
+    else
+        download_ok=false
+        _MoveToFail_
+    fi
+
+    section='post-download'
+    if [[ $download_ok = true ]]; then
+        action='check local image file size'
+        actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
+        # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
+        download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
+
+        DebugChildVal "$section: $action" "$(DisplayThousands "$actual_size") bytes"
+        DebugChildVal 'average download speed' "$download_speed"
+
+        if [[ $actual_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
+            rm -f "$targetimage_pathfileext"
+            size_ok=false
+            _MoveToFail_
+            DebugChildFail "$action"
+        else
+            size_ok=true
+            DebugChildSuccess "$action"
+        fi
+    else
+        size_ok=false
+        _MoveToFail_
+    fi
+
+    if [[ $size_ok = true ]]; then
+        RenameExtAsType "$targetimage_pathfileext"
+        get_type_result=$?
+        action='confirm image file type'
+        _UpdateRunLog_ "$section" "$action" '' "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
+
+        if [[ $get_type_result -eq 0 ]]; then
+            _MoveToSuccess_
+            DebugChildSuccess "$action"
+        else
+            _MoveToFail_
+            DebugChildFail "$action"
+        fi
     fi
 
     [[ -n $exclude_links_pathfile ]] && echo "$URL" >> "$exclude_links_pathfile"
