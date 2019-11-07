@@ -53,7 +53,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191107
+    local SCRIPT_VERSION=191108
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -1738,7 +1738,7 @@ _GetImage_()
     if [[ $size_ok = true ]]; then
         RenameExtAsType "$targetimage_pathfileext"
         get_type_result=$?
-        action='confirm image file type'
+        action='confirm local image file type'
         _UpdateRunLog_ "$section" "$action" '' "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
 
         if [[ $get_type_result -eq 0 ]]; then
