@@ -1612,9 +1612,9 @@ _GetImage_()
         # $2 = action
         # $3 = stdout from function (optional)
         # $4 = resultcode
-        # $5 = extended description of resultcode
+        # $5 = extended description of resultcode (optional)
 
-        [[ -z $1 || -z $2 || -z $4 || -z $5 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
+        [[ -z $1 || -z $2 || -z $4 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
         printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
 
@@ -1736,10 +1736,10 @@ _GetImage_()
     fi
 
     if [[ $size_ok = true ]]; then
-        RenameExtAsType "$targetimage_pathfileext"
+        response=$(RenameExtAsType "$targetimage_pathfileext")
         get_type_result=$?
         action='confirm local image file type'
-        _UpdateRunLog_ "$section" "$action" '' "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
+        _UpdateRunLog_ "$section" "$action" "$response" "$get_type_result" ''
 
         if [[ $get_type_result -eq 0 ]]; then
             _MoveToSuccess_
@@ -2301,7 +2301,8 @@ RenameExtAsType()
     {
 
     # checks output of 'identify -format "%m"' and ensures provided file extension matches
-    # $1 = image filename. Is it actually a valid image?
+    # $1 = image filename. Is it really a valid image?
+    # stdout = image type
     # $? = 0 if it IS an image, 1 if not an image
 
     local returncode=0
@@ -2335,6 +2336,7 @@ RenameExtAsType()
 
                     # then back but with new extension created from $imagetype
                     mv "$1".tmp "${1%.*}.$(Lowercase "$imagetype")"
+                    echo "$imagetype"
                     ;;
                 *)
                     # not a valid image
