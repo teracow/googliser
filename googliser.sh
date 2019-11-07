@@ -139,6 +139,7 @@ Init()
     user_phrase=''
     sites=''
     search_phrase=''
+    exclude_words=''
 
     BuildWorkPaths
     FindPackageManager
@@ -298,6 +299,7 @@ CheckEnv()
         DebugFuncVar display_colour
         DebugFuncVar exact_search
         DebugFuncVar exclude_links_pathfile
+        DebugFuncVar exclude_words
         DebugFuncVar image_colour
         DebugFuncVar image_format
         DebugFuncVar image_type
@@ -319,6 +321,7 @@ CheckEnv()
         DebugFuncVar safesearch
         DebugFuncVar save_links
         DebugFuncVar skip_no_size
+        DebugFuncVar sites
         DebugFuncVar thumbnail_dimensions
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
@@ -416,6 +419,10 @@ WhatAreMyArgs()
                 ;;
             --exclude)
                 exclude_links_pathfile=$2
+                shift 2
+                ;;
+            --exclude-words)
+                exclude_words=$2
                 shift 2
                 ;;
             --failures|-f)
@@ -638,6 +645,7 @@ DisplayFullHelp()
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
     FormatHelpLine '' exclude "A text file containing previously processed URLs. URLs in this file will not be downloaded again."
+    FormatHelpLine '' exclude-words "A comma separated list (without spaces) of words that you want to exclude from the search."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
     FormatHelpLine '' '' "'jpg'"
     FormatHelpLine '' '' "'png'"
@@ -691,6 +699,7 @@ DisplayFullHelp()
     FormatHelpLine r retries "Retry each image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine s save-links "Save image URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
+    FormatHelpLine '' sites "A comma separated list (without spaces) of sites or domains from which you want to search the images"
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
@@ -1153,12 +1162,22 @@ ValidateParams()
 FinalizeSearchPhrase()
   {
     search_phrase=$1
-    IFS=',' read -r -a array <<< "$sites"
+
+    IFS=',' read -r -a array <<< "$exclude_words"
     for element in "${array[@]}"
     do
-      search_phrase+=" -site:${element} OR"
+      search_phrase+=" -${element}"
     done
-    search_phrase=${search_phrase%???}
+
+    if [[ -n "$sites" ]]
+    then
+      IFS=',' read -r -a array <<< "$sites"
+      for element in "${array[@]}"
+      do
+        search_phrase+=" -site:${element} OR"
+      done
+      search_phrase=${search_phrase%???}
+    fi
   }
 
 ProcessPhrase()
@@ -3375,7 +3394,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,sites:,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,sites:,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,exclude-words:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
