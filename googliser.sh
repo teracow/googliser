@@ -3,7 +3,7 @@
 ###############################################################################
 # googliser.sh
 #
-# (C)opyright 2016-2019 teracow software
+# (C)opyright 2016-2019 Teracow Software
 #
 # If you find this script useful, please send me an email to let me know. :)
 #   teracow@gmail.com
@@ -1537,7 +1537,7 @@ _GetImage_()
 
         # $1 = URL to check
         # $2 = temporary filename to download to (only used by Wget)
-        # echo = header string
+        # stdout = header string
         # $? = downloader return code
 
         local URL="$1"
@@ -1564,7 +1564,7 @@ _GetImage_()
 
         # $1 = URL to check
         # $2 = filename to download to
-        # echo = downloader stdout & stderr
+        # stdout = downloader stdout & stderr
         # $? = downloader return code
 
         local URL="$1"
@@ -1616,7 +1616,7 @@ _GetImage_()
 
         [[ -z $1 || -z $2 || -z $4 || -z $5 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
-        printf "> section: %s\n= action: %s\n= stdout:'%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
+        printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
 
         }
 
@@ -1653,7 +1653,7 @@ _GetImage_()
     local targetimage_pathfileext="$target_path/$IMAGE_FILE_PREFIX($link_index)$ext"
 
     section='pre-download'
-    # apply file size limits before download?
+
     if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
         action='ask for remote image file size'
         response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
@@ -1691,6 +1691,7 @@ _GetImage_()
     fi
 
     section='mid-download'
+
     if [[ $pre_download_ok = true ]]; then
         action='download image'
         response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
@@ -1710,6 +1711,7 @@ _GetImage_()
     fi
 
     section='post-download'
+
     if [[ $download_ok = true ]]; then
         action='check local image file size'
         actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
