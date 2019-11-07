@@ -137,6 +137,8 @@ Init()
     usage_rights=''
     user_gallery_title=''
     user_phrase=''
+    sites=''
+    search_phrase=''
 
     BuildWorkPaths
     FindPackageManager
@@ -512,6 +514,10 @@ WhatAreMyArgs()
             --skip-no-size|-S)
                 skip_no_size=true
                 shift
+                ;;
+            --sites)
+                sites=$2
+                shift 2
                 ;;
             --thumbnails)
                 thumbnail_dimensions=$2
@@ -1144,6 +1150,17 @@ ValidateParams()
 
     }
 
+FinalizeSearchPhrase()
+  {
+    search_phrase=$1
+    IFS=',' read -r -a array <<< "$sites"
+    for element in "${array[@]}"
+    do
+      search_phrase+=" -site:${element} OR"
+    done
+    search_phrase=${search_phrase%???}
+  }
+
 ProcessPhrase()
     {
 
@@ -1164,7 +1181,8 @@ ProcessPhrase()
     fi
 
     echo " -> requested phrase: \"$1\""
-    safe_search_phrase="${1// /+}"     # replace whitepace with '+' to suit curl/wget
+    FinalizeSearchPhrase $1
+    safe_search_phrase="${search_phrase// /+}"     # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
     safe_path_phrase="${1// /_}"       # replace whitepace with '_' so less issues later on!
 
@@ -3320,7 +3338,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,sites:,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
