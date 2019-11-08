@@ -115,6 +115,7 @@ Init()
     lightning_mode=false
     links_only=false
     no_gallery=false
+    race=false
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -310,6 +311,7 @@ CheckEnv()
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
+        DebugFuncVar race
         DebugFuncVar random_image
         DebugFuncVar recent
         DebugFuncVar reindex_rename
@@ -489,6 +491,10 @@ WhatAreMyArgs()
                 verbose=false
                 shift
                 ;;
+            --race)
+                race=true
+                shift
+                ;;
             --random)
                 random_image=true
                 shift
@@ -643,7 +649,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'craw'"
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_RESULTS_MAX)."
     FormatHelpLine h help "Display this help."
-    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A search will not be performed."
+#    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_BYTES_DEFAULT]."
@@ -673,6 +679,7 @@ DisplayFullHelp()
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
+#    FormatHelpLine '' race "Race to the finish line! Maximum concurrent downloads (as per '--parallel') will be maintained until the requested number of images are received. Extras are then removed."
     FormatHelpLine '' random "Download a single, random image."
     FormatHelpLine R recent "Only get images published this far back in time [any]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -743,7 +750,7 @@ ValidateParams()
     local usage_rights_type=''
     local usage_rights_search=''
 
-    if [[ $always_download = true ]]; then
+    if [[ $always_download = true || $race = true ]]; then
         user_fail_limit=0
     fi
 
@@ -762,6 +769,7 @@ ValidateParams()
         links_only=false
         no_gallery=true
         user_fail_limit=0
+        race=true
     fi
 
     if [[ $compact_gallery = true ]]; then
@@ -1449,7 +1457,7 @@ GetImages()
             # don't proceed until a download slot becomes available
             [[ $run_count -eq $parallel_limit ]] && continue
 
-            if [[ $((success_count+run_count)) -lt $gallery_images_required ]]; then
+            if [[ $((success_count+run_count)) -lt $gallery_images_required ]] || [[ $race = true && $success_count -lt $gallery_images_required ]]; then
                 # fork a new downloader
                 ((result_index++))
                 local link_index=$(printf "%04d" $result_index)
@@ -1463,11 +1471,16 @@ GetImages()
         done
     done < "$imagelinks_pathfile"
 
-    while [[ $run_count -gt 0 ]]; do
+    if [[ $race = false ]]; then
+        while [[ $run_count -gt 0 ]]; do
+            RefreshDownloadCounts; ShowGetImagesProgress
+        done
+        wait 2>/dev/null;                   # wait here until all forked downloaders have completed
+    else
+        RemoveCurrentDownloads
+        TrimSuccessfulDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
-    done
-
-    wait 2>/dev/null;                   # wait here until all forked downloaders have completed
+    fi
 
     if [[ $fail_count -gt 0 ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -2415,9 +2428,6 @@ CTRL_C_Captured()
 
     DebugFuncEntry
 
-    local existing_pathfile=''
-    local existing_file=''
-
     echo
 
     if [[ $display_colour = true ]]; then
@@ -2426,23 +2436,44 @@ CTRL_C_Captured()
         echo " -> [SIGINT] cleanup ..."
     fi
 
+    RemoveCurrentDownloads
+
+    DebugFuncExit
+    Finish
+
+    }
+
+RemoveCurrentDownloads()
+    {
+
+    local existing_pathfile=''
+    local existing_file=''
+
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
-    kill "$(jobs -p)" 2>/dev/null
-    wait "$(jobs -p)" 2>/dev/null
+    kill -9 "$(jobs -p)" 2>/dev/null
+#    wait "$(jobs -p)" 2>/dev/null
 
-    RefreshDownloadCounts
+#    RefreshDownloadCounts
 
-    if [[ $run_count -gt 0 ]]; then
+#    if [[ $run_count -gt 0 ]]; then
         # remove any image files where processing by [_GetImage_] was incomplete
         for existing_pathfile in "$download_run_count_path"/*; do
             existing_file="$(basename "$existing_pathfile")"
             rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
+            rm -f "$existing_pathfile"
             DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
+            RefreshDownloadCounts; ShowGetImagesProgress
         done
-    fi
+#    fi
 
-    DebugFuncExit
-    Finish
+    }
+
+TrimSuccessfulDownloads()
+    {
+
+    # ensure $download_success_count_path has a maximum of $gallery_images_required
+
+    echo
 
     }
 
@@ -3363,7 +3394,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
