@@ -1200,7 +1200,7 @@ ProcessPhrase()
     fi
 
     echo " -> requested phrase: \"$1\""
-    FinalizeSearchPhrase $1
+    FinalizeSearchPhrase "$1"
     safe_search_phrase="${search_phrase// /+}"     # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
     safe_path_phrase="${1// /_}"       # replace whitepace with '_' so less issues later on!
