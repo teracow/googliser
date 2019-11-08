@@ -75,16 +75,16 @@ Allowable parameters are indicated with a hyphen then a single character or the 
 
 ***Required:***
 
-`-p [STRING]` or `--phrase [STRING]`
+`-p [STRING]` or `--phrase [STRING]`    
 The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "small brown cows"`
 
 
 ***Optional:***
 
-`-A` or `--always-download`
+`-A` or `--always-download`    
 Let nothing stand in your way! Download images, even if the number of original image links is less than requested. Default is to abort if the number of image links found is insufficient. Unlimited failures are also permitted.
 
-`-a [PRESET]` or `--aspect-ratio [PRESET]`
+`-a [PRESET]` or `--aspect-ratio [PRESET]`    
 The shape of the image to download. Preset values are:
 
 - `tall`
@@ -92,13 +92,13 @@ The shape of the image to download. Preset values are:
 - `wide`
 - `panoramic`
 
-`-b [INTEGER]` or `--border-thickness [INTEGER]`
+`-b [INTEGER]` or `--border-thickness [INTEGER]`    
 Thickness of border surrounding the generated gallery image in pixels. Default is 30. Enter 0 for no border.
 
-`-C` or `--condensed`
+`-C` or `--condensed`    
 Create the gallery in condensed mode. No padding between each thumbnail and they're all square. The default leaves some space between each thumbnail, but each thumbnail can be a different shape.
 
-`--colour [PRESET]` or `--color [PRESET]`
+`--colour [PRESET]` or `--color [PRESET]`    
 The dominant image colour. Specify like `--colour green`. Default is 'any'. Preset values are:
 
 - `any`
@@ -118,25 +118,25 @@ The dominant image colour. Specify like `--colour green`. Default is 'any'. Pres
 - `black`
 - `brown`
 
-`-d` or `--debug`
+`-d` or `--debug`    
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for discovering the external commands and parameters used!
 
-`-D` or `--delete-after`
+`-D` or `--delete-after`    
 Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files. Umm, don't specify this and `--no-gallery` at the same time.
 
-`-E` or `--exact-search`
+`-E` or `--exact-search`    
 Perform an exact search only. Disregard Google suggestions and loose matches. Default is to perform a loose search.
 
-`--exclude-links [FILE]`
+`--exclude-links [FILE]`    
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
-`--exclude-words [STRING]`      
+`--exclude-words [STRING]`    
 A comma separated list (without spaces) of words that you want to exclude from the search.
 
-`-f [INTEGER]` or `--failures [INTEGER]`
+`-f [INTEGER]` or `--failures [INTEGER]`    
 How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
-`--format [PRESET]`
+`--format [PRESET]`    
 Only download images encoded in this file format. Preset values are:
 
 - `jpg`
@@ -148,19 +148,19 @@ Only download images encoded in this file format. Preset values are:
 - `ico`
 - `craw`
 
-`-h` or `--help`
+`-h` or `--help`    
 Display the complete parameter list.
 
-`-i [FILE]` or `--input-phrases [FILE]`
+`-i [FILE]` or `--input-phrases [FILE]`    
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`. One phrase per line.
 
-`-l [INTEGER]` or `--lower-size [INTEGER]`
+`-l [INTEGER]` or `--lower-size [INTEGER]`    
 Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but send HTML instead.
 
-`-L` or `--links-only`
+`-L` or `--links-only`    
 Only get image file URLs, don't download any images. Default is to compile a list of image file URLs, then download them.
 
-`-m [PRESET]` or `--minimum-pixels [PRESET]`
+`-m [PRESET]` or `--minimum-pixels [PRESET]`    
 Only download images with at least this many pixels. Preset values are:
 
 - `qsvga` (400 x 300)
@@ -181,34 +181,34 @@ Only download images with at least this many pixels. Preset values are:
 - `medium`
 - `icon`
 
-`-n [INTEGER]` or `--number [INTEGER]`
+`-n [INTEGER]` or `--number [INTEGER]`    
 Number of images to download. Default is 16. Maximum is 1,000.
 
-`--no-colour` or `--no-color`
+`--no-colour` or `--no-color`    
 Runtime display in bland, uncoloured text. Default will brighten your day. :)
 
-`-N` or `--no-gallery`
+`-N` or `--no-gallery`    
 Don't create a thumbnail gallery. Default is to create a gallery after downloading images. Err, don't specify this and `--delete-after` at the same time.
 
-`--no-safesearch`
+`--no-safesearch`    
 Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-filtering. Default is enabled.
 
-`-o [PATH]` or `--output [PATH]`
+`-o [PATH]` or `--output [PATH]`    
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
-`-P [INTEGER]` or `--parallel [INTEGER]`
+`-P [INTEGER]` or `--parallel [INTEGER]`    
 How many parallel image downloads? Default is 64. Maximum is 512.
 
-`-q` or `--quiet`
+`-q` or `--quiet`    
 Suppress stdout. stderr is still shown.
 
-`--random`
+`--random`    
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
 
-`-r [INTEGER]` or `--retries [INTEGER]`
+`-r [INTEGER]` or `--retries [INTEGER]`    
 Number of download retries for each image. Default is 3. Maximum is 100.
 
-`-R [PRESET]` or `--recent [PRESET]`
+`-R [PRESET]` or `--recent [PRESET]`    
 Only get images published this far back in time. Default is 'any'. Preset values are:
 
 - `any`
@@ -218,28 +218,28 @@ Only get images published this far back in time. Default is 'any'. Preset values
 - `month`
 - `year`
 
-`--reindex-rename`
+`--reindex-rename`    
 Downloaded image files are reindexed and renamed into a contiguous block. Note: this breaks the 1:1 relationship between URLs and downloaded file names.
 
-`-s` or `--save-links`
+`-s` or `--save-links`    
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
 
-`-S` or `--skip-no-size`
+`-S` or `--skip-no-size`    
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
-`--sites [STRING]`             
+`--sites [STRING]`    
 A comma separated list (without spaces) of sites or domains from which you want to search the images.
 
-`--thumbnails [STRING]`
+`--thumbnails [STRING]`    
 Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.
 
-`-t [INTEGER]` or `--timeout [INTEGER]`
+`-t [INTEGER]` or `--timeout [INTEGER]`    
 Number of seconds before the downloader stops trying to get each image. Default is 30. Maximum is 600 (10 minutes).
 
-`-T [STRING]` or `--title [STRING]`
+`-T [STRING]` or `--title [STRING]`    
 Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title false`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
 
-`--type [PRESET]`
+`--type [PRESET]`    
 Image type to download. Preset values are:
 
 - `face`
@@ -248,10 +248,10 @@ Image type to download. Preset values are:
 - `lineart`
 - `animated`
 
-`-u [INTEGER]` or `--upper-size [INTEGER]`
+`-u [INTEGER]` or `--upper-size [INTEGER]`    
 Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
 
-`--usage-rights [PRESET]`
+`--usage-rights [PRESET]`    
 Usage rights. Preset values are:
 
 - `reuse` (labeled for reuse)
@@ -259,7 +259,7 @@ Usage rights. Preset values are:
 - `noncomm-reuse` (labeled for noncommercial reuse)
 - `noncomm-reuse-with-mod` (labeled for noncommercial reuse with modification)
 
-`-z` or `--lightning`
+`-z` or `--lightning`    
 Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 512 images at the same time, and don't create a gallery afterward.
 
 **Usage Examples:**
