@@ -130,6 +130,9 @@ Perform an exact search only. Disregard Google suggestions and loose matches. De
 `--exclude-links [FILE]`
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
+`--exclude-words [STRING]`      
+A comma separated list (without spaces) of words that you want to exclude from the search.
+
 `-f [INTEGER]` or `--failures [INTEGER]`
 How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
@@ -224,6 +227,9 @@ Put the URL results file into the image sub-directory afterward. If selected, th
 `-S` or `--skip-no-size`
 Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
+`--sites [STRING]`             
+A comma separated list (without spaces) of sites or domains from which you want to search the images.
+
 `--thumbnails [STRING]`
 Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.
 
@@ -273,6 +279,10 @@ This will download the first 56 available images for the search-phrase *"fish"* 
     $ ./googliser.sh -n80 -p "storm clouds" -sN --debug
 
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory and won't create a thumbnail gallery.
+
+    $ ./googliser.sh -p "flags" --exclude-words "pole,waving" --sites "wikipedia.com"
+
+This will download available images for the phrase *"flags"*, while excluding the images that have words pole and waving associated with them and would return the images from wikipedia.com.
 
 ---
 ## ![#c5f015](images/lime.png) Return Values ($?)
