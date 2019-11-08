@@ -1689,7 +1689,6 @@ _GetImage_()
     local logmessage=''
     local get_remote_size_result=0
     local get_image_result=0
-    local get_local_size_result=0
     local get_type_result=0
 
     DebugChildForked
@@ -1721,17 +1720,21 @@ _GetImage_()
             DebugChildVal "$section" "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size = unknown ]]; then
-                _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'size unknown'
                 pre_download_ok=$skip_no_size
+                _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'unknown'
             else
-                if [[ $estimated_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
+                if [[ $estimated_size -lt $lower_size_bytes ]]; then
                     pre_download_ok=false
+                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too small'
                     DebugChildFail "$action"
-                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'size is out-of-bounds'
+                elif [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
+                    pre_download_ok=false
+                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too large'
+                    DebugChildFail "$action"
                 else
                     pre_download_ok=true
+                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '0' 'OK'
                     DebugChildSuccess "$action"
-                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '0' 'size OK'
                 fi
             fi
         else
@@ -1768,8 +1771,6 @@ _GetImage_()
     if [[ $download_ok = true ]]; then
         action='check local image file size'
         actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
-        get_local_size_result=$?
-        _UpdateRunLog_ "$section" "$action" "$actual_size" "$get_local_size_result" ''
 
         # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
         download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
@@ -1777,12 +1778,18 @@ _GetImage_()
         DebugChildVal "$section" "$(DisplayThousands "$actual_size") bytes"
         DebugChildVal 'average download speed' "$download_speed"
 
-        if [[ $actual_size -lt $lower_size_bytes ]] || [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
-            rm -f "$targetimage_pathfileext"
+        if [[ $actual_size -lt $lower_size_bytes ]]; then
+            _UpdateRunLog_ "$section" "$action" "$actual_size" '1' 'too small'
             size_ok=false
             _MoveToFail_
-            DebugChildFail "$action"
+            DebugChildFail "$action < $lower_size_bytes"
+        elif [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
+            _UpdateRunLog_ "$section" "$action" "$actual_size" '1' 'too large'
+            size_ok=false
+            _MoveToFail_
+            DebugChildFail "$action > $upper_size_bytes"
         else
+            _UpdateRunLog_ "$section" "$action" "$actual_size" '0' 'OK'
             size_ok=true
             DebugChildSuccess "$action"
         fi
