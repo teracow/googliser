@@ -127,6 +127,7 @@ Init()
     # user-variable strings
     aspect_ratio=''
     exclude_links_pathfile=''
+    exclude_words=''
     image_colour=''
     image_format=''
     image_type=''
@@ -138,9 +139,8 @@ Init()
     usage_rights=''
     user_gallery_title=''
     user_phrase=''
-    sites=''
     search_phrase=''
-    exclude_words=''
+    sites=''
 
     BuildWorkPaths
     FindPackageManager
@@ -419,7 +419,7 @@ WhatAreMyArgs()
                 exact_search=true
                 shift
                 ;;
-            --exclude)
+            --exclude-links)
                 exclude_links_pathfile=$2
                 shift 2
                 ;;
@@ -650,7 +650,7 @@ DisplayFullHelp()
     FormatHelpLine d debug "Save the runtime debug log [$DEBUG_FILE] into output directory."
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
-    FormatHelpLine '' exclude "A text file containing previously processed URLs. URLs in this file will not be downloaded again."
+    FormatHelpLine '' exclude-links "A text file containing previously processed URLs. Successful downloads will be appended to this file. URLs in this file will not be downloaded again."
     FormatHelpLine '' exclude-words "A comma separated list (without spaces) of words that you want to exclude from the search."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
     FormatHelpLine '' '' "'jpg'"
@@ -706,7 +706,7 @@ DisplayFullHelp()
     FormatHelpLine r retries "Retry each image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine s save-links "Save image URL list to file [$imagelinks_file] into the output directory."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
-    FormatHelpLine '' sites "A comma separated list (without spaces) of sites or domains from which you want to search the images"
+    FormatHelpLine '' sites "A comma separated list (without spaces) of sites or domains from which you want to search the images."
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
@@ -3431,7 +3431,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,sites:,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude:,exclude-words:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude-links:,exclude-words:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 

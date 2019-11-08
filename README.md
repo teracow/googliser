@@ -127,7 +127,7 @@ Delete the downloaded images after building the thumbnail gallery. Default is to
 `-E` or `--exact-search`
 Perform an exact search only. Disregard Google suggestions and loose matches. Default is to perform a loose search.
 
-`--exclude [FILE]`
+`--exclude-links [FILE]`
 Any previously downloaded URLs will be saved into this file (if specified). Specify this file again for future searches to ensure the same links are not reused.
 
 `-f [INTEGER]` or `--failures [INTEGER]`
