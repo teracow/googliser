@@ -1168,25 +1168,27 @@ ValidateParams()
     }
 
 FinalizeSearchPhrase()
-  {
+    {
+
     search_phrase=$1
 
     IFS=',' read -r -a array <<< "$exclude_words"
     for element in "${array[@]}"
     do
-      search_phrase+=" -${element}"
+        search_phrase+=" -${element}"
     done
 
     if [[ -n "$sites" ]]
     then
-      IFS=',' read -r -a array <<< "$sites"
-      for element in "${array[@]}"
-      do
+        IFS=',' read -r -a array <<< "$sites"
+        for element in "${array[@]}"
+        do
         search_phrase+=" -site:${element} OR"
-      done
-      search_phrase=${search_phrase%???}
+        done
+        search_phrase=${search_phrase%???}
     fi
-  }
+
+    }
 
 ProcessPhrase()
     {
@@ -1514,7 +1516,7 @@ GetImages()
         done
         wait 2>/dev/null;                   # wait here until all forked downloaders have completed
     else
-        RemoveCurrentDownloads
+        RemoveRunningDownloads
         TrimSuccessfulDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     fi
@@ -2473,14 +2475,14 @@ CTRL_C_Captured()
         echo " -> [SIGINT] cleanup ..."
     fi
 
-    RemoveCurrentDownloads
+    RemoveRunningDownloads
 
     DebugFuncExit
     Finish
 
     }
 
-RemoveCurrentDownloads()
+RemoveRunningDownloads()
     {
 
     local existing_pathfile=''
@@ -2490,18 +2492,14 @@ RemoveCurrentDownloads()
     kill -9 "$(jobs -p)" 2>/dev/null
 #    wait "$(jobs -p)" 2>/dev/null
 
-#    RefreshDownloadCounts
-
-#    if [[ $run_count -gt 0 ]]; then
-        # remove any image files where processing by [_GetImage_] was incomplete
-        for existing_pathfile in "$download_run_count_path"/*; do
-            existing_file="$(basename "$existing_pathfile")"
-            rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-            rm -f "$existing_pathfile"
-            DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
-            RefreshDownloadCounts; ShowGetImagesProgress
-        done
-#    fi
+    # remove any image files where processing by [_GetImage_] was incomplete
+    for existing_pathfile in "$download_run_count_path"/*; do
+        existing_file="$(basename "$existing_pathfile")"
+        rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
+        rm -f "$existing_pathfile"
+        DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
+        RefreshDownloadCounts; ShowGetImagesProgress
+    done
 
     }
 
