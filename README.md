@@ -4,7 +4,7 @@ This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script t
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from April 2016 to the present.
 
-Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) and [stevemart](https://github.com/stevemart) for their work on macOS compatibility. Their mods have been incorporated into this script.
+Big thanks to [dardo82](https://gist.github.com/dardo82/567eac882b678badfd097bae501b64e2) and [stevemart](https://github.com/stevemart) for their work on macOS compatibility, and also to [MBtech](https://github.com/MBtech) for coding some great new script features. Cheers guys!
 
 
 ---
