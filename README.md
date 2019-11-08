@@ -224,11 +224,11 @@ Downloaded image files are reindexed and renamed into a contiguous block. Note: 
 `-s` or `--save-links`    
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
 
-`-S` or `--skip-no-size`    
-Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
-
 `--sites [STRING]`    
 A comma separated list (without spaces) of sites or domains from which you want to search the images.
+
+`-S` or `--skip-no-size`    
+Some servers do not report a byte file-size, so this parameter will ensure these image files are not downloaded. Specifying this will speed up downloading but will generate more failures.
 
 `--thumbnails [STRING]`    
 Specify the maximum dimensions of thumbnails used in the gallery image. Width-by-height in pixels. Default is 400x400. If also using condensed-mode `-C --condensed`, this setting determines the size and shape of each thumbnail. Specify like `--thumbnails 200x150`.

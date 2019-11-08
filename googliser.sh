@@ -524,13 +524,13 @@ WhatAreMyArgs()
                 save_links=true
                 shift
                 ;;
-            --skip-no-size|-S)
-                skip_no_size=true
-                shift
-                ;;
             --sites)
                 sites=$2
                 shift 2
+                ;;
+            --skip-no-size|-S)
+                skip_no_size=true
+                shift
                 ;;
             --thumbnails)
                 thumbnail_dimensions=$2
@@ -705,8 +705,8 @@ DisplayFullHelp()
     FormatHelpLine '' reindex-rename "Reindex and rename downloaded image files into a contiguous block."
     FormatHelpLine r retries "Retry each image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
     FormatHelpLine s save-links "Save image URL list to file [$imagelinks_file] into the output directory."
-    FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine '' sites "A comma separated list (without spaces) of sites or domains from which you want to search the images."
+    FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
     FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
@@ -2508,7 +2508,17 @@ TrimSuccessfulDownloads()
 
     # ensure $download_success_count_path has a maximum of $gallery_images_required
 
-    echo
+    local existing_pathfile=''
+    local existing_file=''
+    # remove any image files where processing by [_GetImage_] was incomplete
+    for existing_pathfile in $(ls -tr "$target_path" | tail -n $((gallery_images_required+1))); do
+        echo "deleting unrequired download: [$existing_pathfile]"
+
+        #rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
+        #rm -f "$existing_pathfile"
+#        DebugFuncSuccess "deleted unwanted $(FormatLink "$existing_file")"
+    done
+    RefreshDownloadCounts; ShowGetImagesProgress
 
     }
 
@@ -3429,7 +3439,7 @@ case "$OSTYPE" in
         ;;
 esac
 
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,failures:,format:,exclude-links:,exclude-words:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
+user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
 user_parameters_result=$?
 user_parameters_raw="$*"
 
