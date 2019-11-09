@@ -53,7 +53,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191108
+    local SCRIPT_VERSION=191110
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -650,7 +650,7 @@ DisplayFullHelp()
     FormatHelpLine d debug "Save the runtime debug log [$DEBUG_FILE] into output directory."
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
-    FormatHelpLine '' exclude-links "A text file containing previously processed URLs. Successful downloads will be appended to this file. URLs in this file will not be downloaded again."
+    FormatHelpLine '' exclude-links "The URLs for images successfully downloaded will be appended to this file (if specified). Specify this file again to ensure these URLs are not reused."
     FormatHelpLine '' exclude-words "A comma separated list (without spaces) of words that you want to exclude from the search."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
     FormatHelpLine '' '' "'jpg'"
@@ -2497,15 +2497,13 @@ RemoveRunningDownloads()
 
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
     kill -9 "$(jobs -p)" 2>/dev/null
-#    wait "$(jobs -p)" 2>/dev/null
+    wait "$(jobs -p)" 2>/dev/null
 
     # remove any image files where processing by [_GetImage_] was incomplete
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file="$(basename "$existing_pathfile")"
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-        rm -f "$existing_pathfile"
         DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
-        RefreshDownloadCounts; ShowGetImagesProgress
     done
 
     }
@@ -2518,14 +2516,13 @@ TrimSuccessfulDownloads()
     local existing_pathfile=''
     local existing_file=''
     # remove any image files where processing by [_GetImage_] was incomplete
-    for existing_pathfile in $(ls -tr "$target_path" | tail -n $((gallery_images_required+1))); do
-        echo "deleting unrequired download: [$existing_pathfile]"
-
-        #rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-        #rm -f "$existing_pathfile"
-#        DebugFuncSuccess "deleted unwanted $(FormatLink "$existing_file")"
+    for existing_pathfile in "$download_run_count_path"/*; do
+        existing_file="$(basename "$existing_pathfile")"
+        rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
+        rm -f "$existing_pathfile"
+        DebugFuncSuccess "deleted unwanted $(FormatLink "$existing_file")"
+        RefreshDownloadCounts; ShowGetImagesProgress
     done
-    RefreshDownloadCounts; ShowGetImagesProgress
 
     }
 
