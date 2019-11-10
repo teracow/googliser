@@ -1485,7 +1485,7 @@ GetImages()
         while true; do
             RefreshDownloadCounts; ShowGetImagesProgress
 
-            [[ $success_count -eq $gallery_images_required ]] && break 2
+            [[ $success_count -ge $gallery_images_required ]] && break 2
 
             if [[ $fail_count -ge $fail_limit ]]; then
                 wait 2>/dev/null            # wait here until all forked downloaders have completed
@@ -1510,15 +1510,24 @@ GetImages()
         done
     done < "$imagelinks_pathfile"
 
-    if [[ $race = false ]]; then
-        while [[ $run_count -gt 0 ]]; do
-            RefreshDownloadCounts; ShowGetImagesProgress
-        done
-        wait 2>/dev/null;                   # wait here until all forked downloaders have completed
-    else
-        TerminateRunningDownloads
+    [[ $run_count -gt 0 && $race = true && $success_count -ge $gallery_images_required ]] && TerminateRunningDownloads
+
+    while [[ $run_count -gt 0 ]]; do
         RefreshDownloadCounts; ShowGetImagesProgress
+    done
+
+    wait 2>/dev/null;                   # wait here until all forked download jobs have exited
+
+    if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur when race=true so trim back successful downloads to that required
+        for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
+            existing_file="$(basename "$existing_pathfile")"
+            #echo "moving to fail: $existing_file ... "
+            mv "$existing_pathfile" "$download_fail_count_path"
+            rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
+        done
     fi
+
+    RefreshDownloadCounts; ShowGetImagesProgress
 
     if [[ $fail_count -gt 0 ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -2498,14 +2507,15 @@ TerminateRunningDownloads()
 
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
     kill $(jobs -rp) 2>/dev/null
-    wait $(jobs -rp) 2>/dev/null
+#    wait $(jobs -rp) 2>/dev/null
+    wait 2>/dev/null
 
     # remove any image files where processing by [_GetImage_] was incomplete
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file="$(basename "$existing_pathfile")"
         rm -f "$existing_pathfile"
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-        DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
+        DebugFuncSuccess "delete unwanted $(FormatLink "$existing_file")"
     done
 
     }
