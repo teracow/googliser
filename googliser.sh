@@ -1516,8 +1516,7 @@ GetImages()
         done
         wait 2>/dev/null;                   # wait here until all forked downloaders have completed
     else
-        RemoveRunningDownloads
-        TrimSuccessfulDownloads
+        TerminateRunningDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     fi
 
@@ -1634,14 +1633,19 @@ _GetImage_()
 
         DebugChildExec "get image" "$get_image_cmd"
 
-        eval "$get_image_cmd" 2>&1
+        resultmessage=$(eval "$get_image_cmd" 2>&1)
+        result=$?
+
+        return $result
 
         }
 
     _MoveToSuccess_()
         {
 
-        mv "$run_pathfile" "$success_pathfile"
+        # move runfile to the successes directory
+
+        [[ -e $run_pathfile ]] && mv "$run_pathfile" "$success_pathfile"
 
         }
 
@@ -1650,7 +1654,7 @@ _GetImage_()
 
         # move runfile to the failures directory
 
-        mv "$run_pathfile" "$fail_pathfile"
+        [[ -e $run_pathfile ]] && mv "$run_pathfile" "$fail_pathfile"
 
         # delete temp file if one was created
         [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
@@ -2482,46 +2486,29 @@ CTRL_C_Captured()
         echo " -> [SIGINT] cleanup ..."
     fi
 
-    RemoveRunningDownloads
+    TerminateRunningDownloads
 
     DebugFuncExit
     Finish
 
     }
 
-RemoveRunningDownloads()
+TerminateRunningDownloads()
     {
 
     local existing_pathfile=''
     local existing_file=''
 
     # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
-    kill -9 "$(jobs -p)" 2>/dev/null
-    wait "$(jobs -p)" 2>/dev/null
+    kill $(jobs -rp) 2>/dev/null
+    wait $(jobs -rp) 2>/dev/null
 
     # remove any image files where processing by [_GetImage_] was incomplete
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file="$(basename "$existing_pathfile")"
+        rm -f "$existing_pathfile"
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "deleted incomplete $(FormatLink "$existing_file")"
-    done
-
-    }
-
-TrimSuccessfulDownloads()
-    {
-
-    # ensure $download_success_count_path has a maximum of $gallery_images_required
-
-    local existing_pathfile=''
-    local existing_file=''
-    # remove any image files where processing by [_GetImage_] was incomplete
-    for existing_pathfile in "$download_run_count_path"/*; do
-        existing_file="$(basename "$existing_pathfile")"
-        rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-        rm -f "$existing_pathfile"
-        DebugFuncSuccess "deleted unwanted $(FormatLink "$existing_file")"
-        RefreshDownloadCounts; ShowGetImagesProgress
     done
 
     }
