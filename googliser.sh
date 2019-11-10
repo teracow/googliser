@@ -1633,10 +1633,7 @@ _GetImage_()
 
         DebugChildExec "get image" "$get_image_cmd"
 
-        resultmessage=$(eval "$get_image_cmd" 2>&1)
-        result=$?
-
-        return $result
+        eval "$get_image_cmd" 2>&1
 
         }
 
