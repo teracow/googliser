@@ -53,7 +53,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191110
+    local SCRIPT_VERSION=191111
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -780,8 +780,9 @@ ValidateParams()
         timeout_seconds=1
         retries=0
         skip_no_size=true
-        parallel_limit=512
+        parallel_limit=$PARALLEL_MAX
         links_only=false
+        compact_gallery=false
         no_gallery=true
         user_fail_limit=0
         race=true

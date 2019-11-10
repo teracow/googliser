@@ -333,9 +333,10 @@ This will download available images for the phrase *"flags"*, while excluding th
 
 - [Debian](https://www.debian.org/) - *10.0 Buster 64b*
 - GNU BASH - *v5.0.3*
-- GNU sed - *v4.7*
-- GNU grep - *v3.3*
 - GNU Wget - *v1.20.1*
+- GNU cURL - *v7.64.0*
+- GNU grep - *v3.3*
+- GNU sed - *v4.7*
 - [ImageMagick](http://www.imagemagick.org) - *v6.9.10-23 Q16*
 - Geany - *v1.33*
 - [ReText](https://github.com/retext-project/retext) - *v7.0.4*
@@ -344,7 +345,7 @@ This will download available images for the phrase *"flags"*, while excluding th
 - QT - *v5.11.3*
 - [Find Icons](http://findicons.com/icon/131388/search) - script icon
 
-**Also tested on:**
+**and periodically tested on these platforms:**
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
 - [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS*
