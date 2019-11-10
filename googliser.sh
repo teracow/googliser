@@ -322,8 +322,8 @@ CheckEnv()
         DebugFuncVar retries
         DebugFuncVar safesearch
         DebugFuncVar save_links
-        DebugFuncVar skip_no_size
         DebugFuncVar sites
+        DebugFuncVar skip_no_size
         DebugFuncVar thumbnail_dimensions
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
@@ -727,7 +727,7 @@ DisplayFullHelp()
     echo " Example:"
 
     if [[ $display_colour = true ]]; then
-        echo "$(ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'")"
+        ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"
     else
         echo " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"
     fi
@@ -796,7 +796,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $user_images_requested is invalid'
             echo
-            echo "$(ShowFail " !! number specified after (-n, --number) must be a valid integer")"
+            ShowFail " !! number specified after (-n, --number) must be a valid integer"
             exitcode=2
             return 1
             ;;
@@ -823,7 +823,7 @@ ValidateParams()
         if [[ ! -e $input_links_pathfile ]]; then
             DebugScriptFail '$input_links_pathfile was not found'
             echo
-            echo "$(ShowFail ' !! input links file  (--input-links) was not found')"
+            ShowFail ' !! input links file  (--input-links) was not found'
             exitcode=2
             return 1
         fi
@@ -833,7 +833,7 @@ ValidateParams()
         if [[ ! -e $input_phrases_pathfile ]]; then
             DebugScriptFail '$input_phrases_pathfile was not found'
             echo
-            echo "$(ShowFail ' !! input phrases file  (-i, --input-phrases) was not found')"
+            ShowFail ' !! input phrases file  (-i, --input-phrases) was not found'
             exitcode=2
             return 1
         fi
@@ -847,7 +847,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $user_fail_limit is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-f, --failures) must be a valid integer')"
+            ShowFail ' !! number specified after (-f, --failures) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -868,7 +868,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $parallel_limit is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-P, --parallel) must be a valid integer')"
+            ShowFail ' !! number specified after (-P, --parallel) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -889,7 +889,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $timeout_seconds is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-t, --timeout) must be a valid integer')"
+            ShowFail ' !! number specified after (-t, --timeout) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -910,7 +910,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $retries is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-r, --retries) must be a valid integer')"
+            ShowFail ' !! number specified after (-r, --retries) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -931,7 +931,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $upper_size_bytes is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer')"
+            ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -947,7 +947,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $lower_size_bytes is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer')"
+            ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -968,7 +968,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
             echo
-            echo "$(ShowFail ' !! number specified after (-b, --border-thickness) must be a valid integer')"
+            ShowFail ' !! number specified after (-b, --border-thickness) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -1002,7 +1002,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
                 echo
-                echo "$(ShowFail ' !! (-m, --minimum-pixels) preset invalid')"
+                ShowFail ' !! (-m, --minimum-pixels) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1028,7 +1028,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
                 echo
-                echo "$(ShowFail ' !! (-a, --aspect-ratio) preset invalid')"
+                ShowFail ' !! (-a, --aspect-ratio) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1044,7 +1044,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $image_type is invalid'
                 echo
-                echo "$(ShowFail ' !! (--type) preset invalid')"
+                ShowFail ' !! (--type) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1059,7 +1059,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $image_format is invalid'
                 echo
-                echo "$(ShowFail ' !! (--format) preset invalid')"
+                ShowFail ' !! (--format) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1083,7 +1083,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
                 echo
-                echo "$(ShowFail ' !! (--usage-rights) preset invalid')"
+                ShowFail ' !! (--usage-rights) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1114,7 +1114,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $recent is invalid'
                 echo
-                echo "$(ShowFail ' !! (--recent) preset invalid')"
+                ShowFail ' !! (--recent) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1151,7 +1151,7 @@ ValidateParams()
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
                 echo
-                echo "$(ShowFail ' !! (--colour, --color) preset invalid')"
+                ShowFail ' !! (--colour, --color) preset invalid'
                 exitcode=2
                 return 1
                 ;;
@@ -1205,7 +1205,7 @@ ProcessPhrase()
 
     if [[ -z $1 ]]; then
         DebugFuncFail 'phrase' 'unspecified'
-        echo "$(ShowFail ' !! search phrase (-p, --phrase) was unspecified')"
+        ShowFail ' !! search phrase (-p, --phrase) was unspecified'
         exitcode=2
         return 1
     fi
@@ -1246,7 +1246,7 @@ ProcessPhrase()
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
-            echo "$(ShowFail " !! couldn't create target path [$target_path]")"
+            ShowFail " !! couldn't create target path [$target_path]"
             exitcode=3
             return 1
         else
@@ -1550,7 +1550,7 @@ GetImages()
             DebugFuncFail 'links list exhausted' "$result_index/$results_received"
 
             if [[ $display_colour = true ]]; then
-                echo "$(ColourTextBrightRed 'Links list exhausted!')"
+                ColourTextBrightRed 'Links list exhausted!'
             else
                 echo "Links list exhausted!"
             fi
@@ -1695,7 +1695,6 @@ _GetImage_()
     local func_startseconds=$(date +%s)
     local section=''
     local action=''
-    local logmessage=''
     local get_remote_size_result=0
     local get_image_result=0
     local get_type_result=0
@@ -1855,8 +1854,7 @@ ParseResults()
 
         # check against allowable file types
         while read -r imagelink; do
-            AllowableFileType "$imagelink"
-            [[ $? -eq 0 ]] && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
+            AllowableFileType "$imagelink" && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
         done < "$imagelinks_pathfile"
         [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
         _GetLinkCount_
@@ -2115,7 +2113,7 @@ BuildGallery()
             ProgressUpdater 'failed!'
         fi
         echo
-        echo "$(ShowFail ' !! unable to build thumbnail gallery')"
+        ShowFail ' !! unable to build thumbnail gallery'
     fi
 
     [[ $result -eq 0 && $delete_after = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
@@ -2802,7 +2800,7 @@ DebugVar()
             displayvalue="'$value'"
         elif [[ $value =~ ^[0-9]+$ ]]; then
             if [[ $value -ge 1000 ]]; then
-                displayvalue="\"$(DisplayThousands $value)\""
+                displayvalue="\"$(DisplayThousands "$value")\""
             else
                 displayvalue="$value"
             fi
@@ -3450,9 +3448,7 @@ user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o
 user_parameters_result=$?
 user_parameters_raw="$*"
 
-CheckEnv
-
-if [[ $? -eq 0 ]]; then
+if CheckEnv; then
     if [[ -n $input_phrases_pathfile ]]; then
         while read -r file_phrase; do
             [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
