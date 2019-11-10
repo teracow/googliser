@@ -807,7 +807,7 @@ ValidateParams()
 
             if [[ $user_images_requested -gt $GOOGLE_RESULTS_MAX ]]; then
                 user_images_requested=$GOOGLE_RESULTS_MAX
-                DebugThis '~ $user_images_requested TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_images_requested"
+                DebugFuncVarAdjust '$user_images_requested TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_images_requested"
             fi
             ;;
     esac
@@ -853,12 +853,12 @@ ValidateParams()
         *)
             if [[ $user_fail_limit -le 0 ]]; then
                 user_fail_limit=$GOOGLE_RESULTS_MAX
-                DebugThis '~ $user_fail_limit SET TO MAX' "$user_fail_limit"
+                DebugFuncVarAdjust '$user_fail_limit SET TO MAX' "$user_fail_limit"
             fi
 
             if [[ $user_fail_limit -gt $GOOGLE_RESULTS_MAX ]]; then
                 user_fail_limit=$GOOGLE_RESULTS_MAX
-                DebugThis '~ $user_fail_limit TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
+                DebugFuncVarAdjust '$user_fail_limit TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
             fi
             ;;
     esac
@@ -874,12 +874,12 @@ ValidateParams()
         *)
             if [[ $parallel_limit -lt 1 ]]; then
                 parallel_limit=$PARALLEL_MAX
-                DebugThis '~ $parallel_limit SET TO MAX' "$parallel_limit"
+                DebugFuncVarAdjust '$parallel_limit SET TO MAX' "$parallel_limit"
             fi
 
             if [[ $parallel_limit -gt $PARALLEL_MAX ]]; then
                 parallel_limit=$PARALLEL_MAX
-                DebugThis '~ $parallel_limit TOO HIGH so set as' "$parallel_limit"
+                DebugFuncVarAdjust '$parallel_limit TOO HIGH so set as' "$parallel_limit"
             fi
             ;;
     esac
@@ -895,12 +895,12 @@ ValidateParams()
         *)
             if [[ $timeout_seconds -lt 1 ]]; then
                 timeout_seconds=1
-                DebugThis '~ $timeout_seconds TOO LOW so set as' "$timeout_seconds"
+                DebugFuncVarAdjust '$timeout_seconds TOO LOW so set as' "$timeout_seconds"
             fi
 
             if [[ $timeout_seconds -gt $TIMEOUT_SECONDS_MAX ]]; then
                 timeout_seconds=$TIMEOUT_SECONDS_MAX
-                DebugThis '~ $timeout_seconds TOO HIGH so set as' "$timeout_seconds"
+                DebugFuncVarAdjust '$timeout_seconds TOO HIGH so set as' "$timeout_seconds"
             fi
             ;;
     esac
@@ -916,12 +916,12 @@ ValidateParams()
         *)
             if [[ $retries -lt 0 ]]; then
                 retries=0
-                DebugThis '~ $retries TOO LOW so set as' "$retries"
+                DebugFuncVarAdjust '$retries TOO LOW so set as' "$retries"
             fi
 
             if [[ $retries -gt $RETRIES_MAX ]]; then
                 retries=$RETRIES_MAX
-                DebugThis '~ $retries TOO HIGH so set as' "$retries"
+                DebugFuncVarAdjust '$retries TOO HIGH so set as' "$retries"
             fi
             ;;
     esac
@@ -937,7 +937,7 @@ ValidateParams()
         *)
             if [[ $upper_size_bytes -lt 0 ]]; then
                 upper_size_bytes=0
-                DebugThis '~ $upper_size_bytes TOO LOW so set as' "$upper_size_bytes (unlimited)"
+                DebugFuncVarAdjust '$upper_size_bytes TOO LOW so set as' "$upper_size_bytes (unlimited)"
             fi
             ;;
     esac
@@ -953,12 +953,12 @@ ValidateParams()
         *)
             if [[ $lower_size_bytes -lt 0 ]]; then
                 lower_size_bytes=0
-                DebugThis '~ $lower_size_bytes TOO LOW so set as' "$lower_size_bytes"
+                DebugFuncVarAdjust '$lower_size_bytes TOO LOW so set as' "$lower_size_bytes"
             fi
 
             if [[ $upper_size_bytes -gt 0 && $lower_size_bytes -gt $upper_size_bytes ]]; then
                 lower_size_bytes=$((upper_size_bytes-1))
-                DebugThis "~ \$lower_size_bytes larger than \$upper_size_bytes ($upper_size_bytes) so set as" "$lower_size_bytes"
+                DebugFuncVarAdjust "\$lower_size_bytes larger than \$upper_size_bytes ($upper_size_bytes) so set as" "$lower_size_bytes"
             fi
             ;;
     esac
@@ -974,7 +974,7 @@ ValidateParams()
         *)
             if [[ $gallery_border_pixels -lt 0 ]]; then
                 gallery_border_pixels=0
-                DebugThis '~ $gallery_border_pixels TOO LOW so set as' "$gallery_border_pixels"
+                DebugFuncVarAdjust '$gallery_border_pixels TOO LOW so set as' "$gallery_border_pixels"
             fi
             ;;
     esac
@@ -1243,7 +1243,7 @@ ProcessPhrase()
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
-            DebugFuncFail "create target path" "failed! mkdir returned: ($result)"
+            DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
             echo "$(ShowFail " !! couldn't create target path [$target_path]")"
             exitcode=3
@@ -1416,7 +1416,7 @@ _GetResultPage_()
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
         else
-            DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+            DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
         fi
 
@@ -1510,9 +1510,8 @@ GetImages()
         done
     done < "$imagelinks_pathfile"
 
-    [[ $run_count -gt 0 && $race = true && $success_count -ge $gallery_images_required ]] && TerminateRunningDownloads
-
     while [[ $run_count -gt 0 ]]; do
+        [[ $race = true && $success_count -ge $gallery_images_required ]] && TerminateRunningDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     done
 
@@ -1609,7 +1608,7 @@ _GetImage_()
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
         else
-            DebugThis "! $_forkname_" 'unknown downloader'
+            DebugFuncFail "$_forkname_" 'unknown downloader'
             return 1
         fi
 
@@ -1636,7 +1635,7 @@ _GetImage_()
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
         else
-            DebugThis "! [${FUNCNAME[0]}]" 'unknown downloader'
+            DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
         fi
 
@@ -2186,7 +2185,7 @@ SuggestInstall()
     [[ -n $1 ]] && executable=$1 || return 1
     [[ -n $2 ]] && package=$2 || package=$executable
 
-    DebugThis "! no recognised '$executable' executable found"
+    DebugFuncFail "no recognised '$executable' executable found" 'unable to suggest'
     echo -e "\n '$executable' executable not found!"
     if [[ $PACKAGER_BIN != unknown ]]; then
         echo -e "\n try installing with:"
@@ -2864,8 +2863,8 @@ DebugThis()
     # $1 = symbol
     # $2 = item
     # $3 = value
-    # $4 = optional value
-    # $5 = optional value
+    # $4 = value (optional)
+    # $5 = value (optional)
 
     [[ -z $1 || -z $2 || -z $3 ]] && return 1
 
@@ -2932,7 +2931,7 @@ DownloaderReturnCodes()
     elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
         CurlReturnCodes "$1"
     else
-        DebugThis "! no return codes available for this downloader"
+        DebugFuncFail 'no return codes available for this downloader' 'unable to decode'
         return 1
     fi
 
