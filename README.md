@@ -197,7 +197,7 @@ Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
 `-P [INTEGER]` or `--parallel [INTEGER]`    
-How many parallel image downloads? Default is 64. Maximum is 512.
+How many parallel image downloads? Default is 64. Maximum is 512. Use 0 for maximum.
 
 `-q` or `--quiet`    
 Suppress stdout. stderr is still shown.

@@ -853,7 +853,7 @@ ValidateParams()
         *)
             if [[ $user_fail_limit -le 0 ]]; then
                 user_fail_limit=$GOOGLE_RESULTS_MAX
-                DebugThis '~ $user_fail_limit TOO LOW so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
+                DebugThis '~ $user_fail_limit SET TO MAX' "$user_fail_limit"
             fi
 
             if [[ $user_fail_limit -gt $GOOGLE_RESULTS_MAX ]]; then
@@ -873,8 +873,8 @@ ValidateParams()
             ;;
         *)
             if [[ $parallel_limit -lt 1 ]]; then
-                parallel_limit=1
-                DebugThis '~ $parallel_limit TOO LOW so set as' "$parallel_limit"
+                parallel_limit=$PARALLEL_MAX
+                DebugThis '~ $parallel_limit SET TO MAX' "$parallel_limit"
             fi
 
             if [[ $parallel_limit -gt $PARALLEL_MAX ]]; then
