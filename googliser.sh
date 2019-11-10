@@ -2786,14 +2786,26 @@ DebugNow()
 DebugVar()
     {
 
+    # Generally, values are output as provided.
+    # if a value contains whitespace, surround it with single-quotes.
+    # If it's a number from 1000 up, then insert commas as thousands group separators and surround it with double-quotes.
+
     # $1 = scope
     # $2 = variable name to log the value of
+
+    local displayvalue=''
 
     if [[ -n ${!2} ]]; then
         value="${!2}"
 
         if [[ $value = *" "* ]]; then
-            displayvalue="'$value'"         # if variable contains whitespace, surround with single quotes
+            displayvalue="'$value'"
+        elif [[ $value =~ ^[0-9]+$ ]]; then
+            if [[ $value -ge 1000 ]]; then
+                displayvalue="\"$(DisplayThousands $value)\""
+            else
+                displayvalue="$value"
+            fi
         else
             displayvalue="$value"
         fi
@@ -2802,7 +2814,6 @@ DebugVar()
     else
         DebugThis 'V' "$1" "\$$2" "''"
     fi
-
 
     }
 
