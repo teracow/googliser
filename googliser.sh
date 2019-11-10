@@ -1512,7 +1512,7 @@ GetImages()
     done < "$imagelinks_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        [[ $race = true && $success_count -ge $gallery_images_required ]] && TerminateRunningDownloads
+        [[ $race = true && $success_count -ge $gallery_images_required ]] && KillActiveDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     done
 
@@ -1521,7 +1521,6 @@ GetImages()
     if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur when race=true so trim back successful downloads to that required
         for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
             existing_file="$(basename "$existing_pathfile")"
-            #echo "moving to fail: $existing_file ... "
             mv "$existing_pathfile" "$download_fail_count_path"
             rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         done
@@ -2492,30 +2491,29 @@ CTRL_C_Captured()
         echo " -> [SIGINT] cleanup ..."
     fi
 
-    TerminateRunningDownloads
+    KillActiveDownloads
 
     DebugFuncExit
     Finish
 
     }
 
-TerminateRunningDownloads()
+KillActiveDownloads()
     {
+
+    # remove any image files where processing by [_GetImage_] was incomplete
 
     local existing_pathfile=''
     local existing_file=''
 
-    # http://stackoverflow.com/questions/81520/how-to-suppress-terminated-message-after-killing-in-bash
     kill $(jobs -rp) 2>/dev/null
-#    wait $(jobs -rp) 2>/dev/null
     wait 2>/dev/null
 
-    # remove any image files where processing by [_GetImage_] was incomplete
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file="$(basename "$existing_pathfile")"
         rm -f "$existing_pathfile"
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
-        DebugFuncSuccess "delete unwanted $(FormatLink "$existing_file")"
+        DebugFuncSuccess "$(FormatLink "$existing_file")"
     done
 
     }
