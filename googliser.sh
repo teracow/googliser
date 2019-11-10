@@ -693,7 +693,7 @@ DisplayFullHelp()
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
-#    FormatHelpLine '' race "Race to the finish line! Maximum concurrent downloads (as per '--parallel') will be maintained until the requested number of images are received. Extras are then removed."
+    FormatHelpLine '' race "Race to the finish line! Maximum concurrent downloads (as per '--parallel') will be maintained until the requested number of images are received. Extras are then removed."
     FormatHelpLine '' random "Download a single, random image."
     FormatHelpLine R recent "Only get images published this far back in time [any]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"

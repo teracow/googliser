@@ -202,11 +202,11 @@ How many parallel image downloads? Default is 64. Maximum is 512. Use 0 for maxi
 `-q` or `--quiet`    
 Suppress stdout. stderr is still shown.
 
+`--race`    
+Race to the finish line! Maximum concurrent downloads (as per `--parallel`) will be maintained until the requested number of images are received. This results in an overrun which is then trimmed-back to the amount of images required. It's fast!
+
 `--random`    
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
-
-`-r [INTEGER]` or `--retries [INTEGER]`    
-Number of download retries for each image. Default is 3. Maximum is 100.
 
 `-R [PRESET]` or `--recent [PRESET]`    
 Only get images published this far back in time. Default is 'any'. Preset values are:
@@ -220,6 +220,9 @@ Only get images published this far back in time. Default is 'any'. Preset values
 
 `--reindex-rename`    
 Downloaded image files are reindexed and renamed into a contiguous block. Note: this breaks the 1:1 relationship between URLs and downloaded file names.
+
+`-r [INTEGER]` or `--retries [INTEGER]`    
+Number of download retries for each image. Default is 3. Maximum is 100.
 
 `-s` or `--save-links`    
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.
