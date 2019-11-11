@@ -3529,7 +3529,7 @@ FirstPreferredFont()
 
     while read -r preferred_font; do
         while read -r available_font; do
-            [[ $preferred_font = $available_font ]] && break 2
+            [[ $preferred_font = "$available_font" ]] && break 2
         done <<< "$available_fonts"
     done <<< "$preferred_fonts"
 
