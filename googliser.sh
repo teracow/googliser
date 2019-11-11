@@ -49,6 +49,8 @@
 #   TT  elapsed time
 #   ##  comment
 
+ORIGIN="$_"
+
 Init()
     {
 
@@ -149,6 +151,31 @@ Init()
     DebugScriptNow
     DebugScriptVal 'version' "$SCRIPT_VERSION"
     DebugScriptVal 'PID' "$$"
+
+    case "$OSTYPE" in
+        "darwin"*)
+            SED_BIN='gsed'
+            DU_BIN='gdu'
+            if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
+                GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
+            else
+                DebugScriptFail "'brew' executable was not found"
+                echo " 'brew' executable was not found!"
+                echo -e "\n On this platform, try installing it with:"
+                echo ' $ xcode-select --install && ruby -e "$(curl -fsSL git.io/get-brew)"'
+                exit 1
+            fi
+            ;;
+        *)
+            SED_BIN='sed'
+            DU_BIN='du'
+            GETOPT_BIN='getopt'
+            ;;
+    esac
+
+    user_parameters=$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters_result=$?
+    user_parameters_raw="$*"
 
     }
 
@@ -3546,34 +3573,7 @@ FirstPreferredFont()
 
     }
 
-ORIGIN="$_"
-
-Init
-
-case "$OSTYPE" in
-    "darwin"*)
-        SED_BIN='gsed'
-        DU_BIN='gdu'
-        if [[ $(basename $PACKAGER_BIN) = brew ]]; then
-            GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
-        else
-            DebugScriptFail "'brew' executable was not found"
-            echo " 'brew' executable was not found!"
-            echo -e "\n On this platform, try installing it with:"
-            echo ' $ xcode-select --install && ruby -e "$(curl -fsSL git.io/get-brew)"'
-            exit 1
-        fi
-        ;;
-    *)
-        SED_BIN='sed'
-        DU_BIN='du'
-        GETOPT_BIN='getopt'
-        ;;
-esac
-
-user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")"
-user_parameters_result=$?
-user_parameters_raw="$*"
+Init "$@"
 
 if EnvironmentOK; then
     if [[ -n $input_phrases_pathfile ]]; then
