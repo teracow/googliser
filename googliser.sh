@@ -182,7 +182,7 @@ Init()
 InstallGoogliser()
     {
 
-    echo -e " -> installing googliser ...\n"
+    echo -e " -> installing ...\n"
 
     SUDO='sudo'
     if [[ $EUID -eq 0 ]]; then
@@ -3563,11 +3563,6 @@ FirstPreferredFont()
     if [[ -n $preferred_font ]]; then
         echo "$preferred_font"
     else
-        # uncomment 2nd line down to return first installed font if no preferred fonts could be found.
-        # for 'convert -font' this isn't needed as it will use a default font if specified font is "".
-
-        #read first_available_font others <<< $available_fonts
-
         echo "$first_available_font"
     fi
 
