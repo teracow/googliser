@@ -1228,30 +1228,31 @@ ProcessPhrase()
 
     DebugFuncVar target_path
 
-    if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
-        if [[ -n $user_gallery_title ]]; then
-            gallery_title="$user_gallery_title"
-        else
-            gallery_title="$1"
-            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
-        fi
-    fi
-
-    # create directory for search phrase
+    # ensure target path exists
     if [[ -e $target_path ]]; then
-        DebugFuncSuccess "target path already exists $target_path"
+        DebugFuncSuccess "target path already exists"
     else
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
-            ShowFail " !! couldn't create target path [$target_path]"
+            ShowFail " !! unable to create target path"
             exitcode=3
             return 1
         else
-            DebugFuncSuccess 'create target path'
+            DebugFuncSuccess "create target path"
             target_path_created=true
+        fi
+    fi
+
+    # set gallery title
+    if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
+        if [[ -n $user_gallery_title ]]; then
+            gallery_title="$user_gallery_title"
+        else
+            gallery_title="$1"
+            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
         fi
     fi
 
