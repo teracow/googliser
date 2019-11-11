@@ -1212,9 +1212,8 @@ ProcessPhrase()
 
     echo " -> requested phrase: \"$1\""
     FinalizeSearchPhrase "$1"
-    safe_search_phrase="${search_phrase// /+}"     # replace whitepace with '+' to suit curl/wget
+    safe_search_phrase="${search_phrase// /+}"  # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
-    safe_path_phrase="${1// /_}"       # replace whitepace with '_' so less issues later on!
 
     if [[ -z $output_path ]]; then
         target_path="$current_path/$1"
@@ -2080,7 +2079,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-($safe_path_phrase).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-(${search_phrase// /_}).png\""
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
