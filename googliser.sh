@@ -241,12 +241,7 @@ FindPackageManager()
 BuildWorkPaths()
     {
 
-    Flee()
-        {
-
-        echo "! Unable to create a temporary build directory! Exiting."; exit 7
-
-        }
+    Flee() { echo "! Unable to create a temporary build directory! Exiting."; exit 7 ;}
 
     local test_file=test-image          # used during image filesize testing
 
@@ -802,7 +797,6 @@ ValidateParams()
     if [[ $links_only = true ]]; then
         no_gallery=true
         save_links=true
-        user_fail_limit=0
     fi
 
     if [[ $lightning_mode = true ]]; then
@@ -2607,7 +2601,7 @@ ScrapeSearchResults()
 
     #-------------------------- "These are the regexes you're looking for" -------------------------------------
     # They turn a single, long file of Google HTML, CSS and Javascript into a nice, neat textfile,
-    # one URL per row and each pointing to an original image address found by Google.
+    # one URL per row, and each pointing to an original image address found by Google.
     #-----------------------------------------------------------------------------------------------------------
     #
     # sed   1. add 2 x newline chars before each occurence of '<div',
