@@ -1197,6 +1197,12 @@ FinalizeSearchPhrase()
 ProcessPhrase()
     {
 
+    # this function:
+    #   searches Google for a phrase,
+    #   creates a URL list,
+    #   downloads each image from URL list,
+    #   builds a gallery from these downloaded images if requested.
+
     # $1 = phrase to search Google Images for. Enclose whitespace in quotes.
 
     DebugFuncEntry
@@ -1261,6 +1267,115 @@ ProcessPhrase()
 
     # download search results
     GetResultPages || exitcode=4
+
+    # download images
+    if [[ $exitcode -eq 0 && $links_only = false ]]; then
+        GetImages || exitcode=5
+    fi
+
+    # reindex and rename downloaded images if specified
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $reindex_rename = true ]]; then
+        DebugFuncOpr 'reindexing and renaming downloaded files'
+        local reindex=0
+        for targetfile in "$target_path/"*; do
+            ((reindex++))
+            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
+        done
+    fi
+
+    # build thumbnail gallery even if fail_limit was reached
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
+        BuildGallery || exitcode=6
+    fi
+
+    # copy links file into target directory if possible. If not, then copy to current directory.
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
+        if [[ $save_links = true ]]; then
+            if [[ $target_path_created = true ]]; then
+                cp -f "$imagelinks_pathfile" "$target_path/$imagelinks_file"
+            else
+                cp -f "$imagelinks_pathfile" "$current_path/$imagelinks_file"
+            fi
+        fi
+    fi
+
+    DebugFuncElapsedTime "$func_startseconds"
+    DebugFuncExit
+
+    return 0
+
+    }
+
+ProcessLinkList()
+    {
+
+    # This function:
+    #   downloads each image from URL list,
+    #   builds a gallery from these downloaded images if requested.
+
+# This function is in-flux. Code-overlap between ProcessLinkList() and ProcessPhrase() will be removed when I can.
+# Requires '-n', '-o' and '-T' to be specified while in development (not programatically enforced yet, so ensure you specify them).
+# Later on, '-p' will be accepted too and can be used in-place of '-o' and '-T'.
+
+    DebugFuncEntry
+
+    local func_startseconds=$(date +%s)
+
+    echo
+#     DebugFuncComment 'user phrase parameters'
+
+#     if [[ -z $1 ]]; then
+#         DebugFuncFail 'phrase' 'unspecified'
+#         ShowFail ' !! search phrase (-p, --phrase) was unspecified'
+#         exitcode=2
+#         return 1
+#     fi
+
+#     echo " -> requested phrase: \"$1\""
+
+#     FinalizeSearchPhrase "$1"
+#     safe_search_phrase="${search_phrase// /+}"  # replace whitepace with '+' to suit curl/wget
+#     DebugFuncVar safe_search_phrase
+
+#     if [[ -z $output_path ]]; then
+#         target_path="$current_path/$1"
+#     else
+#         if [[ -n $input_phrases_pathfile ]]; then
+#             target_path="$output_path/$1"
+#         else
+            target_path="$output_path"
+#         fi
+#     fi
+
+    DebugFuncVar target_path
+
+    # ensure target path exists
+    if [[ -e $target_path ]]; then
+        DebugFuncSuccess "target path already exists"
+    else
+        mkdir -p "$target_path"
+        result=$?
+        if [[ $result -gt 0 ]]; then
+            DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
+            echo
+            ShowFail " !! unable to create target path"
+            exitcode=3
+            return 1
+        else
+            DebugFuncSuccess "create target path"
+            target_path_created=true
+        fi
+    fi
+
+    # set gallery title
+#     if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
+#         if [[ -n $user_gallery_title ]]; then
+            gallery_title="$user_gallery_title"
+#         else
+#             gallery_title="$1"
+#             DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+#         fi
+#     fi
 
     # download images
     if [[ $exitcode -eq 0 && $links_only = false ]]; then
@@ -3404,7 +3519,7 @@ FirstPreferredFont()
 
     while read -r preferred_font; do
         while read -r available_font; do
-            [[ $preferred_font = "$available_font" ]] && break 2
+            [[ $preferred_font = $available_font ]] && break 2
         done <<< "$available_fonts"
     done <<< "$preferred_fonts"
 
@@ -3455,6 +3570,8 @@ if EnvironmentOK; then
         while read -r file_phrase; do
             [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
         done < "$input_phrases_pathfile"
+    elif [[ -n $input_links_pathfile ]]; then
+        ProcessLinkList
     else
         ProcessPhrase "$user_phrase"
     fi
