@@ -649,7 +649,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'brown'"
     FormatHelpLine d debug "Save the runtime debug log [$DEBUG_FILE] into output directory."
     FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
-    FormatHelpLine E exact-search "Perform an exact search only. Disregard Google suggestions and loose matches."
+    FormatHelpLine E exact-search "Perform an exact-phrase search only. Disregard Google suggestions and loose matches."
     FormatHelpLine '' exclude-links "The URLs for images successfully downloaded will be appended to this file (if specified). Specify this file again to ensure these URLs are not reused."
     FormatHelpLine '' exclude-words "A comma separated list (without spaces) of words that you want to exclude from the search."
     FormatHelpLine '' format "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
@@ -663,7 +663,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'craw'"
     FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_RESULTS_MAX)."
     FormatHelpLine h help "Display this help."
-#    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A search will not be performed."
+#    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A Google search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_BYTES_DEFAULT]."
@@ -1729,16 +1729,16 @@ _GetImage_()
 
             if [[ $estimated_size = unknown ]]; then
                 pre_download_ok=$skip_no_size
-                _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'unknown'
+                _UpdateRunLog_ "$section" "$action" "$(DisplayThousands "$estimated_size") bytes" '1' 'unknown'
             else
                 if [[ $estimated_size -lt $lower_size_bytes ]]; then
                     pre_download_ok=false
                     _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too small'
-                    DebugChildFail "$action"
+                    DebugChildFail "$action < $(DisplayThousands "$lower_size_bytes") bytes"
                 elif [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
                     pre_download_ok=false
                     _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too large'
-                    DebugChildFail "$action"
+                    DebugChildFail "$action > $(DisplayThousands "$upper_size_bytes") bytes"
                 else
                     pre_download_ok=true
                     _UpdateRunLog_ "$section" "$action" "$estimated_size" '0' 'OK'
