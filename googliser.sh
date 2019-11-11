@@ -255,8 +255,11 @@ BuildWorkPaths()
 
     }
 
-CheckEnv()
+EnvironmentOK()
     {
+
+    # checks and logs runtime environment
+    # $? = 0 if OK, 1 if not
 
     DebugFuncEntry
     local func_startseconds=$(date +%s)
@@ -1211,6 +1214,7 @@ ProcessPhrase()
     fi
 
     echo " -> requested phrase: \"$1\""
+
     FinalizeSearchPhrase "$1"
     safe_search_phrase="${search_phrase// /+}"  # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
@@ -3417,8 +3421,6 @@ FirstPreferredFont()
 
     }
 
-#OSTYPE="darwin"
-
 ORIGIN="$_"
 
 Init
@@ -3448,7 +3450,7 @@ user_parameters="$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o
 user_parameters_result=$?
 user_parameters_raw="$*"
 
-if CheckEnv; then
+if EnvironmentOK; then
     if [[ -n $input_phrases_pathfile ]]; then
         while read -r file_phrase; do
             [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
