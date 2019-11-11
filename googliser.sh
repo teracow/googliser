@@ -799,7 +799,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $user_images_requested is invalid'
             echo
-            ShowFail " !! number specified after (-n, --number) must be a valid integer"
+            ShowFail ' !! number specified after (-n, --number) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -1239,18 +1239,18 @@ ProcessPhrase()
 
     # ensure target path exists
     if [[ -e $target_path ]]; then
-        DebugFuncSuccess "target path already exists"
+        DebugFuncSuccess 'target path already exists'
     else
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
-            ShowFail " !! unable to create target path"
+            ShowFail ' !! unable to create target path'
             exitcode=3
             return 1
         else
-            DebugFuncSuccess "create target path"
+            DebugFuncSuccess 'create target path'
             target_path_created=true
         fi
     fi
@@ -1351,18 +1351,18 @@ ProcessLinkList()
 
     # ensure target path exists
     if [[ -e $target_path ]]; then
-        DebugFuncSuccess "target path already exists"
+        DebugFuncSuccess 'target path already exists'
     else
         mkdir -p "$target_path"
         result=$?
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
-            ShowFail " !! unable to create target path"
+            ShowFail ' !! unable to create target path'
             exitcode=3
             return 1
         else
-            DebugFuncSuccess "create target path"
+            DebugFuncSuccess 'create target path'
             target_path_created=true
         fi
     fi
@@ -1376,6 +1376,16 @@ ProcessLinkList()
 #             DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
 #         fi
 #     fi
+
+    if [[ -e $input_links_pathfile ]]; then
+        imagelinks_pathfile=$input_links_pathfile
+    else
+        DebugFuncFail "input list file doesn't exist" "failed! mkdir returned: ($result)"
+        echo
+#       ShowFail ' !! unable to create target path'
+        exitcode=3
+        return 1
+    fi
 
     # download images
     if [[ $exitcode -eq 0 && $links_only = false ]]; then
@@ -1998,7 +2008,7 @@ ParseResults()
             head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
             mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
             results_received=$max_results_required
-            DebugFuncVarAdjust "after trimming to \$max_results_required" "$results_received"
+            DebugFuncVarAdjust 'after trimming to $max_results_required' "$results_received"
         fi
     fi
 
