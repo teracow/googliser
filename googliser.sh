@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-
-###############################################################################
+####################################################################################
 # googliser.sh
 #
 # (C)opyright 2016-2019 Teracow Software
@@ -22,7 +21,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see http://www.gnu.org/licenses/.
-###############################################################################
+####################################################################################
+# * Style Guide *
+# function names: CamelCase
+# variable names: lowercase_with_underscores (except for 'returncode' & 'errorcode')
+# constants: UPPERCASE_WITH_UNDERSCORES
+# indents: 4 x spaces
+####################################################################################
 
 # return values ($?):
 #   0   completed successfully
@@ -87,7 +92,7 @@ Init()
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
     script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
-    imagelinks_file=download.links.list
+    image_links_file=download.links.list
     gallery_title=''
     current_path="$PWD"
     exitcode=0
@@ -273,7 +278,7 @@ BuildWorkPaths()
     gallery_title_pathfile="$TEMP_PATH/gallery.title.png"
     gallery_thumbnails_pathfile="$TEMP_PATH/gallery.thumbnails.png"
     gallery_background_pathfile="$TEMP_PATH/gallery.background.png"
-    imagelinks_pathfile="$TEMP_PATH/$imagelinks_file"
+    image_links_pathfile="$TEMP_PATH/$image_links_file"
     debug_pathfile="$TEMP_PATH/$DEBUG_FILE"
 
     unset -f Flee
@@ -733,7 +738,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'year'"
     FormatHelpLine '' reindex-rename "Reindex and rename downloaded image files into a contiguous block."
     FormatHelpLine r retries "Retry each image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
-    FormatHelpLine s save-links "Save image URL list to file [$imagelinks_file] into the output directory."
+    FormatHelpLine s save-links "Save image URL list to file [$image_links_file] into the output directory."
     FormatHelpLine '' sites "A comma separated list (without spaces) of sites or domains from which you want to search the images."
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
@@ -1318,9 +1323,9 @@ ProcessPhrase()
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
         if [[ $save_links = true ]]; then
             if [[ $target_path_created = true ]]; then
-                cp -f "$imagelinks_pathfile" "$target_path/$imagelinks_file"
+                cp -f "$image_links_pathfile" "$target_path/$image_links_file"
             else
-                cp -f "$imagelinks_pathfile" "$current_path/$imagelinks_file"
+                cp -f "$image_links_pathfile" "$current_path/$image_links_file"
             fi
         fi
     fi
@@ -1379,7 +1384,7 @@ ProcessLinkList()
         fi
     fi
 
-    [[ -n $input_links_pathfile ]] && imagelinks_pathfile=$input_links_pathfile
+    [[ -n $input_links_pathfile ]] && image_links_pathfile=$input_links_pathfile
 
     # download images
     if [[ $exitcode -eq 0 ]]; then
@@ -1623,7 +1628,7 @@ GetImages()
                 break
             fi
         done
-    done < "$imagelinks_pathfile"
+    done < "$image_links_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
         [[ $race = true && $success_count -ge $gallery_images_required ]] && AbortDownloads
@@ -1952,7 +1957,7 @@ ParseResults()
         {
 
         # get link count
-        results_received=$(wc -l < "$imagelinks_pathfile"); results_received=${results_received##* }
+        results_received=$(wc -l < "$image_links_pathfile"); results_received=${results_received##* }
 
         }
 
@@ -1963,36 +1968,36 @@ ParseResults()
 
     ScrapeSearchResults
 
-    if [[ -e $imagelinks_pathfile ]]; then
+    if [[ -e $image_links_pathfile ]]; then
         _GetLinkCount_
         DebugFuncVar results_received
 
         # check against allowable file types
         while read -r imagelink; do
-            AllowableFileType "$imagelink" && echo "$imagelink" >> "$imagelinks_pathfile.tmp"
-        done < "$imagelinks_pathfile"
-        [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
+            AllowableFileType "$imagelink" && echo "$imagelink" >> "$image_links_pathfile.tmp"
+        done < "$image_links_pathfile"
+        [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         _GetLinkCount_
         DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
-        cat -n "$imagelinks_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$imagelinks_pathfile.tmp"
-        [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
+        cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
+        [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         _GetLinkCount_
         DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
-            [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$imagelinks_pathfile" > "$imagelinks_pathfile.tmp"
-            [[ -e $imagelinks_pathfile.tmp ]] && mv "$imagelinks_pathfile.tmp" "$imagelinks_pathfile"
+            [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$image_links_pathfile" > "$image_links_pathfile.tmp"
+            [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
             _GetLinkCount_
             DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
         fi
 
         # if too many results then trim
         if [[ $results_received -gt $max_results_required ]]; then
-            head -n "$max_results_required" "$imagelinks_pathfile" > "$imagelinks_pathfile".tmp
-            mv "$imagelinks_pathfile".tmp "$imagelinks_pathfile"
+            head -n "$max_results_required" "$image_links_pathfile" > "$image_links_pathfile".tmp
+            mv "$image_links_pathfile".tmp "$image_links_pathfile"
             results_received=$max_results_required
             DebugFuncVarAdjust 'after trimming to $max_results_required' "$results_received"
         fi
@@ -2022,9 +2027,9 @@ ParseResults()
         fi
     fi
 
-    if [[ -e $imagelinks_pathfile && $random_image = true ]]; then
+    if [[ -e $image_links_pathfile && $random_image = true ]]; then
         local op='shuffle links'
-        shuf "$imagelinks_pathfile" -o "$imagelinks_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
+        shuf "$image_links_pathfile" -o "$image_links_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
     fi
 
     if [[ $exitcode -eq 0 ]]; then
@@ -2170,7 +2175,6 @@ BuildGallery()
 
         if [[ $gallery_title != none ]]; then
             # create title image
-            # let's try a fixed height of 100 pixels
             build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
             DebugFuncExec "$stage_description" "$build_title_cmd"
@@ -2602,7 +2606,7 @@ ScrapeSearchResults()
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
     | $SED_BIN '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
-    > "$imagelinks_pathfile"
+    > "$image_links_pathfile"
 
     }
 
