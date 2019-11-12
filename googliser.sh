@@ -265,6 +265,9 @@ BuildWorkPaths()
     download_fail_count_path="$TEMP_PATH/download.fail.count"
     mkdir -p "$download_fail_count_path" || Flee
 
+    download_abort_count_path="$TEMP_PATH/download.abort.count"
+    mkdir -p "$download_abort_count_path" || Flee
+
     testimage_pathfile="$TEMP_PATH/$test_file"
     searchresults_pathfile="$TEMP_PATH/search.results.page.html"
     gallery_title_pathfile="$TEMP_PATH/gallery.title.png"
@@ -1578,6 +1581,7 @@ GetImages()
     local run_count=0
     local success_count=0
     local fail_count=0
+    local abort_count=0
     local imagelink=''
     local download_bytes=0
 
@@ -1620,7 +1624,7 @@ GetImages()
     done < "$imagelinks_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        [[ $race = true && $success_count -ge $gallery_images_required ]] && KillActiveDownloads
+        [[ $race = true && $success_count -ge $gallery_images_required ]] && AbortDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     done
 
@@ -1671,6 +1675,7 @@ GetImages()
 
     DebugFuncVal 'downloads OK' "$success_count"
     DebugFuncVal 'downloads failed' "$fail_count"
+    DebugFuncVal 'downloads aborted' "$abort_count"
 
     if [[ $result -le 1 ]]; then
         download_bytes="$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)"
@@ -2387,6 +2392,7 @@ RefreshDownloadCounts()
     run_count=$(ls -1 "$download_run_count_path" | wc -l); run_count=${run_count##* }                   # remove leading space in 'wc' output on macOS
     success_count=$(ls -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
     fail_count=$(ls -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
+    abort_count=$(ls -1 "$download_abort_count_path" | wc -l); abort_count=${abort_count##* }           # remove leading space in 'wc' output on macOS
 
     }
 
@@ -2611,14 +2617,14 @@ CTRL_C_Captured()
         echo " -> [SIGINT] cleanup ..."
     fi
 
-    KillActiveDownloads
+    AbortDownloads
 
     DebugFuncExit
     Finish
 
     }
 
-KillActiveDownloads()
+AbortDownloads()
     {
 
     # remove any image files where processing by [_GetImage_] was incomplete
@@ -2631,7 +2637,7 @@ KillActiveDownloads()
 
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file="$(basename "$existing_pathfile")"
-        rm -f "$existing_pathfile"
+        mv "$existing_pathfile" "$download_abort_count_path"/
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "$(FormatLink "$existing_file")"
     done
