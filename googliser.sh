@@ -2627,6 +2627,8 @@ CTRL_C_Captured()
 AbortDownloads()
     {
 
+    DebugFuncEntry
+
     # remove any image files where processing by [_GetImage_] was incomplete
 
     local existing_pathfile=''
@@ -2641,6 +2643,10 @@ AbortDownloads()
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "$(FormatLink "$existing_file")"
     done
+
+    DebugFuncExit
+
+    return 0
 
     }
 
