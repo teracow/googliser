@@ -155,7 +155,7 @@ Display the complete parameter list.
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`. One phrase per line.
 
 `-l [INTEGER]` or `--lower-size [INTEGER]`    
-Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 1,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but send HTML instead.
+Only download image files larger than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 2,000 bytes. This setting is useful for skipping files sent by servers that claim to have a JPG, but send HTML instead.
 
 `-L` or `--links-only`    
 Only get image file URLs, don't download any images. Default is to compile a list of image file URLs, then download them.
@@ -182,7 +182,7 @@ Only download images with at least this many pixels. Preset values are:
 - `icon`
 
 `-n [INTEGER]` or `--number [INTEGER]`    
-Number of images to download. Default is 16. Maximum is 1,000.
+Number of images to download. Default is 36. Maximum is 1,000.
 
 `--no-colour` or `--no-color`    
 Runtime display in bland, uncoloured text. Default will brighten your day. :)
@@ -203,7 +203,7 @@ How many parallel image downloads? Default is 64. Maximum is 512. Use 0 for maxi
 Suppress stdout. stderr is still shown.
 
 `--race`    
-Race to the finish line! Maximum concurrent downloads (as per `--parallel`) will be maintained until the requested number of images are received. This results in an overrun which is then trimmed-back to the amount of images required. It's fast!
+Race to the finish line! Maximum concurrent downloads (as per `--parallel`) will be maintained until the requested number of images are received. This results in an overrun which is then trimmed-back to the amount of images required. It's fast! This is now enabled by default.
 
 `--random`    
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
@@ -252,7 +252,7 @@ Image type to download. Preset values are:
 - `animated`
 
 `-u [INTEGER]` or `--upper-size [INTEGER]`    
-Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 0 (unlimited).
+Only download image files smaller than this many bytes. Some servers do not report a byte file-size, so these will be downloaded anyway and checked afterward (unless `--skip-no-size` is specified). Default is 200,000 bytes.
 
 `--usage-rights [PRESET]`    
 Usage rights. Preset values are:

@@ -55,7 +55,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191111
+    local SCRIPT_VERSION=191112
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -65,14 +65,14 @@ Init()
     SCRIPT_STARTSECONDS=$(date +%s)
 
     # parameter default constants
-    FAIL_LIMIT_DEFAULT=32
+    FAIL_LIMIT_DEFAULT=64
     GALLERY_BORDER_PIXELS_DEFAULT=30
-    IMAGES_REQUESTED_DEFAULT=16
-    LOWER_SIZE_BYTES_DEFAULT=1000
+    IMAGES_REQUESTED_DEFAULT=36
+    LOWER_SIZE_BYTES_DEFAULT=2000
     PARALLEL_LIMIT_DEFAULT=64
     THUMBNAIL_DIMENSIONS_DEFAULT=400x400
     TIMEOUT_SECONDS_DEFAULT=30
-    UPPER_SIZE_BYTES_DEFAULT=0
+    UPPER_SIZE_BYTES_DEFAULT=200000
     RETRIES_DEFAULT=3
 
     # limits
@@ -104,10 +104,10 @@ Init()
     timeout_seconds=$TIMEOUT_SECONDS_DEFAULT
     upper_size_bytes=$UPPER_SIZE_BYTES_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
-    user_fail_limit=$fail_limit
+    user_fail_limit=$fail_limit			# thinking of removing this as a user variable and always use unlimited downloads
 
     # user-variable options
-    always_download=false
+    always_download=false               # thinking of removing this as a user option, because we should always grab what we can
     compact_gallery=false
     debug=false
     delete_after=false
@@ -117,7 +117,7 @@ Init()
     lightning_mode=false
     links_only=false
     no_gallery=false
-    race=false
+    race=true							# race is now on by default
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -766,17 +766,6 @@ ValidateParams()
 
     DebugFuncEntry
 
-    if [[ $no_gallery = true && $delete_after = true && $links_only = false ]]; then
-        echo
-        echo " Hmmm, so you've requested:"
-        echo " 1. don't create a gallery,"
-        echo " 2. delete the images after downloading,"
-        echo " 3. don't save the links file."
-        echo " Might be time to (R)ead-(T)he-(M)anual. ;)"
-        exitcode=2
-        return 1
-    fi
-
     local aspect_ratio_type=''
     local aspect_ratio_search=''
     local image_colour_type=''
@@ -814,6 +803,28 @@ ValidateParams()
 
     if [[ $compact_gallery = true ]]; then
         no_gallery=false
+    fi
+
+    if [[ $no_gallery = true && $delete_after = true && $links_only = false ]]; then
+        echo
+        echo " Let's review. Your chosen options will:"
+        echo " 1. not create a gallery,"
+        echo " 2. delete the downloaded images,"
+        echo " 3. not save the URL links list to file."
+        echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
+        exitcode=2
+        return 1
+    fi
+
+    if [[ -n $input_links_pathfile && $links_only = true && $save_links = true ]]; then
+        echo
+        echo " Let's review. Your chosen options will:"
+        echo " 1. use an input file with a list of URL links,"
+        echo " 2. don't download any images,"
+        echo " 3. save the URL links list to file."
+        echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
+        exitcode=2
+        return 1
     fi
 
     case ${user_images_requested#[-+]} in
@@ -1276,16 +1287,6 @@ ProcessPhrase()
         fi
     fi
 
-    # set gallery title
-    if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
-        if [[ -n $user_gallery_title ]]; then
-            gallery_title="$user_gallery_title"
-        else
-            gallery_title="$1"
-            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
-        fi
-    fi
-
     # download search results
     GetResultPages || exitcode=4
 
@@ -1335,38 +1336,24 @@ ProcessLinkList()
     #   builds a gallery from these downloaded images if requested.
 
 # This function is in-flux. Code-overlap between ProcessLinkList() and ProcessPhrase() will be removed when I can.
-# Requires '-n', '-o' and '-T' to be specified while in development (not programatically enforced yet, so ensure you specify them).
-# Later on, '-p' will be accepted too and can be used in-place of '-o' and '-T'.
 
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
 
     echo
-#     DebugFuncComment 'user phrase parameters'
 
-#     if [[ -z $1 ]]; then
-#         DebugFuncFail 'phrase' 'unspecified'
-#         ShowFail ' !! search phrase (-p, --phrase) was unspecified'
-#         exitcode=2
-#         return 1
-#     fi
-
-#     echo " -> requested phrase: \"$1\""
-
-#     FinalizeSearchPhrase "$1"
-#     safe_search_phrase="${search_phrase// /+}"  # replace whitepace with '+' to suit curl/wget
-#     DebugFuncVar safe_search_phrase
-
-#     if [[ -z $output_path ]]; then
-#         target_path="$current_path/$1"
-#     else
-#         if [[ -n $input_phrases_pathfile ]]; then
-#             target_path="$output_path/$1"
-#         else
-            target_path="$output_path"
-#         fi
-#     fi
+    if [[ -n $output_path ]]; then
+        target_path="$output_path/$user_gallery_title"
+    else
+        if [[ -n $user_gallery_title ]]; then
+            target_path="$user_gallery_title"
+        elif [[ -n $user_phrase ]]; then
+            target_path="$user_phrase"
+        else
+            target_path="$(date +%s)"
+        fi
+    fi
 
     DebugFuncVar target_path
 
@@ -1388,28 +1375,10 @@ ProcessLinkList()
         fi
     fi
 
-    # set gallery title
-#     if [[ $exitcode -eq 0 && $no_gallery = false ]]; then
-#         if [[ -n $user_gallery_title ]]; then
-            gallery_title="$user_gallery_title"
-#         else
-#             gallery_title="$1"
-#             DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
-#         fi
-#     fi
-
-    if [[ -e $input_links_pathfile ]]; then
-        imagelinks_pathfile=$input_links_pathfile
-    else
-        DebugFuncFail "input list file doesn't exist" "failed! mkdir returned: ($result)"
-        echo
-#       ShowFail ' !! unable to create target path'
-        exitcode=3
-        return 1
-    fi
+    [[ -n $input_links_pathfile ]] && imagelinks_pathfile=$input_links_pathfile
 
     # download images
-    if [[ $exitcode -eq 0 && $links_only = false ]]; then
+    if [[ $exitcode -eq 0 ]]; then
         GetImages || exitcode=5
     fi
 
@@ -1426,17 +1395,6 @@ ProcessLinkList()
     # build thumbnail gallery even if fail_limit was reached
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
         BuildGallery || exitcode=6
-    fi
-
-    # copy links file into target directory if possible. If not, then copy to current directory.
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
-        if [[ $save_links = true ]]; then
-            if [[ $target_path_created = true ]]; then
-                cp -f "$imagelinks_pathfile" "$target_path/$imagelinks_file"
-            else
-                cp -f "$imagelinks_pathfile" "$current_path/$imagelinks_file"
-            fi
-        fi
     fi
 
     DebugFuncElapsedTime "$func_startseconds"
@@ -2103,6 +2061,20 @@ BuildGallery()
 
     InitProgress
 
+    # set gallery title
+    if [[ -n $user_gallery_title ]]; then
+        gallery_title="$user_gallery_title"
+    else
+        if [[ -n $input_links_pathfile ]]; then
+            if [[ -n $user_phrase ]]; then
+                gallery_title="$user_phrase"
+            elif [[ -n $output_path ]]; then
+                gallery_title="$(basename "$output_path")"
+            fi
+            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+        fi
+    fi
+
     # build thumbnails image overlay
     stage_description='compose thumbnails'
     if [[ $verbose = true ]]; then
@@ -2229,7 +2201,7 @@ BuildGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-(${search_phrase// /_}).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-($gallery_title).png\""
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
