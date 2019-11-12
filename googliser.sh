@@ -1593,6 +1593,7 @@ GetImages()
     [[ -d $download_run_count_path ]] && rm -f "$download_run_count_path"/*
     [[ -d $download_success_count_path ]] && rm -f "$download_success_count_path"/*
     [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path"/*
+    [[ -d $download_abort_count_path ]] && rm -f "$download_abort_count_path"/*
 
     while read -r imagelink; do
         while true; do
@@ -1633,7 +1634,7 @@ GetImages()
     if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur when race=true so trim back successful downloads to that required
         for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
             existing_file="$(basename "$existing_pathfile")"
-            mv "$existing_pathfile" "$download_fail_count_path"
+            mv "$existing_pathfile" "$download_abort_count_path"
             rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         done
     fi
