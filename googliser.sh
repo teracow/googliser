@@ -104,7 +104,7 @@ Init()
     timeout_seconds=$TIMEOUT_SECONDS_DEFAULT
     upper_size_bytes=$UPPER_SIZE_BYTES_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
-    user_fail_limit=$fail_limit			# thinking of removing this as a user variable and always use unlimited downloads
+    user_fail_limit=$fail_limit         # thinking of removing this as a user variable and always use unlimited downloads
 
     # user-variable options
     always_download=false               # thinking of removing this as a user option, because we should always grab what we can
@@ -117,7 +117,7 @@ Init()
     lightning_mode=false
     links_only=false
     no_gallery=false
-    race=true							# race is now on by default
+    race=true                           # race is now on by default
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -2065,14 +2065,14 @@ BuildGallery()
     if [[ -n $user_gallery_title ]]; then
         gallery_title="$user_gallery_title"
     else
-        if [[ -n $input_links_pathfile ]]; then
-            if [[ -n $user_phrase ]]; then
-                gallery_title="$user_phrase"
-            elif [[ -n $output_path ]]; then
-                gallery_title="$(basename "$output_path")"
-            fi
-            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+        if [[ -n $user_phrase ]]; then
+            gallery_title="$user_phrase"
+        elif [[ -n $output_path ]]; then
+            gallery_title="$(basename "$output_path")"
+        elif [[ -n $input_links_pathfile ]]; then
+            gallery_title="$(date +%s)"
         fi
+        DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
     fi
 
     # build thumbnails image overlay
