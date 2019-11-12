@@ -240,7 +240,7 @@ Specify the maximum dimensions of thumbnails used in the gallery image. Width-by
 Number of seconds before the downloader stops trying to get each image. Default is 30. Maximum is 600 (10 minutes).
 
 `-T [STRING]` or `--title [STRING]`    
-Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title false`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
+Specify a custom title for the gallery. Default is to use the search-phrase. To create a gallery with no title, specify `--title none`. Enclose whitespace in single or double-quotes according to taste. e.g. `--title 'This is what cows look like!'`
 
 `--type [PRESET]`    
 Image type to download. Preset values are:

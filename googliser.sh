@@ -55,7 +55,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191112
+    local SCRIPT_VERSION=191113
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -357,6 +357,7 @@ EnvironmentOK()
         DebugFuncVar upper_size_bytes
         DebugFuncVar usage_rights
         DebugFuncVar user_fail_limit
+        DebugFuncVar user_gallery_title
         DebugFuncVar user_images_requested
         DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
@@ -569,8 +570,8 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             --title|-T)
-                if [[ $(Lowercase "$2") = false ]]; then
-                    user_gallery_title='_false_'
+                if [[ $(Lowercase "$2") = none ]]; then
+                    user_gallery_title=none
                 else
                     user_gallery_title=$2
                 fi
@@ -737,7 +738,7 @@ DisplayFullHelp()
     FormatHelpLine S skip-no-size "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine '' thumbnails "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
     FormatHelpLine t timeout "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
-    FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'false' for no title."
+    FormatHelpLine T title "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'none' for no title."
     FormatHelpLine '' type "Image type. Specify like '--type clipart'. Presets are:"
     FormatHelpLine '' '' "'face'"
     FormatHelpLine '' '' "'photo'"
@@ -1349,7 +1350,7 @@ ProcessLinkList()
     if [[ -n $output_path ]]; then
         target_path="$output_path/$user_gallery_title"
     else
-        if [[ -n $user_gallery_title ]]; then
+        if [[ -n $user_gallery_title && $user_gallery_title != none ]]; then
             target_path="$user_gallery_title"
         elif [[ -n $user_phrase ]]; then
             target_path="$user_phrase"
@@ -2096,7 +2097,7 @@ BuildGallery()
         ProgressUpdater "$progress_message"
     fi
 
-    if [[ $gallery_title = '_false_' ]]; then
+    if [[ $gallery_title = none ]]; then
         reserve_for_title=''
     else
         reserve_for_title="-gravity north -splice 0x$((title_height_pixels+gallery_border_pixels+10))"
@@ -2167,7 +2168,7 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
-        if [[ $gallery_title != '_false_' ]]; then
+        if [[ $gallery_title != none ]]; then
             # create title image
             # let's try a fixed height of 100 pixels
             build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
@@ -2200,7 +2201,7 @@ BuildGallery()
             ProgressUpdater "$progress_message"
         fi
 
-        if [[ $gallery_title = '_false_' ]]; then
+        if [[ $gallery_title = none ]]; then
             include_title=''
         else
             include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
