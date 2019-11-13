@@ -66,7 +66,7 @@ Init()
     GALLERY_FILE_PREFIX=googliser-gallery
     DEBUG_FILE=debug.log
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
-    local SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
     SCRIPT_STARTSECONDS=$(date +%s)
 
     # parameter default constants
@@ -90,8 +90,6 @@ Init()
     fail_limit=$FAIL_LIMIT_DEFAULT
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
-    script_details_colour=$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")
-    script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
     image_links_file=download.links.list
     gallery_title=''
     current_path=$PWD
@@ -154,15 +152,15 @@ Init()
 
     DebugScriptEntry
     DebugScriptNow
-    DebugScriptVal 'version' "$SCRIPT_VERSION"
-    DebugScriptVal 'PID' "$$"
+    DebugScriptVal version "$SCRIPT_VERSION"
+    DebugScriptVal PID "$$"
 
     case "$OSTYPE" in
         "darwin"*)
             SED_BIN=gsed
             DU_BIN=gdu
             if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
-                GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt 	# based upon https://stackoverflow.com/a/47542834/6182835
+                GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
             else
                 DebugScriptFail "'brew' executable was not found"
                 echo " 'brew' executable was not found!"
@@ -301,13 +299,7 @@ EnvironmentOK()
         return 1
     fi
 
-    if [[ $verbose = true ]]; then
-        if [[ $display_colour = true ]]; then
-            echo "$script_details_colour"
-        else
-            echo "$script_details_plain"
-        fi
-    fi
+    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
 
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
         DisplayBasicHelp
@@ -611,21 +603,12 @@ WhatAreMyArgs()
 DisplayBasicHelp()
     {
 
-    echo
-    if [[ $display_colour = true ]]; then
-        message="$(ShowGoogle) $(ColourTextBrightBlue "images")"
-    else
-        message='Google images'
-    fi
+    message="$(ShowGoogle) $(ColourTextBrightBlue images)"
 
+    echo
     echo " Search '$message' for a number of images matching a phrase, then compile them into a gallery."
     echo
-
-    if [[ $display_colour = true ]]; then
-        echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
-    else
-        echo " Usage: ./$SCRIPT_FILE [PARAMETERS] ..."
-    fi
+    echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
 
     }
 
@@ -643,19 +626,10 @@ DisplayFullHelp()
     echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown as [n]."
     echo
 
-    if [[ $display_colour = true ]]; then
-        echo " $(ColourTextBrightOrange "* Required *")"
-    else
-        echo " * Required *"
-    fi
-
+    ColourTextBrightOrange " * Required *"; echo
     FormatHelpLine p phrase "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
-    if [[ $display_colour = true ]]; then
-        echo " $(ColourTextBrightOrange "* Optional *")"
-    else
-        echo " * Optional *"
-    fi
+    ColourTextBrightOrange " * Optional *"; echo
     FormatHelpLine A always-download "Always download images, no matter what else happens. Unlimited failures!"
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '--aspect-ratio square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
@@ -759,15 +733,10 @@ DisplayFullHelp()
     FormatHelpLine z lightning "Download images even faster by using an optimised set of parameters. For when you really can't wait!"
     echo
     echo " Example:"
-
-    if [[ $display_colour = true ]]; then
-        ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"
-    else
-        echo " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"
-    fi
-
     echo
-    echo " This will download the first $IMAGES_REQUESTED_DEFAULT available images for the phrase '$SAMPLE_USER_PHRASE', and build them into a gallery image."
+    ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"; echo
+    echo
+    echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE', and build them into a gallery image."
     }
 
 ValidateParams()
@@ -1254,7 +1223,7 @@ ProcessPhrase()
     DebugFuncComment 'user phrase parameters'
 
     if [[ -z $1 ]]; then
-        DebugFuncFail 'phrase' 'unspecified'
+        DebugFuncFail phrase unspecified
         ShowFail ' !! search phrase (-p, --phrase) was unspecified'
         exitcode=2
         return 1
@@ -1434,13 +1403,7 @@ GetResultPages()
     [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
     [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
 
-    if [[ $verbose = true ]]; then
-        if [[ $display_colour = true ]]; then
-            echo -n " -> searching $(ShowGoogle): "
-        else
-            echo -n " -> searching Google: "
-        fi
-    fi
+    [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
     for ((group=1; group<=groups_max; group++)); do
         # wait here until a download slot becomes available
@@ -1651,11 +1614,7 @@ GetImages()
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
         percent="$((200*(fail_count)/(success_count+fail_count) % 2 + 100*(fail_count)/(success_count+fail_count)))%"
 
-        if [[ $display_colour = true ]]; then
-            echo -n "($(ColourTextBrightRed "$percent")) "
-        else
-            echo -n "($percent) "
-        fi
+        echo -n "($(ColourTextBrightRed "$percent")) "
     fi
 
     if [[ $result -eq 1 ]]; then
@@ -1667,13 +1626,7 @@ GetImages()
     else
         if [[ $result_index -eq $results_received && $always_download = false ]]; then
             DebugFuncFail 'links list exhausted' "$result_index/$results_received"
-
-            if [[ $display_colour = true ]]; then
-                ColourTextBrightRed 'Links list exhausted!'
-            else
-                echo "Links list exhausted!"
-            fi
-
+            ColourTextBrightRed 'Links list exhausted!'
             result=1
         else
             [[ $verbose = true ]] && echo
@@ -2004,16 +1957,12 @@ ParseResults()
     fi
 
     if [[ $verbose = true ]]; then
-        if [[ $display_colour = true ]]; then
-            if [[ $results_received -ge $max_results_required ]]; then
-                echo "($(ColourTextBrightGreen "$results_received") results)"
-            elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
-                echo "($(ColourTextBrightOrange "$results_received") results)"
-            elif [[ $results_received -lt $user_images_requested ]]; then
-                echo "($(ColourTextBrightRed "$results_received") results)"
-            fi
-        else
-            echo "($results_received results)"
+        if [[ $results_received -ge $max_results_required ]]; then
+            echo "($(ColourTextBrightGreen "$results_received") results)"
+        elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
+            echo "($(ColourTextBrightOrange "$results_received") results)"
+        elif [[ $results_received -lt $user_images_requested ]]; then
+            echo "($(ColourTextBrightRed "$results_received") results)"
         fi
 
         if [[ $results_received -lt $user_images_requested ]]; then
@@ -2091,15 +2040,7 @@ BuildGallery()
     stage_description='compose thumbnails'
     if [[ $verbose = true ]]; then
         echo -n " -> building gallery: "
-
-        if [[ $display_colour = true ]]; then
-            progress_message=$(ColourTextBrightOrange 'stage 1/4')
-        else
-            progress_message='stage 1/4'
-        fi
-
-        progress_message+=" ($stage_description)"
-        ProgressUpdater "$progress_message"
+        ProgressUpdater "$(ColourTextBrightOrange 'stage 1/4') ($stage_description)"
     fi
 
     if [[ $gallery_title = none ]]; then
@@ -2129,16 +2070,7 @@ BuildGallery()
     if [[ $result -eq 0 ]]; then
         # build background image
         stage_description='draw background'
-        if [[ $verbose = true ]]; then
-            if [[ $display_colour = true ]]; then
-                progress_message=$(ColourTextBrightOrange 'stage 2/4')
-            else
-                progress_message='stage 2/4'
-            fi
-
-            progress_message+=" ($stage_description)"
-            ProgressUpdater "$progress_message"
-        fi
+        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 2/4') ($stage_description)"
 
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
@@ -2162,16 +2094,7 @@ BuildGallery()
     if [[ $result -eq 0 ]]; then
         # build title image overlay
         stage_description='draw title'
-        if [[ $verbose = true ]]; then
-            if [[ $display_colour = true ]]; then
-                progress_message=$(ColourTextBrightOrange 'stage 3/4')
-            else
-                progress_message='stage 3/4'
-            fi
-
-            progress_message+=" ($stage_description)"
-            ProgressUpdater "$progress_message"
-        fi
+        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 3/4') ($stage_description)"
 
         if [[ $gallery_title != none ]]; then
             # create title image
@@ -2194,16 +2117,7 @@ BuildGallery()
     if [[ $result -eq 0 ]]; then
         # compose thumbnail and title images onto background image
         stage_description='compose images'
-        if [[ $verbose = true ]]; then
-            if [[ $display_colour = true ]]; then
-                progress_message=$(ColourTextBrightOrange 'stage 4/4')
-            else
-                progress_message='stage 4/4'
-            fi
-
-            progress_message+=" ($stage_description)"
-            ProgressUpdater "$progress_message"
-        fi
+        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 4/4') ($stage_description)"
 
         if [[ $gallery_title = none ]]; then
             include_title=''
@@ -2232,19 +2146,9 @@ BuildGallery()
     [[ -e $gallery_background_pathfile ]] && rm -f "$gallery_background_pathfile"
 
     if [[ $result -eq 0 ]]; then
-        if [[ $verbose = true ]]; then
-            if [[ $display_colour = true ]]; then
-                ProgressUpdater "$(ColourTextBrightGreen 'done!')"
-            else
-                ProgressUpdater 'done!'
-            fi
-        fi
+        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightGreen 'done!')"
     else
-        if [[ $display_colour = true ]]; then
-            ProgressUpdater "$(ColourTextBrightRed 'failed!')"
-        else
-            ProgressUpdater 'failed!'
-        fi
+        ProgressUpdater "$(ColourTextBrightRed 'failed!')"
         echo
         ShowFail ' !! unable to build thumbnail gallery'
     fi
@@ -2376,14 +2280,10 @@ ShowGetResultProgress()
     {
 
     if [[ $verbose = true ]]; then
-        if [[ $display_colour = true ]]; then
-            if [[ $success_count -eq $groups_max ]]; then
-                progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")
-            else
-                progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")
-            fi
+        if [[ $success_count -eq $groups_max ]]; then
+            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")
         else
-            progress_message=$(Display2to1 "$success_count" "$groups_max")
+            progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")
         fi
 
         progress_message+=' result groups downloaded:'
@@ -2409,40 +2309,15 @@ ShowGetImagesProgress()
     local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
-#        if [[ $always_download = true ]]; then
-#            gallery_images_required_adjusted=$((gallery_images_required-fail_count))
-#        else
-            gallery_images_required_adjusted=$gallery_images_required
-#        fi
+        gallery_images_required_adjusted=$gallery_images_required
 
-        if [[ $display_colour = true ]]; then
-            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")
-        else
-            progress_message=$(Display2to1 "$success_count" "$gallery_images_required_adjusted")
-        fi
-
+        progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")
         progress_message+=' downloaded'
 
-        if [[ $run_count -gt 0 ]]; then
-            progress_message+=', '
-
-            if [[ $display_colour = true ]]; then
-                progress_message+=$(ColourTextBrightOrange "$run_count/$parallel_limit")
-            else
-                progress_message+=$run_count/$parallel_limit
-            fi
-
-            progress_message+=' are in progress'
-        fi
+        [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$parallel_limit") are in progress"
 
         if [[ $fail_count -gt 0 ]]; then
             progress_message+=' and '
-
-#            if [[ $always_download = true ]]; then
-#                fail_limit_adjusted=$((fail_limit-success_count))
-#            else
-#                fail_limit_adjusted=$fail_limit
-#            fi
 
             if [[ $user_fail_limit -ge $results_received ]]; then
                 fail_limit_adjusted=$fail_count
@@ -2450,11 +2325,8 @@ ShowGetImagesProgress()
                 fail_limit_adjusted=$fail_limit
             fi
 
-            if [[ $display_colour = true ]]; then
-                progress_message+=$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")
-            else
-                progress_message+=$(Display2to1 "$fail_count" "$fail_limit_adjusted")
-            fi
+            progress_message+=$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")
+
             [[ $run_count -gt 0 ]] && progress_message+=' have'
 
             progress_message+=' failed'
@@ -2616,12 +2488,7 @@ CTRL_C_Captured()
     DebugFuncEntry
 
     echo
-
-    if [[ $display_colour = true ]]; then
-        echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
-    else
-        echo " -> [SIGINT] cleanup ..."
-    fi
+    echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
 
     AbortDownloads
 
@@ -3406,42 +3273,66 @@ ConvertSecs()
 ColourBackgroundBlack()
     {
 
-    echo -en '\033[40m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[40m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
 ColourTextBrightWhite()
     {
 
-    echo -en '\033[1;97m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1;97m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
 ColourTextBrightGreen()
     {
 
-    echo -en '\033[1;32m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1;32m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
 ColourTextBrightOrange()
     {
 
-    echo -en '\033[1;38;5;214m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1;38;5;214m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
 ColourTextBrightRed()
     {
 
-    echo -en '\033[1;31m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1;31m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
 ColourTextBrightBlue()
     {
 
-    echo -en '\033[1;94m'"$(PrintResetColours "$1")"
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1;94m'"$(PrintResetColours "$1")"
+    else
+        echo -n "$1"
+    fi
 
     }
 
