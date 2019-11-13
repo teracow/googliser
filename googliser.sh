@@ -54,7 +54,7 @@
 #   TT  elapsed time
 #   ##  comment
 
-ORIGIN="$_"
+ORIGIN=$_
 
 Init()
     {
@@ -90,11 +90,11 @@ Init()
     fail_limit=$FAIL_LIMIT_DEFAULT
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
-    script_details_colour="$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
+    script_details_colour=$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")
     script_details_plain=" $SCRIPT_FILE $SCRIPT_VERSION_PID "
     image_links_file=download.links.list
     gallery_title=''
-    current_path="$PWD"
+    current_path=$PWD
     exitcode=0
 
     # script-variable flags
@@ -159,10 +159,10 @@ Init()
 
     case "$OSTYPE" in
         "darwin"*)
-            SED_BIN='gsed'
-            DU_BIN='gdu'
+            SED_BIN=gsed
+            DU_BIN=gdu
             if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
-                GETOPT_BIN="$(brew --prefix gnu-getopt)/bin/getopt" # based upon https://stackoverflow.com/a/47542834/6182835
+                GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt 	# based upon https://stackoverflow.com/a/47542834/6182835
             else
                 DebugScriptFail "'brew' executable was not found"
                 echo " 'brew' executable was not found!"
@@ -172,15 +172,15 @@ Init()
             fi
             ;;
         *)
-            SED_BIN='sed'
-            DU_BIN='du'
-            GETOPT_BIN='getopt'
+            SED_BIN=sed
+            DU_BIN=du
+            GETOPT_BIN=getopt
             ;;
     esac
 
     user_parameters=$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
-    user_parameters_raw="$*"
+    user_parameters_raw=$*
 
     }
 
@@ -189,7 +189,7 @@ InstallGoogliser()
 
     echo -e " -> installing ...\n"
 
-    SUDO='sudo'
+    SUDO=sudo
     if [[ $EUID -eq 0 ]]; then
         SUDO=''
     fi
@@ -252,34 +252,34 @@ BuildWorkPaths()
 
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
-    results_run_count_path="$TEMP_PATH/results.running.count"
+    results_run_count_path=$TEMP_PATH/results.running.count
     mkdir -p "$results_run_count_path" || Flee
 
-    results_success_count_path="$TEMP_PATH/results.success.count"
+    results_success_count_path=$TEMP_PATH/results.success.count
     mkdir -p "$results_success_count_path" || Flee
 
-    results_fail_count_path="$TEMP_PATH/results.fail.count"
+    results_fail_count_path=$TEMP_PATH/results.fail.count
     mkdir -p "$results_fail_count_path" || Flee
 
-    download_run_count_path="$TEMP_PATH/download.running.count"
+    download_run_count_path=$TEMP_PATH/download.running.count
     mkdir -p "$download_run_count_path" || Flee
 
-    download_success_count_path="$TEMP_PATH/download.success.count"
+    download_success_count_path=$TEMP_PATH/download.success.count
     mkdir -p "$download_success_count_path" || Flee
 
-    download_fail_count_path="$TEMP_PATH/download.fail.count"
+    download_fail_count_path=$TEMP_PATH/download.fail.count
     mkdir -p "$download_fail_count_path" || Flee
 
-    download_abort_count_path="$TEMP_PATH/download.abort.count"
+    download_abort_count_path=$TEMP_PATH/download.abort.count
     mkdir -p "$download_abort_count_path" || Flee
 
-    testimage_pathfile="$TEMP_PATH/$test_file"
-    searchresults_pathfile="$TEMP_PATH/search.results.page.html"
-    gallery_title_pathfile="$TEMP_PATH/gallery.title.png"
-    gallery_thumbnails_pathfile="$TEMP_PATH/gallery.thumbnails.png"
-    gallery_background_pathfile="$TEMP_PATH/gallery.background.png"
-    image_links_pathfile="$TEMP_PATH/$image_links_file"
-    debug_pathfile="$TEMP_PATH/$DEBUG_FILE"
+    testimage_pathfile=$TEMP_PATH/$test_file
+    searchresults_pathfile=$TEMP_PATH/search.results.page.html
+    gallery_title_pathfile=$TEMP_PATH/gallery.title.png
+    gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
+    gallery_background_pathfile=$TEMP_PATH/gallery.background.png
+    image_links_pathfile=$TEMP_PATH/$image_links_file
+    debug_pathfile=$TEMP_PATH/$DEBUG_FILE
 
     unset -f Flee
 
@@ -1032,16 +1032,16 @@ ValidateParams()
     if [[ -n $min_pixels ]]; then
         case "$min_pixels" in
             qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
-                min_pixels_type="lt,islt:$min_pixels"
+                min_pixels_type=lt,islt:$min_pixels
                 ;;
             large)
-                min_pixels_type='l'
+                min_pixels_type=l
                 ;;
             medium)
-                min_pixels_type='m'
+                min_pixels_type=m
                 ;;
             icon)
-                min_pixels_type='i'
+                min_pixels_type=i
                 ;;
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
@@ -1051,23 +1051,23 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $min_pixels_type ]] && min_pixels_search="isz:$min_pixels_type"
+        [[ -n $min_pixels_type ]] && min_pixels_search=isz:$min_pixels_type
 
     fi
 
     if [[ -n $aspect_ratio ]]; then
         case "$aspect_ratio" in
             tall)
-                aspect_ratio_type='t'
+                aspect_ratio_type=t
                 ;;
             square)
-                aspect_ratio_type='s'
+                aspect_ratio_type=s
                 ;;
             wide)
-                aspect_ratio_type='w'
+                aspect_ratio_type=w
                 ;;
             panoramic)
-                aspect_ratio_type='xw'
+                aspect_ratio_type=xw
                 ;;
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
@@ -1077,13 +1077,13 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $aspect_ratio_type ]] && aspect_ratio_search="iar:$aspect_ratio_type"
+        [[ -n $aspect_ratio_type ]] && aspect_ratio_search=iar:$aspect_ratio_type
     fi
 
     if [[ -n $image_type ]]; then
         case "$image_type" in
             face|photo|clipart|lineart|animated)
-                image_type_search="itp:$image_type"
+                image_type_search=itp:$image_type
                 ;;
             *)
                 DebugScriptFail 'specified $image_type is invalid'
@@ -1098,7 +1098,7 @@ ValidateParams()
     if [[ -n $image_format ]]; then
         case "$image_format" in
             png|jpg|gif|bmp|svg|ico|webp|craw)
-                image_format_search="ift:$image_format"
+                image_format_search=ift:$image_format
                 ;;
             *)
                 DebugScriptFail 'specified $image_format is invalid'
@@ -1113,16 +1113,16 @@ ValidateParams()
     if [[ -n $usage_rights ]]; then
         case "$usage_rights" in
             reuse-with-mod)
-                usage_rights_type='fmc'
+                usage_rights_type=fmc
                 ;;
             reuse)
-                usage_rights_type='fc'
+                usage_rights_type=fc
                 ;;
             noncomm-reuse-with-mod)
-                usage_rights_type='fm'
+                usage_rights_type=fm
                 ;;
             noncomm-reuse)
-                usage_rights_type='f'
+                usage_rights_type=f
                 ;;
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
@@ -1132,7 +1132,7 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $usage_rights_type ]] && usage_rights_search="sur:$usage_rights_type"
+        [[ -n $usage_rights_type ]] && usage_rights_search=sur:$usage_rights_type
     fi
 
     if [[ -n $recent ]]; then
@@ -1141,19 +1141,19 @@ ValidateParams()
                 recent_type=''
                 ;;
             hour)
-                recent_type='h'
+                recent_type=h
                 ;;
             day)
-                recent_type='d'
+                recent_type=d
                 ;;
             week)
-                recent_type='w'
+                recent_type=w
                 ;;
             month)
-                recent_type='m'
+                recent_type=m
                 ;;
             year)
-                recent_type='y'
+                recent_type=y
                 ;;
             *)
                 DebugScriptFail 'specified $recent is invalid'
@@ -1163,7 +1163,7 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $recent_type ]] && recent_search="qdr:$recent_type"
+        [[ -n $recent_type ]] && recent_search=qdr:$recent_type
     fi
 
     if [[ -n $image_colour ]]; then
@@ -1172,25 +1172,25 @@ ValidateParams()
                 image_colour_type=''
                 ;;
             full)
-                image_colour_type='color'
+                image_colour_type=color
                 ;;
             black-white|bw)
-                image_colour_type='gray'
+                image_colour_type=gray
                 ;;
             transparent|clear)
-                image_colour_type='trans'
+                image_colour_type=trans
                 ;;
             red|orange|yellow|green|teal|blue|purple|pink|white|gray|black|brown)
-                image_colour_type="specific,isc:$image_colour"
+                image_colour_type=specific,isc:$image_colour
                 ;;
             cyan)
-                image_colour_type="specific,isc:teal"
+                image_colour_type=specific,isc:teal
                 ;;
             magenta)
-                image_colour_type="specific,isc:purple"
+                image_colour_type=specific,isc:purple
                 ;;
             grey)
-                image_colour_type="specific,isc:gray"
+                image_colour_type=specific,isc:gray
                 ;;
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
@@ -1200,7 +1200,7 @@ ValidateParams()
                 return 1
                 ;;
         esac
-        [[ -n $image_colour_type ]] && image_colour_search="ic:$image_colour_type"
+        [[ -n $image_colour_type ]] && image_colour_search=ic:$image_colour_type
     fi
 
     if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search ||-n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
@@ -1263,16 +1263,16 @@ ProcessPhrase()
     echo " -> requested phrase: \"$1\""
 
     FinalizeSearchPhrase "$1"
-    safe_search_phrase="${search_phrase// /+}"  # replace whitepace with '+' to suit curl/wget
+    safe_search_phrase=${search_phrase// /+}  # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
 
     if [[ -z $output_path ]]; then
-        target_path="$current_path/$1"
+        target_path=$current_path/$1
     else
         if [[ -n $input_phrases_pathfile ]]; then
-            target_path="$output_path/$1"
+            target_path=$output_path/$1
         else
-            target_path="$output_path"
+            target_path=$output_path
         fi
     fi
 
@@ -1344,7 +1344,7 @@ ProcessLinkList()
     #   downloads each image from URL list,
     #   builds a gallery from these downloaded images if requested.
 
-# This function is in-flux. Code-overlap between ProcessLinkList() and ProcessPhrase() will be removed when I can.
+# This function is in-flux. Code-duplication between ProcessLinkList() and ProcessPhrase() will be removed when I can.
 
     DebugFuncEntry
 
@@ -1353,14 +1353,14 @@ ProcessLinkList()
     echo
 
     if [[ -n $output_path ]]; then
-        target_path="$output_path/$user_gallery_title"
+        target_path=$output_path
     else
         if [[ -n $user_gallery_title && $user_gallery_title != none ]]; then
-            target_path="$user_gallery_title"
+            target_path=$user_gallery_title
         elif [[ -n $user_phrase ]]; then
-            target_path="$user_phrase"
+            target_path=$user_phrase
         else
-            target_path="$(date +%s)"
+            target_path=$(date +%s)
         fi
     fi
 
@@ -1496,8 +1496,8 @@ _GetResultPage_()
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
-        local page_group="$1"
-        local group_index="$2"
+        local page_group=$1
+        local group_index=$2
         local search_group="&ijn=$((page_group-1))"
         local search_start="&start=$(((page_group-1)*100))"
         local SERVER='https://www.google.com'
@@ -1513,17 +1513,17 @@ _GetResultPage_()
         local search_match_type='&nfpr='    # exact or loose (suggested) search
 
         if [[ $exact_search = true ]]; then
-            search_match_type+='1'
+            search_match_type+=1
         else
-            search_match_type+='0'
+            search_match_type+=0
         fi
 
         local safesearch_flag='&safe='      # Google's SafeSearch content filter
 
         if [[ $safesearch = true ]]; then
-            safesearch_flag+='active'
+            safesearch_flag+=active
         else
-            safesearch_flag+='inactive'
+            safesearch_flag+=inactive
         fi
 
         # compiled search string
@@ -1544,18 +1544,18 @@ _GetResultPage_()
 
         }
 
-    local page_group="$1"
-    local group_index="$2"
-    _forkname_="$(FormatFuncSearch "${FUNCNAME[0]}" "$group_index")"    # global: used by various debug logging functions
+    local page_group=$1
+    local group_index=$2
+    _forkname_=$(FormatFuncSearch "${FUNCNAME[0]}" "$group_index")      # global: used by various debug logging functions
     local response=''
     local result=0
     local func_startseconds=$(date +%s)
 
     DebugChildForked
 
-    local run_pathfile="$results_run_count_path/$group_index"
-    local success_pathfile="$results_success_count_path/$group_index"
-    local fail_pathfile="$results_fail_count_path/$group_index"
+    local run_pathfile=$results_run_count_path/$group_index
+    local success_pathfile=$results_success_count_path/$group_index
+    local fail_pathfile=$results_fail_count_path/$group_index
 
     response=$(_GetResultsGroup_ "$page_group" "$group_index")
     result=$?
@@ -1639,7 +1639,7 @@ GetImages()
 
     if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur when race=true so trim back successful downloads to that required
         for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
-            existing_file="$(basename "$existing_pathfile")"
+            existing_file=$(basename "$existing_pathfile")
             mv "$existing_pathfile" "$download_abort_count_path"
             rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         done
@@ -1685,10 +1685,10 @@ GetImages()
     DebugFuncVal 'downloads aborted' "$abort_count"
 
     if [[ $result -le 1 ]]; then
-        download_bytes="$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)"
+        download_bytes=$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)
         DebugFuncVal 'downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
-        download_seconds="$(($(date +%s)-func_startseconds))"
+        download_seconds=$(($(date +%s)-func_startseconds))
         if [[ $download_seconds -lt 1 ]]; then
             download_seconds=1
             DebugFuncVarAdjust "\$download_seconds TOO LOW so set to a usable minimum" "$download_seconds"
@@ -1719,8 +1719,8 @@ _GetImage_()
         # stdout = header string
         # $? = downloader return code
 
-        local URL="$1"
-        local output_pathfile="$2"
+        local URL=$1
+        local output_pathfile=$2
         local get_headers_cmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
@@ -1746,8 +1746,8 @@ _GetImage_()
         # stdout = downloader stdout & stderr
         # $? = downloader return code
 
-        local URL="$1"
-        local output_pathfile="$2"
+        local URL=$1
+        local output_pathfile=$2
         local get_image_cmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
@@ -1801,9 +1801,9 @@ _GetImage_()
 
         }
 
-    local URL="$1"
-    local link_index="$2"
-    _forkname_="$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")"   # global: used by various debug logging functions
+    local URL=$1
+    local link_index=$2
+    _forkname_=$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")     # global: used by various debug logging functions
     local pre_download_ok=''
     local size_ok=''
     local download_ok=''
@@ -1821,9 +1821,9 @@ _GetImage_()
 
     DebugChildForked
 
-    local run_pathfile="$download_run_count_path/$link_index"
-    local success_pathfile="$download_success_count_path/$link_index"
-    local fail_pathfile="$download_fail_count_path/$link_index"
+    local run_pathfile=$download_run_count_path/$link_index
+    local success_pathfile=$download_success_count_path/$link_index
+    local fail_pathfile=$download_fail_count_path/$link_index
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo "${1:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
@@ -1842,7 +1842,7 @@ _GetImage_()
 
         if [[ $get_remote_size_result -eq 0 ]]; then
             action='check remote image file size'
-            estimated_size="$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')"
+            estimated_size=$(grep -i 'content-length:' <<< "$response" | $SED_BIN 's|^.*: ||;s|\r||')
             [[ -z $estimated_size || $estimated_size = unspecified ]] && estimated_size=unknown
 
             DebugChildVal "$section" "$(DisplayThousands "$estimated_size") bytes"
@@ -1901,7 +1901,7 @@ _GetImage_()
         actual_size=$(wc -c < "$targetimage_pathfileext"); actual_size=${actual_size##* }
 
         # http://stackoverflow.com/questions/36249714/parse-download-speed-from-wget-output-in-terminal
-        download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed="${download_speed/K/k}"
+        download_speed=$(tail -n1 <<< "$response" | grep -o '\([0-9.]\+ [KM]B/s\)'); download_speed=${download_speed/K/k}
 
         DebugChildVal "$section" "$(DisplayThousands "$actual_size") bytes"
         DebugChildVal 'average download speed' "$download_speed"
@@ -2075,14 +2075,14 @@ BuildGallery()
 
     # set gallery title
     if [[ -n $user_gallery_title ]]; then
-        gallery_title="$user_gallery_title"
+        gallery_title=$user_gallery_title
     else
         if [[ -n $user_phrase ]]; then
-            gallery_title="$user_phrase"
+            gallery_title=$user_phrase
         elif [[ -n $output_path ]]; then
-            gallery_title="$(basename "$output_path")"
+            gallery_title=$(basename "$output_path")
         elif [[ -n $input_links_pathfile ]]; then
-            gallery_title="$(date +%s)"
+            gallery_title=$(date +%s)
         fi
         DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
     fi
@@ -2093,7 +2093,7 @@ BuildGallery()
         echo -n " -> building gallery: "
 
         if [[ $display_colour = true ]]; then
-            progress_message="$(ColourTextBrightOrange 'stage 1/4')"
+            progress_message=$(ColourTextBrightOrange 'stage 1/4')
         else
             progress_message='stage 1/4'
         fi
@@ -2131,7 +2131,7 @@ BuildGallery()
         stage_description='draw background'
         if [[ $verbose = true ]]; then
             if [[ $display_colour = true ]]; then
-                progress_message="$(ColourTextBrightOrange 'stage 2/4')"
+                progress_message=$(ColourTextBrightOrange 'stage 2/4')
             else
                 progress_message='stage 2/4'
             fi
@@ -2164,7 +2164,7 @@ BuildGallery()
         stage_description='draw title'
         if [[ $verbose = true ]]; then
             if [[ $display_colour = true ]]; then
-                progress_message="$(ColourTextBrightOrange 'stage 3/4')"
+                progress_message=$(ColourTextBrightOrange 'stage 3/4')
             else
                 progress_message='stage 3/4'
             fi
@@ -2196,7 +2196,7 @@ BuildGallery()
         stage_description='compose images'
         if [[ $verbose = true ]]; then
             if [[ $display_colour = true ]]; then
-                progress_message="$(ColourTextBrightOrange 'stage 4/4')"
+                progress_message=$(ColourTextBrightOrange 'stage 4/4')
             else
                 progress_message='stage 4/4'
             fi
@@ -2358,7 +2358,7 @@ ProgressUpdater()
         fi
 
         previous_length=$current_length
-        previous_msg="$1"
+        previous_msg=$1
     fi
 
     }
@@ -2378,12 +2378,12 @@ ShowGetResultProgress()
     if [[ $verbose = true ]]; then
         if [[ $display_colour = true ]]; then
             if [[ $success_count -eq $groups_max ]]; then
-                progress_message="$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")"
+                progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")
             else
-                progress_message="$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")"
+                progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")
             fi
         else
-            progress_message="$(Display2to1 "$success_count" "$groups_max")"
+            progress_message=$(Display2to1 "$success_count" "$groups_max")
         fi
 
         progress_message+=' result groups downloaded:'
@@ -2416,9 +2416,9 @@ ShowGetImagesProgress()
 #        fi
 
         if [[ $display_colour = true ]]; then
-            progress_message="$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")"
+            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")
         else
-            progress_message="$(Display2to1 "$success_count" "$gallery_images_required_adjusted")"
+            progress_message=$(Display2to1 "$success_count" "$gallery_images_required_adjusted")
         fi
 
         progress_message+=' downloaded'
@@ -2427,9 +2427,9 @@ ShowGetImagesProgress()
             progress_message+=', '
 
             if [[ $display_colour = true ]]; then
-                progress_message+="$(ColourTextBrightOrange "$run_count/$parallel_limit")"
+                progress_message+=$(ColourTextBrightOrange "$run_count/$parallel_limit")
             else
-                progress_message+="$run_count/$parallel_limit"
+                progress_message+=$run_count/$parallel_limit
             fi
 
             progress_message+=' are in progress'
@@ -2451,9 +2451,9 @@ ShowGetImagesProgress()
             fi
 
             if [[ $display_colour = true ]]; then
-                progress_message+="$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")"
+                progress_message+=$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")
             else
-                progress_message+="$(Display2to1 "$fail_count" "$fail_limit_adjusted")"
+                progress_message+=$(Display2to1 "$fail_count" "$fail_limit_adjusted")
             fi
             [[ $run_count -gt 0 ]] && progress_message+=' have'
 
@@ -2522,16 +2522,16 @@ RenameExtAsType()
 
         if [[ $returncode -eq 0 ]]; then
             # only want first 4 chars
-            imagetype="${rawtype:0:4}"
+            imagetype=${rawtype:0:4}
 
             # exception to handle identify's output for animated gifs i.e. "GIFGIFGIFGIFGIF"
-            [[ $imagetype = 'GIFG' ]] && imagetype='GIF'
+            [[ $imagetype = GIFG ]] && imagetype=GIF
 
             # exception to handle identify's output for BMP i.e. "BMP3"
-            [[ $imagetype = 'BMP3' ]] && imagetype='BMP'
+            [[ $imagetype = BMP3 ]] && imagetype=BMP
 
             # exception to handle identify's output for RAW i.e. "CRAW"
-            [[ $imagetype = 'CRAW' ]] && imagetype='RAW'
+            [[ $imagetype = CRAW ]] && imagetype=RAW
 
             case "$imagetype" in
                 PNG|JPEG|GIF|BMP|SVG|ICO|WEBP|RAW)
@@ -2644,7 +2644,7 @@ AbortDownloads()
     wait 2>/dev/null
 
     for existing_pathfile in "$download_run_count_path"/*; do
-        existing_file="$(basename "$existing_pathfile")"
+        existing_file=$(basename "$existing_pathfile")
         mv "$existing_pathfile" "$download_abort_count_path"/
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "$(FormatLink "$existing_file")"
@@ -2934,7 +2934,7 @@ DebugVar()
     local displayvalue=''
 
     if [[ -n ${!2} ]]; then
-        value="${!2}"
+        value=${!2}
 
         if [[ $value = *" "* ]]; then
             displayvalue="'$value'"
@@ -2942,10 +2942,10 @@ DebugVar()
             if [[ $value -ge 1000 ]]; then
                 displayvalue="\"$(DisplayThousands "$value")\""
             else
-                displayvalue="$value"
+                displayvalue=$value
             fi
         else
-            displayvalue="$value"
+            displayvalue=$value
         fi
 
         DebugThis 'V' "$1" "\$$2" "$displayvalue"
