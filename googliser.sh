@@ -60,7 +60,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191113
+    local SCRIPT_VERSION=191114
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -313,7 +313,7 @@ EnvironmentOK()
         return 1
     fi
 
-    ValidateParams
+    ValidateParams || return 1
 
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
@@ -2359,8 +2359,8 @@ ShowGoogle()
 FormatHelpLine()
     {
 
-    # $1 = short parameter
-    # $2 = long parameter
+    # $1 = short specifier (optional)
+    # $2 = long specifier (optional)
     # $3 = description
 
     if [[ -n $1 && -n $2 ]]; then
