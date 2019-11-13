@@ -2512,7 +2512,7 @@ AbortDownloads()
 
     for existing_pathfile in "$download_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
-        mv "$existing_pathfile" "$download_abort_count_path"/
+        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$download_abort_count_path"/
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "$(FormatLink "$existing_file")"
     done
