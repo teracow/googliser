@@ -187,6 +187,9 @@ Runtime display in bland, uncoloured text. Default will brighten your day. :)
 `-N` or `--no-gallery`    
 Don't create a thumbnail gallery. Default is to create a gallery after downloading images. Err, don't specify this and `--delete-after` at the same time.
 
+`--no-gallery-background`    
+Build the gallery image with a transparent background.
+
 `--no-safesearch`    
 Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-filtering. Default is enabled.
 

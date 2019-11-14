@@ -119,6 +119,7 @@ Init()
     lightning_mode=false
     links_only=false
     no_gallery=false
+    no_gallery_background=false
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -174,7 +175,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-gallery-background,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -338,6 +339,7 @@ EnvironmentOK()
         DebugFuncVar lower_size_bytes
         DebugFuncVar min_pixels
         DebugFuncVar no_gallery
+        DebugFuncVar no_gallery_background
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
         DebugFuncVar random_image
@@ -495,6 +497,10 @@ WhatAreMyArgs()
                 ;;
             --no-gallery|-N)
                 no_gallery=true
+                shift
+                ;;
+            --no-gallery-background)
+                no_gallery_background=true
                 shift
                 ;;
             --no-safesearch)
@@ -687,6 +693,7 @@ DisplayFullHelp()
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_RESULTS_MAX."
     FormatHelpLine '' 'no-colour|no-color' "Runtime display will be in boring, uncoloured text. :("
     FormatHelpLine N no-gallery "Don't create a thumbnail gallery after downloading images."
+    FormatHelpLine '' no-gallery-background "Use a transparent background in the gallery image."
     FormatHelpLine '' no-safesearch "Disable Google's SafeSearch content-filtering. Default is enabled."
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
@@ -2061,8 +2068,13 @@ BuildGallery()
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
 
-        # create a dark image with light sphere in centre
-        build_background_cmd="$CONVERT_BIN -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
+        if [[ $no_gallery_background = true ]]; then
+            # create a transparent background
+            build_background_cmd="$CONVERT_BIN -size ${width}x${height} xc:none \"$gallery_background_pathfile\""
+        else
+            # create a dark image with light sphere in centre
+            build_background_cmd="$CONVERT_BIN -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
+        fi
 
         DebugFuncExec "$stage_description" "$build_background_cmd"
 
