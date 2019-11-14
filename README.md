@@ -70,7 +70,7 @@ These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-ACdDEhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-CdDEhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required:***
@@ -80,9 +80,6 @@ The search-phrase to look for. Enclose whitespace in quotes e.g. `--phrase "smal
 
 
 ***Optional:***
-
-`-A` or `--always-download`    
-Let nothing stand in your way! Download images, even if the number of original image links is less than requested. Default is to abort if the number of image links found is insufficient. Unlimited failures are also permitted.
 
 `-a [PRESET]` or `--aspect-ratio [PRESET]`    
 The shape of the image to download. Preset values are:
@@ -202,9 +199,6 @@ How many parallel image downloads? Default is 64. Maximum is 512. Use 0 for maxi
 `-q` or `--quiet`    
 Suppress stdout. stderr is still shown.
 
-`--race`    
-Race to the finish line! Maximum concurrent downloads (as per `--parallel`) will be maintained until the requested number of images are received. This results in an overrun which is then trimmed-back to the amount of images required. It's fast! This is now enabled by default.
-
 `--random`    
 Download a single random image. Use `-n --number` to set the size of the image pool to pick a random image from.
 
@@ -320,9 +314,7 @@ This will download available images for the phrase *"flags"*, while excluding th
 
 - Only the first image of a multi-image file (like an animated **GIF**) will be used for its gallery image.
 
-- Typically, downloads run quite fast, then get slower as the required number of images is reached because less parallel downloads are running (which I'll refer to as download slots). Sometimes downloads will appear to stall as all the download slots are being held up by servers that are not responding/slow to respond or are downloading very large files. New download slots won't open up until at least one of these completes, fails or times-out. If you download a large enough number of files, all the download slots can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
-
-- Sometimes, you may also see a slowdown when downloading the last image (e.g. when something like 24 out of 25 images have downloaded without issue). This leaves only one download slot available to use. However, this slot keeps encountering a series of problem links (as mentioned above) and so can take some time to get that last image as the script works it way through the links list. Grab a danish to go with that coffee.
+- Usually downloads run quite fast. This comes from having an over-abundance of image links to choose from. Sometimes though, if there are a limited number of image links remaining, downloads will appear to stall as all download processes are being held-up by servers that are not responding/slow to respond or are downloading large files. If you run low on image links, all remaining downloads can end up like this. This is perfectly normal behaviour and the problem will sort itself out. Grab a coffee.
 
 - The temporary build directory is `/tmp/googliser.PID.UNIQ` where PID is shown in the title of the script when it runs and UNIQ will be any 3 random alpha-numeric characters.
 

@@ -110,7 +110,6 @@ Init()
     user_fail_limit=$fail_limit         # thinking of removing this as a user variable and always use unlimited downloads
 
     # user-variable options
-    always_download=false               # thinking of removing this as a user option, because we should always grab what we can
     compact_gallery=false
     debug=false
     delete_after=false
@@ -120,7 +119,6 @@ Init()
     lightning_mode=false
     links_only=false
     no_gallery=false
-    race=true                           # race is now on by default
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -176,7 +174,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o A,C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l always-download,condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,race,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -320,7 +318,6 @@ EnvironmentOK()
 
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
-        DebugFuncVar always_download
         DebugFuncVar aspect_ratio
         DebugFuncVar compact_gallery
         DebugFuncVar debug
@@ -343,7 +340,6 @@ EnvironmentOK()
         DebugFuncVar no_gallery
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
-        DebugFuncVar race
         DebugFuncVar random_image
         DebugFuncVar recent
         DebugFuncVar reindex_rename
@@ -416,10 +412,6 @@ WhatAreMyArgs()
 
     while true; do
         case $1 in
-            --always-download|-A)
-                always_download=true
-                shift
-                ;;
             --aspect-ratio|-a)
                 aspect_ratio=$2
                 shift 2
@@ -529,10 +521,6 @@ WhatAreMyArgs()
                 verbose=false
                 shift
                 ;;
-            --race)
-                race=true
-                shift
-                ;;
             --random)
                 random_image=true
                 shift
@@ -633,7 +621,6 @@ DisplayFullHelp()
     FormatHelpLine p phrase "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
     ColourTextBrightOrange " * Optional *"; echo
-    FormatHelpLine A always-download "Always download images, no matter what else happens. Unlimited failures!"
     FormatHelpLine a aspect-ratio "Image aspect ratio. Specify like '--aspect-ratio square'. Presets are:"
     FormatHelpLine '' '' "'tall'"
     FormatHelpLine '' '' "'square'"
@@ -704,7 +691,6 @@ DisplayFullHelp()
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
-    FormatHelpLine '' race "Race to the finish line! Maximum concurrent downloads (as per '--parallel') will be maintained until the requested number of images are received. Extras are then removed."
     FormatHelpLine '' random "Download a single, random image."
     FormatHelpLine R recent "Only get images published this far back in time [any]. Specify like '--recent month'. Presets are:"
     FormatHelpLine '' '' "'any'"
@@ -760,9 +746,7 @@ ValidateParams()
     local usage_rights_type=''
     local usage_rights_search=''
 
-    if [[ $always_download = true || $race = true ]]; then
-        user_fail_limit=0
-    fi
+    user_fail_limit=0
 
     if [[ $links_only = true ]]; then
         no_gallery=true
@@ -779,7 +763,6 @@ ValidateParams()
         compact_gallery=false
         no_gallery=true
         user_fail_limit=0
-        race=true
     fi
 
     if [[ $compact_gallery = true ]]; then
@@ -1583,7 +1566,7 @@ GetImages()
             # don't proceed until a download slot becomes available
             [[ $run_count -eq $parallel_limit ]] && continue
 
-            if [[ $((success_count+run_count)) -lt $gallery_images_required ]] || [[ $race = true && $success_count -lt $gallery_images_required ]]; then
+            if [[ $((success_count+run_count)) -lt $gallery_images_required ]] || [[ $success_count -lt $gallery_images_required ]]; then
                 # fork a new downloader
                 ((result_index++))
                 local link_index=$(printf "%04d" $result_index)
@@ -1598,13 +1581,13 @@ GetImages()
     done < "$image_links_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        [[ $race = true && $success_count -ge $gallery_images_required ]] && AbortDownloads
+        [[ $success_count -ge $gallery_images_required ]] && AbortDownloads
         RefreshDownloadCounts; ShowGetImagesProgress
     done
 
     wait 2>/dev/null;                   # wait here until all forked download jobs have exited
 
-    if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur when race=true so trim back successful downloads to that required
+    if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur, so trim back successful downloads to that required
         for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
             existing_file=$(basename "$existing_pathfile")
             mv "$existing_pathfile" "$download_abort_count_path"
@@ -1628,10 +1611,10 @@ GetImages()
         [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
         echo "    - consider raising the failure limit: '-f0'"
     else
-        if [[ $result_index -eq $results_received && $always_download = false ]]; then
+        if [[ $result_index -eq $results_received ]]; then
             DebugFuncFail 'links list exhausted' "$result_index/$results_received"
             ColourTextBrightRed 'Links list exhausted!'
-            result=1
+            #result=1
         else
             [[ $verbose = true ]] && echo
         fi
@@ -1970,12 +1953,11 @@ ParseResults()
         fi
 
         if [[ $results_received -lt $user_images_requested ]]; then
-            if [[ $always_download = false ]]; then
+            if [[ $safesearch = true ]]; then
                 echo
                 echo " Try your search again with additional options:"
-                [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
-                echo "    - grab as many images as possible: '-A'"
-                exitcode=4
+                echo "    - disable SafeSearch: '--no-safesearch'"
+                echo
             fi
         fi
     fi
