@@ -2361,11 +2361,11 @@ FormatHelpLine()
     # $3 = description
 
     if [[ -n $1 && -n $2 ]]; then
-        printf "  -%-1s, --%-18s %s\n" "$1" "$2" "$3"
+        printf "  -%-1s, --%-21s %s\n" "$1" "$2" "$3"
     elif [[ -z $1 && -n $2 ]]; then
-        printf "   %-1s  --%-18s %s\n" '' "$2" "$3"
+        printf "   %-1s  --%-21s %s\n" '' "$2" "$3"
     else
-        printf "   %-1s    %-18s %s\n" '' '' "$3"
+        printf "   %-1s    %-21s %s\n" '' '' "$3"
     fi
 
     }
