@@ -3415,41 +3415,33 @@ DisplayThousands()
 
     }
 
-WantedFonts()
-    {
-
-    local font_list=''
-
-    font_list+='Century-Schoolbook-L-Bold-Italic\n'
-    font_list+='Droid-Serif-Bold-Italic\n'
-    font_list+='FreeSerif-Bold-Italic\n'
-    font_list+='Nimbus-Roman-No9-L-Medium-Italic\n'
-    font_list+='Times-BoldItalic\n'
-    font_list+='URW-Palladio-L-Bold-Italic\n'
-    font_list+='Utopia-Bold-Italic\n'
-    font_list+='Bitstream-Charter-Bold-Italic\n'
-
-    echo -e "$font_list"
-
-    }
-
 FirstPreferredFont()
     {
 
-    local preferred_fonts=$(WantedFonts)
-    local available_fonts=$($CONVERT_BIN -list font | grep "Font:" | $SED_BIN 's| Font: ||')
-    local first_available_font=''
+    local preferred_fonts=()
+    local available_fonts=($($CONVERT_BIN -list font | grep "Font:" | $SED_BIN 's| Font: ||'))
+    local preferred_font=''
+    local available_font=''
 
-    while read -r preferred_font; do
-        while read -r available_font; do
+    preferred_fonts+=(Century-Schoolbook-L-Bold-Italic)
+    preferred_fonts+=(Droid-Serif-Bold-Italic)
+    preferred_fonts+=(FreeSerif-Bold-Italic)
+    preferred_fonts+=(Nimbus-Roman-No9-L-Medium-Italic)
+    preferred_fonts+=(Times-BoldItalic)
+    preferred_fonts+=(URW-Palladio-L-Bold-Italic)
+    preferred_fonts+=(Utopia-Bold-Italic)
+    preferred_fonts+=(Bitstream-Charter-Bold-Italic)
+
+    for preferred_font in ${preferred_fonts[@]}; do
+        for available_font in ${available_fonts[@]}; do
             [[ $preferred_font = "$available_font" ]] && break 2
-        done <<< "$available_fonts"
-    done <<< "$preferred_fonts"
+        done
+    done
 
     if [[ -n $preferred_font ]]; then
         echo "$preferred_font"
     else
-        echo "$first_available_font"
+        echo
     fi
 
     }
