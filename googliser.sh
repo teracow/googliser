@@ -3423,8 +3423,6 @@ FirstPreferredFont()
     local preferred_font=''
     local available_font=''
 
-    mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
-
     preferred_fonts+=(Century-Schoolbook-L-Bold-Italic)
     preferred_fonts+=(Droid-Serif-Bold-Italic)
     preferred_fonts+=(FreeSerif-Bold-Italic)
@@ -3434,17 +3432,15 @@ FirstPreferredFont()
     preferred_fonts+=(Utopia-Bold-Italic)
     preferred_fonts+=(Bitstream-Charter-Bold-Italic)
 
+    mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
+
     for preferred_font in "${preferred_fonts[@]}"; do
         for available_font in "${available_fonts[@]}"; do
             [[ $preferred_font = "$available_font" ]] && break 2
         done
     done
 
-    if [[ -n $preferred_font ]]; then
-        echo "$preferred_font"
-    else
-        echo
-    fi
+    echo "$preferred_font"
 
     }
 
