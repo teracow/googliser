@@ -28,7 +28,7 @@ or use:
 
 4. The results are parsed and all image links are extracted and saved to a URL list file. Any links for **YouTube** and **Vimeo** are removed.
 
-5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 512 images can be downloaded in parallel (concurrently). If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded or the download failure-limit is reached.
+5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 512 images can be downloaded in parallel (concurrently). If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded.
 
 6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (see below for examples).
 
@@ -53,15 +53,15 @@ macOS:
 
 These sample images have been scaled down for easier distribution.
 
-    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --lower-size 2000 --failures 0
+    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --lower-size 2000
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ ./googliser.sh -p "kittens" -T 'Kittens!' -f0 -SC
+    $ ./googliser.sh -p "kittens" -T 'Kittens!' -SC
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
-    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -f 0 -S
+    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -S
 
 ![cows](images/googliser-gallery-cows-s.png)
 
@@ -129,9 +129,6 @@ Successfully downloaded image URLs will be saved into this file (if specified). 
 
 `--exclude-words [STRING]`    
 A comma separated list (without spaces) of words that you want to exclude from the search.
-
-`-f [INTEGER]` or `--failures [INTEGER]`    
-How many download failures before exiting? Default is 32. Enter 0 for unlimited (this can potentially try to download every result, so only use this if you've previously had a lot of failures).
 
 `--format [PRESET]`    
 Only download images encoded in this file format. Preset values are:
@@ -268,13 +265,13 @@ Lightning mode! For those who really can't wait! Lightning mode downloads images
 
 This will download the first 16 available images for the search-phrase *"cows"*
 
-    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 128 --failures 0
+    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 128
 
-This will download the first 250 available images for the search-phrase *"kittens"*, download up to 128 images at once and ignore the failures limit.
+This will download the first 250 available images for the search-phrase *"kittens"* and download up to 128 images at once.
 
-    $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --failures 0 --debug
+    $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --debug
 
-This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size, ignore the failures limit and write a debug file.
+This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size and write a debug file.
 
     $ ./googliser.sh -n80 -p "storm clouds" -sN --debug
 
@@ -292,7 +289,7 @@ This will download available images for the phrase *"flags"*, while excluding th
 2 : specified parameter incorrect - help shown.  
 3 : unable to create sub-directory for 'search-phrase'.  
 4 : could not get a list of search results from Google.  
-5 : image download aborted as failure-limit was reached or ran out of images.  
+5 : image download ran out of images.  
 6 : thumbnail gallery build failed.  
 7 : unable to create a temporary build directory.
 
@@ -312,8 +309,6 @@ This will download available images for the phrase *"flags"*, while excluding th
 - Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
 - The failures percentage shown after download is the number of failed downloads as a percentage of the total number of image downloads attempted - this includes successful downloads. e.g. 25 images downloaded OK with 8 download failures yields a total of 33 downloads attempted. And 8 / 33 = **24%**.
-
-- The final search results count is determined by adding together the number of images required (default is 16) with the number of allowable failures (default is 32). Search results initially download in groups of 100. So, for the defaults shown, the script downloads the first group of 100. Then trims it so only the first 48 results remain. Then downloads these as images. Results can be shorter though depending on other factors such as URLs returned with invalid names, Google not sending many results from the requested search, etc... The URL results list is only trimmed after dealing with these issues. The count can also change between searches as Google don't always return the same results - even for identical searches.
 
 - Only the first image of a multi-image file (like an animated **GIF**) will be used for its gallery image.
 

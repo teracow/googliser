@@ -35,7 +35,7 @@
 #   2   required parameter unspecified or wrong
 #   3   could not create output directory for 'phrase'
 #   4   could not get a list of search results from Google
-#   5   image download failure limit was reached or URL links list has been exhausted
+#   5   URL links list has been exhausted
 #   6   thumbnail gallery building failed
 #   7   unable to create a temporary build directory
 
@@ -60,7 +60,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191114
+    local SCRIPT_VERSION=191115
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -70,7 +70,6 @@ Init()
     SCRIPT_STARTSECONDS=$(date +%s)
 
     # parameter default constants
-    FAIL_LIMIT_DEFAULT=64
     GALLERY_BORDER_PIXELS_DEFAULT=30
     IMAGES_REQUESTED_DEFAULT=36
     LOWER_SIZE_BYTES_DEFAULT=2000
@@ -87,9 +86,7 @@ Init()
     RETRIES_MAX=100
 
     # script-variables
-    fail_limit=$FAIL_LIMIT_DEFAULT
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
-    max_results_required=$((IMAGES_REQUESTED_DEFAULT+FAIL_LIMIT_DEFAULT))
     image_links_file=download.links.list
     gallery_title=''
     current_path=$PWD
@@ -107,7 +104,6 @@ Init()
     timeout_seconds=$TIMEOUT_SECONDS_DEFAULT
     upper_size_bytes=$UPPER_SIZE_BYTES_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
-    user_fail_limit=$fail_limit         # thinking of removing this as a user variable and always use unlimited downloads
 
     # user-variable options
     compact_gallery=false
@@ -175,7 +171,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,f:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-gallery-background,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,failures:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-gallery-background,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -354,7 +350,6 @@ EnvironmentOK()
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
         DebugFuncVar usage_rights
-        DebugFuncVar user_fail_limit
         DebugFuncVar user_gallery_title
         DebugFuncVar user_images_requested
         DebugFuncVar verbose
@@ -364,7 +359,6 @@ EnvironmentOK()
         DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
-        DebugFuncVar max_results_required
 
         if ! DOWNLOADER_BIN=$(command -v wget); then
             if ! DOWNLOADER_BIN=$(command -v curl); then
@@ -448,10 +442,6 @@ WhatAreMyArgs()
                 ;;
             --exclude-words)
                 exclude_words=$2
-                shift 2
-                ;;
-            --failures|-f)
-                user_fail_limit=$2
                 shift 2
                 ;;
             --format)
@@ -665,7 +655,6 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'webp'"
     FormatHelpLine '' '' "'ico'"
     FormatHelpLine '' '' "'craw'"
-    FormatHelpLine f failures "Total number of download failures allowed before aborting [$FAIL_LIMIT_DEFAULT]. Use '0' for unlimited ($GOOGLE_RESULTS_MAX)."
     FormatHelpLine h help "Display this help."
 #    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A Google search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
@@ -753,8 +742,6 @@ ValidateParams()
     local usage_rights_type=''
     local usage_rights_search=''
 
-    user_fail_limit=0
-
     if [[ $links_only = true ]]; then
         no_gallery=true
         save_links=true
@@ -769,7 +756,6 @@ ValidateParams()
         links_only=false
         compact_gallery=false
         no_gallery=true
-        user_fail_limit=0
     fi
 
     if [[ $compact_gallery = true ]]; then
@@ -848,27 +834,6 @@ ValidateParams()
     if [[ -n $exclude_links_pathfile ]]; then
         [[ ! -e $exclude_links_pathfile ]] && touch "$exclude_links_pathfile"
     fi
-
-    case ${user_fail_limit#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $user_fail_limit is invalid'
-            echo
-            ShowFail ' !! number specified after (-f, --failures) must be a valid integer'
-            exitcode=2
-            return 1
-            ;;
-        *)
-            if [[ $user_fail_limit -le 0 ]]; then
-                user_fail_limit=$GOOGLE_RESULTS_MAX
-                DebugFuncVarAdjust '$user_fail_limit SET TO MAX' "$user_fail_limit"
-            fi
-
-            if [[ $user_fail_limit -gt $GOOGLE_RESULTS_MAX ]]; then
-                user_fail_limit=$GOOGLE_RESULTS_MAX
-                DebugFuncVarAdjust '$user_fail_limit TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_fail_limit"
-            fi
-            ;;
-    esac
 
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
@@ -985,11 +950,6 @@ ValidateParams()
             fi
             ;;
     esac
-
-    if [[ $max_results_required -lt $((user_images_requested+user_fail_limit)) ]]; then
-        max_results_required=$((user_images_requested+user_fail_limit))
-        DebugFuncVarAdjust '$max_results_required TOO LOW so set as $user_images_requested + $user_fail_limit' "$max_results_required"
-    fi
 
     if [[ -n $min_pixels ]]; then
         case "$min_pixels" in
@@ -1276,7 +1236,7 @@ ProcessPhrase()
         done
     fi
 
-    # build thumbnail gallery even if fail_limit was reached
+    # build thumbnail gallery even ran out of images
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
         BuildGallery || exitcode=6
     fi
@@ -1363,7 +1323,7 @@ ProcessLinkList()
         done
     fi
 
-    # build thumbnail gallery even if fail_limit was reached
+    # build thumbnail gallery even if ran out of images
     if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
         BuildGallery || exitcode=6
     fi
@@ -1385,8 +1345,8 @@ GetResultPages()
     local run_count=0
     local success_count=0
     local fail_count=0
-    local max_search_result_groups=$((max_results_required*2))
-    [[ $max_search_result_groups -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_groups=$GOOGLE_RESULTS_MAX
+    local max_search_result_groups=$GOOGLE_RESULTS_MAX
+#    [[ $max_search_result_groups -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_groups=$GOOGLE_RESULTS_MAX
     local returncode=0
 
     InitProgress
@@ -1564,12 +1524,6 @@ GetImages()
 
             [[ $success_count -ge $gallery_images_required ]] && break 2
 
-            if [[ $fail_count -ge $fail_limit ]]; then
-                wait 2>/dev/null            # wait here until all forked downloaders have completed
-                result=1
-                break 2
-            fi
-
             # don't proceed until a download slot becomes available
             [[ $run_count -eq $parallel_limit ]] && continue
 
@@ -1611,20 +1565,12 @@ GetImages()
         echo -n "($(ColourTextBrightRed "$percent")) "
     fi
 
-    if [[ $result -eq 1 ]]; then
-        DebugFuncFail 'failure limit reached' "$fail_count/$fail_limit"
-        echo; echo
-        echo " Try your search again with additional options:"
-        [[ $safesearch = true ]] && echo "    - disable SafeSearch: '--no-safesearch'"
-        echo "    - consider raising the failure limit: '-f0'"
+    if [[ $result_index -eq $results_received ]]; then
+        DebugFuncFail 'links list exhausted' "$result_index/$results_received"
+        ColourTextBrightRed 'links list exhausted!'; echo
+        #result=1
     else
-        if [[ $result_index -eq $results_received ]]; then
-            DebugFuncFail 'links list exhausted' "$result_index/$results_received"
-            ColourTextBrightRed 'Links list exhausted!'
-            #result=1
-        else
-            [[ $verbose = true ]] && echo
-        fi
+        [[ $verbose = true ]] && echo
     fi
 
     DebugFuncVal 'downloads OK' "$success_count"
@@ -1940,24 +1886,10 @@ ParseResults()
             _GetLinkCount_
             DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
         fi
-
-        # if too many results then trim
-        if [[ $results_received -gt $max_results_required ]]; then
-            head -n "$max_results_required" "$image_links_pathfile" > "$image_links_pathfile".tmp
-            mv "$image_links_pathfile".tmp "$image_links_pathfile"
-            results_received=$max_results_required
-            DebugFuncVarAdjust 'after trimming to $max_results_required' "$results_received"
-        fi
     fi
 
     if [[ $verbose = true ]]; then
-        if [[ $results_received -ge $max_results_required ]]; then
-            echo "($(ColourTextBrightGreen "$results_received") results)"
-        elif [[ $results_received -lt $max_results_required && $results_received -ge $user_images_requested ]]; then
-            echo "($(ColourTextBrightOrange "$results_received") results)"
-        elif [[ $results_received -lt $user_images_requested ]]; then
-            echo "($(ColourTextBrightRed "$results_received") results)"
-        fi
+        echo "($(ColourTextBrightGreen "$results_received") results)"
 
         if [[ $results_received -lt $user_images_requested ]]; then
             if [[ $safesearch = true ]]; then
@@ -1975,17 +1907,6 @@ ParseResults()
     fi
 
     if [[ $exitcode -eq 0 ]]; then
-        fail_limit=$user_fail_limit
-        if [[ $fail_limit -gt $results_received ]]; then
-            fail_limit=$results_received
-            DebugFuncVarAdjust '$fail_limit TOO HIGH so set as $results_received' "$fail_limit"
-        fi
-
-        if [[ $max_results_required -gt $results_received ]]; then
-            max_results_required=$results_received
-            DebugFuncVarAdjust '$max_results_required TOO HIGH so set as $results_received' "$results_received"
-        fi
-
         if [[ $gallery_images_required -gt $results_received ]]; then
             gallery_images_required=$results_received
             DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
@@ -2305,7 +2226,6 @@ ShowGetImagesProgress()
     {
 
     local gallery_images_required_adjusted=''
-    local fail_limit_adjusted=''
 
     if [[ $verbose = true ]]; then
         gallery_images_required_adjusted=$gallery_images_required
@@ -2316,15 +2236,7 @@ ShowGetImagesProgress()
         [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$parallel_limit") are in progress"
 
         if [[ $fail_count -gt 0 ]]; then
-            progress_message+=' and '
-
-            if [[ $user_fail_limit -ge $results_received ]]; then
-                fail_limit_adjusted=$fail_count
-            else
-                fail_limit_adjusted=$fail_limit
-            fi
-
-            progress_message+=$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")
+            progress_message+=" and $(ColourTextBrightRed "$fail_count")"
             [[ $run_count -gt 0 ]] && progress_message+=' have'
             progress_message+=' failed'
         fi
