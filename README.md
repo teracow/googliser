@@ -187,12 +187,6 @@ Number of images to download. Default is 36. Maximum is 1,000.
 `--no-colour` or `--no-color`    
 Runtime display in bland, uncoloured text. Default will brighten your day. :)
 
-`-N` or `--no-gallery`    
-Don't create a thumbnail gallery. Default is to create a gallery after downloading images. Err, don't specify this and `--delete-after` at the same time.
-
-`--no-safesearch`    
-Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-filtering. Default is enabled.
-
 `-o [PATH]` or `--output [PATH]`    
 The output directory. If unspecified, the search phrase is used. Enclose whitespace in quotes.
 
@@ -220,6 +214,9 @@ Downloaded image files are reindexed and renamed into a contiguous block. Note: 
 
 `-r [INTEGER]` or `--retries [INTEGER]`    
 Number of download retries for each image. Default is 3. Maximum is 100.
+
+`--safesearch-off`    
+Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-filtering. Default is enabled.
 
 `-s` or `--save-links`    
 Put the URL results file into the image sub-directory afterward. If selected, the URL list will be found in '**download.links.list**' in the image sub-directory. This file is always created in the temporary build directory.

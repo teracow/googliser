@@ -118,7 +118,7 @@ Init()
     links_only=false
     random_image=false
     reindex_rename=false
-    safesearch=true
+    safesearch_on=true
     save_links=false
     show_help=false
     skip_no_size=false
@@ -171,7 +171,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,install,lightning,links-only,no-colour,no-color,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,install,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -343,7 +343,7 @@ EnvironmentOK()
         DebugFuncVar recent
         DebugFuncVar reindex_rename
         DebugFuncVar retries
-        DebugFuncVar safesearch
+        DebugFuncVar safesearch_on
         DebugFuncVar save_links
         DebugFuncVar sites
         DebugFuncVar skip_no_size
@@ -493,10 +493,6 @@ WhatAreMyArgs()
                 display_colour=false
                 shift
                 ;;
-            --no-safesearch)
-                safesearch=false
-                shift
-                ;;
             --number|-n)
                 user_images_requested=$2
                 shift 2
@@ -532,6 +528,10 @@ WhatAreMyArgs()
             --retries|-r)
                 retries=$2
                 shift 2
+                ;;
+            --safesearch-off)
+                safesearch_on=false
+                shift
                 ;;
             --save-links|-s)
                 save_links=true
@@ -683,7 +683,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'icon'"
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_RESULTS_MAX."
     FormatHelpLine '' 'no-colour|no-color' "Runtime display will be in boring, uncoloured text. :("
-    FormatHelpLine '' no-safesearch "Disable Google's SafeSearch content-filtering. Default is enabled."
+    FormatHelpLine '' safesearch-off "Disable Google's SafeSearch content-filtering. Default is enabled."
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
     FormatHelpLine q quiet "Suppress stdout. stderr is still shown."
@@ -1436,7 +1436,7 @@ _GetResultPage_()
 
         local safesearch_flag='&safe='      # Google's SafeSearch content filter
 
-        if [[ $safesearch = true ]]; then
+        if [[ $safesearch_on = true ]]; then
             safesearch_flag+=active
         else
             safesearch_flag+=inactive
@@ -1891,10 +1891,10 @@ ParseResults()
         echo "($(ColourTextBrightGreen "$results_received") results)"
 
         if [[ $results_received -lt $user_images_requested ]]; then
-            if [[ $safesearch = true ]]; then
+            if [[ $safesearch_on = true ]]; then
                 echo
                 echo " Try your search again with additional options:"
-                echo "    - disable SafeSearch: '--no-safesearch'"
+                echo "    - disable SafeSearch: '--safesearch-off'"
                 echo
             fi
         fi
