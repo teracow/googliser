@@ -106,16 +106,16 @@ Init()
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
 
     # user-variable options
-    compact_gallery=false
     debug=false
-    delete_after=false
     display_colour=true
     exact_search=false
+    gallery=false
+    gallery_background_trans=false
+    gallery_compact_thumbs=false
+    gallery_delete_images=false
     install_googliser=false
     lightning_mode=false
     links_only=false
-    no_gallery=false
-    no_gallery_background=false
     random_image=false
     reindex_rename=false
     safesearch=true
@@ -137,7 +137,7 @@ Init()
     output_path=''
     recent=''
     usage_rights=''
-    user_gallery_title=''
+    gallery_user_title=''
     user_phrase=''
     search_phrase=''
     sites=''
@@ -171,7 +171,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o C,d,D,E,h,L,N,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l condensed,debug,delete-after,exact-search,help,install,lightning,links-only,no-colour,no-color,no-gallery,no-gallery-background,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-thickness:,colour:,color:,exclude-links:,exclude-words:,format:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,install,lightning,links-only,no-colour,no-color,no-safesearch,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -316,9 +316,7 @@ EnvironmentOK()
     if [[ $exitcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
         DebugFuncVar aspect_ratio
-        DebugFuncVar compact_gallery
         DebugFuncVar debug
-        DebugFuncVar delete_after
         DebugFuncVar display_colour
         DebugFuncVar exact_search
         DebugFuncVar exclude_links_pathfile
@@ -328,14 +326,17 @@ EnvironmentOK()
         DebugFuncVar image_type
         DebugFuncVar input_phrases_pathfile
         DebugFuncVar input_links_pathfile
+        DebugFuncVar gallery
+        DebugFuncVar gallery_background_trans
         DebugFuncVar gallery_border_pixels
+        DebugFuncVar gallery_compact_thumbs
+        DebugFuncVar gallery_delete_images
         DebugFuncVar gallery_images_required
+        DebugFuncVar gallery_user_title
         DebugFuncVar lightning_mode
         DebugFuncVar links_only
         DebugFuncVar lower_size_bytes
         DebugFuncVar min_pixels
-        DebugFuncVar no_gallery
-        DebugFuncVar no_gallery_background
         DebugFuncVar output_path
         DebugFuncVar parallel_limit
         DebugFuncVar random_image
@@ -350,7 +351,6 @@ EnvironmentOK()
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
         DebugFuncVar usage_rights
-        DebugFuncVar user_gallery_title
         DebugFuncVar user_images_requested
         DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
@@ -370,7 +370,7 @@ EnvironmentOK()
 
         DebugFuncVar DOWNLOADER_BIN
 
-        if [[ $no_gallery = false && $show_help = false ]]; then
+        if [[ $gallery = true && $show_help = false ]]; then
             if ! MONTAGE_BIN=$(command -v montage); then
                 SuggestInstall montage imagemagick
                 exitcode=1
@@ -412,24 +412,17 @@ WhatAreMyArgs()
                 aspect_ratio=$2
                 shift 2
                 ;;
-            --border-thickness|-b)
+            --border-pixels|-b)
                 gallery_border_pixels=$2
+                gallery=true
                 shift 2
                 ;;
             --colour|--color)
                 image_colour=$2
                 shift 2
                 ;;
-            --condensed|-C)
-                compact_gallery=true
-                shift
-                ;;
             --debug|-d)
                 debug=true
-                shift
-                ;;
-            --delete-after|-D)
-                delete_after=true
                 shift
                 ;;
             --exact-search|-E)
@@ -446,6 +439,21 @@ WhatAreMyArgs()
                 ;;
             --format)
                 image_format=$2
+                shift 2
+                ;;
+            --gallery|-G)
+                case $2 in
+                    background-trans)
+                        gallery_background_trans=true
+                        ;;
+                    compact)
+                        gallery_compact_thumbs=true
+                        ;;
+                    delete-after)
+                        gallery_delete_images=true
+                        ;;
+                esac
+                gallery=true
                 shift 2
                 ;;
             --help|-h)
@@ -483,14 +491,6 @@ WhatAreMyArgs()
                 ;;
             --no-colour|--no-color)
                 display_colour=false
-                shift
-                ;;
-            --no-gallery|-N)
-                no_gallery=true
-                shift
-                ;;
-            --no-gallery-background)
-                no_gallery_background=true
                 shift
                 ;;
             --no-safesearch)
@@ -555,9 +555,9 @@ WhatAreMyArgs()
                 ;;
             --title|-T)
                 if [[ $(Lowercase "$2") = none ]]; then
-                    user_gallery_title=none
+                    gallery_user_title=none
                 else
-                    user_gallery_title=$2
+                    gallery_user_title=$2
                 fi
                 shift 2
                 ;;
@@ -593,7 +593,7 @@ DisplayBasicHelp()
     message="$(ShowGoogle) $(ColourTextBrightBlue images)"
 
     echo
-    echo " Search '$message' for a number of images matching a phrase, then compile them into a gallery."
+    echo " Search '$message' for a number of images matching a phrase."
     echo
     echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
 
@@ -622,8 +622,7 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'square'"
     FormatHelpLine '' '' "'wide'"
     FormatHelpLine '' '' "'panoramic'"
-    FormatHelpLine b border-thickness "Thickness of border surrounding gallery image in pixels [$GALLERY_BORDER_PIXELS_DEFAULT]. Use '0' for no border."
-    FormatHelpLine C condensed "Create a condensed thumbnail gallery. All gallery images are square with no tile-padding."
+    FormatHelpLine b border-pixels "Thickness of border surrounding gallery image in pixels [$GALLERY_BORDER_PIXELS_DEFAULT]. Use '0' for no border."
     FormatHelpLine '' 'colour|color' "The dominant image colour [any]. Specify like '--colour green'. Presets are:"
     FormatHelpLine '' '' "'any'"
     FormatHelpLine '' '' "'full' (colour images only)"
@@ -642,7 +641,6 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'black'"
     FormatHelpLine '' '' "'brown'"
     FormatHelpLine d debug "Save the runtime debug log [$DEBUG_FILE] into output directory."
-    FormatHelpLine D delete-after "Remove all downloaded images, after building thumbnail gallery."
     FormatHelpLine E exact-search "Perform an exact-phrase search only. Disregard Google suggestions and loose matches."
     FormatHelpLine '' exclude-links "The URLs for images successfully downloaded will be appended to this file (if specified). Specify this file again to ensure these URLs are not reused."
     FormatHelpLine '' exclude-words "A comma separated list (without spaces) of words that you want to exclude from the search."
@@ -655,6 +653,10 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'webp'"
     FormatHelpLine '' '' "'ico'"
     FormatHelpLine '' '' "'craw'"
+    FormatHelpLine G gallery "Create a thumbnail gallery after downloading images."
+    FormatHelpLine '' gallery=background-trans "Use a transparent background in the gallery image."
+    FormatHelpLine '' gallery=compact "Create a condensed thumbnail gallery. No tile-padding between thumbnails."
+    FormatHelpLine '' gallery=delete-after "Remove all downloaded images after building thumbnail gallery."
     FormatHelpLine h help "Display this help."
 #    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A Google search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
@@ -681,8 +683,6 @@ DisplayFullHelp()
     FormatHelpLine '' '' "'icon'"
     FormatHelpLine n number "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_RESULTS_MAX."
     FormatHelpLine '' 'no-colour|no-color' "Runtime display will be in boring, uncoloured text. :("
-    FormatHelpLine N no-gallery "Don't create a thumbnail gallery after downloading images."
-    FormatHelpLine '' no-gallery-background "Use a transparent background in the gallery image."
     FormatHelpLine '' no-safesearch "Disable Google's SafeSearch content-filtering. Default is enabled."
     FormatHelpLine o output "The image output directory [phrase]. Enclose whitespace in quotes."
     FormatHelpLine P parallel "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
@@ -743,8 +743,12 @@ ValidateParams()
     local usage_rights_search=''
 
     if [[ $links_only = true ]]; then
-        no_gallery=true
+        gallery=false
         save_links=true
+    fi
+
+    if [[ $gallery_compact_thumbs = true || $gallery_background_trans = true || $gallery_delete_images = true ]]; then
+        gallery=true
     fi
 
     if [[ $lightning_mode = true ]]; then
@@ -754,15 +758,10 @@ ValidateParams()
         skip_no_size=true
         parallel_limit=$PARALLEL_MAX
         links_only=false
-        compact_gallery=false
-        no_gallery=true
+        gallery=false
     fi
 
-    if [[ $compact_gallery = true ]]; then
-        no_gallery=false
-    fi
-
-    if [[ $no_gallery = true && $delete_after = true && $links_only = false ]]; then
+    if [[ $gallery = false && $gallery_delete_images = true && $links_only = false ]]; then
         echo
         echo " Let's review. Your chosen options will:"
         echo " 1. not create a gallery,"
@@ -939,7 +938,7 @@ ValidateParams()
         *[!0-9]*)
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
             echo
-            ShowFail ' !! number specified after (-b, --border-thickness) must be a valid integer'
+            ShowFail ' !! number specified after (-b, --border-pixels) must be a valid integer'
             exitcode=2
             return 1
             ;;
@@ -1237,7 +1236,7 @@ ProcessPhrase()
     fi
 
     # build thumbnail gallery even ran out of images
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $gallery = true ]]; then
         BuildGallery || exitcode=6
     fi
 
@@ -1277,8 +1276,8 @@ ProcessLinkList()
     if [[ -n $output_path ]]; then
         target_path=$output_path
     else
-        if [[ -n $user_gallery_title && $user_gallery_title != none ]]; then
-            target_path=$user_gallery_title
+        if [[ -n $gallery_user_title && $gallery_user_title != none ]]; then
+            target_path=$gallery_user_title
         elif [[ -n $user_phrase ]]; then
             target_path=$user_phrase
         else
@@ -1324,7 +1323,7 @@ ProcessLinkList()
     fi
 
     # build thumbnail gallery even if ran out of images
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $no_gallery = false ]]; then
+    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $gallery = true ]]; then
         BuildGallery || exitcode=6
     fi
 
@@ -1937,8 +1936,8 @@ BuildGallery()
     InitProgress
 
     # set gallery title
-    if [[ -n $user_gallery_title ]]; then
-        gallery_title=$user_gallery_title
+    if [[ -n $gallery_user_title ]]; then
+        gallery_title=$gallery_user_title
     else
         if [[ -n $user_phrase ]]; then
             gallery_title=$user_phrase
@@ -1963,7 +1962,7 @@ BuildGallery()
         reserve_for_title="-gravity north -splice 0x$((title_height_pixels+gallery_border_pixels+10))"
     fi
 
-    if [[ $compact_gallery = true ]]; then
+    if [[ $gallery_compact_thumbs = true ]]; then
         build_foreground_cmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | montage - -background none -geometry +0+0 miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
         build_foreground_cmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | convert - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
@@ -1989,7 +1988,7 @@ BuildGallery()
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
 
-        if [[ $no_gallery_background = true ]]; then
+        if [[ $gallery_background_trans = true ]]; then
             # create a transparent background
             build_background_cmd="$CONVERT_BIN -size ${width}x${height} xc:none \"$gallery_background_pathfile\""
         else
@@ -2072,7 +2071,7 @@ BuildGallery()
         ShowFail ' !! unable to build thumbnail gallery'
     fi
 
-    [[ $result -eq 0 && $delete_after = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
+    [[ $result -eq 0 && $gallery_delete_images = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
 
     [[ $verbose = true ]] && echo
 

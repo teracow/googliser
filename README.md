@@ -1,6 +1,6 @@
 ![icon](images/icon.png) googliser.sh
 ---
-This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that feeds a list of original image URLs to [Wget](https://en.wikipedia.org/wiki/Wget) (or [cURL](https://github.com/curl/curl)) to download images in parallel, then combine them using ImageMagick's [montage](http://www.imagemagick.org/Usage/montage/#montage) into a single gallery image. The idea is to build a picture of a phrase.
+This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that can source a list of original image URLs and sent them to [Wget](https://en.wikipedia.org/wiki/Wget) (or [cURL](https://github.com/curl/curl)) to download in parallel. Optionally, it can then combine them using ImageMagick's [montage](http://www.imagemagick.org/Usage/montage/#montage) into a single gallery image.
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from April 2016 to the present.
 
@@ -30,7 +30,7 @@ or use:
 
 5. The script iterates through this URL list and downloads the first [**n**]umber of available images. Up to **1,000** images can be requested. Up to 512 images can be downloaded in parallel (concurrently). If an image is unavailable, it's skipped and downloading continues until the required number of images have been downloaded.
 
-6. Lastly, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (see below for examples).
+6. Optionally, a thumbnail gallery image is built using ImageMagick's [montage](http://www.imagemagick.org) into a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) file (see below for examples).
 
 
 ---
@@ -53,15 +53,15 @@ macOS:
 
 These sample images have been scaled down for easier distribution.
 
-    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --lower-size 2000
+    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --gallery
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ ./googliser.sh -p "kittens" -T 'Kittens!' -SC
+    $ ./googliser.sh -p "kittens" -T 'Kittens!' -n16 -SG=compact
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
-    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -S
+    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -SG
 
 ![cows](images/googliser-gallery-cows-s.png)
 
@@ -70,7 +70,7 @@ These sample images have been scaled down for easier distribution.
 
     $ ./googliser.sh [PARAMETERS] ...
 
-Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-CdDEhLNqsSz`. Parameters can be specified as follows:
+Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-dDEhLNqsSz`. Parameters can be specified as follows:
 
 
 ***Required:***
@@ -89,11 +89,8 @@ The shape of the image to download. Preset values are:
 - `wide`
 - `panoramic`
 
-`-b [INTEGER]` or `--border-thickness [INTEGER]`    
+`-b [INTEGER]` or `--border-pixels [INTEGER]`    
 Thickness of border surrounding the generated gallery image in pixels. Default is 30. Enter 0 for no border.
-
-`-C` or `--condensed`    
-Create the gallery in condensed mode. No padding between each thumbnail and they're all square. The default leaves some space between each thumbnail, but each thumbnail can be a different shape.
 
 `--colour [PRESET]` or `--color [PRESET]`    
 The dominant image colour. Specify like `--colour green`. Default is 'any'. Preset values are:
@@ -118,9 +115,6 @@ The dominant image colour. Specify like `--colour green`. Default is 'any'. Pres
 `-d` or `--debug`    
 Put the debug log into the image sub-directory afterward. If selected, debugging output is appended to '**debug.log**' in the image sub-directory. This file is always created in the temporary build directory. Great for discovering the external commands and parameters used!
 
-`-D` or `--delete-after`    
-Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files. Umm, don't specify this and `--no-gallery` at the same time.
-
 `-E` or `--exact-search`    
 Perform an exact search only. Disregard Google suggestions and loose matches. Default is to perform a loose search.
 
@@ -141,6 +135,18 @@ Only download images encoded in this file format. Preset values are:
 - `webp`
 - `ico`
 - `craw`
+
+`-G` or `--gallery`    
+Create a thumbnail gallery.
+
+`-G=background-trans` or `--gallery=background-trans`    
+Build the gallery image with a transparent background.
+
+`-G=compact` or `--gallery=compact`    
+Create the gallery in condensed mode. No padding between each thumbnail. The default leaves some space between each thumbnail.
+
+`-G=delete-after` or `--gallery=delete-after`    
+Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files.
 
 `-h` or `--help`    
 Display the complete parameter list.
@@ -183,9 +189,6 @@ Runtime display in bland, uncoloured text. Default will brighten your day. :)
 
 `-N` or `--no-gallery`    
 Don't create a thumbnail gallery. Default is to create a gallery after downloading images. Err, don't specify this and `--delete-after` at the same time.
-
-`--no-gallery-background`    
-Build the gallery image with a transparent background.
 
 `--no-safesearch`    
 Disable Google's [SafeSearch](https://en.wikipedia.org/wiki/SafeSearch) content-filtering. Default is enabled.
@@ -263,7 +266,7 @@ Lightning mode! For those who really can't wait! Lightning mode downloads images
 
     $ ./googliser.sh -p "cows"
 
-This will download the first 16 available images for the search-phrase *"cows"*
+This will download the first 36 available images for the search-phrase *"cows"*
 
     $ ./googliser.sh --number 250 --phrase "kittens" --parallel 128
 
@@ -273,9 +276,9 @@ This will download the first 250 available images for the search-phrase *"kitten
 
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size and write a debug file.
 
-    $ ./googliser.sh -n80 -p "storm clouds" -sN --debug
+    $ ./googliser.sh -n80 -p "storm clouds" -sG --debug
 
-This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory and won't create a thumbnail gallery.
+This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory and create a thumbnail gallery.
 
     $ ./googliser.sh -p "flags" --exclude-words "pole,waving" --sites "wikipedia.com"
 
