@@ -259,6 +259,9 @@ BuildWorkPaths()
     results_fail_count_path=$TEMP_PATH/results.fail.count
     mkdir -p "$results_fail_count_path" || Flee
 
+    results_abort_count_path=$TEMP_PATH/results.abort.count
+    mkdir -p "$results_abort_count_path" || Flee
+
     download_run_count_path=$TEMP_PATH/download.running.count
     mkdir -p "$download_run_count_path" || Flee
 
@@ -1402,6 +1405,7 @@ GetResultPages()
     [[ -d $results_run_count_path ]] && rm -f "$results_run_count_path"/*
     [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
     [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
+    [[ -d $results_abort_count_path ]] && rm -f "$results_abort_count_path"/*
 
     [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
@@ -2273,6 +2277,7 @@ RefreshResultsCounts()
     run_count=$(ls -1 "$results_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
     success_count=$(ls -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
     fail_count=$(ls -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
+    abort_count=$(ls -1 "$results_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
 
     }
 
@@ -2326,9 +2331,7 @@ ShowGetImagesProgress()
             fi
 
             progress_message+=$(ColourTextBrightRed "$(Display2to1 "$fail_count" "$fail_limit_adjusted")")
-
             [[ $run_count -gt 0 ]] && progress_message+=' have'
-
             progress_message+=' failed'
         fi
 
@@ -2490,10 +2493,36 @@ CTRL_C_Captured()
     echo
     echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
 
+    AbortResults
     AbortDownloads
 
     DebugFuncExit
     Finish
+
+    }
+
+AbortResults()
+    {
+
+    DebugFuncEntry
+
+    # remove any files where processing by [_GetResultPage_] was incomplete
+
+    local existing_pathfile=''
+    local existing_file=''
+
+    kill $(jobs -rp) 2>/dev/null
+    wait 2>/dev/null
+
+    for existing_pathfile in "$results_run_count_path"/*; do
+        existing_file=$(basename "$existing_pathfile")
+        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$results_abort_count_path"/
+        DebugFuncSuccess "$(FormatSearch "$existing_file")"
+    done
+
+    DebugFuncExit
+
+    return 0
 
     }
 
