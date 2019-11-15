@@ -658,7 +658,7 @@ DisplayFullHelp()
     FormatHelpLine '' gallery=compact "Create a condensed thumbnail gallery. No tile-padding between thumbnails."
     FormatHelpLine '' gallery=delete-after "Remove all downloaded images after building thumbnail gallery."
     FormatHelpLine h help "Display this help."
-#    FormatHelpLine '' input-links "A text file containing a list of URLs to download, one URL per line. A Google search will not be performed."
+    FormatHelpLine '' input-links "Download each URL as listed in this text-file, one URL per line. A Google search will not be performed."
     FormatHelpLine i input-phrases "A text file containing a list of phrases to download, one phrase per line."
     FormatHelpLine '' install "Install all googliser dependencies, and make googliser available globally on CLI."
     FormatHelpLine l lower-size "Only download images that are larger than this many bytes [$LOWER_SIZE_BYTES_DEFAULT]."

@@ -151,6 +151,9 @@ Delete the downloaded images after building the thumbnail gallery. Default is to
 `-h` or `--help`    
 Display the complete parameter list.
 
+`--input-links [FILE]`    
+Put a list of URLs in a text file then specify the file here. **googliser** will attempt to download the target of each URL. A Google search will not be performed. Images will downloaded into the specified output-path, or a path derived from a provided phrase or gallery title.     
+
 `-i [FILE]` or `--input-phrases [FILE]`    
 Put your search phrases into a text file then specify the file here. **googliser** will download images matching each phrase in the file, ignoring any line starting with a `#`. One phrase per line.
 
