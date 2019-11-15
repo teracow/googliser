@@ -57,7 +57,7 @@ These sample images have been scaled down for easier distribution.
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ ./googliser.sh -p "kittens" -T 'Kittens!' -n16 -SG=compact
+    $ ./googliser.sh -p "kittens" -T 'Kittens!' -n16 -SGcompact
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
