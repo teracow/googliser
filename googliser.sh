@@ -1217,39 +1217,11 @@ ProcessPhrase()
         fi
     fi
 
-    # download search results
     GetResultPages || exitcode=4
-
-    # download images
-    if [[ $exitcode -eq 0 && $links_only = false ]]; then
-        GetImages || exitcode=5
-    fi
-
-    # reindex and rename downloaded images if specified
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $reindex_rename = true ]]; then
-        DebugFuncOpr 'reindexing and renaming downloaded files'
-        local reindex=0
-        for targetfile in "$target_path/"*; do
-            ((reindex++))
-            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
-        done
-    fi
-
-    # build thumbnail gallery even ran out of images
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $gallery = true ]]; then
-        BuildGallery || exitcode=6
-    fi
-
-    # copy links file into target directory if possible. If not, then copy to current directory.
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]]; then
-        if [[ $save_links = true ]]; then
-            if [[ $target_path_created = true ]]; then
-                cp -f "$image_links_pathfile" "$target_path/$image_links_file"
-            else
-                cp -f "$image_links_pathfile" "$current_path/$image_links_file"
-            fi
-        fi
-    fi
+    [[ $exitcode -eq 0 && $links_only = false ]] && { GetImages || exitcode=5 ;}
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && CopyLinks
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1265,7 +1237,7 @@ ProcessLinkList()
     #   downloads each image from URL list,
     #   builds a gallery from these downloaded images if requested.
 
-# This function is in-flux. Code-duplication between ProcessLinkList() and ProcessPhrase() will be removed when I can.
+# function is in-development. Code-duplication between ProcessLinkList() and ProcessPhrase() will be removed when I can.
 
     DebugFuncEntry
 
@@ -1307,25 +1279,9 @@ ProcessLinkList()
 
     [[ -n $input_links_pathfile ]] && image_links_pathfile=$input_links_pathfile
 
-    # download images
-    if [[ $exitcode -eq 0 ]]; then
-        GetImages || exitcode=5
-    fi
-
-    # reindex and rename downloaded images if specified
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $reindex_rename = true ]]; then
-        DebugFuncOpr 'reindexing and renaming downloaded files'
-        local reindex=0
-        for targetfile in "$target_path/"*; do
-            ((reindex++))
-            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
-        done
-    fi
-
-    # build thumbnail gallery even if ran out of images
-    if [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && [[ $gallery = true ]]; then
-        BuildGallery || exitcode=6
-    fi
+    [[ $exitcode -eq 0 ]] && { GetImages || exitcode=5 ;}
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1922,6 +1878,24 @@ ParseResults()
 
     }
 
+ReindexRename()
+    {
+
+    local targetfile=''
+    local reindex=0
+
+    if [[ $reindex_rename = true ]]; then
+        DebugFuncOpr 'reindexing and renaming downloaded files'
+        for targetfile in "$target_path/"*; do
+            ((reindex++))
+            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
+        done
+    fi
+
+    return 0
+
+    }
+
 BuildGallery()
     {
 
@@ -1932,6 +1906,8 @@ BuildGallery()
     local title_height_pixels=100
     local stage_description=''
     local runmsg=''
+
+    [[ $gallery = false ]] && return 0
 
     InitProgress
 
@@ -1950,7 +1926,7 @@ BuildGallery()
     fi
 
     # build thumbnails image overlay
-    stage_description='compose thumbnails'
+    stage_description='render thumbnails'
     if [[ $verbose = true ]]; then
         echo -n " -> building gallery: "
         ProgressUpdater "$(ColourTextBrightOrange 'stage 1/4') ($stage_description)"
@@ -1982,7 +1958,7 @@ BuildGallery()
 
     if [[ $result -eq 0 ]]; then
         # build background image
-        stage_description='draw background'
+        stage_description='render background'
         [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 2/4') ($stage_description)"
 
         # get image dimensions
@@ -2011,7 +1987,7 @@ BuildGallery()
 
     if [[ $result -eq 0 ]]; then
         # build title image overlay
-        stage_description='draw title'
+        stage_description='render title'
         [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 3/4') ($stage_description)"
 
         if [[ $gallery_title != none ]]; then
@@ -2034,7 +2010,7 @@ BuildGallery()
 
     if [[ $result -eq 0 ]]; then
         # compose thumbnail and title images onto background image
-        stage_description='compose images'
+        stage_description='combine images'
         [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 4/4') ($stage_description)"
 
         if [[ $gallery_title = none ]]; then
@@ -2079,6 +2055,23 @@ BuildGallery()
     DebugFuncExit
 
     return $result
+
+    }
+
+CopyLinks()
+    {
+
+    # copy links file into target directory if possible. If not, then copy to current directory.
+
+    if [[ $save_links = true ]]; then
+        if [[ $target_path_created = true ]]; then
+            cp -f "$image_links_pathfile" "$target_path/$image_links_file"
+        else
+            cp -f "$image_links_pathfile" "$current_path/$image_links_file"
+        fi
+    fi
+
+    return 0
 
     }
 
