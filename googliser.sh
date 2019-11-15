@@ -1171,7 +1171,7 @@ ProcessPhrase()
 
     local func_startseconds=$(date +%s)
 
-    echo
+    [[ $verbose = true ]] && echo
     DebugFuncComment 'user phrase parameters'
 
     if [[ -z $1 ]]; then
@@ -1181,7 +1181,7 @@ ProcessPhrase()
         return 1
     fi
 
-    echo " -> requested phrase: \"$1\""
+    [[ $verbose = true ]] && echo " -> requested phrase: \"$1\""
 
     FinalizeSearchPhrase "$1"
     safe_search_phrase=${search_phrase// /+}  # replace whitepace with '+' to suit curl/wget
@@ -1243,7 +1243,7 @@ ProcessLinkList()
 
     local func_startseconds=$(date +%s)
 
-    echo
+    [[ $verbose = true ]] && echo
 
     if [[ -n $output_path ]]; then
         target_path=$output_path
@@ -1513,7 +1513,7 @@ GetImages()
 
     RefreshDownloadCounts; ShowGetImagesProgress
 
-    if [[ $fail_count -gt 0 ]]; then
+    if [[ $fail_count -gt 0 && $verbose = true ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
         percent="$((200*(fail_count)/(success_count+fail_count) % 2 + 100*(fail_count)/(success_count+fail_count)))%"
 
