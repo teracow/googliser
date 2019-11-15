@@ -1884,7 +1884,7 @@ ReindexRename()
     local targetfile=''
     local reindex=0
 
-    if [[ $reindex_rename = true ]]; then
+    if [[ $reindex_rename = true && -n $target_path ]]; then
         DebugFuncOpr 'reindexing and renaming downloaded files'
         for targetfile in "$target_path/"*; do
             ((reindex++))
