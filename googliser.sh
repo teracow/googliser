@@ -1740,7 +1740,7 @@ _GetImage_()
             DebugChildVal "$section" "$(DisplayThousands "$estimated_size") bytes"
 
             if [[ $estimated_size = unknown ]]; then
-                pre_download_ok=$skip_no_size
+                [[ $skip_no_size = true ]] && pre_download_ok=false || pre_download_ok=true
                 _UpdateRunLog_ "$section" "$action" "$(DisplayThousands "$estimated_size") bytes" '1' 'unknown'
             else
                 if [[ $estimated_size -lt $lower_size_bytes ]]; then
