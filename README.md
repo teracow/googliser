@@ -324,7 +324,7 @@ This will download available images for the phrase *"flags"*, while excluding th
 ---
 ## ![#c5f015](images/lime.png) Development Environment
 
-- [Debian](https://www.debian.org/) - *10.0 Buster 64b*
+- [Debian](https://www.debian.org/) - *10.2 Buster 64b*
 - GNU BASH - *v5.0.3*
 - GNU Wget - *v1.20.1*
 - GNU cURL - *v7.64.0*
