@@ -1272,7 +1272,10 @@ GetPages()
     local run_count=0
     local success_count=0
     local fail_count=0
+    local abort_count=0
     local returncode=0
+    local page=0
+    local page_index=0
 
     InitProgress
     ResetPageCounts
@@ -2187,6 +2190,8 @@ ResetPageCounts()
     [[ -d $page_fail_count_path ]] && rm -f "$page_fail_count_path"/*
     [[ -d $page_abort_count_path ]] && rm -f "$page_abort_count_path"/*
 
+    RefreshPageCounts
+
     }
 
 RefreshPageCounts()
@@ -2224,6 +2229,8 @@ ResetImageCounts()
     [[ -d $image_success_count_path ]] && rm -f "$image_success_count_path"/*
     [[ -d $image_fail_count_path ]] && rm -f "$image_fail_count_path"/*
     [[ -d $image_abort_count_path ]] && rm -f "$image_abort_count_path"/*
+
+    RefreshImageCounts
 
     }
 
