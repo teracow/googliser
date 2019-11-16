@@ -1277,12 +1277,7 @@ GetPages()
     local returncode=0
 
     InitProgress
-
-    # clears the paths used to count the search result pages
-    [[ -d $page_run_count_path ]] && rm -f "$page_run_count_path"/*
-    [[ -d $page_success_count_path ]] && rm -f "$page_success_count_path"/*
-    [[ -d $page_fail_count_path ]] && rm -f "$page_fail_count_path"/*
-    [[ -d $page_abort_count_path ]] && rm -f "$page_abort_count_path"/*
+    ResetPageCounts
 
     [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
@@ -1442,12 +1437,7 @@ GetImages()
     [[ $verbose = true ]] && echo -n " -> acquiring images: "
 
     InitProgress
-
-    # clears the paths used to count the downloaded images
-    [[ -d $image_run_count_path ]] && rm -f "$image_run_count_path"/*
-    [[ -d $image_success_count_path ]] && rm -f "$image_success_count_path"/*
-    [[ -d $image_fail_count_path ]] && rm -f "$image_fail_count_path"/*
-    [[ -d $image_abort_count_path ]] && rm -f "$image_abort_count_path"/*
+    ResetImageCounts
 
     while read -r imagelink; do
         while true; do
@@ -2187,6 +2177,18 @@ ProgressUpdater()
 
     }
 
+ResetPageCounts()
+    {
+
+    # clears paths used to count search result pages
+
+    [[ -d $page_run_count_path ]] && rm -f "$page_run_count_path"/*
+    [[ -d $page_success_count_path ]] && rm -f "$page_success_count_path"/*
+    [[ -d $page_fail_count_path ]] && rm -f "$page_fail_count_path"/*
+    [[ -d $page_abort_count_path ]] && rm -f "$page_abort_count_path"/*
+
+    }
+
 RefreshPageCounts()
     {
 
@@ -2210,6 +2212,18 @@ ShowPagesProgress()
         progress_message+=' pages downloaded:'
         ProgressUpdater "$progress_message"
     fi
+
+    }
+
+ResetImageCounts()
+    {
+
+    # clears paths used to count downloaded images
+
+    [[ -d $image_run_count_path ]] && rm -f "$image_run_count_path"/*
+    [[ -d $image_success_count_path ]] && rm -f "$image_success_count_path"/*
+    [[ -d $image_fail_count_path ]] && rm -f "$image_fail_count_path"/*
+    [[ -d $image_abort_count_path ]] && rm -f "$image_abort_count_path"/*
 
     }
 
@@ -2456,6 +2470,35 @@ AbortImages()
     DebugFuncExit
 
     return 0
+
+    }
+
+FirstPreferredFont()
+    {
+
+    local preferred_fonts=()
+    local available_fonts=()
+    local preferred_font=''
+    local available_font=''
+
+    preferred_fonts+=(Century-Schoolbook-L-Bold-Italic)
+    preferred_fonts+=(Droid-Serif-Bold-Italic)
+    preferred_fonts+=(FreeSerif-Bold-Italic)
+    preferred_fonts+=(Nimbus-Roman-No9-L-Medium-Italic)
+    preferred_fonts+=(Times-BoldItalic)
+    preferred_fonts+=(URW-Palladio-L-Bold-Italic)
+    preferred_fonts+=(Utopia-Bold-Italic)
+    preferred_fonts+=(Bitstream-Charter-Bold-Italic)
+
+    mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
+
+    for preferred_font in "${preferred_fonts[@]}"; do
+        for available_font in "${available_fonts[@]}"; do
+            [[ $preferred_font = "$available_font" ]] && break 2
+        done
+    done
+
+    echo "$preferred_font"
 
     }
 
@@ -3337,35 +3380,6 @@ DisplayThousands()
     # show $1 formatted with thousands separator
 
     printf "%'.f\n" "$1"
-
-    }
-
-FirstPreferredFont()
-    {
-
-    local preferred_fonts=()
-    local available_fonts=()
-    local preferred_font=''
-    local available_font=''
-
-    preferred_fonts+=(Century-Schoolbook-L-Bold-Italic)
-    preferred_fonts+=(Droid-Serif-Bold-Italic)
-    preferred_fonts+=(FreeSerif-Bold-Italic)
-    preferred_fonts+=(Nimbus-Roman-No9-L-Medium-Italic)
-    preferred_fonts+=(Times-BoldItalic)
-    preferred_fonts+=(URW-Palladio-L-Bold-Italic)
-    preferred_fonts+=(Utopia-Bold-Italic)
-    preferred_fonts+=(Bitstream-Charter-Bold-Italic)
-
-    mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
-
-    for preferred_font in "${preferred_fonts[@]}"; do
-        for available_font in "${available_fonts[@]}"; do
-            [[ $preferred_font = "$available_font" ]] && break 2
-        done
-    done
-
-    echo "$preferred_font"
 
     }
 
