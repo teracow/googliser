@@ -245,28 +245,28 @@ BuildWorkPaths()
 
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
-    pages_run_count_path=$TEMP_PATH/pages.running.count
-    mkdir -p "$pages_run_count_path" || Flee
+    page_run_count_path=$TEMP_PATH/pages.running.count
+    mkdir -p "$page_run_count_path" || Flee
 
-    pages_success_count_path=$TEMP_PATH/pages.success.count
-    mkdir -p "$pages_success_count_path" || Flee
+    page_success_count_path=$TEMP_PATH/pages.success.count
+    mkdir -p "$page_success_count_path" || Flee
 
-    pages_fail_count_path=$TEMP_PATH/pages.fail.count
-    mkdir -p "$pages_fail_count_path" || Flee
+    page_fail_count_path=$TEMP_PATH/pages.fail.count
+    mkdir -p "$page_fail_count_path" || Flee
 
-    pages_abort_count_path=$TEMP_PATH/pages.abort.count
-    mkdir -p "$pages_abort_count_path" || Flee
+    page_abort_count_path=$TEMP_PATH/pages.abort.count
+    mkdir -p "$page_abort_count_path" || Flee
 
-    image_run_count_path=$TEMP_PATH/image.running.count
+    image_run_count_path=$TEMP_PATH/images.running.count
     mkdir -p "$image_run_count_path" || Flee
 
-    image_success_count_path=$TEMP_PATH/image.success.count
+    image_success_count_path=$TEMP_PATH/images.success.count
     mkdir -p "$image_success_count_path" || Flee
 
-    image_fail_count_path=$TEMP_PATH/image.fail.count
+    image_fail_count_path=$TEMP_PATH/images.fail.count
     mkdir -p "$image_fail_count_path" || Flee
 
-    image_abort_count_path=$TEMP_PATH/image.abort.count
+    image_abort_count_path=$TEMP_PATH/images.abort.count
     mkdir -p "$image_abort_count_path" || Flee
 
     testimage_pathfile=$TEMP_PATH/$test_file
@@ -1300,17 +1300,15 @@ GetPages()
     local run_count=0
     local success_count=0
     local fail_count=0
-    local max_search_result_pages=$GOOGLE_RESULTS_MAX
-#    [[ $max_search_result_pages -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_pages=$GOOGLE_RESULTS_MAX
     local returncode=0
 
     InitProgress
 
     # clears the paths used to count the search result pages
-    [[ -d $pages_run_count_path ]] && rm -f "$pages_run_count_path"/*
-    [[ -d $pages_success_count_path ]] && rm -f "$pages_success_count_path"/*
-    [[ -d $pages_fail_count_path ]] && rm -f "$pages_fail_count_path"/*
-    [[ -d $pages_abort_count_path ]] && rm -f "$pages_abort_count_path"/*
+    [[ -d $page_run_count_path ]] && rm -f "$page_run_count_path"/*
+    [[ -d $page_success_count_path ]] && rm -f "$page_success_count_path"/*
+    [[ -d $page_fail_count_path ]] && rm -f "$page_fail_count_path"/*
+    [[ -d $page_abort_count_path ]] && rm -f "$page_abort_count_path"/*
 
     [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
@@ -1326,13 +1324,11 @@ GetPages()
         page_index=$(printf "%02d" $page)
 
         # create run file here as it takes too long to happen in background function
-        touch "$pages_run_count_path/$page_index"
+        touch "$page_run_count_path/$page_index"
         { _GetPage_ "$page" "$page_index" & } 2>/dev/null
 
         RefreshPageCounts
         ShowPagesProgress
-
-        [[ $((page*100)) -ge $max_search_result_pages ]] && break
     done
 
     # wait here while all running downloads finish
@@ -1430,9 +1426,9 @@ _GetPage_()
 
     DebugChildForked
 
-    local run_pathfile=$pages_run_count_path/$page_index
-    local success_pathfile=$pages_success_count_path/$page_index
-    local fail_pathfile=$pages_fail_count_path/$page_index
+    local run_pathfile=$page_run_count_path/$page_index
+    local success_pathfile=$page_success_count_path/$page_index
+    local fail_pathfile=$page_fail_count_path/$page_index
 
     response=$(_DownloadPage_ "$page" "$page_index")
     get_page_result=$?
@@ -2187,10 +2183,10 @@ ProgressUpdater()
 RefreshPageCounts()
     {
 
-    run_count=$(ls -1 "$pages_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
-    success_count=$(ls -1 "$pages_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
-    fail_count=$(ls -1 "$pages_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
-    abort_count=$(ls -1 "$pages_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
+    run_count=$(ls -1 "$page_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
+    success_count=$(ls -1 "$page_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
+    fail_count=$(ls -1 "$page_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
+    abort_count=$(ls -1 "$page_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
 
     }
 
@@ -2418,9 +2414,9 @@ AbortResults()
     kill $(jobs -rp) 2>/dev/null
     wait 2>/dev/null
 
-    for existing_pathfile in "$pages_run_count_path"/*; do
+    for existing_pathfile in "$page_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
-        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$pages_abort_count_path"/
+        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$page_abort_count_path"/
         DebugFuncSuccess "$(FormatSearch "$existing_file")"
     done
 
