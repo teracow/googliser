@@ -60,7 +60,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191115
+    local SCRIPT_VERSION=191117
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -87,7 +87,7 @@ Init()
 
     # script-variables
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
-    image_links_file=download.links.list
+    image_links_file=image.links.list
     gallery_title=''
     current_path=$PWD
     exitcode=0
@@ -245,32 +245,32 @@ BuildWorkPaths()
 
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
-    results_run_count_path=$TEMP_PATH/results.running.count
-    mkdir -p "$results_run_count_path" || Flee
+    pages_run_count_path=$TEMP_PATH/pages.running.count
+    mkdir -p "$pages_run_count_path" || Flee
 
-    results_success_count_path=$TEMP_PATH/results.success.count
-    mkdir -p "$results_success_count_path" || Flee
+    pages_success_count_path=$TEMP_PATH/pages.success.count
+    mkdir -p "$pages_success_count_path" || Flee
 
-    results_fail_count_path=$TEMP_PATH/results.fail.count
-    mkdir -p "$results_fail_count_path" || Flee
+    pages_fail_count_path=$TEMP_PATH/pages.fail.count
+    mkdir -p "$pages_fail_count_path" || Flee
 
-    results_abort_count_path=$TEMP_PATH/results.abort.count
-    mkdir -p "$results_abort_count_path" || Flee
+    pages_abort_count_path=$TEMP_PATH/pages.abort.count
+    mkdir -p "$pages_abort_count_path" || Flee
 
-    download_run_count_path=$TEMP_PATH/download.running.count
-    mkdir -p "$download_run_count_path" || Flee
+    image_run_count_path=$TEMP_PATH/image.running.count
+    mkdir -p "$image_run_count_path" || Flee
 
-    download_success_count_path=$TEMP_PATH/download.success.count
-    mkdir -p "$download_success_count_path" || Flee
+    image_success_count_path=$TEMP_PATH/image.success.count
+    mkdir -p "$image_success_count_path" || Flee
 
-    download_fail_count_path=$TEMP_PATH/download.fail.count
-    mkdir -p "$download_fail_count_path" || Flee
+    image_fail_count_path=$TEMP_PATH/image.fail.count
+    mkdir -p "$image_fail_count_path" || Flee
 
-    download_abort_count_path=$TEMP_PATH/download.abort.count
-    mkdir -p "$download_abort_count_path" || Flee
+    image_abort_count_path=$TEMP_PATH/image.abort.count
+    mkdir -p "$image_abort_count_path" || Flee
 
     testimage_pathfile=$TEMP_PATH/$test_file
-    searchresults_pathfile=$TEMP_PATH/search.results.page.html
+    page_pathfile=$TEMP_PATH/page.html
     gallery_title_pathfile=$TEMP_PATH/gallery.title.png
     gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
     gallery_background_pathfile=$TEMP_PATH/gallery.background.png
@@ -1217,7 +1217,7 @@ ProcessPhrase()
         fi
     fi
 
-    GetResultPages || exitcode=4
+    GetPages || exitcode=4
     [[ $exitcode -eq 0 && $links_only = false ]] && { GetImages || exitcode=5 ;}
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
@@ -1290,59 +1290,63 @@ ProcessLinkList()
 
     }
 
-GetResultPages()
+GetPages()
     {
 
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
-    local groups_max=$((GOOGLE_RESULTS_MAX/100))
+    local pages_max=$((GOOGLE_RESULTS_MAX/100))
     local run_count=0
     local success_count=0
     local fail_count=0
-    local max_search_result_groups=$GOOGLE_RESULTS_MAX
-#    [[ $max_search_result_groups -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_groups=$GOOGLE_RESULTS_MAX
+    local max_search_result_pages=$GOOGLE_RESULTS_MAX
+#    [[ $max_search_result_pages -gt $GOOGLE_RESULTS_MAX ]] && max_search_result_pages=$GOOGLE_RESULTS_MAX
     local returncode=0
 
     InitProgress
 
     # clears the paths used to count the search result pages
-    [[ -d $results_run_count_path ]] && rm -f "$results_run_count_path"/*
-    [[ -d $results_success_count_path ]] && rm -f "$results_success_count_path"/*
-    [[ -d $results_fail_count_path ]] && rm -f "$results_fail_count_path"/*
-    [[ -d $results_abort_count_path ]] && rm -f "$results_abort_count_path"/*
+    [[ -d $pages_run_count_path ]] && rm -f "$pages_run_count_path"/*
+    [[ -d $pages_success_count_path ]] && rm -f "$pages_success_count_path"/*
+    [[ -d $pages_fail_count_path ]] && rm -f "$pages_fail_count_path"/*
+    [[ -d $pages_abort_count_path ]] && rm -f "$pages_abort_count_path"/*
 
     [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
-    for ((group=1; group<=groups_max; group++)); do
+    for ((page=1; page<=pages_max; page++)); do
         # wait here until a download slot becomes available
         while [[ $run_count -eq $parallel_limit ]]; do
             sleep 0.5
 
-            RefreshResultsCounts
-            ShowGetResultProgress
+            RefreshPageCounts
+            ShowPagesProgress
         done
 
-        group_index=$(printf "%02d" $group)
+        page_index=$(printf "%02d" $page)
 
         # create run file here as it takes too long to happen in background function
-        touch "$results_run_count_path/$group_index"
-        { _GetResultPage_ "$group" "$group_index" & } 2>/dev/null
+        touch "$pages_run_count_path/$page_index"
+        { _GetPage_ "$page" "$page_index" & } 2>/dev/null
 
-        RefreshResultsCounts
-        ShowGetResultProgress
+        RefreshPageCounts
+        ShowPagesProgress
 
-        [[ $((group*100)) -ge $max_search_result_groups ]] && break
+        [[ $((page*100)) -ge $max_search_result_pages ]] && break
     done
 
     # wait here while all running downloads finish
     wait 2>/dev/null
 
-    RefreshResultsCounts
-    ShowGetResultProgress
+    RefreshPageCounts
+    ShowPagesProgress
 
-    # build all groups into a single file
-    cat "$searchresults_pathfile".* > "$searchresults_pathfile"
+    DebugFuncVal 'pages OK' "$success_count"
+    DebugFuncVal 'pages failed' "$fail_count"
+    DebugFuncVal 'pages aborted' "$abort_count"
+
+    # build all pages into a single file
+    cat "$page_pathfile".* > "$page_pathfile"
 
     ParseResults
 
@@ -1353,28 +1357,29 @@ GetResultPages()
 
     }
 
-_GetResultPage_()
+_GetPage_()
     {
 
     # * This function runs as a forked process *
-    # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
+    # $1 = page to load           e.g. 0, 1, 2, 3, etc...
     # $2 = debug index identifier       e.g. (02)
 
-    _GetResultsGroup_()
+    _DownloadPage_()
         {
 
-        # $1 = page group to load           e.g. 0, 1, 2, 3, etc...
+        # $1 = page to load           e.g. 0, 1, 2, 3, etc...
         # $2 = debug log link index         e.g. (02)
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
-        local page_group=$1
-        local group_index=$2
-        local search_group="&ijn=$((page_group-1))"
-        local search_start="&start=$(((page_group-1)*100))"
+        local page=$1
+        local page_index=$2
+        local search_page="&ijn=$((page-1))"
+        local search_start="&start=$(((page-1)*100))"
         local SERVER='https://www.google.com'
         local safe_search_query="&q=$safe_search_phrase"
-        local get_results_cmd=''
+        local get_page_cmd=''
+        local this_page_pathfile="$page_pathfile.$page"
 
         # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
         local SEARCH_TYPE='&tbm=isch'       # search for images
@@ -1399,45 +1404,46 @@ _GetResultPage_()
         fi
 
         # compiled search string
-        local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_group}${search_start}${advanced_search}${safesearch_flag}\""
+        local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_page}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_results_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$searchresults_pathfile.$page_group\""
+            get_page_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$this_page_pathfile\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            get_results_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$searchresults_pathfile.$page_group\""
+            get_page_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$this_page_pathfile\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
         fi
 
-        DebugChildExec "get search results" "$get_results_cmd"
+        DebugChildExec "get page" "$get_page_cmd"
 
-        eval "$get_results_cmd" 2>&1
+        eval "$get_page_cmd" 2>&1
 
         }
 
-    local page_group=$1
-    local group_index=$2
-    _forkname_=$(FormatFuncSearch "${FUNCNAME[0]}" "$group_index")      # global: used by various debug logging functions
+    local page=$1
+    local page_index=$2
+    _forkname_=$(FormatFuncSearch "${FUNCNAME[0]}" "$page_index")      # global: used by various debug logging functions
     local response=''
-    local result=0
+    local get_page_result=0
     local func_startseconds=$(date +%s)
 
     DebugChildForked
 
-    local run_pathfile=$results_run_count_path/$group_index
-    local success_pathfile=$results_success_count_path/$group_index
-    local fail_pathfile=$results_fail_count_path/$group_index
+    local run_pathfile=$pages_run_count_path/$page_index
+    local success_pathfile=$pages_success_count_path/$page_index
+    local fail_pathfile=$pages_fail_count_path/$page_index
 
-    response=$(_GetResultsGroup_ "$page_group" "$group_index")
-    result=$?
+    response=$(_DownloadPage_ "$page" "$page_index")
+    get_page_result=$?
+    UpdateRunLog "$section" "$action" "$response" "$get_page_result" "$(DownloaderReturnCodes "$get_page_result")"
 
-    if [[ $result -eq 0 ]]; then
-        mv "$run_pathfile" "$success_pathfile"
-        DebugChildSuccess 'get search results'
+    if [[ $get_page_result -eq 0 ]]; then
+        MoveToSuccess
+        DebugChildSuccess 'get page'
     else
-        mv "$run_pathfile" "$fail_pathfile"
-        DebugChildFail "downloader returned \"$result: $(DownloaderReturnCodes "$result")\""
+        MoveToFail
+        DebugChildFail "downloader returned \"$get_page_result: $(DownloaderReturnCodes "$get_page_result")\""
     fi
 
     DebugChildElapsedTime "$func_startseconds"
@@ -1468,14 +1474,14 @@ GetImages()
     InitProgress
 
     # clears the paths used to count the downloaded images
-    [[ -d $download_run_count_path ]] && rm -f "$download_run_count_path"/*
-    [[ -d $download_success_count_path ]] && rm -f "$download_success_count_path"/*
-    [[ -d $download_fail_count_path ]] && rm -f "$download_fail_count_path"/*
-    [[ -d $download_abort_count_path ]] && rm -f "$download_abort_count_path"/*
+    [[ -d $image_run_count_path ]] && rm -f "$image_run_count_path"/*
+    [[ -d $image_success_count_path ]] && rm -f "$image_success_count_path"/*
+    [[ -d $image_fail_count_path ]] && rm -f "$image_fail_count_path"/*
+    [[ -d $image_abort_count_path ]] && rm -f "$image_abort_count_path"/*
 
     while read -r imagelink; do
         while true; do
-            RefreshDownloadCounts; ShowGetImagesProgress
+            RefreshImageCounts; ShowImagesProgress
 
             [[ $success_count -ge $gallery_images_required ]] && break 2
 
@@ -1488,7 +1494,7 @@ GetImages()
                 local link_index=$(printf "%04d" $result_index)
 
                 # create the fork runfile here as it takes too long to happen in background function
-                touch "$download_run_count_path/$link_index"
+                touch "$image_run_count_path/$link_index"
                 { _GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
@@ -1497,21 +1503,21 @@ GetImages()
     done < "$image_links_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        [[ $success_count -ge $gallery_images_required ]] && AbortDownloads
-        RefreshDownloadCounts; ShowGetImagesProgress
+        [[ $success_count -ge $gallery_images_required ]] && AbortImages
+        RefreshImageCounts; ShowImagesProgress
     done
 
     wait 2>/dev/null;                   # wait here until all forked download jobs have exited
 
     if [[ $success_count -gt $gallery_images_required ]]; then      # overrun can occur, so trim back successful downloads to that required
-        for existing_pathfile in $(ls "$download_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
+        for existing_pathfile in $(ls "$image_success_count_path"/* | tail -n +$((gallery_images_required+1))); do
             existing_file=$(basename "$existing_pathfile")
-            mv "$existing_pathfile" "$download_abort_count_path"
+            mv "$existing_pathfile" "$image_abort_count_path"
             rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         done
     fi
 
-    RefreshDownloadCounts; ShowGetImagesProgress
+    RefreshImageCounts; ShowImagesProgress
 
     if [[ $fail_count -gt 0 && $verbose = true ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -1559,7 +1565,7 @@ _GetImage_()
     # $1 = URL to download
     # $2 = debug index identifier e.g. "0026"
 
-    _GetHeader_()
+    _DownloadHeader_()
         {
 
         # $1 = URL to check
@@ -1586,7 +1592,7 @@ _GetImage_()
 
         }
 
-    _GetFile_()
+    _DownloadImage_()
         {
 
         # $1 = URL to check
@@ -1613,42 +1619,6 @@ _GetImage_()
 
         }
 
-    _MoveToSuccess_()
-        {
-
-        # move runfile to the successes directory
-
-        [[ -e $run_pathfile ]] && mv "$run_pathfile" "$success_pathfile"
-
-        }
-
-    _MoveToFail_()
-        {
-
-        # move runfile to the failures directory
-
-        [[ -e $run_pathfile ]] && mv "$run_pathfile" "$fail_pathfile"
-
-        # delete temp file if one was created
-        [[ -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
-
-        }
-
-    _UpdateRunLog_()
-        {
-
-        # $1 = section
-        # $2 = action
-        # $3 = stdout from function (optional)
-        # $4 = resultcode
-        # $5 = extended description of resultcode (optional)
-
-        [[ -z $1 || -z $2 || -z $4 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
-
-        printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
-
-        }
-
     local URL=$1
     local link_index=$2
     _forkname_=$(FormatFuncLink "${FUNCNAME[0]}" "$link_index")     # global: used by various debug logging functions
@@ -1669,9 +1639,9 @@ _GetImage_()
 
     DebugChildForked
 
-    local run_pathfile=$download_run_count_path/$link_index
-    local success_pathfile=$download_success_count_path/$link_index
-    local fail_pathfile=$download_fail_count_path/$link_index
+    local run_pathfile=$image_run_count_path/$link_index
+    local success_pathfile=$image_success_count_path/$link_index
+    local fail_pathfile=$image_fail_count_path/$link_index
 
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo "${1:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
@@ -1683,10 +1653,10 @@ _GetImage_()
     section='pre-download'
 
     if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
-        action='ask for remote image file size'
-        response=$(_GetHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
+        action='request remote image file size'
+        response=$(_DownloadHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
         get_remote_size_result=$?
-        _UpdateRunLog_ "$section" "$action" "$response" "$get_remote_size_result" "$(DownloaderReturnCodes "$get_remote_size_result")"
+        UpdateRunLog "$section" "$action" "$response" "$get_remote_size_result" "$(DownloaderReturnCodes "$get_remote_size_result")"
 
         if [[ $get_remote_size_result -eq 0 ]]; then
             action='check remote image file size'
@@ -1697,25 +1667,25 @@ _GetImage_()
 
             if [[ $estimated_size = unknown ]]; then
                 [[ $skip_no_size = true ]] && pre_download_ok=false || pre_download_ok=true
-                _UpdateRunLog_ "$section" "$action" "$(DisplayThousands "$estimated_size") bytes" '1' 'unknown'
+                UpdateRunLog "$section" "$action" "$(DisplayThousands "$estimated_size") bytes" '1' 'unknown'
             else
                 if [[ $estimated_size -lt $lower_size_bytes ]]; then
                     pre_download_ok=false
-                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too small'
+                    UpdateRunLog "$section" "$action" "$estimated_size" '1' 'too small'
                     DebugChildFail "$action < $(DisplayThousands "$lower_size_bytes") bytes"
                 elif [[ $upper_size_bytes -gt 0 && $estimated_size -gt $upper_size_bytes ]]; then
                     pre_download_ok=false
-                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '1' 'too large'
+                    UpdateRunLog "$section" "$action" "$estimated_size" '1' 'too large'
                     DebugChildFail "$action > $(DisplayThousands "$upper_size_bytes") bytes"
                 else
                     pre_download_ok=true
-                    _UpdateRunLog_ "$section" "$action" "$estimated_size" '0' 'OK'
+                    UpdateRunLog "$section" "$action" "$estimated_size" '0' 'OK'
                     DebugChildSuccess "$action"
                 fi
             fi
         else
             pre_download_ok=false
-            _MoveToFail_
+            MoveToFail
             DebugChildFail "$section returned: \"$get_remote_size_result: $(DownloaderReturnCodes "$get_remote_size_result")\""
         fi
     else
@@ -1726,20 +1696,20 @@ _GetImage_()
 
     if [[ $pre_download_ok = true ]]; then
         action='download image'
-        response=$(_GetFile_ "$URL" "$targetimage_pathfileext")
+        response=$(_DownloadImage_ "$URL" "$targetimage_pathfileext")
         get_image_result=$?
-        _UpdateRunLog_ "$section" "$action" "$response" "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
+        UpdateRunLog "$section" "$action" "$response" "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
         if [[ $get_image_result -eq 0 && -e $targetimage_pathfileext ]]; then
             download_ok=true
             DebugChildSuccess "$action"
         else
             download_ok=false
-            _MoveToFail_
+            MoveToFail
             DebugChildFail "$action"
         fi
     else
         download_ok=false
-        _MoveToFail_
+        MoveToFail
     fi
 
     section='post-download'
@@ -1755,36 +1725,36 @@ _GetImage_()
         DebugChildVal 'average download speed' "$download_speed"
 
         if [[ $actual_size -lt $lower_size_bytes ]]; then
-            _UpdateRunLog_ "$section" "$action" "$actual_size" '1' 'too small'
+            UpdateRunLog "$section" "$action" "$actual_size" '1' 'too small'
             size_ok=false
-            _MoveToFail_
+            MoveToFail
             DebugChildFail "$action < $lower_size_bytes"
         elif [[ $upper_size_bytes -gt 0 && $actual_size -gt $upper_size_bytes ]]; then
-            _UpdateRunLog_ "$section" "$action" "$actual_size" '1' 'too large'
+            UpdateRunLog "$section" "$action" "$actual_size" '1' 'too large'
             size_ok=false
-            _MoveToFail_
+            MoveToFail
             DebugChildFail "$action > $upper_size_bytes"
         else
-            _UpdateRunLog_ "$section" "$action" "$actual_size" '0' 'OK'
+            UpdateRunLog "$section" "$action" "$actual_size" '0' 'OK'
             size_ok=true
             DebugChildSuccess "$action"
         fi
     else
         size_ok=false
-        _MoveToFail_
+        MoveToFail
     fi
 
     if [[ $size_ok = true ]]; then
         response=$(RenameExtAsType "$targetimage_pathfileext")
         get_type_result=$?
         action='confirm local image file type'
-        _UpdateRunLog_ "$section" "$action" "$response" "$get_type_result" ''
+        UpdateRunLog "$section" "$action" "$response" "$get_type_result" ''
 
         if [[ $get_type_result -eq 0 ]]; then
-            _MoveToSuccess_
+            MoveToSuccess
             DebugChildSuccess "$action"
         else
-            _MoveToFail_
+            MoveToFail
             DebugChildFail "$action"
         fi
     fi
@@ -2122,6 +2092,42 @@ Finish()
 
     }
 
+MoveToSuccess()
+    {
+
+    # move runfile to the successes directory
+
+    [[ -n $run_pathfile && -e $run_pathfile ]] && mv "$run_pathfile" "$success_pathfile"
+
+    }
+
+MoveToFail()
+    {
+
+    # move runfile to the failures directory
+
+    [[ -n $run_pathfile && -e $run_pathfile ]] && mv "$run_pathfile" "$fail_pathfile"
+
+    # delete temp file if one was created
+    [[ -n $targetimage_pathfileext && -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
+
+    }
+
+UpdateRunLog()
+    {
+
+    # $1 = section
+    # $2 = action
+    # $3 = stdout from function (optional)
+    # $4 = resultcode
+    # $5 = extended description of resultcode (optional)
+
+    [[ -z $1 || -z $2 || -z $4 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
+
+    printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
+
+    }
+
 SuggestInstall()
     {
 
@@ -2178,43 +2184,43 @@ ProgressUpdater()
 
     }
 
-RefreshResultsCounts()
+RefreshPageCounts()
     {
 
-    run_count=$(ls -1 "$results_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
-    success_count=$(ls -1 "$results_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
-    fail_count=$(ls -1 "$results_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
-    abort_count=$(ls -1 "$results_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
+    run_count=$(ls -1 "$pages_run_count_path" | wc -l); run_count=${run_count##* }                    # remove leading space in 'wc' output on macOS
+    success_count=$(ls -1 "$pages_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
+    fail_count=$(ls -1 "$pages_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
+    abort_count=$(ls -1 "$pages_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
 
     }
 
-ShowGetResultProgress()
+ShowPagesProgress()
     {
 
     if [[ $verbose = true ]]; then
-        if [[ $success_count -eq $groups_max ]]; then
-            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$groups_max")")
+        if [[ $success_count -eq $pages_max ]]; then
+            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$pages_max")")
         else
-            progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$groups_max")")
+            progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$pages_max")")
         fi
 
-        progress_message+=' result groups downloaded:'
+        progress_message+=' pages downloaded:'
         ProgressUpdater "$progress_message"
     fi
 
     }
 
-RefreshDownloadCounts()
+RefreshImageCounts()
     {
 
-    run_count=$(ls -1 "$download_run_count_path" | wc -l); run_count=${run_count##* }                   # remove leading space in 'wc' output on macOS
-    success_count=$(ls -1 "$download_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
-    fail_count=$(ls -1 "$download_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
-    abort_count=$(ls -1 "$download_abort_count_path" | wc -l); abort_count=${abort_count##* }           # remove leading space in 'wc' output on macOS
+    run_count=$(ls -1 "$image_run_count_path" | wc -l); run_count=${run_count##* }                   # remove leading space in 'wc' output on macOS
+    success_count=$(ls -1 "$image_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
+    fail_count=$(ls -1 "$image_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
+    abort_count=$(ls -1 "$image_abort_count_path" | wc -l); abort_count=${abort_count##* }           # remove leading space in 'wc' output on macOS
 
     }
 
-ShowGetImagesProgress()
+ShowImagesProgress()
     {
 
     local gallery_images_required_adjusted=''
@@ -2375,7 +2381,7 @@ ScrapeSearchResults()
     #
     #-----------------------------------------------------------------------------------------------------------
 
-    cat "$searchresults_pathfile" \
+    cat "$page_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
     | $SED_BIN '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
@@ -2391,8 +2397,8 @@ CTRL_C_Captured()
     echo
     echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
 
-    AbortResults
-    AbortDownloads
+    AbortPages
+    AbortImages
 
     DebugFuncExit
     Finish
@@ -2404,7 +2410,7 @@ AbortResults()
 
     DebugFuncEntry
 
-    # remove any files where processing by [_GetResultPage_] was incomplete
+    # remove any files where processing by [_GetPage_] was incomplete
 
     local existing_pathfile=''
     local existing_file=''
@@ -2412,9 +2418,9 @@ AbortResults()
     kill $(jobs -rp) 2>/dev/null
     wait 2>/dev/null
 
-    for existing_pathfile in "$results_run_count_path"/*; do
+    for existing_pathfile in "$pages_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
-        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$results_abort_count_path"/
+        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$pages_abort_count_path"/
         DebugFuncSuccess "$(FormatSearch "$existing_file")"
     done
 
@@ -2424,7 +2430,7 @@ AbortResults()
 
     }
 
-AbortDownloads()
+AbortImages()
     {
 
     DebugFuncEntry
@@ -2437,9 +2443,9 @@ AbortDownloads()
     kill $(jobs -rp) 2>/dev/null
     wait 2>/dev/null
 
-    for existing_pathfile in "$download_run_count_path"/*; do
+    for existing_pathfile in "$image_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
-        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$download_abort_count_path"/
+        [[ -e "$existing_pathfile" ]] && mv "$existing_pathfile" "$image_abort_count_path"/
         rm -f "$target_path/$IMAGE_FILE_PREFIX($existing_file)".*
         DebugFuncSuccess "$(FormatLink "$existing_file")"
     done
