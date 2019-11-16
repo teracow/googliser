@@ -210,32 +210,6 @@ InstallGoogliser()
 
     }
 
-FindPackageManager()
-    {
-
-    case "$OSTYPE" in
-        "darwin"*)
-            PACKAGER_BIN=$(command -v brew)
-            ;;
-        "linux"*)
-            if ! PACKAGER_BIN=$(command -v apt); then
-                if ! PACKAGER_BIN=$(command -v yum); then
-                    if ! PACKAGER_BIN=$(command -v opkg); then
-                        PACKAGER_BIN=''
-                    fi
-                fi
-            fi
-            ;;
-        *)
-            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            exit 1
-            ;;
-    esac
-
-    [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
-
-    }
-
 BuildWorkPaths()
     {
 
@@ -1221,7 +1195,7 @@ ProcessPhrase()
     [[ $exitcode -eq 0 && $links_only = false ]] && { GetImages || exitcode=5 ;}
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && CopyLinks
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && SaveLinks
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1780,7 +1754,7 @@ ParseResults()
     results_received=0
     local returncode=0
 
-    ScrapeSearchResults
+    ScrapePages
 
     if [[ -e $image_links_pathfile ]]; then
         _GetLinkCount_
@@ -1841,24 +1815,6 @@ ParseResults()
 
     DebugFuncExit
     return $returncode
-
-    }
-
-ReindexRename()
-    {
-
-    local targetfile=''
-    local reindex=0
-
-    if [[ $reindex_rename = true && -n $target_path ]]; then
-        DebugFuncOpr 'reindexing and renaming downloaded files'
-        for targetfile in "$target_path/"*; do
-            ((reindex++))
-            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
-        done
-    fi
-
-    return 0
 
     }
 
@@ -2024,23 +1980,6 @@ BuildGallery()
 
     }
 
-CopyLinks()
-    {
-
-    # copy links file into target directory if possible. If not, then copy to current directory.
-
-    if [[ $save_links = true ]]; then
-        if [[ $target_path_created = true ]]; then
-            cp -f "$image_links_pathfile" "$target_path/$image_links_file"
-        else
-            cp -f "$image_links_pathfile" "$current_path/$image_links_file"
-        fi
-    fi
-
-    return 0
-
-    }
-
 Finish()
     {
 
@@ -2066,21 +2005,11 @@ Finish()
         esac
     fi
 
-    # write results into debug file
     DebugScriptNow
     DebugScriptElapsedTime "$SCRIPT_STARTSECONDS"
     DebugScriptExit
 
-    # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
-    if [[ $debug = true ]]; then
-        if [[ -n $input_phrases_pathfile || $target_path_created = false ]]; then
-            [[ -e $current_path/$DEBUG_FILE ]] && echo "" >> "$current_path/$DEBUG_FILE"
-            cat "$debug_pathfile" >> "$current_path/$DEBUG_FILE"
-        else
-            [[ -e $target_path/$DEBUG_FILE ]] && echo "" >> "$target_path/$DEBUG_FILE"
-            cp -f "$debug_pathfile" "$target_path/$DEBUG_FILE"
-        fi
-    fi
+    SaveDebug
 
     [[ $show_help = true ]] && exitcode=0
 
@@ -2121,6 +2050,84 @@ UpdateRunLog()
     [[ -z $1 || -z $2 || -z $4 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
     printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
+
+    }
+
+FindPackageManager()
+    {
+
+    case "$OSTYPE" in
+        "darwin"*)
+            PACKAGER_BIN=$(command -v brew)
+            ;;
+        "linux"*)
+            if ! PACKAGER_BIN=$(command -v apt); then
+                if ! PACKAGER_BIN=$(command -v yum); then
+                    if ! PACKAGER_BIN=$(command -v opkg); then
+                        PACKAGER_BIN=''
+                    fi
+                fi
+            fi
+            ;;
+        *)
+            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            exit 1
+            ;;
+    esac
+
+    [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+
+    }
+
+ReindexRename()
+    {
+
+    local targetfile=''
+    local reindex=0
+
+    if [[ $reindex_rename = true && -n $target_path ]]; then
+        DebugFuncOpr 'reindexing and renaming downloaded files'
+        for targetfile in "$target_path/"*; do
+            ((reindex++))
+            mv "$targetfile" "$target_path/$IMAGE_FILE_PREFIX($(printf "%04d" $reindex)).${targetfile##*.}"
+        done
+    fi
+
+    return 0
+
+    }
+
+SaveLinks()
+    {
+
+    # copy links file into target directory if possible. If not, then copy to current directory.
+
+    if [[ $save_links = true ]]; then
+        if [[ $target_path_created = true ]]; then
+            cp -f "$image_links_pathfile" "$target_path/$image_links_file"
+        else
+            cp -f "$image_links_pathfile" "$current_path/$image_links_file"
+        fi
+    fi
+
+    return 0
+
+    }
+
+SaveDebug()
+    {
+
+    # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
+
+    if [[ $debug = true ]]; then
+        if [[ -n $input_phrases_pathfile || $target_path_created = false ]]; then
+            [[ -e $current_path/$DEBUG_FILE ]] && echo "" >> "$current_path/$DEBUG_FILE"
+            cat "$debug_pathfile" >> "$current_path/$DEBUG_FILE"
+        else
+            [[ -e $target_path/$DEBUG_FILE ]] && echo "" >> "$target_path/$DEBUG_FILE"
+            cp -f "$debug_pathfile" "$target_path/$DEBUG_FILE"
+        fi
+    fi
 
     }
 
@@ -2355,7 +2362,7 @@ AllowableFileType()
 
     }
 
-ScrapeSearchResults()
+ScrapePages()
     {
 
     #-------------------------- "These are the regexes you're looking for" -------------------------------------
@@ -2401,7 +2408,7 @@ CTRL_C_Captured()
 
     }
 
-AbortResults()
+AbortPages()
     {
 
     DebugFuncEntry
