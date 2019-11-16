@@ -215,8 +215,6 @@ BuildWorkPaths()
 
     Flee() { echo "! Unable to create a temporary build directory! Exiting."; exit 7 ;}
 
-    local test_file=test-image          # used during image filesize testing
-
     TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
 
     page_run_count_path=$TEMP_PATH/pages.running.count
@@ -243,7 +241,7 @@ BuildWorkPaths()
     image_abort_count_path=$TEMP_PATH/images.abort.count
     mkdir -p "$image_abort_count_path" || Flee
 
-    testimage_pathfile=$TEMP_PATH/$test_file
+    image_sizetest_pathfile=$TEMP_PATH/test-image-size
     page_pathfile=$TEMP_PATH/page.html
     gallery_title_pathfile=$TEMP_PATH/gallery.title.png
     gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
@@ -1614,7 +1612,7 @@ _GetImage_()
 
     if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
         action='request remote image file size'
-        response=$(_DownloadHeader_ "$URL" "$testimage_pathfile($link_index)$ext")
+        response=$(_DownloadHeader_ "$URL" "$image_sizetest_pathfile($link_index)$ext")
         get_remote_size_result=$?
         UpdateRunLog "$section" "$action" "$response" "$get_remote_size_result" "$(DownloaderReturnCodes "$get_remote_size_result")"
 
