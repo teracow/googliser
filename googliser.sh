@@ -1330,19 +1330,14 @@ _GetPage_()
     _DownloadPage_()
         {
 
-        # $1 = page to load           e.g. 0, 1, 2, 3, etc...
-        # $2 = debug log link index         e.g. (02)
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
-        local page=$1
-        local page_index=$2
         local search_page="&ijn=$((page-1))"
         local search_start="&start=$(((page-1)*100))"
         local SERVER='https://www.google.com'
         local safe_search_query="&q=$safe_search_phrase"
         local get_page_cmd=''
-        local this_page_pathfile="$page_pathfile.$page"
 
         # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
         local SEARCH_TYPE='&tbm=isch'       # search for images
@@ -1370,9 +1365,9 @@ _GetPage_()
         local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_page}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_page_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$this_page_pathfile\""
+            get_page_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            get_page_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$this_page_pathfile\""
+            get_page_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$targetpage_pathfile\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
@@ -1388,6 +1383,8 @@ _GetPage_()
     local page_index=$2
     _forkname_=$(FormatFuncSearch "${FUNCNAME[0]}" "$page_index")      # global: used by various debug logging functions
     local response=''
+    local section=''
+    local action=''
     local get_page_result=0
     local func_startseconds=$(date +%s)
 
@@ -1397,11 +1394,15 @@ _GetPage_()
     local success_pathfile=$page_success_count_path/$page_index
     local fail_pathfile=$page_fail_count_path/$page_index
 
-    response=$(_DownloadPage_ "$page" "$page_index")
+    local targetpage_pathfile="$page_pathfile.$page"
+
+    section='mid-download'
+    action='download page'
+    response=$(_DownloadPage_)
     get_page_result=$?
     UpdateRunLog "$section" "$action" "$response" "$get_page_result" "$(DownloaderReturnCodes "$get_page_result")"
 
-    if [[ $get_page_result -eq 0 ]]; then
+    if [[ $get_page_result -eq 0 && -s $targetpage_pathfile ]]; then
         MoveToSuccess
         DebugChildSuccess 'get page'
     else
@@ -1657,6 +1658,7 @@ _GetImage_()
         response=$(_DownloadImage_ "$URL" "$targetimage_pathfileext")
         get_image_result=$?
         UpdateRunLog "$section" "$action" "$response" "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
+
         if [[ $get_image_result -eq 0 && -e $targetimage_pathfileext ]]; then
             download_ok=true
             DebugChildSuccess "$action"
