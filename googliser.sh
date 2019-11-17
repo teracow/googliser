@@ -60,7 +60,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191117
+    local SCRIPT_VERSION=191118
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     GALLERY_FILE_PREFIX=googliser-gallery
@@ -583,115 +583,154 @@ DisplayFullHelp()
     echo
     echo " Questions or comments? teracow@gmail.com"
     echo
-    echo " Mandatory arguments for long options are mandatory for short options too. Defaults values are shown as [n]."
+    echo " Mandatory arguments for long options are mandatory for short options too."
     echo
 
     ColourTextBrightOrange " * Required *"; echo
     FormatHelpLine p phrase string "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
     ColourTextBrightOrange " * Optional *"; echo
-    FormatHelpLine a aspect-ratio preset "Image aspect ratio. Specify like '--aspect-ratio square'. Presets are:"
-    FormatHelpLine "'tall'"
-    FormatHelpLine "'square'"
-    FormatHelpLine "'wide'"
-    FormatHelpLine "'panoramic'"
-    FormatHelpLine b border-pixels integer "Thickness of border surrounding gallery image in pixels [$GALLERY_BORDER_PIXELS_DEFAULT]. Use '0' for no border."
-    FormatHelpLine 'colour|color' preset "The dominant image colour [any]. Specify like '--colour green'. Presets are:"
-    FormatHelpLine "'any'"
-    FormatHelpLine "'full' (colour images only)"
-    FormatHelpLine "'black-white' or 'bw'"
-    FormatHelpLine "'transparent' or 'clear'"
-    FormatHelpLine "'red'"
-    FormatHelpLine "'orange'"
-    FormatHelpLine "'yellow'"
-    FormatHelpLine "'green'"
-    FormatHelpLine "'teal' or 'cyan'"
-    FormatHelpLine "'blue'"
-    FormatHelpLine "'purple' or 'magenta'"
-    FormatHelpLine "'pink'"
-    FormatHelpLine "'white'"
-    FormatHelpLine "'gray' or 'grey'"
-    FormatHelpLine "'black'"
-    FormatHelpLine "'brown'"
+    FormatHelpLine a aspect-ratio preset 'Search for images with this aspect-ratio.'
+    FormatHelpLine example '--aspect-ratio square'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset tall
+    FormatHelpLine preset square
+    FormatHelpLine preset wide
+    FormatHelpLine preset panoramic
+    FormatHelpLine b border-pixels integer 'Thickness of border surrounding gallery image in pixels.'
+    FormatHelpLine default "$GALLERY_BORDER_PIXELS_DEFAULT"
+    FormatHelpLine disable 0
+    FormatHelpLine 'colour|color' preset 'The dominant image colour.'
+    FormatHelpLine example '--colour green'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset any
+    FormatHelpLine preset 'full (colour images only)'
+    FormatHelpLine preset black-white
+    FormatHelpLine preset bw
+    FormatHelpLine preset transparent
+    FormatHelpLine preset clear
+    FormatHelpLine preset red
+    FormatHelpLine preset orange
+    FormatHelpLine preset yellow
+    FormatHelpLine preset green
+    FormatHelpLine preset teal
+    FormatHelpLine preset cyan
+    FormatHelpLine preset blue
+    FormatHelpLine preset purple
+    FormatHelpLine preset magenta
+    FormatHelpLine preset pink
+    FormatHelpLine preset white
+    FormatHelpLine preset gray
+    FormatHelpLine preset grey
+    FormatHelpLine preset black
+    FormatHelpLine preset brown
     FormatHelpLine d debug option "Save the runtime debug log [$DEBUG_FILE] into output directory."
-    FormatHelpLine E exact-search option "Perform an exact-phrase search only. Disregard Google suggestions and loose matches."
+    FormatHelpLine E exact-search option 'Perform an exact-phrase search only. Disregard Google suggestions and loose matches.'
+    FormatHelpLine default 'loose search'
     FormatHelpLine exclude-links file "The URLs for images successfully downloaded will be appended to this file (if specified). Specify this file again to ensure these URLs are not reused."
-    FormatHelpLine exclude-words string "A comma separated list (without spaces) of words that you want to exclude from the search."
-    FormatHelpLine format preset "Only download images encoded in this file format. Specify like '--format svg'. Presets are:"
-    FormatHelpLine "'jpg'"
-    FormatHelpLine "'png'"
-    FormatHelpLine "'gif'"
-    FormatHelpLine "'bmp'"
-    FormatHelpLine "'svg'"
-    FormatHelpLine "'webp'"
-    FormatHelpLine "'ico'"
-    FormatHelpLine "'craw'"
-    FormatHelpLine G gallery option "Download images, then create a thumbnail gallery."
-    FormatHelpLine gallery= preset "As above, and apply one of the following modifiers:"
-    FormatHelpLine '--gallery=background-trans   use a transparent background in the gallery image.'
-    FormatHelpLine '--gallery=compact            create a condensed thumbnail gallery. No tile-padding between thumbnails.'
-    FormatHelpLine '--gallery=delete-after       remove all downloaded images after building thumbnail gallery.'
-    FormatHelpLine h help option "Display this help."
-    FormatHelpLine input-links file "Download each URL as listed in this text-file, one URL per line. A Google search will not be performed."
-    FormatHelpLine i input-phrases file "A text file containing a list of phrases to download, one phrase per line."
-    FormatHelpLine install option "Install all googliser dependencies, and make googliser available globally on CLI."
-    FormatHelpLine l lower-size integer "Only download images that are larger than this many bytes [$LOWER_SIZE_BYTES_DEFAULT]."
+    FormatHelpLine exclude-words string 'A comma-separated list (without spaces) of words that you want to exclude from the search.'
+    FormatHelpLine format preset 'Only download images encoded in this file format.'
+    FormatHelpLine example '--format svg'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset jpg
+    FormatHelpLine preset png
+    FormatHelpLine preset gif
+    FormatHelpLine preset bmp
+    FormatHelpLine preset svg
+    FormatHelpLine preset webp
+    FormatHelpLine preset ico
+    FormatHelpLine preset craw
+    FormatHelpLine G gallery option 'Download images, then create a thumbnail gallery.'
+    FormatHelpLine gallery= preset 'As above, and apply one of the following modifiers:'
+    FormatHelpLine '--gallery=background-trans   (use a transparent background in the gallery image)'
+    FormatHelpLine '--gallery=compact            (create a condensed thumbnail gallery - no tile-padding between thumbnails)'
+    FormatHelpLine '--gallery=delete-after       (remove all downloaded images after building thumbnail gallery)'
+    FormatHelpLine h help option 'Display this help.'
+    FormatHelpLine input-links file 'Download each URL as listed in this text-file, one URL per line. A Google search will not be performed.'
+    FormatHelpLine i input-phrases file 'A text file containing a list of phrases to download, one phrase per line.'
+    FormatHelpLine install option 'Install all googliser dependencies, and make googliser available globally on CLI.'
+    FormatHelpLine l lower-size integer 'Only download images that are larger than this many bytes.'
+    FormatHelpLine default "$LOWER_SIZE_BYTES_DEFAULT"
     FormatHelpLine L links-only option "Compile a list of image URLs, but don't download any images."
-    FormatHelpLine m minimum-pixels preset "Images must contain at least this many pixels. Specify like '-m 8mp'. Presets are:"
-    FormatHelpLine "'qsvga' (400 x 300)"
-    FormatHelpLine "'vga'   (640 x 480)"
-    FormatHelpLine "'svga'  (800 x 600)"
-    FormatHelpLine "'xga'   (1024 x 768)"
-    FormatHelpLine "'2mp'   (1600 x 1200)"
-    FormatHelpLine "'4mp'   (2272 x 1704)"
-    FormatHelpLine "'6mp'   (2816 x 2112)"
-    FormatHelpLine "'8mp'   (3264 x 2448)"
-    FormatHelpLine "'10mp'  (3648 x 2736)"
-    FormatHelpLine "'12mp'  (4096 x 3072)"
-    FormatHelpLine "'15mp'  (4480 x 3360)"
-    FormatHelpLine "'20mp'  (5120 x 3840)"
-    FormatHelpLine "'40mp'  (7216 x 5412)"
-    FormatHelpLine "'70mp'  (9600 x 7200)"
-    FormatHelpLine "'large'"
-    FormatHelpLine "'medium'"
-    FormatHelpLine "'icon'"
-    FormatHelpLine n number integer "Number of images to download [$IMAGES_REQUESTED_DEFAULT]. Maximum of $GOOGLE_RESULTS_MAX."
-    FormatHelpLine 'no-colour|no-color' option "Runtime display will be in boring, uncoloured text. :("
-    FormatHelpLine safesearch-off option "Disable Google's SafeSearch content-filtering. Default is enabled."
-    FormatHelpLine o output path "The image output directory [phrase]. Enclose whitespace in quotes."
-    FormatHelpLine P parallel integer "How many parallel image downloads? [$PARALLEL_LIMIT_DEFAULT]. Maximum of $PARALLEL_MAX."
-    FormatHelpLine q quiet option "Suppress stdout. stderr is still shown."
-    FormatHelpLine random option "Download a single, random image."
-    FormatHelpLine R recent preset "Only get images published this far back in time [any]. Specify like '--recent month'. Presets are:"
-    FormatHelpLine "'any'"
-    FormatHelpLine "'hour'"
-    FormatHelpLine "'day'"
-    FormatHelpLine "'week'"
-    FormatHelpLine "'month'"
-    FormatHelpLine "'year'"
-    FormatHelpLine reindex-rename option "Reindex and rename downloaded image files into a contiguous block."
-    FormatHelpLine r retries integer "Retry each image download this many times [$RETRIES_DEFAULT]. Maximum of $RETRIES_MAX."
+    FormatHelpLine m minimum-pixels preset 'Images must contain at least this many pixels.'
+    FormatHelpLine example '-m 8mp'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset icon
+    FormatHelpLine preset medium
+    FormatHelpLine preset large
+    FormatHelpLine preset 'qsvga (400 x 300)'
+    FormatHelpLine preset 'vga   (640 x 480)'
+    FormatHelpLine preset 'svga  (800 x 600)'
+    FormatHelpLine preset 'xga   (1024 x 768)'
+    FormatHelpLine preset '2mp   (1600 x 1200)'
+    FormatHelpLine preset '4mp   (2272 x 1704)'
+    FormatHelpLine preset '6mp   (2816 x 2112)'
+    FormatHelpLine preset '8mp   (3264 x 2448)'
+    FormatHelpLine preset '10mp  (3648 x 2736)'
+    FormatHelpLine preset '12mp  (4096 x 3072)'
+    FormatHelpLine preset '15mp  (4480 x 3360)'
+    FormatHelpLine preset '20mp  (5120 x 3840)'
+    FormatHelpLine preset '40mp  (7216 x 5412)'
+    FormatHelpLine preset '70mp  (9600 x 7200)'
+    FormatHelpLine n number integer 'Number of images to download.'
+    FormatHelpLine default "$IMAGES_REQUESTED_DEFAULT"
+    FormatHelpLine maximum "$GOOGLE_RESULTS_MAX"
+    FormatHelpLine no-colour option 'Runtime display will be in boring, uncoloured text. :('
+    FormatHelpLine safesearch-off option "Disable Google's SafeSearch content-filtering."
+    FormatHelpLine default on
+    FormatHelpLine o output path "The image output directory. Enclose whitespace in quotes."
+    FormatHelpLine default phrase
+    FormatHelpLine P parallel integer 'How many parallel image downloads?'
+    FormatHelpLine default "$PARALLEL_LIMIT_DEFAULT"
+    FormatHelpLine maximum "$PARALLEL_MAX"
+    FormatHelpLine q quiet option 'Suppress stdout. stderr is still shown.'
+    FormatHelpLine random option 'Download a single, random image.'
+    FormatHelpLine R recent preset 'Only get images published this far back in time.'
+    FormatHelpLine example '--recent month'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset any
+    FormatHelpLine preset hour
+    FormatHelpLine preset day
+    FormatHelpLine preset week
+    FormatHelpLine preset month
+    FormatHelpLine preset year
+    FormatHelpLine reindex-rename option 'Reindex and rename downloaded image files into a contiguous block.'
+    FormatHelpLine r retries integer 'Retry each image download this many times.'
+    FormatHelpLine default "$RETRIES_DEFAULT"
+    FormatHelpLine maximum "$RETRIES_MAX"
     FormatHelpLine s save-links option "Save image URL list to file [$image_links_file] into the output directory."
-    FormatHelpLine sites string "A comma separated list (without spaces) of sites or domains from which you want to search the images."
+    FormatHelpLine sites string 'A comma separated list (without spaces) of sites or domains from which you want to search the images.'
     FormatHelpLine S skip-no-size option "Don't download any image if its size cannot be determined before fetching from server."
-    FormatHelpLine thumbnails string "Ensure each gallery thumbnail is not larger than: width x height [$THUMBNAIL_DIMENSIONS_DEFAULT]. Specify like '--thumbnails 200x100'."
-    FormatHelpLine t timeout integer "Number of seconds before aborting each image download [$TIMEOUT_SECONDS_DEFAULT]. Maximum of $TIMEOUT_SECONDS_MAX."
-    FormatHelpLine T title string "Title for thumbnail gallery image [phrase]. Enclose whitespace in quotes. Use 'none' for no title."
-    FormatHelpLine type preset "Image type. Specify like '--type clipart'. Presets are:"
-    FormatHelpLine "'face'"
-    FormatHelpLine "'photo'"
-    FormatHelpLine "'clipart'"
-    FormatHelpLine "'lineart'"
-    FormatHelpLine "'animated'"
-    FormatHelpLine u upper-size integer "Only download images that are smaller than this many bytes [$UPPER_SIZE_BYTES_DEFAULT]. Use '0' for unlimited."
-    FormatHelpLine usage-rights preset "Original image usage rights. Specify like '--usage-rights reuse'. Presets are:"
-    FormatHelpLine "'reuse'"
-    FormatHelpLine "'reuse-with-mod'"
-    FormatHelpLine "'noncomm-reuse'"
-    FormatHelpLine "'noncomm-reuse-with-mod'"
+    FormatHelpLine thumbnails string 'Ensure each gallery thumbnail is not larger than: width x height.'
+    FormatHelpLine example '--thumbnails 200x100'
+    FormatHelpLine default "$THUMBNAIL_DIMENSIONS_DEFAULT"
+    FormatHelpLine t timeout integer 'Number of seconds before aborting each image download.'
+    FormatHelpLine default "$TIMEOUT_SECONDS_DEFAULT"
+    FormatHelpLine maximum "$TIMEOUT_SECONDS_MAX"
+    FormatHelpLine T title string 'Title for thumbnail gallery image. Enclose whitespace in quotes.'
+    FormatHelpLine default phrase
+    FormatHelpLine disable none
+    FormatHelpLine type preset 'Image category type.'
+    FormatHelpLine example '--type clipart'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset face
+    FormatHelpLine preset photo
+    FormatHelpLine preset clipart
+    FormatHelpLine preset lineart
+    FormatHelpLine preset animated
+    FormatHelpLine u upper-size integer 'Only download images that are smaller than this many bytes.'
+    FormatHelpLine default "$UPPER_SIZE_BYTES_DEFAULT"
+    FormatHelpLine unlimited 0
+    FormatHelpLine usage-rights preset 'Original image usage-rights.'
+    FormatHelpLine example '--usage-rights reuse'
+    FormatHelpLine 'presets:'
+    FormatHelpLine preset reuse
+    FormatHelpLine preset reuse-with-mod
+    FormatHelpLine preset noncomm-reuse
+    FormatHelpLine preset noncomm-reuse-with-mod
     FormatHelpLine z lightning option "Download images even faster by using an optimised set of parameters. For when you really can't wait!"
     echo
-    echo " Example:"
+    echo " example:"
     echo
     ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"; echo
     echo
@@ -2327,13 +2366,20 @@ FormatHelpLine()
     # $4 = description
 
     if [[ -n $1 && -z $2 && -z $3 && -z $4 ]]; then
-        printf "  %-1s    %-18s % -8s %s\n" '' '' '' "$1"
+        printf "%36s%s\n" '' "$1"
     elif [[ -n $1 && -n $2 && -z $3 && -z $4 ]]; then
-        printf "  %-1s    %-18s % -8s %s\n" '' '' "$(Uppercase "$1")" "$2"
+        case $1 in
+            preset)
+                printf "%40s%s\n" '' "$2"
+                ;;
+            *)
+                printf "%36s%s %s\n" '' "$1:" "$2"
+                ;;
+        esac
     elif [[ -n $1 && -n $2 && -n $3 && -z $4 ]]; then
-        printf "  %-1s  --%-18s % -8s %s\n" '' "$1" "$(Uppercase "$2")" "$3"
+        printf "  %-1s  --%-15s % -8s %s\n" '' "$1" "$(Uppercase "$2")" "$3"
     else
-        printf " -%-1s, --%-18s % -8s %s\n" "$1" "$2" "$(Uppercase "$3")" "$4"
+        printf " -%-1s, --%-15s % -8s %s\n" "$1" "$2" "$(Uppercase "$3")" "$4"
     fi
 
     }
