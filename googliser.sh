@@ -241,7 +241,7 @@ BuildWorkPaths()
     mkdir -p "$image_abort_count_path" || Flee
 
     image_sizetest_pathfile=$TEMP_PATH/test-image-size
-    page_pathfile=$TEMP_PATH/page.html
+    pages_pathfile=$TEMP_PATH/page.html
     gallery_title_pathfile=$TEMP_PATH/gallery.title.png
     gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
     gallery_background_pathfile=$TEMP_PATH/gallery.background.png
@@ -1311,7 +1311,7 @@ GetPages()
     DebugFuncVal 'pages aborted' "$abort_count"
 
     # build all pages into a single file
-    cat "$page_pathfile".* > "$page_pathfile"
+    cat "$pages_pathfile".* > "$pages_pathfile"
 
     ParseResults
 
@@ -1339,7 +1339,7 @@ _GetPage_()
         local search_start="&start=$(((page-1)*100))"
         local SERVER='https://www.google.com'
         local safe_search_query="&q=$safe_search_phrase"
-        local get_page_cmd=''
+        local runcmd=''
 
         # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
         local SEARCH_TYPE='&tbm=isch'       # search for images
@@ -1367,17 +1367,17 @@ _GetPage_()
         local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_page}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_page_cmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            get_page_cmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$targetpage_pathfile\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
         fi
 
-        DebugChildExec "get page" "$get_page_cmd"
+        DebugChildExec "get page" "$runcmd"
 
-        eval "$get_page_cmd" 2>&1
+        eval "$runcmd" 2>&1
 
         }
 
@@ -1396,7 +1396,7 @@ _GetPage_()
     local success_pathfile=$page_success_count_path/$page_index
     local fail_pathfile=$page_fail_count_path/$page_index
 
-    local targetpage_pathfile="$page_pathfile.$page"
+    local targetpage_pathfile="$pages_pathfile.$page"
 
     section='mid-download'
     action='download page'
@@ -1539,20 +1539,20 @@ _GetImage_()
 
         local URL=$1
         local output_pathfile=$2
-        local get_headers_cmd=''
+        local runcmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_headers_cmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+            runcmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            get_headers_cmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
+            runcmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
         else
             DebugFuncFail "$_forkname_" 'unknown downloader'
             return 1
         fi
 
-        DebugChildExec "get image size" "$get_headers_cmd"
+        DebugChildExec "get image size" "$runcmd"
 
-        eval "$get_headers_cmd" 2>&1
+        eval "$runcmd" 2>&1
 
         }
 
@@ -1566,20 +1566,20 @@ _GetImage_()
 
         local URL=$1
         local output_pathfile=$2
-        local get_image_cmd=''
+        local runcmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            get_image_cmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
+            runcmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            get_image_cmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
+            runcmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
         fi
 
-        DebugChildExec "get image" "$get_image_cmd"
+        DebugChildExec "get image" "$runcmd"
 
-        eval "$get_image_cmd" 2>&1
+        eval "$runcmd" 2>&1
 
         }
 
@@ -1833,6 +1833,7 @@ RenderGallery()
     local stage_description=''
     local include_background=''
     local include_title=''
+    local runcmd=''
     local runmsg=''
     local gallery_title=''
     local gallery_target_pathname=''
@@ -1879,14 +1880,14 @@ RenderGallery()
     fi
 
     if [[ $gallery_compact_thumbs = true ]]; then
-        build_foreground_cmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        build_foreground_cmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
-    DebugFuncExec "$stage_description" "$build_foreground_cmd"
+    DebugFuncExec "$stage_description" "$runcmd"
 
-    runmsg=$(eval "$build_foreground_cmd" 2>&1)
+    runmsg=$(eval "$runcmd" 2>&1)
     result=$?
 
     if [[ $result -eq 0 ]]; then
@@ -1909,11 +1910,11 @@ RenderGallery()
             include_background='radial-gradient:WhiteSmoke-gray10'  # dark image with light sphere in centre
         fi
 
-        build_background_cmd="$CONVERT_BIN -size ${width}x${height} $include_background \"$gallery_background_pathfile\""
+        runcmd="$CONVERT_BIN -size ${width}x${height} $include_background \"$gallery_background_pathfile\""
 
-        DebugFuncExec "$stage_description" "$build_background_cmd"
+        DebugFuncExec "$stage_description" "$runcmd"
 
-        runmsg=$(eval "$build_background_cmd" 2>&1)
+        runmsg=$(eval "$runcmd" 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1929,11 +1930,11 @@ RenderGallery()
         stage_description='render title'; ((stage++)); _ShowStage_
 
         # create title image
-        build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+        runcmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
-        DebugFuncExec "$stage_description" "$build_title_cmd"
+        DebugFuncExec "$stage_description" "$runcmd"
 
-        runmsg=$(eval "$build_title_cmd" 2>&1)
+        runmsg=$(eval "$runcmd" 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -1955,11 +1956,11 @@ RenderGallery()
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$gallery_target_pathname\""
+        runcmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$gallery_target_pathname\""
 
-        DebugFuncExec "$stage_description" "$build_compose_cmd"
+        DebugFuncExec "$stage_description" "$runcmd"
 
-        runmsg=$(eval "$build_compose_cmd" 2>&1)
+        runmsg=$(eval "$runcmd" 2>&1)
         result=$?
 
         if [[ $result -eq 0 ]]; then
@@ -2425,7 +2426,7 @@ ScrapePages()
     #
     #-----------------------------------------------------------------------------------------------------------
 
-    cat "$page_pathfile" \
+    cat "$pages_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
     | $SED_BIN '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
