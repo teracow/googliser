@@ -1464,7 +1464,10 @@ GetImages()
     done < "$image_links_pathfile"
 
     while [[ $run_count -gt 0 ]]; do
-        [[ $success_count -ge $gallery_images_required ]] && AbortImages
+        if [[ $success_count -ge $gallery_images_required ]]; then
+            DebugFuncSuccess 'enough images received'
+            AbortImages
+        fi
         RefreshImageCounts; ShowImagesProgress
     done
 
