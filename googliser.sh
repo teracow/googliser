@@ -88,7 +88,6 @@ Init()
     # script-variables
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     image_links_file=image.links.list
-    gallery_title=''
     current_path=$PWD
     exitcode=0
 
@@ -1192,7 +1191,7 @@ ProcessPhrase()
     GetPages || exitcode=4
     [[ $exitcode -eq 0 && $links_only = false ]] && { GetImages || exitcode=5 ;}
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { RenderGallery || exitcode=6 ;}
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && SaveLinks
 
     DebugFuncElapsedTime "$func_startseconds"
@@ -1253,7 +1252,7 @@ ProcessLinkList()
 
     [[ $exitcode -eq 0 ]] && { GetImages || exitcode=5 ;}
     [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { BuildGallery || exitcode=6 ;}
+    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { RenderGallery || exitcode=6 ;}
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1811,43 +1810,64 @@ ParseResults()
 
     }
 
-BuildGallery()
+RenderGallery()
     {
 
+    _ShowStage_()
+        {
+
+        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
+
+        }
+
     DebugFuncEntry
+
+    [[ $gallery = false ]] && return 0
 
     local func_startseconds=$(date +%s)
     local reserve_for_border="-border $gallery_border_pixels"
     local title_height_pixels=100
     local stage_description=''
     local runmsg=''
-
-    [[ $gallery = false ]] && return 0
+    local gallery_title=''
+    local gallery_target_pathname=''
+    local stage=0
+    local stages=4
 
     InitProgress
 
     # set gallery title
-    if [[ -n $gallery_user_title ]]; then
-        gallery_title=$gallery_user_title
-    else
+    if [[ $gallery_user_title = none ]]; then
+        ((stages--))
         if [[ -n $user_phrase ]]; then
-            gallery_title=$user_phrase
-        elif [[ -n $output_path ]]; then
-            gallery_title=$(basename "$output_path")
-        elif [[ -n $input_links_pathfile ]]; then
-            gallery_title=$(date +%s)
+            gallery_target_pathname="$target_path/$GALLERY_FILE_PREFIX-($user_phrase).png"
+        else
+            gallery_target_pathname="$target_path/$GALLERY_FILE_PREFIX-($(date +%s)).png"
         fi
-        DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+    else
+        if [[ -n $gallery_user_title ]]; then
+            gallery_title=$gallery_user_title
+        else
+            if [[ -n $user_phrase ]]; then
+                gallery_title=$user_phrase
+            elif [[ -n $output_path ]]; then
+                gallery_title=$(basename "$output_path")
+            elif [[ -n $input_links_pathfile ]]; then
+                gallery_title=$(date +%s)
+            fi
+            DebugFuncVarAdjust 'gallery title unspecified so set as' "'$gallery_title'"
+        fi
+        gallery_target_pathname="$target_path/$GALLERY_FILE_PREFIX-($gallery_title).png"
     fi
+
+    DebugFuncVar gallery_title
+    DebugFuncVar gallery_target_pathname
 
     # build thumbnails image overlay
-    stage_description='render thumbnails'
-    if [[ $verbose = true ]]; then
-        echo -n " -> building gallery: "
-        ProgressUpdater "$(ColourTextBrightOrange 'stage 1/4') ($stage_description)"
-    fi
+    [[ $verbose = true ]] && echo -n " -> building gallery: "
+    stage_description='render thumbnails'; ((stage++)); _ShowStage_
 
-    if [[ $gallery_title = none ]]; then
+    if [[ $gallery_user_title = none ]]; then
         reserve_for_title=''
     else
         reserve_for_title="-gravity north -splice 0x$((title_height_pixels+gallery_border_pixels+10))"
@@ -1873,8 +1893,7 @@ BuildGallery()
 
     if [[ $result -eq 0 ]]; then
         # build background image
-        stage_description='render background'
-        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 2/4') ($stage_description)"
+        stage_description='render background'; ((stage++)); _ShowStage_
 
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
@@ -1901,11 +1920,10 @@ BuildGallery()
     fi
 
     if [[ $result -eq 0 ]]; then
-        # build title image overlay
-        stage_description='render title'
-        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 3/4') ($stage_description)"
+        if [[ $gallery_user_title != none ]]; then
+            # build title image overlay
+            stage_description='render title'; ((stage++)); _ShowStage_
 
-        if [[ $gallery_title != none ]]; then
             # create title image
             build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
@@ -1925,17 +1943,16 @@ BuildGallery()
 
     if [[ $result -eq 0 ]]; then
         # compose thumbnail and title images onto background image
-        stage_description='combine images'
-        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange 'stage 4/4') ($stage_description)"
+        stage_description='combine images'; ((stage++)); _ShowStage_
 
-        if [[ $gallery_title = none ]]; then
+        if [[ $gallery_user_title = none ]]; then
             include_title=''
         else
             include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
-        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$target_path/$GALLERY_FILE_PREFIX-($gallery_title).png\""
+        build_compose_cmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$gallery_target_pathname\""
 
         DebugFuncExec "$stage_description" "$build_compose_cmd"
 
@@ -1950,16 +1967,16 @@ BuildGallery()
         fi
     fi
 
-    [[ -e $gallery_title_pathfile ]] && rm -f "$gallery_title_pathfile"
     [[ -e $gallery_thumbnails_pathfile ]] && rm -f "$gallery_thumbnails_pathfile"
     [[ -e $gallery_background_pathfile ]] && rm -f "$gallery_background_pathfile"
+    [[ -e $gallery_title_pathfile ]] && rm -f "$gallery_title_pathfile"
 
-    if [[ $result -eq 0 ]]; then
+    if [[ $result -eq 0 && -e $gallery_target_pathname ]]; then
         [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightGreen 'done!')"
     else
         ProgressUpdater "$(ColourTextBrightRed 'failed!')"
         echo
-        ShowFail ' !! unable to build thumbnail gallery'
+        ShowFail ' !! unable to render a thumbnail gallery image'
     fi
 
     [[ $result -eq 0 && $gallery_delete_images = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
