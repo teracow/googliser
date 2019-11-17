@@ -1173,29 +1173,12 @@ ProcessPhrase()
 
     DebugFuncVar target_path
 
-    # ensure target path exists
-    if [[ -e $target_path ]]; then
-        DebugFuncSuccess 'target path already exists'
-    else
-        mkdir -p "$target_path"
-        result=$?
-        if [[ $result -gt 0 ]]; then
-            DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
-            echo
-            ShowFail ' !! unable to create target path'
-            exitcode=3
-            return 1
-        else
-            DebugFuncSuccess 'create target path'
-            target_path_created=true
-        fi
-    fi
-
+    CreateTargetPath || exitcode=3
     GetPages || exitcode=4
-    [[ $exitcode -eq 0 && $links_only = false ]] && { GetImages || exitcode=5 ;}
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { RenderGallery || exitcode=6 ;}
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && SaveLinks
+    GetImages || exitcode=5
+    ReindexRename
+    RenderGallery || exitcode=6
+    SaveLinks
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1216,6 +1199,7 @@ ProcessLinkList()
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
+    image_links_pathfile=$input_links_pathfile
 
     [[ $verbose = true ]] && echo
 
@@ -1233,7 +1217,25 @@ ProcessLinkList()
 
     DebugFuncVar target_path
 
+    CreateTargetPath || exitcode=3
+    GetImages || exitcode=5
+    ReindexRename
+    RenderGallery || exitcode=6
+
+    DebugFuncElapsedTime "$func_startseconds"
+    DebugFuncExit
+
+    return 0
+
+    }
+
+CreateTargetPath()
+    {
+
     # ensure target path exists
+
+    local returncode=0
+
     if [[ -e $target_path ]]; then
         DebugFuncSuccess 'target path already exists'
     else
@@ -1243,29 +1245,21 @@ ProcessLinkList()
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             echo
             ShowFail ' !! unable to create target path'
-            exitcode=3
-            return 1
+            returncode=1
         else
             DebugFuncSuccess 'create target path'
             target_path_created=true
         fi
     fi
 
-    [[ -n $input_links_pathfile ]] && image_links_pathfile=$input_links_pathfile
-
-    [[ $exitcode -eq 0 ]] && { GetImages || exitcode=5 ;}
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && ReindexRename
-    [[ $exitcode -eq 0 || $exitcode -eq 5 ]] && { RenderGallery || exitcode=6 ;}
-
-    DebugFuncElapsedTime "$func_startseconds"
-    DebugFuncExit
-
-    return 0
+    return $returncode
 
     }
 
 GetPages()
     {
+
+    [[ $exitcode -ne 0 ]] && return 0
 
     DebugFuncEntry
 
@@ -1424,6 +1418,8 @@ _GetPage_()
 
 GetImages()
     {
+
+    [[ $exitcode -ne 0 || $links_only = true ]] && return
 
     DebugFuncEntry
 
@@ -1826,9 +1822,10 @@ RenderGallery()
 
         }
 
-    DebugFuncEntry
-
+    [[ $exitcode -ne 0 && $exitcode -ne 5 ]] && return 0
     [[ $gallery = false ]] && return 0
+
+    DebugFuncEntry
 
     local func_startseconds=$(date +%s)
     local reserve_for_border="-border $gallery_border_pixels"
@@ -2102,6 +2099,8 @@ ReindexRename()
     local targetfile=''
     local reindex=0
 
+    [[ $exitcode -ne 0 && $exitcode -ne 5 ]] && return
+
     if [[ $reindex_rename = true && -n $target_path ]]; then
         DebugFuncOpr 'reindexing and renaming downloaded files'
         for targetfile in "$target_path/"*; do
@@ -2118,6 +2117,8 @@ SaveLinks()
     {
 
     # copy links file into target directory if possible. If not, then copy to current directory.
+
+    [[ $exitcode -ne 0 || $links_only = true ]] && return
 
     if [[ $save_links = true ]]; then
         if [[ $target_path_created = true ]]; then
