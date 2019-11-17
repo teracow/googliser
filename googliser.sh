@@ -1819,7 +1819,7 @@ RenderGallery()
     _ShowStage_()
         {
 
-        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
+        [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
 
         }
 
@@ -1976,9 +1976,9 @@ RenderGallery()
     [[ -e $gallery_title_pathfile ]] && rm -f "$gallery_title_pathfile"
 
     if [[ $result -eq 0 && -e $gallery_target_pathname ]]; then
-        [[ $verbose = true ]] && ProgressUpdater "$(ColourTextBrightGreen 'done!')"
+        [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightGreen 'done!')"
     else
-        ProgressUpdater "$(ColourTextBrightRed 'failed!')"
+        UpdateProgress "$(ColourTextBrightRed 'failed!')"
         echo
         ShowFail ' !! unable to render a thumbnail gallery image'
     fi
@@ -2169,18 +2169,21 @@ SuggestInstall()
 InitProgress()
     {
 
-    # needs to be called prior to first call of ProgressUpdater
+    # needs to be called prior to first call of UpdateProgress
 
-    progress_message=''
     previous_length=0
     previous_msg=''
 
     }
 
-ProgressUpdater()
+UpdateProgress()
     {
 
     # $1 = message to display
+
+    local temp=''
+    local current_length=0
+    local appended_length=0
 
     if [[ $1 != "$previous_msg" ]]; then
         temp=$(RemoveColourCodes "$1")
@@ -2228,6 +2231,8 @@ RefreshPageCounts()
 ShowPagesProgress()
     {
 
+    local progress_message=''
+
     if [[ $verbose = true ]]; then
         if [[ $success_count -eq $pages_max ]]; then
             progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$pages_max")")
@@ -2236,7 +2241,7 @@ ShowPagesProgress()
         fi
 
         progress_message+=' pages downloaded:'
-        ProgressUpdater "$progress_message"
+        UpdateProgress "$progress_message"
     fi
 
     }
@@ -2269,6 +2274,7 @@ ShowImagesProgress()
     {
 
     local gallery_images_required_adjusted=''
+    local progress_message=''
 
     if [[ $verbose = true ]]; then
         gallery_images_required_adjusted=$gallery_images_required
@@ -2285,7 +2291,7 @@ ShowImagesProgress()
         fi
 
         progress_message+=':'
-        ProgressUpdater "$progress_message"
+        UpdateProgress "$progress_message"
     fi
 
     }
@@ -3281,7 +3287,7 @@ ColourBackgroundBlack()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[40m'"$(PrintResetColours "$1")"
+        echo -en '\033[40m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
@@ -3292,7 +3298,7 @@ ColourTextBrightWhite()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;97m'"$(PrintResetColours "$1")"
+        echo -en '\033[1;97m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
@@ -3303,7 +3309,7 @@ ColourTextBrightGreen()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;32m'"$(PrintResetColours "$1")"
+        echo -en '\033[1;32m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
@@ -3314,7 +3320,7 @@ ColourTextBrightOrange()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;38;5;214m'"$(PrintResetColours "$1")"
+        echo -en '\033[1;38;5;214m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
@@ -3325,7 +3331,7 @@ ColourTextBrightRed()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;31m'"$(PrintResetColours "$1")"
+        echo -en '\033[1;31m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
@@ -3336,14 +3342,14 @@ ColourTextBrightBlue()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;94m'"$(PrintResetColours "$1")"
+        echo -en '\033[1;94m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
 
     }
 
-PrintResetColours()
+ColourReset()
     {
 
     echo -en "$1"'\033[0m'
