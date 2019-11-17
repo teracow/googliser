@@ -1828,6 +1828,8 @@ RenderGallery()
     local reserve_for_border="-border $gallery_border_pixels"
     local title_height_pixels=100
     local stage_description=''
+    local include_background=''
+    local include_title=''
     local runmsg=''
     local gallery_title=''
     local gallery_target_pathname=''
@@ -1899,12 +1901,12 @@ RenderGallery()
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
 
         if [[ $gallery_background_trans = true ]]; then
-            # create a transparent background
-            build_background_cmd="$CONVERT_BIN -size ${width}x${height} xc:none \"$gallery_background_pathfile\""
+            include_background='xc:none'                            # transparent
         else
-            # create a dark image with light sphere in centre
-            build_background_cmd="$CONVERT_BIN -size ${width}x${height} radial-gradient:WhiteSmoke-gray10 \"$gallery_background_pathfile\""
+            include_background='radial-gradient:WhiteSmoke-gray10'  # dark image with light sphere in centre
         fi
+
+        build_background_cmd="$CONVERT_BIN -size ${width}x${height} $include_background \"$gallery_background_pathfile\""
 
         DebugFuncExec "$stage_description" "$build_background_cmd"
 
@@ -1919,25 +1921,23 @@ RenderGallery()
         fi
     fi
 
-    if [[ $result -eq 0 ]]; then
-        if [[ $gallery_user_title != none ]]; then
-            # build title image overlay
-            stage_description='render title'; ((stage++)); _ShowStage_
+    if [[ $result -eq 0 && $gallery_user_title != none ]]; then
+        # build title image overlay
+        stage_description='render title'; ((stage++)); _ShowStage_
 
-            # create title image
-            build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+        # create title image
+        build_title_cmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
-            DebugFuncExec "$stage_description" "$build_title_cmd"
+        DebugFuncExec "$stage_description" "$build_title_cmd"
 
-            runmsg=$(eval "$build_title_cmd" 2>&1)
-            result=$?
+        runmsg=$(eval "$build_title_cmd" 2>&1)
+        result=$?
 
-            if [[ $result -eq 0 ]]; then
-                DebugFuncSuccess "$stage_description"
-            else
-                DebugFuncFail "$stage_description" "($result)"
-                DebugFuncVar runmsg
-            fi
+        if [[ $result -eq 0 ]]; then
+            DebugFuncSuccess "$stage_description"
+        else
+            DebugFuncFail "$stage_description" "($result)"
+            DebugFuncVar runmsg
         fi
     fi
 
