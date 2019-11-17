@@ -695,7 +695,7 @@ DisplayFullHelp()
     echo
     ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"; echo
     echo
-    echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE', and build them into a gallery image."
+    echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE'."
     }
 
 ValidateParams()
