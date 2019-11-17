@@ -626,11 +626,11 @@ DisplayFullHelp()
     FormatHelpLine "'webp'"
     FormatHelpLine "'ico'"
     FormatHelpLine "'craw'"
-    FormatHelpLine G gallery option "Create a thumbnail gallery after downloading images."
-    FormatHelpLine gallery= preset "One of the following modifiers:"
-    FormatHelpLine '--gallery=background-trans  Use a transparent background in the gallery image.'
-    FormatHelpLine '--gallery=compact           Create a condensed thumbnail gallery. No tile-padding between thumbnails.'
-    FormatHelpLine '--gallery=delete-after      Remove all downloaded images after building thumbnail gallery.'
+    FormatHelpLine G gallery option "Download images, then create a thumbnail gallery."
+    FormatHelpLine gallery= preset "As above, and apply one of the following modifiers:"
+    FormatHelpLine '--gallery=background-trans   use a transparent background in the gallery image.'
+    FormatHelpLine '--gallery=compact            create a condensed thumbnail gallery. No tile-padding between thumbnails.'
+    FormatHelpLine '--gallery=delete-after       remove all downloaded images after building thumbnail gallery.'
     FormatHelpLine h help option "Display this help."
     FormatHelpLine input-links file "Download each URL as listed in this text-file, one URL per line. A Google search will not be performed."
     FormatHelpLine i input-phrases file "A text file containing a list of phrases to download, one phrase per line."
