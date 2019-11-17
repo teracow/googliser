@@ -124,22 +124,24 @@ Init()
     verbose=true
 
     # user-variable strings
-    aspect_ratio=''
     exclude_links_pathfile=''
     exclude_words=''
-    image_colour=''
-    image_format=''
-    image_type=''
     input_links_pathfile=''
     input_phrases_pathfile=''
-    min_pixels=''
     output_path=''
-    recent=''
-    usage_rights=''
     gallery_user_title=''
     user_phrase=''
     search_phrase=''
     sites=''
+
+    # user-variable presets
+    aspect_ratio=''
+    image_colour=''
+    image_format=''
+    image_type=''
+    min_pixels=''
+    recent=''
+    usage_rights=''
 
     BuildWorkPaths
     FindPackageManager
