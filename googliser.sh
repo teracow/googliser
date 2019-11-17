@@ -2373,7 +2373,7 @@ FormatHelpLine()
                 printf "%40s%s\n" '' "$2"
                 ;;
             *)
-                printf "%36s%s %s\n" '' "$1:" "$2"
+                printf "%36s%s: %s\n" '' "$1" "$2"
                 ;;
         esac
     elif [[ -n $1 && -n $2 && -n $3 && -z $4 ]]; then
