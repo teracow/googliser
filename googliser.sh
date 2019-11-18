@@ -111,7 +111,6 @@ Init()
     gallery_background_trans=false
     gallery_compact_thumbs=false
     gallery_delete_images=false
-    install_googliser=false
     lightning_mode=false
     links_only=false
     random_image=false
@@ -150,6 +149,11 @@ Init()
     DebugScriptVal version "$SCRIPT_VERSION"
     DebugScriptVal PID "$$"
 
+    if [[ $@ == *"--install"* ]]; then
+        InstallGoogliser
+        return 1
+    fi
+
     case "$OSTYPE" in
         "darwin"*)
             SED_BIN=gsed
@@ -171,7 +175,7 @@ Init()
             ;;
     esac
 
-    user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,install,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -263,11 +267,6 @@ EnvironmentOK()
     local func_startseconds=$(date +%s)
 
     WhatAreMyArgs
-
-    if [[ $install_googliser = true ]]; then
-        InstallGoogliser
-        return 1
-    fi
 
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
         ShowBasicHelp
@@ -443,10 +442,6 @@ WhatAreMyArgs()
             --input-phrases|-i)
                 input_phrases_pathfile=$2
                 shift 2
-                ;;
-            --install)
-                install_googliser=true
-                return 0
                 ;;
             --lightning|-z)
                 lightning_mode=true
