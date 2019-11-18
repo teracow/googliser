@@ -324,6 +324,7 @@ EnvironmentOK()
         DebugFuncVar skip_no_size
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
+        DebugFuncVar user_phrase
         DebugFuncVar usage_rights
         DebugFuncVar user_images_requested
         DebugFuncVar verbose
@@ -2393,8 +2394,7 @@ RenameExtAsType()
     local returncode=0
 
     if [[ -n $IDENTIFY_BIN ]]; then
-        [[ -z $1 ]] && returncode=1
-        [[ ! -e $1 ]] && returncode=1
+        [[ -z $1 || ! -e $1 ]] && returncode=1
 
         if [[ $returncode -eq 0 ]]; then
             rawtype=$($IDENTIFY_BIN -format "%m" "$1")
