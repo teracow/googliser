@@ -60,10 +60,9 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191118
+    local SCRIPT_VERSION=191119
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
-    GALLERY_FILE_PREFIX=googliser-gallery
     DEBUG_FILE=debug.log
     USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
     SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
@@ -1872,8 +1871,9 @@ RenderGallery()
     DebugFuncEntry
 
     local func_startseconds=$(date +%s)
+    local GALLERY_FILE_PREFIX=googliser-gallery
     local reserve_for_border="-border $gallery_border_pixels"
-    local title_height_pixels=100
+    local TITLE_HEIGHT_PIXELS=100
     local stage_description=''
     local include_background=''
     local include_title=''
@@ -1920,7 +1920,7 @@ RenderGallery()
     if [[ $gallery_user_title = none ]]; then
         reserve_for_title=''
     else
-        reserve_for_title="-gravity north -splice 0x$((title_height_pixels+gallery_border_pixels+10))"
+        reserve_for_title="-gravity north -splice 0x$((TITLE_HEIGHT_PIXELS+gallery_border_pixels+10))"
     fi
 
     if [[ $gallery_compact_thumbs = true ]]; then
@@ -1974,7 +1974,7 @@ RenderGallery()
         stage_description='render title'; ((stage++)); _ShowStage_
 
         # create title image
-        runcmd="$CONVERT_BIN -size x$title_height_pixels -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+        runcmd="$CONVERT_BIN -size x$TITLE_HEIGHT_PIXELS -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
 
         DebugFuncExec "$stage_description" "$runcmd"
 
