@@ -278,7 +278,7 @@ EnvironmentOK()
 
     if [[ $show_help = true ]]; then
         if (command -v less); then
-            ShowExtendedHelp | less -r
+            ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
         else
             ShowExtendedHelp
         fi
@@ -565,12 +565,10 @@ WhatAreMyArgs()
 ShowBasicHelp()
     {
 
-    message="$(ShowGoogle) $(ColourTextBrightBlue images)"
-
     ShowTitle
 
     echo
-    echo " Search '$message' for a number of images matching a phrase."
+    echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' for a number of images matching a phrase."
     echo
     echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
 
