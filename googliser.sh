@@ -277,7 +277,7 @@ EnvironmentOK()
     fi
 
     if [[ $show_help = true ]]; then
-        if (command -v less); then
+        if (command -v less >/dev/null); then
             ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
         else
             ShowExtendedHelp
