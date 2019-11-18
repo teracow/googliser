@@ -270,20 +270,22 @@ EnvironmentOK()
         return 1
     fi
 
-    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
-
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
-        DisplayBasicHelp
+        ShowBasicHelp
         exitcode=2
         return 1
     fi
 
     if [[ $show_help = true ]]; then
-        DisplayBasicHelp
-        DisplayFullHelp
+        if (command -v less); then
+            ShowExtendedHelp | less -r
+        else
+            ShowExtendedHelp
+        fi
         return 1
     fi
 
+    ShowTitle
     ValidateParams || return 1
 
     if [[ $exitcode -eq 0 ]]; then
@@ -560,10 +562,12 @@ WhatAreMyArgs()
 
     }
 
-DisplayBasicHelp()
+ShowBasicHelp()
     {
 
     message="$(ShowGoogle) $(ColourTextBrightBlue images)"
+
+    ShowTitle
 
     echo
     echo " Search '$message' for a number of images matching a phrase."
@@ -572,10 +576,12 @@ DisplayBasicHelp()
 
     }
 
-DisplayFullHelp()
+ShowExtendedHelp()
     {
 
     local SAMPLE_USER_PHRASE=cows
+
+    ShowBasicHelp
 
     echo
     echo " External requirements: Wget or cURL"
@@ -735,6 +741,7 @@ DisplayFullHelp()
     ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"; echo
     echo
     echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE'."
+
     }
 
 ValidateParams()
@@ -2350,13 +2357,6 @@ Display2to1()
 
     }
 
-ShowGoogle()
-    {
-
-    echo -n "$(ColourTextBrightBlue 'G')$(ColourTextBrightRed 'o')$(ColourTextBrightOrange 'o')$(ColourTextBrightBlue 'g')$(ColourTextBrightGreen 'l')$(ColourTextBrightRed 'e')"
-
-    }
-
 FormatHelpLine()
     {
 
@@ -3414,6 +3414,20 @@ RemoveColourCodes()
 
     # http://www.commandlinefu.com/commands/view/3584/remove-color-codes-special-characters-with-sed
     echo -n "$1" | $SED_BIN "s,\x1B\[[0-9;]*[a-zA-Z],,g"
+
+    }
+
+ShowTitle()
+    {
+
+    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
+
+    }
+
+ShowGoogle()
+    {
+
+    echo -n "$(ColourTextBrightBlue 'G')$(ColourTextBrightRed 'o')$(ColourTextBrightOrange 'o')$(ColourTextBrightBlue 'g')$(ColourTextBrightGreen 'l')$(ColourTextBrightRed 'e')"
 
     }
 
