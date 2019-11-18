@@ -70,24 +70,24 @@ Init()
 
     # parameter default constants
     GALLERY_BORDER_PIXELS_DEFAULT=30
+    GALLERY_THUMBNAIL_DIMENSIONS_DEFAULT=400x400
     IMAGES_REQUESTED_DEFAULT=36
     LOWER_SIZE_BYTES_DEFAULT=2000
     PARALLEL_LIMIT_DEFAULT=64
-    THUMBNAIL_DIMENSIONS_DEFAULT=400x400
+    RETRIES_DEFAULT=3
     TIMEOUT_SECONDS_DEFAULT=30
     UPPER_SIZE_BYTES_DEFAULT=200000
-    RETRIES_DEFAULT=3
 
     # limits
     GOOGLE_RESULTS_MAX=1000
     PARALLEL_MAX=512
-    TIMEOUT_SECONDS_MAX=600
     RETRIES_MAX=100
+    TIMEOUT_SECONDS_MAX=600
 
     # script-variables
+    current_path=$PWD
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     image_links_file=image.links.list
-    current_path=$PWD
     exitcode=0
 
     # script-variable flags
@@ -95,10 +95,10 @@ Init()
 
     # user-variable parameters
     gallery_border_pixels=$GALLERY_BORDER_PIXELS_DEFAULT
+    gallery_thumbnail_dimensions=$GALLERY_THUMBNAIL_DIMENSIONS_DEFAULT
     lower_size_bytes=$LOWER_SIZE_BYTES_DEFAULT
     parallel_limit=$PARALLEL_LIMIT_DEFAULT
     retries=$RETRIES_DEFAULT
-    thumbnail_dimensions=$THUMBNAIL_DIMENSIONS_DEFAULT
     timeout_seconds=$TIMEOUT_SECONDS_DEFAULT
     upper_size_bytes=$UPPER_SIZE_BYTES_DEFAULT
     user_images_requested=$IMAGES_REQUESTED_DEFAULT
@@ -125,13 +125,13 @@ Init()
     # user-variable strings
     exclude_links_pathfile=''
     exclude_words=''
+    gallery_user_title=''
     input_links_pathfile=''
     input_phrases_pathfile=''
     output_path=''
-    gallery_user_title=''
-    user_phrase=''
     search_phrase=''
     sites=''
+    user_phrase=''
 
     # user-variable presets
     aspect_ratio=''
@@ -298,14 +298,15 @@ EnvironmentOK()
         DebugFuncVar image_colour
         DebugFuncVar image_format
         DebugFuncVar image_type
-        DebugFuncVar input_phrases_pathfile
         DebugFuncVar input_links_pathfile
+        DebugFuncVar input_phrases_pathfile
         DebugFuncVar gallery
         DebugFuncVar gallery_background_trans
         DebugFuncVar gallery_border_pixels
         DebugFuncVar gallery_compact_thumbs
         DebugFuncVar gallery_delete_images
         DebugFuncVar gallery_images_required
+        DebugFuncVar gallery_thumbnail_dimensions
         DebugFuncVar gallery_user_title
         DebugFuncVar lightning_mode
         DebugFuncVar links_only
@@ -321,16 +322,15 @@ EnvironmentOK()
         DebugFuncVar save_links
         DebugFuncVar sites
         DebugFuncVar skip_no_size
-        DebugFuncVar thumbnail_dimensions
         DebugFuncVar timeout_seconds
         DebugFuncVar upper_size_bytes
         DebugFuncVar usage_rights
         DebugFuncVar user_images_requested
         DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
+        DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
-        DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
 
@@ -520,7 +520,7 @@ WhatAreMyArgs()
                 shift
                 ;;
             --thumbnails)
-                thumbnail_dimensions=$2
+                gallery_thumbnail_dimensions=$2
                 shift 2
                 ;;
             --timeout|-t)
@@ -706,7 +706,7 @@ ShowExtendedHelp()
     FormatHelpLine S skip-no-size option "Don't download any image if its size cannot be determined before fetching from server."
     FormatHelpLine thumbnails string 'Ensure each gallery thumbnail is not larger than: width x height.'
     FormatHelpLine example '--thumbnails 200x100'
-    FormatHelpLine default "$THUMBNAIL_DIMENSIONS_DEFAULT"
+    FormatHelpLine default "$GALLERY_THUMBNAIL_DIMENSIONS_DEFAULT"
     FormatHelpLine t timeout integer 'Number of seconds before aborting each image download.'
     FormatHelpLine default "$TIMEOUT_SECONDS_DEFAULT"
     FormatHelpLine maximum "$TIMEOUT_SECONDS_MAX"
@@ -1924,9 +1924,9 @@ RenderGallery()
     fi
 
     if [[ $gallery_compact_thumbs = true ]]; then
-        runcmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$thumbnail_dimensions -thumbnail ${thumbnail_dimensions}^ -gravity center -extent $thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$gallery_thumbnail_dimensions -thumbnail ${gallery_thumbnail_dimensions}^ -gravity center -extent $gallery_thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     else
-        runcmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $gallery_thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
     fi
 
     DebugFuncExec "$stage_description" "$runcmd"
