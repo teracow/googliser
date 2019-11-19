@@ -202,15 +202,17 @@ InstallGoogliser()
                 $SUDO "$PACKAGER_BIN" install wget imagemagick
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
-                exit 1
+                return 1
             fi
             ;;
         *)
             echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            exit 1
+            return 1
             ;;
     esac
     $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+
+    return 0
 
     }
 
@@ -3486,7 +3488,7 @@ DisplayThousands()
 
     }
 
-Init "$@"
+Init "$@" || exit 1
 
 if EnvironmentOK; then
     if [[ -n $input_phrases_pathfile ]]; then
