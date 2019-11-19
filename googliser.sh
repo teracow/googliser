@@ -60,7 +60,7 @@ Init()
     {
 
     # script constants
-    local SCRIPT_VERSION=191119
+    local SCRIPT_VERSION=191120
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -149,7 +149,7 @@ Init()
     DebugScriptVal version "$SCRIPT_VERSION"
     DebugScriptVal PID "$$"
 
-    if [[ $@ == *"--install"* ]]; then
+    if [[ $* == *"--install"* ]]; then
         InstallGoogliser
         return 1
     fi
@@ -1405,7 +1405,7 @@ _GetPage_()
         local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_page}${search_start}${advanced_search}${safesearch_flag}\""
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            runcmd="$DOWNLOADER_BIN --quiet --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
             runcmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$targetpage_pathfile\""
         else
@@ -1425,6 +1425,7 @@ _GetPage_()
     local response=''
     local section=''
     local action=''
+    local download_ok=''
     local get_page_result=0
     local func_startseconds=$(date +%s)
 
@@ -1442,12 +1443,34 @@ _GetPage_()
     get_page_result=$?
     UpdateRunLog "$section" "$action" "$response" "$get_page_result" "$(DownloaderReturnCodes "$get_page_result")"
 
-    if [[ $get_page_result -eq 0 && -s $targetpage_pathfile ]]; then
-        MoveToSuccess
+    if [[ $get_page_result -eq 0 ]]; then
+        download_ok=true
         DebugChildSuccess 'get page'
     else
+        download_ok=false
         MoveToFail
         DebugChildFail "downloader returned \"$get_page_result: $(DownloaderReturnCodes "$get_page_result")\""
+    fi
+
+    section='post-download'
+
+    if [[ $download_ok = true ]]; then
+        action='check local page file size'
+        actual_size=$(wc -c < "$targetpage_pathfile"); actual_size=${actual_size##* }
+
+        DebugChildVal "$section" "$(DisplayThousands "$actual_size") bytes"
+
+        if [[ $actual_size -eq 0 ]]; then
+            UpdateRunLog "$section" "$action" '0' '1' 'empty file'
+            MoveToFail
+            DebugChildFail "$action = zero bytes"
+        else
+            UpdateRunLog "$section" "$action" "$actual_size" '0' 'OK'
+            MoveToSuccess
+            DebugChildSuccess "$action"
+        fi
+    else
+        MoveToFail
     fi
 
     DebugChildElapsedTime "$func_startseconds"
