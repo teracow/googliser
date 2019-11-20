@@ -983,7 +983,6 @@ ValidateParams()
                 ;;
         esac
         [[ -n $min_pixels_type ]] && min_pixels_search=isz:$min_pixels_type
-
     fi
 
     if [[ -n $aspect_ratio ]]; then
@@ -1551,7 +1550,6 @@ GetImages()
     if [[ $result_index -eq $results_received ]]; then
         DebugFuncFail 'links list exhausted' "$result_index/$results_received"
         ColourTextBrightRed 'links list exhausted!'; echo
-        #result=1
     else
         [[ $verbose = true ]] && echo
     fi
@@ -2057,7 +2055,6 @@ RenderGallery()
 Finish()
     {
 
-    # display end
     if [[ $verbose = true ]]; then
         case $exitcode in
             0)
@@ -2107,7 +2104,7 @@ MoveToFail()
 
     [[ -n $run_pathfile && -e $run_pathfile ]] && mv "$run_pathfile" "$fail_pathfile"
 
-    # delete temp file if one was created
+    # ... and delete temp file if one was created
     [[ -n $targetimage_pathfileext && -e $targetimage_pathfileext ]] && rm -f "$targetimage_pathfileext"
 
     }
@@ -2479,10 +2476,10 @@ AllowableFileType()
 ScrapePages()
     {
 
-    #-------------------------- "These are the regexes you're looking for" -------------------------------------
-    # They turn a single, long file of Google HTML, CSS and Javascript into a nice, neat textfile,
-    # one URL per row, and each pointing to an original image address found by Google.
-    #-----------------------------------------------------------------------------------------------------------
+    #-------------------------- "These are the regexes you're looking for" --------------------------------
+    # Turns a single file of Google HTML, CSS and Javascript into a neat textfile, one URL per row,
+    # and each pointing to an original image address found by Google.
+    #------------------------------------------------------------------------------------------------------
     #
     # sed   1. add 2 x newline chars before each occurence of '<div',
     #       2. remove ' notranslate' (if this is one of the odd times Google have added it),
@@ -2496,7 +2493,7 @@ ScrapePages()
     #       8. remove from '","ow"' to end of line,
     #       9. remove from '?' to end of line.
     #
-    #-----------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
 
     cat "$pages_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
@@ -2525,9 +2522,9 @@ CTRL_C_Captured()
 AbortPages()
     {
 
-    DebugFuncEntry
-
     # remove any files where processing by [_GetPage_] was incomplete
+
+    DebugFuncEntry
 
     local existing_pathfile=''
     local existing_file=''
@@ -2550,9 +2547,9 @@ AbortPages()
 AbortImages()
     {
 
-    DebugFuncEntry
-
     # remove any image files where processing by [_GetImage_] was incomplete
+
+    DebugFuncEntry
 
     local existing_pathfile=''
     local existing_file=''
@@ -2810,7 +2807,7 @@ DebugWarn()
 
     # $1 = section
     # $2 = operation
-    # $3 = optional reason
+    # $3 = reason (optional)
 
     [[ -z $1 ]] && return 1
 
@@ -2827,7 +2824,7 @@ DebugFail()
 
     # $1 = section
     # $2 = operation
-    # $3 = optional reason
+    # $3 = reason (optional)
 
     [[ -z $1 ]] && return 1
 
