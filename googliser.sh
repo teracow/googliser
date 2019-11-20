@@ -56,11 +56,14 @@
 
 ORIGIN=$_
 
-Init()
+InitOK()
     {
 
+    # check and log runtime environment
+    # $? = 0 if OK, 1 if not
+
     # script constants
-    local SCRIPT_VERSION=191120
+    local SCRIPT_VERSION=191121
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -179,92 +182,6 @@ Init()
     user_parameters_result=$?
     user_parameters_raw=$*
 
-    }
-
-InstallGoogliser()
-    {
-
-    echo -e " -> installing ...\n"
-
-    SUDO=sudo
-    if [[ $EUID -eq 0 ]]; then
-        SUDO=''
-    fi
-
-    case "$OSTYPE" in
-        "darwin"*)
-            xcode-select --install
-            ruby -e "$(curl -fsSL git.io/get-brew)"
-            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
-            ;;
-        "linux"*)
-            if [[ $PACKAGER_BIN != unknown ]]; then
-                $SUDO "$PACKAGER_BIN" install wget imagemagick
-            else
-                echo "Unsupported package manager. Please install the dependencies manually"
-                return 1
-            fi
-            ;;
-        *)
-            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            return 1
-            ;;
-    esac
-    $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
-
-    return 0
-
-    }
-
-BuildWorkPaths()
-    {
-
-    Flee() { echo "! Unable to create a temporary build directory! Exiting."; exit 7 ;}
-
-    TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
-
-    page_run_count_path=$TEMP_PATH/pages.running.count
-    mkdir -p "$page_run_count_path" || Flee
-
-    page_success_count_path=$TEMP_PATH/pages.success.count
-    mkdir -p "$page_success_count_path" || Flee
-
-    page_fail_count_path=$TEMP_PATH/pages.fail.count
-    mkdir -p "$page_fail_count_path" || Flee
-
-    page_abort_count_path=$TEMP_PATH/pages.abort.count
-    mkdir -p "$page_abort_count_path" || Flee
-
-    image_run_count_path=$TEMP_PATH/images.running.count
-    mkdir -p "$image_run_count_path" || Flee
-
-    image_success_count_path=$TEMP_PATH/images.success.count
-    mkdir -p "$image_success_count_path" || Flee
-
-    image_fail_count_path=$TEMP_PATH/images.fail.count
-    mkdir -p "$image_fail_count_path" || Flee
-
-    image_abort_count_path=$TEMP_PATH/images.abort.count
-    mkdir -p "$image_abort_count_path" || Flee
-
-    image_sizetest_pathfile=$TEMP_PATH/test-image-size
-    pages_pathfile=$TEMP_PATH/page.html
-    gallery_title_pathfile=$TEMP_PATH/gallery.title.png
-    gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
-    gallery_background_pathfile=$TEMP_PATH/gallery.background.png
-    image_links_pathfile=$TEMP_PATH/$image_links_file
-    debug_pathfile=$TEMP_PATH/$DEBUG_FILE
-
-    unset -f Flee
-
-    }
-
-EnvironmentOK()
-    {
-
-    # checks and logs runtime environment
-    # $? = 0 if OK, 1 if not
-
     DebugFuncEntry
     local func_startseconds=$(date +%s)
 
@@ -372,6 +289,84 @@ EnvironmentOK()
     DebugFuncExit
 
     return 0
+
+    }
+
+InstallGoogliser()
+    {
+
+    echo -e " -> installing ...\n"
+
+    SUDO=sudo
+    if [[ $EUID -eq 0 ]]; then
+        SUDO=''
+    fi
+
+    case "$OSTYPE" in
+        "darwin"*)
+            xcode-select --install
+            ruby -e "$(curl -fsSL git.io/get-brew)"
+            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
+            ;;
+        "linux"*)
+            if [[ $PACKAGER_BIN != unknown ]]; then
+                $SUDO "$PACKAGER_BIN" install wget imagemagick
+            else
+                echo "Unsupported package manager. Please install the dependencies manually"
+                return 1
+            fi
+            ;;
+        *)
+            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            return 1
+            ;;
+    esac
+    $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+
+    return 0
+
+    }
+
+BuildWorkPaths()
+    {
+
+    Flee() { echo "! Unable to create a temporary build directory! Exiting."; exit 7 ;}
+
+    TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
+
+    page_run_count_path=$TEMP_PATH/pages.running.count
+    mkdir -p "$page_run_count_path" || Flee
+
+    page_success_count_path=$TEMP_PATH/pages.success.count
+    mkdir -p "$page_success_count_path" || Flee
+
+    page_fail_count_path=$TEMP_PATH/pages.fail.count
+    mkdir -p "$page_fail_count_path" || Flee
+
+    page_abort_count_path=$TEMP_PATH/pages.abort.count
+    mkdir -p "$page_abort_count_path" || Flee
+
+    image_run_count_path=$TEMP_PATH/images.running.count
+    mkdir -p "$image_run_count_path" || Flee
+
+    image_success_count_path=$TEMP_PATH/images.success.count
+    mkdir -p "$image_success_count_path" || Flee
+
+    image_fail_count_path=$TEMP_PATH/images.fail.count
+    mkdir -p "$image_fail_count_path" || Flee
+
+    image_abort_count_path=$TEMP_PATH/images.abort.count
+    mkdir -p "$image_abort_count_path" || Flee
+
+    image_sizetest_pathfile=$TEMP_PATH/test-image-size
+    pages_pathfile=$TEMP_PATH/page.html
+    gallery_title_pathfile=$TEMP_PATH/gallery.title.png
+    gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
+    gallery_background_pathfile=$TEMP_PATH/gallery.background.png
+    image_links_pathfile=$TEMP_PATH/$image_links_file
+    debug_pathfile=$TEMP_PATH/$DEBUG_FILE
+
+    unset -f Flee
 
     }
 
@@ -3511,9 +3506,7 @@ DisplayThousands()
 
     }
 
-Init "$@" || exit 1
-
-if EnvironmentOK; then
+if InitOK "$@"; then
     if [[ -n $input_phrases_pathfile ]]; then
         while read -r file_phrase; do
             [[ -n $file_phrase && $file_phrase != \#* ]] && ProcessPhrase "$file_phrase"
