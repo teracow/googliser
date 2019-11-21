@@ -9,7 +9,7 @@ _GoogliserCompletion()
   --exact-search --help --lightning --links-only --no-colour --no-color --safesearch-off \
   --quiet --random --reindex-rename --save-links --skip-no-size --aspect-ratio \
   --border-pixels --colour --color --exclude-links --exclude-words --format --gallery \
-  --input-links --input-phrases --install --lower-size --minimum-pixels --number --output --parallel \
+  --input-links --input-phrases --lower-size --minimum-pixels --number --output --parallel \
   --phrase --recent --retries --sites --thumbnails --timeout --title --type --upper-size --usage-rights'
 
   COMPREPLY=()   # Array variable storing the possible completions.
