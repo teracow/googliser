@@ -306,11 +306,18 @@ InstallGoogliser()
         "darwin"*)
             xcode-select --install
             ruby -e "$(curl -fsSL git.io/get-brew)"
-            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
+            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
+            curl -skLO https://raw.githubusercontent.com/teracow/googliser/master/googliser-completion
+            cp googliser-completion /usr/local/etc/bash_completion.d/
+            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> ~/.bash_profile
+            . ~/.bash_profile
             ;;
         "linux"*)
             if [[ $PACKAGER_BIN != unknown ]]; then
                 $SUDO "$PACKAGER_BIN" install wget imagemagick
+                wget -qN https://raw.githubusercontent.com/teracow/googliser/master/googliser-completion
+                $SUDO cp googliser-completion /etc/bash_completion.d/
+                . /etc/bash_completion.d/googliser-completion
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
                 return 1
