@@ -316,7 +316,7 @@ InstallGoogliser()
             if [[ $PACKAGER_BIN != unknown ]]; then
                 $SUDO "$PACKAGER_BIN" install wget imagemagick
                 wget -qN https://raw.githubusercontent.com/teracow/googliser/master/googliser-completion
-                cp googliser-completion /etc/bash_completion.d/
+                $SUDO cp googliser-completion /etc/bash_completion.d/
                 . /etc/bash_completion.d/googliser-completion
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
