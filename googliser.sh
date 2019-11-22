@@ -1326,8 +1326,7 @@ GetPages()
         while [[ $run_count -eq $parallel_limit ]]; do
             sleep 0.5
 
-            RefreshPageCounts
-            ShowAcquisitionProgress 'pages' $pages_max $pages_max
+            RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
         done
 
         page_index=$(printf "%02d" $page)
@@ -1336,15 +1335,13 @@ GetPages()
         touch "$page_run_count_path/$page_index"
         { _GetPage_ "$page" "$page_index" & } 2>/dev/null
 
-        RefreshPageCounts
-        ShowAcquisitionProgress 'pages' $pages_max $pages_max
+        RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
     done
 
     # wait here while all running downloads finish
     wait 2>/dev/null
 
-    RefreshPageCounts
-    ShowAcquisitionProgress 'pages' $pages_max $pages_max
+    RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
 
     DebugFuncVal 'pages OK' "$success_count"
     DebugFuncVal 'pages failed' "$fail_count"
