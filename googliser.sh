@@ -1327,7 +1327,7 @@ GetPages()
             sleep 0.5
 
             RefreshPageCounts
-            ShowPagesProgress
+            ShowAcquisitionProgress 'pages' $pages_max $pages_max
         done
 
         page_index=$(printf "%02d" $page)
@@ -1337,14 +1337,14 @@ GetPages()
         { _GetPage_ "$page" "$page_index" & } 2>/dev/null
 
         RefreshPageCounts
-        ShowPagesProgress
+        ShowAcquisitionProgress 'pages' $pages_max $pages_max
     done
 
     # wait here while all running downloads finish
     wait 2>/dev/null
 
     RefreshPageCounts
-    ShowPagesProgress
+    ShowAcquisitionProgress 'pages' $pages_max $pages_max
 
     DebugFuncVal 'pages OK' "$success_count"
     DebugFuncVal 'pages failed' "$fail_count"
@@ -1507,7 +1507,7 @@ GetImages()
 
     while read -r imagelink; do
         while true; do
-            RefreshImageCounts; ShowImagesProgress
+            RefreshImageCounts; ShowAcquisitionProgress 'images' $gallery_images_required $parallel_limit
 
             [[ $success_count -ge $gallery_images_required ]] && break 2
 
@@ -1533,7 +1533,7 @@ GetImages()
             DebugFuncSuccess 'enough images received'
             AbortImages
         fi
-        RefreshImageCounts; ShowImagesProgress
+        RefreshImageCounts; ShowAcquisitionProgress 'images' $gallery_images_required $parallel_limit
     done
 
     wait 2>/dev/null;                   # wait here until all forked download jobs have exited
@@ -1546,7 +1546,7 @@ GetImages()
         done
     fi
 
-    RefreshImageCounts; ShowImagesProgress
+    RefreshImageCounts; ShowAcquisitionProgress 'images' $gallery_images_required $parallel_limit
 
     if [[ $fail_count -gt 0 && $verbose = true ]]; then
         # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
@@ -2235,6 +2235,35 @@ SuggestInstall()
 
     }
 
+ShowAcquisitionProgress()
+    {
+
+    # $1 = 'images' or 'pages' ?
+    # $2 = total to download
+    # $3 = parallel limit
+
+    [[ -z $1 || $2 -eq 0 || $3 -eq 0 ]] && return 1
+
+    local progress_message=''
+
+    if [[ $verbose = true ]]; then
+        progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$2")")
+        progress_message+=" $1 downloaded"
+
+        [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$3") are in progress"
+
+        if [[ $fail_count -gt 0 ]]; then
+            progress_message+=" and $(ColourTextBrightRed "$fail_count")"
+            [[ $run_count -gt 0 ]] && progress_message+=' have'
+            progress_message+=' failed'
+        fi
+
+        progress_message+=':'
+        UpdateProgress "$progress_message"
+    fi
+
+    }
+
 InitProgress()
     {
 
@@ -2297,29 +2326,6 @@ RefreshPageCounts()
 
     }
 
-ShowPagesProgress()
-    {
-
-    local progress_message=''
-
-    if [[ $verbose = true ]]; then
-        progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$pages_max")")
-        progress_message+=' pages downloaded'
-
-        [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$pages_max") are in progress"
-
-        if [[ $fail_count -gt 0 ]]; then
-            progress_message+=" and $(ColourTextBrightRed "$fail_count")"
-            [[ $run_count -gt 0 ]] && progress_message+=' have'
-            progress_message+=' failed'
-        fi
-
-        progress_message+=':'
-        UpdateProgress "$progress_message"
-    fi
-
-    }
-
 ResetImageCounts()
     {
 
@@ -2341,32 +2347,6 @@ RefreshImageCounts()
     success_count=$(ls -1 "$image_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
     fail_count=$(ls -1 "$image_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
     abort_count=$(ls -1 "$image_abort_count_path" | wc -l); abort_count=${abort_count##* }           # remove leading space in 'wc' output on macOS
-
-    }
-
-ShowImagesProgress()
-    {
-
-    local gallery_images_required_adjusted=''
-    local progress_message=''
-
-    if [[ $verbose = true ]]; then
-        gallery_images_required_adjusted=$gallery_images_required
-
-        progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")
-        progress_message+=' images downloaded'
-
-        [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$parallel_limit") are in progress"
-
-        if [[ $fail_count -gt 0 ]]; then
-            progress_message+=" and $(ColourTextBrightRed "$fail_count")"
-            [[ $run_count -gt 0 ]] && progress_message+=' have'
-            progress_message+=' failed'
-        fi
-
-        progress_message+=':'
-        UpdateProgress "$progress_message"
-    fi
 
     }
 
