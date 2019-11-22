@@ -63,7 +63,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191121
+    local SCRIPT_VERSION=191122
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -196,6 +196,8 @@ InitOK()
     if [[ $show_help = true ]]; then
         if (command -v less >/dev/null); then
             ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
+        elif (command -v more >/dev/null); then
+            ShowExtendedHelp | more -d
         else
             ShowExtendedHelp
         fi
@@ -588,7 +590,6 @@ ShowExtendedHelp()
     echo
     echo " Mandatory arguments for long options are mandatory for short options too."
     echo
-
     ColourTextBrightOrange " * Required *"; echo
     FormatHelpLine p phrase string "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
