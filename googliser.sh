@@ -2303,13 +2303,18 @@ ShowPagesProgress()
     local progress_message=''
 
     if [[ $verbose = true ]]; then
-        if [[ $success_count -eq $pages_max ]]; then
-            progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$pages_max")")
-        else
-            progress_message=$(ColourTextBrightOrange "$(Display2to1 "$success_count" "$pages_max")")
+        progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$pages_max")")
+        progress_message+=' pages downloaded'
+
+        [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$pages_max") are in progress"
+
+        if [[ $fail_count -gt 0 ]]; then
+            progress_message+=" and $(ColourTextBrightRed "$fail_count")"
+            [[ $run_count -gt 0 ]] && progress_message+=' have'
+            progress_message+=' failed'
         fi
 
-        progress_message+=' pages downloaded:'
+        progress_message+=':'
         UpdateProgress "$progress_message"
     fi
 
@@ -2349,7 +2354,7 @@ ShowImagesProgress()
         gallery_images_required_adjusted=$gallery_images_required
 
         progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$gallery_images_required_adjusted")")
-        progress_message+=' downloaded'
+        progress_message+=' images downloaded'
 
         [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$parallel_limit") are in progress"
 
