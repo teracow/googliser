@@ -1,0 +1,21 @@
+* common for all macOS versions
+	- when first run (without brew, etc...) should suggest '--install' instead of brew.
+	- xcode was installed automatically by brew - didn't need to request 'xcode-select'.
+	- completion didn't work immediately after first install, but worked fine after logout then back in again. Seems tilde isn't accepted as $HOME. Maybe use $HOME instead?
+	- script should be moved to permanent location instead of symlinked.
+	- blue ANSI text is converted to magenta.
+	- 'less' display output in terminal is buggy - duplicates bottom row when scrolled up/down & extended help is missing blank line before "* Optional *".
+	- mapfile & readarray are not available (bash 3.2.57)
+		maybe use this instead? (https://stackoverflow.com/a/23843116/6182835):
+			while IFS=\= read var value; do
+				vars+=($var)
+				values+=($value)
+			done < VarsValues.txt
+
+* 10.13 High Sierra (darwin17)
+	- usage example of script name in basic help is almost unreadable due to low contrast (white terminal background).
+	- usage example in extended help is unreadable due to low contrast (white terminal background).
+
+* 10.14 Mojave (darwin18) using dark desktop theme
+
+* 10.15 Catalina (darwin19) using dark desktop theme
