@@ -297,6 +297,7 @@ InstallGoogliser()
     {
 
     local cmd=''
+    local cmd_result=0
 
     echo " -> installing ..."
 
@@ -341,7 +342,7 @@ complete -F _GoogliserCompletion -o filenames googliser
 EOF
 
     case "$OSTYPE" in
-        "darwin"*)
+        darwin*)
             if ! (command -v brew >/dev/null); then
                 ruby -e "$(curl -fsSL git.io/get-brew)"
                 brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
@@ -350,15 +351,18 @@ EOF
             echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> $HOME/.bash_profile
             . $HOME/.bash_profile
             ;;
-        "linux"*)
+        linux*)
             if [[ $PACKAGER_BIN != unknown ]]; then
                 ! (command -v wget>/dev/null) && cmd+=' wget'
                 { ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null) ;} && cmd+=' imagemagick'
-                [[ -n $cmd ]] && cmd="$SUDO $PACKAGER_BIN install${cmd}"
+                if [[ -n $cmd ]]; then
+                    cmd="$SUDO $PACKAGER_BIN install${cmd}"
 
-                echo " -> executing: '$cmd' ..."; eval "$cmd"
+                    echo " -> executing: '$cmd' ..."
+                    eval "$cmd"; cmd_result=$?
+                fi
 
-                if [[ $? -eq 0 ]]; then
+                if [[ $cmd_result -eq 0 ]]; then
                     $SUDO cp googliser-completion /etc/bash_completion.d/
                     . /etc/bash_completion.d/googliser-completion
                 fi
