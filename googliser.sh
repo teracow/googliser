@@ -63,7 +63,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191123
+    local SCRIPT_VERSION=191124
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -2571,7 +2571,7 @@ AbortPages()
     local existing_pathfile=''
     local existing_file=''
 
-    kill $(jobs -rp) 2>/dev/null
+    kill $(jobs -rp) >/dev/null 2>&1
     wait 2>/dev/null
 
     for existing_pathfile in "$page_run_count_path"/*; do
@@ -2596,7 +2596,7 @@ AbortImages()
     local existing_pathfile=''
     local existing_file=''
 
-    kill $(jobs -rp) 2>/dev/null
+    kill $(jobs -rp) >/dev/null 2>&1
     wait 2>/dev/null
 
     for existing_pathfile in "$image_run_count_path"/*; do
