@@ -299,7 +299,7 @@ InstallGoogliser()
     local cmd=''
     local cmd_result=0
 
-    echo " -> installing ..."
+    echo " -> installing:"
 
     SUDO=sudo
     if [[ $EUID -eq 0 ]]; then
@@ -358,13 +358,13 @@ EOF
                 if [[ -n $cmd ]]; then
                     cmd="$SUDO $PACKAGER_BIN install${cmd}"
 
-                    echo " -> executing: '$cmd' ..."
+                    echo " -> executing: '$cmd'"
                     eval "$cmd"; cmd_result=$?
                 fi
 
                 if [[ $cmd_result -eq 0 ]]; then
                     cmd="$SUDO cp googliser-completion /etc/bash_completion.d/"
-                    echo " -> executing: '$cmd' ..."
+                    echo " -> executing: '$cmd'"
                     if (eval "$cmd"); then
                         . /etc/bash_completion.d/googliser-completion
                     fi
@@ -381,7 +381,7 @@ EOF
     esac
 
     cmd="$SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
-    echo " -> executing: '$cmd' ..."
+    echo " -> executing: '$cmd'"
     eval "$cmd"
 
     return 0
