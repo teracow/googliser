@@ -363,8 +363,11 @@ EOF
                 fi
 
                 if [[ $cmd_result -eq 0 ]]; then
-                    $SUDO cp googliser-completion /etc/bash_completion.d/
-                    . /etc/bash_completion.d/googliser-completion
+                    cmd="$SUDO cp googliser-completion /etc/bash_completion.d/"
+                    echo " -> executing: '$cmd' ..."
+                    if (eval "$cmd"); then
+                        . /etc/bash_completion.d/googliser-completion
+                    fi
                 fi
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
@@ -376,7 +379,10 @@ EOF
             return 1
             ;;
     esac
-    $SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+
+    cmd="$SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
+    echo " -> executing: '$cmd' ..."
+    eval "$cmd"
 
     return 0
 
