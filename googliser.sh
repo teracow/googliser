@@ -2571,8 +2571,8 @@ AbortPages()
     local existing_pathfile=''
     local existing_file=''
 
-    kill $(jobs -rp) >/dev/null 2>&1
-    wait 2>/dev/null
+    kill $(jobs -rp) 2>/dev/null
+    wait $(jobs -rp) 2>/dev/null
 
     for existing_pathfile in "$page_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
@@ -2596,8 +2596,8 @@ AbortImages()
     local existing_pathfile=''
     local existing_file=''
 
-    kill $(jobs -rp) >/dev/null 2>&1
-    wait 2>/dev/null
+    kill $(jobs -rp) 2>/dev/null
+    wait $(jobs -rp) 2>/dev/null
 
     for existing_pathfile in "$image_run_count_path"/*; do
         existing_file=$(basename "$existing_pathfile")
