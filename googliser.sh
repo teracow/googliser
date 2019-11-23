@@ -345,9 +345,9 @@ EOF
         darwin*)
             if ! (command -v brew >/dev/null); then
                 ruby -e "$(curl -fsSL git.io/get-brew)"
-                brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
             fi
-            cp googliser-completion /usr/local/etc/bash_completion.d/
+            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
+            mv googliser-completion /usr/local/etc/bash_completion.d/
             echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> $HOME/.bash_profile
             . $HOME/.bash_profile
             ;;
@@ -363,7 +363,7 @@ EOF
                 fi
 
                 if [[ $cmd_result -eq 0 ]]; then
-                    cmd="$SUDO cp googliser-completion /etc/bash_completion.d/"
+                    cmd="$SUDO mv googliser-completion /etc/bash_completion.d/"
                     echo " -> executing: '$cmd'"
                     if (eval "$cmd"); then
                         . /etc/bash_completion.d/googliser-completion
