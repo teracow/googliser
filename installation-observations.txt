@@ -1,26 +1,21 @@
 * common for all macOS versions
-	- when first run (without brew, etc...) should suggest '--install' instead of brew.
-	- xcode was installed automatically by brew - didn't need to request 'xcode-select'.
-	- completion didn't work immediately after first install, but worked fine after logout then back in again. Seems tilde isn't accepted as $HOME. Maybe use $HOME instead?
-	- script should be moved to permanent location instead of symlinked.
-	- blue ANSI text is converted to magenta.
-	- 'less' display output in terminal is buggy - duplicates bottom row when scrolled up/down & extended help is missing blank line before "* Optional *".
-	- mapfile & readarray are not available (bash 3.2.57)
-		maybe use this instead? (https://stackoverflow.com/a/23843116/6182835):
-			while IFS=\= read var value; do
-				vars+=($var)
-				values+=($value)
-			done < VarsValues.txt
+✔   - when first run (without brew, etc...) should suggest '--install' instead of brew.
+✔   - xcode was installed automatically by brew - didn't need to request 'xcode-select'.
+    - completion didn't work immediately after first install, but worked fine after logout then back in again. Seems tilde isn't accepted as $HOME. Maybe use $HOME instead?
+✔   - script should be moved to permanent location instead of symlinked.
+    - blue ANSI text is converted to magenta.
+    - 'less' display output in terminal is buggy - duplicates bottom row when scrolled up/down & extended help is missing blank line before "* Optional *".
+✔   - mapfile & readarray are not available (bash 3.2.57)
 
 * 10.13 High Sierra (darwin17)
-	- usage example of script name in basic help is almost unreadable due to low contrast (white terminal background).
-	- usage example in extended help is unreadable due to low contrast (white terminal background).
+    - usage example of script name in basic help is almost unreadable due to low contrast (white terminal background).
+    - usage example in extended help is unreadable due to low contrast (white terminal background).
 
 * 10.14 Mojave (darwin18) using dark desktop theme
 
 * 10.15 Catalina (darwin19.0) using dark desktop theme
-	- "zsh: command not found: complete"
+    - "zsh: command not found: complete"
 
 * Ubuntu 19.10 Desktop x64
-	- when '--install'ing, first prompt is for sudo password, but there's no message on screen to say why this is needed.
-	- if user elects to abort install within local package manager, we should not continue the googliser installation process (creating completion script, etc...).
+✔   - when '--install'ing, first prompt is for sudo password, but there's no message on screen to say why this is needed.
+✔   - if user elects to abort install within local package manager, we should not continue the googliser installation process (creating completion script, etc...).

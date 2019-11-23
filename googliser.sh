@@ -2623,7 +2623,13 @@ FirstPreferredFont()
     preferred_fonts+=(Utopia-Bold-Italic)
     preferred_fonts+=(Bitstream-Charter-Bold-Italic)
 
-    mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
+    if (command -v mapfile >/dev/null); then
+        mapfile -t available_fonts < <($CONVERT_BIN -list available_font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
+    else            # macOS's ancient BASH doesn't have 'mapfile' or 'readarray', so have to do things the old way
+        while read -r available_font; do
+            available_fonts+=($available_font)
+        done < <($CONVERT_BIN -list available_font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
+    fi
 
     for preferred_font in "${preferred_fonts[@]}"; do
         for available_font in "${available_fonts[@]}"; do
