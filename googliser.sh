@@ -63,7 +63,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191122
+    local SCRIPT_VERSION=191123
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -165,9 +165,8 @@ InitOK()
                 GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
             else
                 DebugScriptFail "'brew' executable was not found"
-                echo " 'brew' executable was not found!"
-                echo -e "\n On this platform, try installing it with:"
-                echo ' $ xcode-select --install && ruby -e "$(curl -fsSL git.io/get-brew)"'
+                echo "'brew' executable was not found!"
+                echo "suggest installing googliser with: ./$SCRIPT_FILE --install"
                 exit 1
             fi
             ;;
@@ -297,7 +296,9 @@ InitOK()
 InstallGoogliser()
     {
 
-    echo -e " -> installing ...\n"
+    local cmd=''
+
+    echo " -> installing ..."
 
     SUDO=sudo
     if [[ $EUID -eq 0 ]]; then
@@ -341,18 +342,26 @@ EOF
 
     case "$OSTYPE" in
         "darwin"*)
-            xcode-select --install
-            ruby -e "$(curl -fsSL git.io/get-brew)"
-            brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
+            if ! (command -v brew >/dev/null); then
+                ruby -e "$(curl -fsSL git.io/get-brew)"
+                brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
+            fi
             cp googliser-completion /usr/local/etc/bash_completion.d/
-            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> ~/.bash_profile
-            . ~/.bash_profile
+            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> $HOME/.bash_profile
+            . $HOME/.bash_profile
             ;;
         "linux"*)
             if [[ $PACKAGER_BIN != unknown ]]; then
-                $SUDO "$PACKAGER_BIN" install wget imagemagick
-                $SUDO cp googliser-completion /etc/bash_completion.d/
-                . /etc/bash_completion.d/googliser-completion
+                ! (command -v wget>/dev/null) && cmd+=' wget'
+                { ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null) ;} && cmd+=' imagemagick'
+                [[ -n $cmd ]] && cmd="$SUDO $PACKAGER_BIN install${cmd}"
+
+                echo " -> executing: '$cmd' ..."; eval "$cmd"
+
+                if [[ $? -eq 0 ]]; then
+                    $SUDO cp googliser-completion /etc/bash_completion.d/
+                    . /etc/bash_completion.d/googliser-completion
+                fi
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
                 return 1
@@ -363,7 +372,7 @@ EOF
             return 1
             ;;
     esac
-    $SUDO ln -sf "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
+    $SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser
 
     return 0
 
