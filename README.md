@@ -36,15 +36,18 @@ or use:
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
-**googliser** is fully supported on Fedora Workstation, Manjaro & Ubuntu. Debian and macOS may require some extra binaries. Please advise of any issues.
+**googliser** is fully supported on Manjaro & Ubuntu. Debian, Fedora Workstation and macOS may require some extra binaries. Please advise of any issues.
 
 Debian:
 
     $ sudo apt install wget imagemagick
 
+Fedora:
+
+    $ sudo yum install ImageMagick
+
 macOS:
 
-    $ xcode-select --install
     $ ruby -e "$(curl -fsSL git.io/get-brew)"
     $ brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
 
@@ -341,9 +344,9 @@ This will download available images for the phrase *"flags"*, while excluding th
 **and periodically tested on these platforms:**
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
-- [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS*
+- [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS, 19.10 Desktop*
 - [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*, *10.15 Catalina*
-- [Fedora](https://getfedora.org/) - *28, 30 Workstation*
+- [Fedora](https://getfedora.org/) - *28, 30, 31 Workstation*
 - [Mint](https://linuxmint.com/) - *19.1 Tessa XFCE*
 - [Manjaro](https://manjaro.org/) - *18.0.2 XFCE*
 
