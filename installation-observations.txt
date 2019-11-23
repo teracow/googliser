@@ -19,3 +19,7 @@
 * 10.14 Mojave (darwin18) using dark desktop theme
 
 * 10.15 Catalina (darwin19) using dark desktop theme
+
+* Ubuntu 10.10 Desktop x64
+	- when '--install'ing, first prompt is for sudo password, but there's no message on screen to say why this is needed.
+	- if user elects to abort install within local package manager, we should not continue the googliser installation process (creating completion script, etc...).

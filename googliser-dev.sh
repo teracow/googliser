@@ -296,7 +296,9 @@ InitOK()
 InstallGoogliser()
     {
 
-    echo -e " -> installing ...\n"
+    cmd=''
+
+    echo " -> installing ..."
 
     SUDO=sudo
     if [[ $EUID -eq 0 ]]; then
@@ -348,9 +350,16 @@ EOF
             ;;
         "linux"*)
             if [[ $PACKAGER_BIN != unknown ]]; then
-                $SUDO "$PACKAGER_BIN" install wget imagemagick
-                $SUDO cp googliser-completion /etc/bash_completion.d/
-                . /etc/bash_completion.d/googliser-completion
+                ! (command -v wget>/dev/null) && cmd+=' wget'
+                { ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null) ;} && cmd+=' imagemagick'
+                [[ -n $cmd ]] && cmd="$SUDO $PACKAGER_BIN install${cmd}"
+
+                echo " -> running: '$cmd' ..."; eval "$cmd"
+
+                if [[ $? -eq 0 ]]; then
+                    $SUDO cp googliser-completion /etc/bash_completion.d/
+                    . /etc/bash_completion.d/googliser-completion
+                fi
             else
                 echo "Unsupported package manager. Please install the dependencies manually"
                 return 1
