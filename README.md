@@ -344,9 +344,9 @@ This will download available images for the phrase *"flags"*, while excluding th
 **and periodically tested on these platforms:**
 
 - [openSUSE](https://www.opensuse.org/) - *LEAP 42.1 64b*
-- [Ubuntu](http://www.ubuntu.com/) - *18.04.1 LTS, 19.10 Desktop*
-- [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.13 High Sierra*, *10.14 Mojave*, *10.15 Catalina*
-- [Fedora](https://getfedora.org/) - *28, 30, 31 Workstation*
+- [Ubuntu](http://www.ubuntu.com/) - *19.10 Desktop, 18.04.1 LTS*
+- [macOS](https://en.wikipedia.org/wiki/MacOS) - *10.15 Catalina, 10.14 Mojave, 10.13 High Sierra*
+- [Fedora](https://getfedora.org/) - *31, 30, 28 Workstation*
 - [Mint](https://linuxmint.com/) - *19.1 Tessa XFCE*
 - [Manjaro](https://manjaro.org/) - *18.0.2 XFCE*
 
