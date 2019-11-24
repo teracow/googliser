@@ -2596,6 +2596,7 @@ AbortImages()
     local existing_pathfile=''
     local existing_file=''
 
+    sleep 1         # hopefully prevent the race-condition affecting execution on macOS Catalina. Prevents 'terminated' message appearing.
     kill $(jobs -rp) 2>/dev/null
     wait $(jobs -rp) 2>/dev/null
 
