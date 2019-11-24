@@ -63,7 +63,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191124
+    local SCRIPT_VERSION=191125
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -2067,11 +2067,11 @@ RenderGallery()
         if [[ $gallery_user_title = none ]]; then
             include_title=''
         else
-            include_title="-composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
+            include_title="-colorspace sRGB -composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
-        runcmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -composite \"$gallery_target_pathname\""
+        runcmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -colorspace sRGB -composite \"$gallery_target_pathname\""
 
         DebugFuncExec "$stage_description" "$runcmd"
 
