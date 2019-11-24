@@ -2232,9 +2232,10 @@ SaveLinks()
 
     # copy links file into target directory if possible. If not, then copy to current directory.
 
-    [[ $exitcode -ne 0 || $links_only = true ]] && return
+    [[ $exitcode -ne 0 ]] && return
 
     if [[ $save_links = true ]]; then
+        DebugFuncOpr 'saving URL links file'
         if [[ $target_path_created = true ]]; then
             cp -f "$image_links_pathfile" "$target_path/$image_links_file"
         else
@@ -2252,6 +2253,7 @@ SaveDebug()
     # copy debug file into target directory if possible. If not, or searched for multiple terms, then copy to current directory.
 
     if [[ $debug = true ]]; then
+        DebugFuncOpr 'saving debug file'
         if [[ -n $input_phrases_pathfile || $target_path_created = false ]]; then
             [[ -e $current_path/$DEBUG_FILE ]] && echo "" >> "$current_path/$DEBUG_FILE"
             cat "$debug_pathfile" >> "$current_path/$DEBUG_FILE"
