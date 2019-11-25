@@ -38,6 +38,7 @@
 #   5   URL links list has been exhausted
 #   6   thumbnail gallery building failed
 #   7   unable to create a temporary build directory
+#   8   Internet inaccessible
 
 # debug log first characters notation:
 #   >>  child process forked
@@ -63,7 +64,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191125
+    local SCRIPT_VERSION=191126
     SCRIPT_FILE=googliser.sh
     IMAGE_FILE_PREFIX=google-image
     DEBUG_FILE=debug.log
@@ -91,7 +92,7 @@ InitOK()
     current_path=$PWD
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     image_links_file=image.links.list
-    exitcode=0
+    errorcode=0
 
     # script-variable flags
     target_path_created=false
@@ -183,12 +184,13 @@ InitOK()
 
     DebugFuncEntry
     local func_startseconds=$(date +%s)
+    local runcmd=''
 
     WhatAreMyArgs
 
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
         ShowBasicHelp
-        exitcode=2
+        errorcode=2
         return 1
     fi
 
@@ -206,7 +208,7 @@ InitOK()
     ShowTitle
     ValidateParams || return 1
 
-    if [[ $exitcode -eq 0 ]]; then
+    if [[ $errorcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
         DebugFuncVar aspect_ratio
         DebugFuncVar debug
@@ -254,34 +256,8 @@ InitOK()
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
 
-        if ! DOWNLOADER_BIN=$(command -v wget); then
-            if ! DOWNLOADER_BIN=$(command -v curl); then
-                SuggestInstall wget
-                exitcode=1
-                return 1
-            fi
-        fi
-
-        DebugFuncVar DOWNLOADER_BIN
-
-        if [[ $gallery = true && $show_help = false ]]; then
-            if ! MONTAGE_BIN=$(command -v montage); then
-                SuggestInstall montage imagemagick
-                exitcode=1
-                return 1
-            elif ! CONVERT_BIN=$(command -v convert); then
-                SuggestInstall convert imagemagick
-                exitcode=1
-                return 1
-            fi
-        fi
-
-        DebugFuncVar MONTAGE_BIN
-        DebugFuncVar CONVERT_BIN
-
-        ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary was found"
-
-        DebugFuncVar IDENTIFY_BIN
+        FindDownloader || return 1
+        FindImageMagick || return 1
 
         trap CTRL_C_Captured INT
     fi
@@ -490,7 +466,7 @@ WhatAreMyArgs()
                 ;;
             --help|-h)
                 show_help=true
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
             --input-links)
@@ -838,7 +814,7 @@ ValidateParams()
         echo " 2. delete the downloaded images,"
         echo " 3. not save the URL links list to file."
         echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
-        exitcode=2
+        errorcode=2
         return 1
     fi
 
@@ -849,7 +825,7 @@ ValidateParams()
         echo " 2. don't download any images,"
         echo " 3. save the URL links list to file."
         echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
-        exitcode=2
+        errorcode=2
         return 1
     fi
 
@@ -858,7 +834,7 @@ ValidateParams()
             DebugScriptFail 'specified $user_images_requested is invalid'
             echo
             ShowFail ' !! number specified after (-n, --number) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -885,7 +861,7 @@ ValidateParams()
             DebugScriptFail '$input_links_pathfile was not found'
             echo
             ShowFail ' !! input links file  (--input-links) was not found'
-            exitcode=2
+            errorcode=2
             return 1
         fi
     fi
@@ -895,7 +871,7 @@ ValidateParams()
             DebugScriptFail '$input_phrases_pathfile was not found'
             echo
             ShowFail ' !! input phrases file  (-i, --input-phrases) was not found'
-            exitcode=2
+            errorcode=2
             return 1
         fi
     fi
@@ -909,7 +885,7 @@ ValidateParams()
             DebugScriptFail 'specified $parallel_limit is invalid'
             echo
             ShowFail ' !! number specified after (-P, --parallel) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -930,7 +906,7 @@ ValidateParams()
             DebugScriptFail 'specified $timeout_seconds is invalid'
             echo
             ShowFail ' !! number specified after (-t, --timeout) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -951,7 +927,7 @@ ValidateParams()
             DebugScriptFail 'specified $retries is invalid'
             echo
             ShowFail ' !! number specified after (-r, --retries) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -972,7 +948,7 @@ ValidateParams()
             DebugScriptFail 'specified $upper_size_bytes is invalid'
             echo
             ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -988,7 +964,7 @@ ValidateParams()
             DebugScriptFail 'specified $lower_size_bytes is invalid'
             echo
             ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -1009,7 +985,7 @@ ValidateParams()
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
             echo
             ShowFail ' !! number specified after (-b, --border-pixels) must be a valid integer'
-            exitcode=2
+            errorcode=2
             return 1
             ;;
         *)
@@ -1038,7 +1014,7 @@ ValidateParams()
                 DebugScriptFail 'specified $min_pixels is invalid'
                 echo
                 ShowFail ' !! (-m, --minimum-pixels) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1063,7 +1039,7 @@ ValidateParams()
                 DebugScriptFail 'specified $aspect_ratio is invalid'
                 echo
                 ShowFail ' !! (-a, --aspect-ratio) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1079,7 +1055,7 @@ ValidateParams()
                 DebugScriptFail 'specified $image_type is invalid'
                 echo
                 ShowFail ' !! (--type) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1094,7 +1070,7 @@ ValidateParams()
                 DebugScriptFail 'specified $image_format is invalid'
                 echo
                 ShowFail ' !! (--format) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1118,7 +1094,7 @@ ValidateParams()
                 DebugScriptFail 'specified $usage_rights is invalid'
                 echo
                 ShowFail ' !! (--usage-rights) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1149,7 +1125,7 @@ ValidateParams()
                 DebugScriptFail 'specified $recent is invalid'
                 echo
                 ShowFail ' !! (--recent) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1186,7 +1162,7 @@ ValidateParams()
                 DebugScriptFail 'specified $image_colour is invalid'
                 echo
                 ShowFail ' !! (--colour, --color) preset invalid'
-                exitcode=2
+                errorcode=2
                 return 1
                 ;;
         esac
@@ -1246,7 +1222,7 @@ ProcessPhrase()
     if [[ -z $1 ]]; then
         DebugFuncFail phrase unspecified
         ShowFail ' !! search phrase (-p, --phrase) was unspecified'
-        exitcode=2
+        errorcode=2
         return 1
     fi
 
@@ -1268,11 +1244,11 @@ ProcessPhrase()
 
     DebugFuncVar target_path
 
-    CreateTargetPath || exitcode=3
-    GetPages || exitcode=4
-    GetImages || exitcode=5
+    CreateTargetPath || errorcode=3
+    GetPages || errorcode=4
+    GetImages || errorcode=5
     ReindexRename
-    RenderGallery || exitcode=6
+    RenderGallery || errorcode=6
     SaveLinks
 
     DebugFuncElapsedTime "$func_startseconds"
@@ -1312,10 +1288,10 @@ ProcessLinkList()
 
     DebugFuncVar target_path
 
-    CreateTargetPath || exitcode=3
-    GetImages || exitcode=5
+    CreateTargetPath || errorcode=3
+    GetImages || errorcode=5
     ReindexRename
-    RenderGallery || exitcode=6
+    RenderGallery || errorcode=6
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1354,7 +1330,7 @@ CreateTargetPath()
 GetPages()
     {
 
-    [[ $exitcode -ne 0 ]] && return 0
+    [[ $errorcode -ne 0 ]] && return 0
 
     DebugFuncEntry
 
@@ -1534,7 +1510,7 @@ _GetPage_()
 GetImages()
     {
 
-    [[ $exitcode -ne 0 || $links_only = true ]] && return
+    [[ $errorcode -ne 0 || $links_only = true ]] && return
 
     DebugFuncEntry
 
@@ -1909,7 +1885,7 @@ ParseResults()
         shuf "$image_links_pathfile" -o "$image_links_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
     fi
 
-    if [[ $exitcode -eq 0 ]]; then
+    if [[ $errorcode -eq 0 ]]; then
         if [[ $gallery_images_required -gt $results_received ]]; then
             gallery_images_required=$results_received
             DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
@@ -1936,7 +1912,7 @@ RenderGallery()
 
         }
 
-    [[ $exitcode -ne 0 && $exitcode -ne 5 ]] && return 0
+    [[ $errorcode -ne 0 && $errorcode -ne 5 ]] && return 0
     [[ $gallery = false ]] && return 0
 
     DebugFuncEntry
@@ -2113,7 +2089,7 @@ Finish()
     {
 
     if [[ $verbose = true ]]; then
-        case $exitcode in
+        case $errorcode in
             0)
                 echo
                 echo " -> $(ShowSuccess 'done!')"
@@ -2139,9 +2115,9 @@ Finish()
 
     SaveDebug
 
-    [[ $show_help = true ]] && exitcode=0
+    [[ $show_help = true ]] && errorcode=0
 
-    exit $exitcode
+    exit $errorcode
 
     }
 
@@ -2207,13 +2183,80 @@ FindPackageManager()
 
     }
 
+FindDownloader()
+    {
+
+    local stage_description=''
+    local runcmd=''
+    local runmsg=''
+    local result=0
+
+    if ! DOWNLOADER_BIN=$(command -v wgett); then
+        if ! DOWNLOADER_BIN=$(command -v curl); then
+            SuggestInstall wget
+            errorcode=1
+            return 1
+        fi
+    fi
+
+    DebugFuncVar DOWNLOADER_BIN
+
+    if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
+        runcmd="$DOWNLOADER_BIN --spider --quiet --server-response --timeout 5 --max-redirect 0 --no-check-certificate $USERAGENT 'https://www.google.com'"
+    elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
+        runcmd="$DOWNLOADER_BIN --silent --head --max-time 5 --insecure $USERAGENT 'https://www.google.com'"
+    fi
+
+    stage_description='test Internet access'
+    DebugFuncExec "$stage_description" "$runcmd"
+
+    runmsg=$(eval "$runcmd" 2>&1)
+    result=$?
+
+    if [[ $result -eq 0 ]]; then
+        DebugFuncSuccess "$stage_description"
+    else
+        DebugFuncFail "$stage_description" "($result)"
+        DebugFuncVar runmsg
+        echo
+        echo " -> $(ShowFail 'Unable to access the Internet')"
+        errorcode=8
+        return 1
+    fi
+
+    }
+
+FindImageMagick()
+    {
+
+    if [[ $gallery = true && $show_help = false ]]; then
+        if ! MONTAGE_BIN=$(command -v montage); then
+            SuggestInstall montage imagemagick
+            errorcode=1
+            return 1
+        elif ! CONVERT_BIN=$(command -v convert); then
+            SuggestInstall convert imagemagick
+            errorcode=1
+            return 1
+        fi
+    fi
+
+    DebugFuncVar MONTAGE_BIN
+    DebugFuncVar CONVERT_BIN
+
+    ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary was found"
+
+    DebugFuncVar IDENTIFY_BIN
+
+    }
+
 ReindexRename()
     {
 
     local targetfile=''
     local reindex=0
 
-    [[ $exitcode -ne 0 && $exitcode -ne 5 ]] && return
+    [[ $errorcode -ne 0 && $errorcode -ne 5 ]] && return
 
     if [[ $reindex_rename = true && -n $target_path ]]; then
         DebugFuncOpr 'reindexing and renaming downloaded files'
@@ -2232,7 +2275,7 @@ SaveLinks()
 
     # copy links file into target directory if possible. If not, then copy to current directory.
 
-    [[ $exitcode -ne 0 ]] && return
+    [[ $errorcode -ne 0 ]] && return
 
     if [[ $save_links = true ]]; then
         DebugFuncOpr 'saving URL links file'
