@@ -297,7 +297,8 @@ This will download available images for the phrase *"flags"*, while excluding th
 4 : could not get a list of search results from Google.  
 5 : image download ran out of images.  
 6 : thumbnail gallery build failed.  
-7 : unable to create a temporary build directory.
+7 : unable to create a temporary build directory.  
+8 : Internet inaccessible.  
 
 ---
 ## ![#c5f015](images/lime.png) Notes
