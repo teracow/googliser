@@ -184,27 +184,9 @@ InitOK()
 
     DebugFuncEntry
     local func_startseconds=$(date +%s)
-    local runcmd=''
 
     WhatAreMyArgs
-
-    if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
-        ShowBasicHelp
-        errorcode=2
-        return 1
-    fi
-
-    if [[ $show_help = true ]]; then
-        if (command -v less >/dev/null); then
-            ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
-        elif (command -v more >/dev/null); then
-            ShowExtendedHelp | more -d
-        else
-            ShowExtendedHelp
-        fi
-        return 1
-    fi
-
+    ShowHelp || return 1
     ShowTitle
     ValidateParams || return 1
 
@@ -588,6 +570,28 @@ WhatAreMyArgs()
     done
 
     return 0
+
+    }
+
+ShowHelp()
+    {
+
+    if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
+        ShowBasicHelp
+        errorcode=2
+        return 1
+    fi
+
+    if [[ $show_help = true ]]; then
+        if (command -v less >/dev/null); then
+            ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
+        elif (command -v more >/dev/null); then
+            ShowExtendedHelp | more -d
+        else
+            ShowExtendedHelp
+        fi
+        return 1
+    fi
 
     }
 
@@ -2191,7 +2195,7 @@ FindDownloader()
     local runmsg=''
     local result=0
 
-    if ! DOWNLOADER_BIN=$(command -v wgett); then
+    if ! DOWNLOADER_BIN=$(command -v wget); then
         if ! DOWNLOADER_BIN=$(command -v curl); then
             SuggestInstall wget
             errorcode=1
