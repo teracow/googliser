@@ -14,17 +14,17 @@ old way:
 
     $ wget -qN git.io/googliser.sh && chmod +x googliser.sh
 
-new automated method:
+new automated way:
 
-    $ install=yes bash <(wget -qO- git.io/googliser.sh)
+    $ INSTALL=yes bash <(wget -qO- git.io/googliser.sh)
 
 or use:
 
     $ curl -skLO git.io/googliser.sh && chmod +x googliser.sh
 
-new automated method:
+new automated way:
 
-    $ install=yes bash <(curl -skL git.io/googliser.sh)
+    $ INSTALL=yes bash <(curl -skL git.io/googliser.sh)
 
 
 ---
@@ -149,17 +149,17 @@ Only download images encoded in this file format. Preset values are:
 - `ico`
 - `craw`
 
-`-G` or `--gallery`    
+`-G`    
 Create a thumbnail gallery.
 
-`-G=background-trans` or `--gallery=background-trans`    
-Build the gallery image with a transparent background.
+`--gallery=background-trans`    
+Create a thumbnail gallery with a transparent background.
 
-`-G=compact` or `--gallery=compact`    
-Create the gallery in condensed mode. No padding between each thumbnail. The default leaves some space between each thumbnail.
+`--gallery=compact`    
+Create a thumbnail gallery in 'condensed' mode. No padding between each thumbnail. More efficient but images are cropped. The default (non-condensed) leaves some space between each thumbnail and each image retains it's original aspect-ratio.
 
-`-G=delete-after` or `--gallery=delete-after`    
-Delete the downloaded images after building the thumbnail gallery. Default is to retain these image files.
+`--gallery=delete-after`    
+Create a thumbnail gallery, then delete the downloaded images. Default is to retain these image files.
 
 `-h` or `--help`    
 Display the complete parameter list.
