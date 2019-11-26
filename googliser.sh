@@ -318,9 +318,9 @@ EOF
     esac
 
     if [[ ! -e $SCRIPT_FILE ]]; then
-        if (command -v wget); then
-            wget -qN git.io/googliser.sh
-        elif (command -v curl); then
+        if (command -v wget >/dev/null); then
+            wget -q git.io/googliser.sh
+        elif (command -v curl >/dev/null); then
             curl -skL git.io/googliser.sh
         else
             echo "! unable to find a way to download script."
