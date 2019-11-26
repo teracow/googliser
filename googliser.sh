@@ -146,7 +146,7 @@ InitOK()
     usage_rights=''
 
     BuildWorkPaths
-    FindPackageManager
+    FindPackageManager || return 1
 
     DebugScriptEntry
     DebugScriptNow
@@ -158,32 +158,11 @@ InitOK()
         return 1
     fi
 
-    case "$OSTYPE" in
-        "darwin"*)
-            readonly SED_BIN=gsed
-            readonly DU_BIN=gdu
-            if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
-                readonly GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
-            else
-                DebugScriptFail "'brew' executable was not found"
-                echo "'brew' executable was not found!"
-                echo "suggest installing googliser with: ./$SCRIPT_FILE --install"
-                exit 1
-            fi
-            ;;
-        *)
-            readonly SED_BIN=sed
-            readonly DU_BIN=du
-            readonly GETOPT_BIN=getopt
-            ;;
-    esac
+    FindGNUUtils || return 1
 
     user_parameters=$($GETOPT_BIN -o d,E,h,L,q,s,S,z,a:,b:,G::,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery::,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
-
-    DebugFuncEntry
-    local func_startseconds=$(date +%s)
 
     # shellcheck disable=SC2119
     WhatAreMyArgs
@@ -244,9 +223,6 @@ InitOK()
 
         trap CTRL_C_Captured INT
     fi
-
-    DebugFuncElapsedTime "$func_startseconds"
-    DebugFuncExit
 
     return 0
 
@@ -596,6 +572,8 @@ ShowHelp()
         return 1
     fi
 
+    return 0
+
     }
 
 ShowBasicHelp()
@@ -779,8 +757,6 @@ ShowExtendedHelp()
 
 ValidateParams()
     {
-
-    DebugFuncEntry
 
     local aspect_ratio_type=''
     local aspect_ratio_search=''
@@ -1180,7 +1156,6 @@ ValidateParams()
         advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
     fi
 
-    DebugFuncExit
     return 0
 
     }
@@ -2181,11 +2156,40 @@ FindPackageManager()
             ;;
         *)
             echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            exit 1
+            return 1
             ;;
     esac
 
     [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+
+    return 0
+
+    }
+
+FindGNUUtils()
+    {
+
+    case "$OSTYPE" in
+        "darwin"*)
+            readonly SED_BIN=gsed
+            readonly DU_BIN=gdu
+            if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
+                readonly GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
+            else
+                DebugScriptFail "'brew' executable was not found"
+                echo "'brew' executable was not found!"
+                echo "suggest installing googliser with: ./$SCRIPT_FILE --install"
+                return 1
+            fi
+            ;;
+        *)
+            readonly SED_BIN=sed
+            readonly DU_BIN=du
+            readonly GETOPT_BIN=getopt
+            ;;
+    esac
+
+    return 0
 
     }
 
@@ -2229,6 +2233,8 @@ FindDownloader()
         errorcode=8
         return 1
     fi
+
+    return 0
 
     }
 
