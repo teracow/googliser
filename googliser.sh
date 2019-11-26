@@ -153,7 +153,7 @@ InitOK()
     DebugScriptVal version "$SCRIPT_VERSION"
     DebugScriptVal PID "$$"
 
-    if [[ $* == *"--install"* ]]; then
+    if [[ $* = *"--install"* || $install = yes ]]; then
         InstallGoogliser
         return 1
     fi
