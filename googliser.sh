@@ -24,6 +24,8 @@
 ####################################################################################
 # * Style Guide *
 # function names: CamelCase
+# forked function names: _LeadingUnderscore
+# sub-function names: :LeadingColon
 # variable names: lowercase_with_underscores (except for 'returncode' & 'errorcode')
 # constants: UPPERCASE_WITH_UNDERSCORES
 # indents: 4 x spaces
@@ -1361,7 +1363,7 @@ GetPages()
 
         # create run file here as it takes too long to happen in background function
         touch "$page_run_count_path/$page_index"
-        { _GetPage_ "$page" "$page_index" & } 2>/dev/null
+        { _GetPage "$page" "$page_index" & } 2>/dev/null
 
         RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
     done
@@ -1387,14 +1389,14 @@ GetPages()
 
     }
 
-_GetPage_()
+_GetPage()
     {
 
     # * This function runs as a forked process *
     # $1 = page to load           e.g. 0, 1, 2, 3, etc...
     # $2 = debug index identifier       e.g. (02)
 
-    _DownloadPage_()
+    :DownloadPage()
         {
 
         # echo = downloader stdout & stderr
@@ -1466,7 +1468,7 @@ _GetPage_()
 
     section='mid-download'
     action='download page'
-    response=$(_DownloadPage_)
+    response=$(:DownloadPage)
     get_page_result=$?
     UpdateRunLog "$section" "$action" "$response" "$get_page_result" "$(DownloaderReturnCodes "$get_page_result")"
 
@@ -1545,7 +1547,7 @@ GetImages()
 
                 # create the fork runfile here as it takes too long to happen in background function
                 touch "$image_run_count_path/$link_index"
-                { _GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
+                { _GetImage "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
             fi
@@ -1610,14 +1612,14 @@ GetImages()
 
     }
 
-_GetImage_()
+_GetImage()
     {
 
     # * This function runs as a forked process *
     # $1 = URL to download
     # $2 = debug index identifier e.g. "0026"
 
-    _DownloadHeader_()
+    :DownloadHeader()
         {
 
         # $1 = URL to check
@@ -1644,7 +1646,7 @@ _GetImage_()
 
         }
 
-    _DownloadImage_()
+    :DownloadImage()
         {
 
         # $1 = URL to check
@@ -1706,7 +1708,7 @@ _GetImage_()
 
     if [[ $upper_size_bytes -gt 0 || $lower_size_bytes -gt 0 ]]; then
         action='request remote image file size'
-        response=$(_DownloadHeader_ "$URL" "$image_sizetest_pathfile($link_index)$ext")
+        response=$(:DownloadHeader "$URL" "$image_sizetest_pathfile($link_index)$ext")
         get_remote_size_result=$?
         UpdateRunLog "$section" "$action" "$response" "$get_remote_size_result" "$(DownloaderReturnCodes "$get_remote_size_result")"
 
@@ -1748,7 +1750,7 @@ _GetImage_()
 
     if [[ $pre_download_ok = true ]]; then
         action='download image'
-        response=$(_DownloadImage_ "$URL" "$targetimage_pathfileext")
+        response=$(:DownloadImage "$URL" "$targetimage_pathfileext")
         get_image_result=$?
         UpdateRunLog "$section" "$action" "$response" "$get_image_result" "$(DownloaderReturnCodes "$get_image_result")"
 
@@ -1824,7 +1826,7 @@ _GetImage_()
 ParseResults()
     {
 
-    _GetLinkCount_()
+    :GetLinkCount()
         {
 
         # get link count
@@ -1840,7 +1842,7 @@ ParseResults()
     ScrapePages
 
     if [[ -e $image_links_pathfile ]]; then
-        _GetLinkCount_
+        :GetLinkCount
         DebugFuncVar results_received
 
         # check against allowable file types
@@ -1848,20 +1850,20 @@ ParseResults()
             AllowableFileType "$imagelink" && echo "$imagelink" >> "$image_links_pathfile.tmp"
         done < "$image_links_pathfile"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
-        _GetLinkCount_
+        :GetLinkCount
         DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
-        _GetLinkCount_
+        :GetLinkCount
         DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
             [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$image_links_pathfile" > "$image_links_pathfile.tmp"
             [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
-            _GetLinkCount_
+            :GetLinkCount
             DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
         fi
     fi
@@ -1904,7 +1906,7 @@ ParseResults()
 RenderGallery()
     {
 
-    _ShowStage_()
+    :ShowStage()
         {
 
         [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
@@ -1961,7 +1963,7 @@ RenderGallery()
 
     # build thumbnails image overlay
     [[ $verbose = true ]] && echo -n " -> building gallery: "
-    stage_description='render thumbnails'; ((stage++)); _ShowStage_
+    stage_description='render thumbnails'; ((stage++)); :ShowStage
 
     if [[ $gallery_user_title = none ]]; then
         reserve_for_title=''
@@ -1970,9 +1972,9 @@ RenderGallery()
     fi
 
     if [[ $gallery_compact_thumbs = true ]]; then
-        runcmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$gallery_thumbnail_dimensions -thumbnail ${gallery_thumbnail_dimensions}^ -gravity center -extent $gallery_thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$CONVERT_BIN \"$target_path/*[0]\" -define jpeg:size=$gallery_thumbnail_dimensions -thumbnail ${gallery_thumbnail_dimensions}^ -gravity center -extent $gallery_thumbnail_dimensions miff:- | $MONTAGE_BIN - -background none -geometry +0+0 miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border $gallery_thumbnails_pathfile"
     else
-        runcmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $gallery_thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border \"$gallery_thumbnails_pathfile\""
+        runcmd="$MONTAGE_BIN \"$target_path/*[0]\" -background none -shadow -geometry $gallery_thumbnail_dimensions miff:- | $CONVERT_BIN - -background none $reserve_for_title -bordercolor none $reserve_for_border $gallery_thumbnails_pathfile"
     fi
 
     DebugFuncExec "$stage_description" "$runcmd"
@@ -1989,7 +1991,7 @@ RenderGallery()
 
     if [[ $result -eq 0 ]]; then
         # build background image
-        stage_description='render background'; ((stage++)); _ShowStage_
+        stage_description='render background'; ((stage++)); :ShowStage
 
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
@@ -2000,7 +2002,7 @@ RenderGallery()
             include_background='radial-gradient:WhiteSmoke-gray10'  # dark image with light sphere in centre
         fi
 
-        runcmd="$CONVERT_BIN -size ${width}x${height} $include_background \"$gallery_background_pathfile\""
+        runcmd="$CONVERT_BIN -size ${width}x${height} $include_background $gallery_background_pathfile"
 
         DebugFuncExec "$stage_description" "$runcmd"
 
@@ -2017,10 +2019,10 @@ RenderGallery()
 
     if [[ $result -eq 0 && $gallery_user_title != none ]]; then
         # build title image overlay
-        stage_description='render title'; ((stage++)); _ShowStage_
+        stage_description='render title'; ((stage++)); :ShowStage
 
         # create title image
-        runcmd="$CONVERT_BIN -size x$TITLE_HEIGHT_PIXELS -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten \"$gallery_title_pathfile\""
+        runcmd="$CONVERT_BIN -size x$TITLE_HEIGHT_PIXELS -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten $gallery_title_pathfile"
 
         DebugFuncExec "$stage_description" "$runcmd"
 
@@ -2037,16 +2039,16 @@ RenderGallery()
 
     if [[ $result -eq 0 ]]; then
         # compose thumbnail and title images onto background image
-        stage_description='combine images'; ((stage++)); _ShowStage_
+        stage_description='combine images'; ((stage++)); :ShowStage
 
         if [[ $gallery_user_title = none ]]; then
             include_title=''
         else
-            include_title="-colorspace sRGB -composite \"$gallery_title_pathfile\" -gravity north -geometry +0+$((gallery_border_pixels+10))"
+            include_title="-colorspace sRGB -composite $gallery_title_pathfile -gravity north -geometry +0+$((gallery_border_pixels+10))"
         fi
 
         # compose thumbnails image on background image, then title image on top
-        runcmd="$CONVERT_BIN \"$gallery_background_pathfile\" \"$gallery_thumbnails_pathfile\" -gravity center $include_title -colorspace sRGB -composite \"$gallery_target_pathname\""
+        runcmd="$CONVERT_BIN $gallery_background_pathfile $gallery_thumbnails_pathfile -gravity center $include_title -colorspace sRGB -composite \"$gallery_target_pathname\""
 
         DebugFuncExec "$stage_description" "$runcmd"
 
@@ -2639,7 +2641,7 @@ CTRL_C_Captured()
 AbortPages()
     {
 
-    # remove any files where processing by [_GetPage_] was incomplete
+    # remove any files where processing by [_GetPage] was incomplete
 
     DebugFuncEntry
 
@@ -2664,7 +2666,7 @@ AbortPages()
 AbortImages()
     {
 
-    # remove any image files where processing by [_GetImage_] was incomplete
+    # remove any image files where processing by [_GetImage] was incomplete
 
     DebugFuncEntry
 
