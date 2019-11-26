@@ -64,29 +64,29 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local SCRIPT_VERSION=191126
-    SCRIPT_FILE=googliser.sh
-    IMAGE_FILE_PREFIX=google-image
-    DEBUG_FILE=debug.log
-    USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
-    SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
-    SCRIPT_STARTSECONDS=$(date +%s)
+    local -r SCRIPT_VERSION=191126
+    readonly SCRIPT_FILE=googliser.sh
+    readonly IMAGE_FILE_PREFIX=google-image
+    readonly DEBUG_FILE=debug.log
+    readonly USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
+    readonly SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    readonly SCRIPT_STARTSECONDS=$(date +%s)
 
     # parameter default constants
-    GALLERY_BORDER_PIXELS_DEFAULT=30
-    GALLERY_THUMBNAIL_DIMENSIONS_DEFAULT=400x400
-    IMAGES_REQUESTED_DEFAULT=36
-    LOWER_SIZE_BYTES_DEFAULT=2000
-    PARALLEL_LIMIT_DEFAULT=64
-    RETRIES_DEFAULT=3
-    TIMEOUT_SECONDS_DEFAULT=30
-    UPPER_SIZE_BYTES_DEFAULT=200000
+    readonly GALLERY_BORDER_PIXELS_DEFAULT=30
+    readonly GALLERY_THUMBNAIL_DIMENSIONS_DEFAULT=400x400
+    readonly IMAGES_REQUESTED_DEFAULT=36
+    readonly LOWER_SIZE_BYTES_DEFAULT=2000
+    readonly PARALLEL_LIMIT_DEFAULT=64
+    readonly RETRIES_DEFAULT=3
+    readonly TIMEOUT_SECONDS_DEFAULT=30
+    readonly UPPER_SIZE_BYTES_DEFAULT=200000
 
     # limits
-    GOOGLE_RESULTS_MAX=1000
-    PARALLEL_MAX=512
-    RETRIES_MAX=100
-    TIMEOUT_SECONDS_MAX=600
+    readonly GOOGLE_RESULTS_MAX=1000
+    readonly PARALLEL_MAX=512
+    readonly RETRIES_MAX=100
+    readonly TIMEOUT_SECONDS_MAX=600
 
     # script-variables
     current_path=$PWD
@@ -160,10 +160,10 @@ InitOK()
 
     case "$OSTYPE" in
         "darwin"*)
-            SED_BIN=gsed
-            DU_BIN=gdu
+            readonly SED_BIN=gsed
+            readonly DU_BIN=gdu
             if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
-                GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
+                readonly GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
             else
                 DebugScriptFail "'brew' executable was not found"
                 echo "'brew' executable was not found!"
@@ -172,9 +172,9 @@ InitOK()
             fi
             ;;
         *)
-            SED_BIN=sed
-            DU_BIN=du
-            GETOPT_BIN=getopt
+            readonly SED_BIN=sed
+            readonly DU_BIN=du
+            readonly GETOPT_BIN=getopt
             ;;
     esac
 
@@ -185,6 +185,7 @@ InitOK()
     DebugFuncEntry
     local func_startseconds=$(date +%s)
 
+    # shellcheck disable=SC2119
     WhatAreMyArgs
     ShowHelp || return 1
     ShowTitle
@@ -306,8 +307,9 @@ EOF
             fi
             brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
             mv googliser-completion /usr/local/etc/bash_completion.d/
-            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> $HOME/.bash_profile
-            . $HOME/.bash_profile
+            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
+            # shellcheck disable=SC1090
+            . "$HOME/.bash_profile"
             ;;
         linux*)
             if [[ $PACKAGER_BIN != unknown ]]; then
@@ -324,6 +326,7 @@ EOF
                     cmd="$SUDO mv googliser-completion /etc/bash_completion.d/"
                     echo " -> executing: '$cmd'"
                     if (eval "$cmd"); then
+                        # shellcheck disable=SC1091
                         . /etc/bash_completion.d/googliser-completion
                     fi
                 fi
@@ -1520,7 +1523,6 @@ GetImages()
 
     local func_startseconds=$(date +%s)
     local result_index=0
-    local message=''
     local result=0
     local run_count=0
     local success_count=0
@@ -1703,7 +1705,7 @@ _GetImage_()
     # extract file extension by checking only last 5 characters of URL (to handle .jpeg as worst case)
     local ext=$(echo "${1:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
 
-    [[ ! "$ext" =~ '.' ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
+    [[ ! "$ext" = *"."* ]] && ext='.jpg' # if URL did not have a file extension then choose jpg as default
 
     local targetimage_pathfileext="$target_path/$IMAGE_FILE_PREFIX($link_index)$ext"
 
@@ -2683,7 +2685,7 @@ FirstPreferredFont()
         mapfile -t available_fonts < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
     else            # macOS's ancient BASH doesn't have 'mapfile' or 'readarray', so have to do things the old way
         while read -r available_font; do
-            available_fonts+=($available_font)
+            available_fonts+=("$available_font")
         done < <($CONVERT_BIN -list font | grep 'Font:' | $SED_BIN 's|^.*Font: ||')
     fi
 
