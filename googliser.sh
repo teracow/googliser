@@ -317,7 +317,18 @@ EOF
             ;;
     esac
 
-    [[ ! -e $SCRIPT_FILE ]] && cat "$0" > "$SCRIPT_FILE"
+    if [[ ! -e $SCRIPT_FILE ]]; then
+        if (command -v wget); then
+            wget -qN git.io/googliser.sh
+        elif (command -v curl); then
+            curl -skL git.io/googliser.sh
+        else
+            echo "! unable to find a way to download script."
+            errorcode=1
+            return 1
+        fi
+    fi
+
     [[ ! -x $SCRIPT_FILE ]] && chmod +x "$SCRIPT_FILE"
 
     cmd="$SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
