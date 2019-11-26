@@ -317,6 +317,8 @@ EOF
             ;;
     esac
 
+    [[ ! -e $SCRIPT_FILE ]] && cat $0 > "$SCRIPT_FILE"
+
     cmd="$SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
     echo " -> executing: '$cmd'"
     eval "$cmd"
