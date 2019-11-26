@@ -10,11 +10,21 @@ Big thanks to [MBtech](https://github.com/MBtech), [stevemart](https://github.co
 ---
 ## ![#c5f015](images/lime.png) Installation
 
+old way:
+
     $ wget -qN git.io/googliser.sh && chmod +x googliser.sh
+
+new automated method:
+
+    $ install=yes bash <(wget -qO- git.io/googliser.sh)
 
 or use:
 
     $ curl -skLO git.io/googliser.sh && chmod +x googliser.sh
+
+new automated method:
+
+    $ install=yes bash <(curl -skL git.io/googliser.sh)
 
 
 ---
