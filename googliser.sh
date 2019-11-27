@@ -285,9 +285,16 @@ EOF
             fi
             brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
             mv googliser-completion /usr/local/etc/bash_completion.d/
-            echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
-            # shellcheck disable=SC1090
-            . "$HOME/.bash_profile"
+            SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
+            if [[ "$SHELL" == "zsh" ]]; then
+              echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
+              echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
+              #. "$HOME/.zshrc"
+            else
+              echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
+              # shellcheck disable=SC1090
+              . "$HOME/.bash_profile"
+            fi
             ;;
         linux*)
             if [[ $PACKAGER_BIN != unknown ]]; then
