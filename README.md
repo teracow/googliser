@@ -10,22 +10,13 @@ Big thanks to [MBtech](https://github.com/MBtech), [stevemart](https://github.co
 ---
 ## ![#c5f015](images/lime.png) Installation
 
-old way:
-
-    $ wget -qN git.io/googliser.sh && chmod +x googliser.sh
-
-new automated way:
+If you use Wget:
 
     $ INSTALL=yes bash <(wget -qO- git.io/googliser.sh)
 
-or use:
-
-    $ curl -skLO git.io/googliser.sh && chmod +x googliser.sh
-
-new automated way:
+or if you prefer cURL:
 
     $ INSTALL=yes bash <(curl -skL git.io/googliser.sh)
-
 
 ---
 ## ![#c5f015](images/lime.png) Workflow
@@ -46,7 +37,9 @@ new automated way:
 ---
 ## ![#c5f015](images/lime.png) Compatibility
 
-**googliser** is fully supported on Manjaro & Ubuntu. Debian, Fedora Workstation and macOS may require some extra binaries. Please advise of any issues.
+**googliser** is fully supported on Manjaro & Ubuntu. Debian, Fedora Workstation and macOS may require some extra binaries. If you install it as per the installation notes above, all dependencies will be checked and installed.
+
+If you prefer to install these manuallly:
 
 Debian:
 
