@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191126
+    local -r SCRIPT_VERSION=191128
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -232,6 +232,8 @@ InitOK()
 
 InstallGoogliser()
     {
+
+    # $? = 0 if OK, 1 if not
 
     local cmd=''
     local cmd_result=0
@@ -582,6 +584,8 @@ WhatAreMyArgs()
 ShowHelp()
     {
 
+    # $? = 0 if OK, 1 if not
+
     if [[ $user_parameters_result -ne 0 || $user_parameters = ' --' ]]; then
         ShowBasicHelp
         errorcode=2
@@ -784,6 +788,8 @@ ShowExtendedHelp()
 
 ValidateParams()
     {
+
+    # $? = 0 if OK, 1 if not
 
     local aspect_ratio_type=''
     local aspect_ratio_search=''
@@ -1220,6 +1226,7 @@ ProcessPhrase()
     #   builds a gallery from these downloaded images if requested.
 
     # $1 = phrase to search Google Images for. Enclose whitespace in quotes.
+    # $? = 0 if OK, 1 if not
 
     DebugFuncEntry
 
@@ -1313,6 +1320,7 @@ CreateTargetPath()
     {
 
     # ensure target path exists
+    # $? = 0 if OK, 1 if not
 
     local returncode=0
 
@@ -1349,7 +1357,6 @@ GetPages()
     local success_count=0
     local fail_count=0
     local abort_count=0
-    local returncode=0
     local page=0
     local page_index=0
 
@@ -1392,7 +1399,7 @@ GetPages()
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
-    return $returncode
+    return 0
 
     }
 
@@ -1525,7 +1532,6 @@ GetImages()
 
     local func_startseconds=$(date +%s)
     local result_index=0
-    local result=0
     local run_count=0
     local success_count=0
     local fail_count=0
@@ -1599,7 +1605,7 @@ GetImages()
     DebugFuncVal 'downloads failed' "$fail_count"
     DebugFuncVal 'downloads aborted' "$abort_count"
 
-    if [[ $result -le 1 ]]; then
+    if [[ $success_count -gt 0 ]]; then
         download_bytes=$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)
         DebugFuncVal 'downloaded bytes' "$(DisplayThousands "$download_bytes")"
 
@@ -1615,7 +1621,7 @@ GetImages()
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
-    return $result
+    return 0
 
     }
 
@@ -1833,6 +1839,8 @@ _GetImage()
 ParseResults()
     {
 
+    # $? = 0 if OK, 1 if not
+
     :GetLinkCount()
         {
 
@@ -1912,6 +1920,8 @@ ParseResults()
 
 RenderGallery()
     {
+
+    # $? = 0 if OK, 1 if not
 
     :ShowStage()
         {
@@ -2196,6 +2206,8 @@ FindPackageManager()
 FindGNUUtils()
     {
 
+    # $? = 0 if OK, 1 if not
+
     case "$OSTYPE" in
         "darwin"*)
             readonly SED_BIN=gsed
@@ -2222,6 +2234,8 @@ FindGNUUtils()
 
 FindDownloader()
     {
+
+    # $? = 0 if OK, 1 if not
 
     local stage_description=''
     local runcmd=''
@@ -2267,6 +2281,8 @@ FindDownloader()
 
 FindImageMagick()
     {
+
+    # $? = 0 if OK, 1 if not
 
     if [[ $gallery = true && $show_help = false ]]; then
         if ! MONTAGE_BIN=$(command -v montage); then
