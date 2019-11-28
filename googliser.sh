@@ -3554,7 +3554,7 @@ ColourTextBrightBlue()
     {
 
     if [[ $display_colour = true ]]; then
-        echo -en '\033[1;94m'"$(ColourReset "$1")"
+        echo -en '\033[1;34m'"$(ColourReset "$1")"
     else
         echo -n "$1"
     fi
