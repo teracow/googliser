@@ -1,10 +1,15 @@
+✔ = fixed
+x = won't/can't fix
+
+
 * common for all macOS versions
 ✔   - when first run (without brew, etc...) should suggest '--install' instead of brew.
 ✔   - xcode was installed automatically by brew - didn't need to request 'xcode-select'.
-    - completion didn't work immediately after first install, but worked fine after logout then back in again. Seems tilde isn't accepted as $HOME. Maybe use $HOME instead?
+    - completion didn't work immediately after first install, but worked fine after logout then back in again.
+✔   - seems tilde isn't accepted as $HOME. Maybe use $HOME instead?
 ✔   - script should be moved to permanent location instead of symlinked.
-    - blue ANSI text is converted to magenta.
-    - 'less' display output in terminal is buggy - duplicates bottom row when scrolled up/down & extended help is missing blank line before "* Optional *".
+✔   - blue ANSI text is converted to magenta.
+x   - 'less' display output in terminal is buggy - duplicates bottom row when scrolled up/down & extended help is missing blank line before "* Optional *".
 ✔   - mapfile & readarray are not available (bash 3.2.57)
 
 * 10.13 High Sierra (darwin17)
@@ -12,6 +17,7 @@
     - usage example in extended help is unreadable due to low contrast (white terminal background).
 
 * 10.14 Mojave (darwin18) using dark desktop theme
+x	- common notes only
 
 * 10.15 Catalina (darwin19.0) using dark desktop theme
     - "zsh: command not found: complete"
