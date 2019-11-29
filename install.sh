@@ -122,3 +122,4 @@ EOF
 
 readonly SCRIPT_FILE=googliser.sh
 InstallGoogliser
+rm -- "$0"
