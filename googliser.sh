@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191128
+    local -r SCRIPT_VERSION=191130
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -240,7 +240,7 @@ InstallGoogliser()
 
     echo " -> installing:"
 
-    SUDO=sudo
+    SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
     if [[ $EUID -eq 0 ]]; then
         SUDO=''
     fi
@@ -303,14 +303,14 @@ EOF
                 ! (command -v wget>/dev/null) && cmd+=' wget'
                 { ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null) ;} && cmd+=' imagemagick'
                 if [[ -n $cmd ]]; then
-                    cmd="$SUDO $PACKAGER_BIN install${cmd}"
+                    cmd="${SUDO}$PACKAGER_BIN install${cmd}"
 
                     echo " -> executing: '$cmd'"
                     eval "$cmd"; cmd_result=$?
                 fi
 
                 if [[ $cmd_result -eq 0 ]]; then
-                    cmd="$SUDO mv googliser-completion /etc/bash_completion.d/"
+                    cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
                     echo " -> executing: '$cmd'"
                     if (eval "$cmd"); then
                         # shellcheck disable=SC1091
@@ -342,7 +342,7 @@ EOF
 
     [[ ! -x $SCRIPT_FILE ]] && chmod +x "$SCRIPT_FILE"
 
-    cmd="$SUDO mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
+    cmd="${SUDO}mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
     echo " -> executing: '$cmd'"
     eval "$cmd"
 
