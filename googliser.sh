@@ -571,7 +571,6 @@ ShowExtendedHelp()
     FormatHelpLine h help option 'Display this help.'
     FormatHelpLine input-links file 'Download each URL as listed in this text-file, one URL per line. A Google search will not be performed.'
     FormatHelpLine i input-phrases file 'A text file containing a list of phrases to download, one phrase per line.'
-    FormatHelpLine install option 'Install all googliser dependencies, and make googliser available globally on CLI.'
     FormatHelpLine l lower-size integer 'Only download images that are larger than this many bytes.'
     FormatHelpLine default "$LOWER_SIZE_BYTES_DEFAULT"
     FormatHelpLine L links-only option "Compile a list of image URLs, but don't download any images."
@@ -2092,7 +2091,7 @@ FindGNUUtils()
             else
                 DebugScriptFail "'brew' executable was not found"
                 echo "'brew' executable was not found!"
-                echo "suggest installing googliser with: ./$SCRIPT_FILE --install"
+                echo "suggest installing googliser with: bash <(wget -qO- git.io/get-googliser)"
                 return 1
             fi
             ;;
