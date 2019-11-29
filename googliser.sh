@@ -2091,7 +2091,7 @@ FindGNUUtils()
             else
                 DebugScriptFail "'brew' executable was not found"
                 echo "'brew' executable was not found!"
-                echo "suggest installing googliser with: bash <(wget -qO- git.io/get-googliser)"
+                echo "suggest installing googliser with: bash <(curl -skL git.io/get-googliser)"
                 return 1
             fi
             ;;
