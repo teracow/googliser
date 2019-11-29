@@ -10,13 +10,14 @@ Big thanks to [MBtech](https://github.com/MBtech), [stevemart](https://github.co
 ---
 ## ![#c5f015](images/lime.png) Installation
 
-If you use Wget:
+Via Wget:
 
-    $ INSTALL=yes bash <(wget -qO- git.io/googliser.sh)
+    $ bash <(wget -qO- git.io/get-googliser)
 
-or if you prefer cURL:
 
-    $ INSTALL=yes bash <(curl -skL git.io/googliser.sh)
+or cURL:
+
+    $ bash <(curl -skL git.io/get-googliser)
 
 ---
 ## ![#c5f015](images/lime.png) Workflow
