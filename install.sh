@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
