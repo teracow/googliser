@@ -4,7 +4,7 @@ readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
-echo " installing googliser ..."
+echo " Installing googliser ..."
 
 SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
 if [[ $EUID -eq 0 ]]; then
@@ -73,13 +73,13 @@ case "$OSTYPE" in
             if [[ -n $cmd ]]; then
                 cmd="${SUDO}$PACKAGER_BIN install${cmd}"
 
-                echo " executing: '$cmd'"
+                echo " Executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
             fi
 
             if [[ $cmd_result -eq 0 ]]; then
                 cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
-                echo " executing: '$cmd'"
+                echo " Executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
                 if [[ $cmd_result -eq 0 ]]; then
                     # shellcheck disable=SC1091
@@ -116,14 +116,14 @@ fi
 
 [[ ! -x $SCRIPT_FILE ]] && chmod +x "$SCRIPT_FILE"
 
-cmd="${SUDO}mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
-echo " executing: '$cmd'"
+cmd="${SUDO}mv $SCRIPT_FILE /usr/local/bin/googliser"
+echo " Executing: '$cmd'"
 eval "$cmd"
 if [[ $? -gt 0 ]]; then
     echo " Unable to continue"
     exit 1
 fi
 
-echo " installation complete"
+echo " Installation complete"
 echo
-echo " type 'googliser -h' for help"
+echo " Type 'googliser -h' for help"
