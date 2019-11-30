@@ -3477,7 +3477,7 @@ RemoveColourCodes()
 ShowTitle()
     {
 
-    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $SCRIPT_VERSION_PID ")"
+    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_VERSION_PID")")"
 
     }
 
