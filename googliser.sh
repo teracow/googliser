@@ -24,7 +24,7 @@
 ####################################################################################
 # * Style Guide *
 # function names: CamelCase
-# forked function names: _LeadingUnderscore
+# forked function names: TrailingUnderscore_
 # sub-function names: :LeadingColon
 # variable names: lowercase_with_underscores (except for 'returncode' & 'errorcode')
 # constants: UPPERCASE_WITH_UNDERSCORES
@@ -148,7 +148,6 @@ InitOK()
     usage_rights=''
 
     BuildWorkPaths
-    FindPackageManager || return 1
 
     DebugScriptEntry
     DebugScriptNow
@@ -212,11 +211,10 @@ InitOK()
         DebugFuncComment 'internal parameters'
         DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar ORIGIN
-        DebugFuncVar LAUNCHER
         DebugFuncVar OSTYPE
-        DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
 
+        FindPackageManager || return 1
         FindDownloader || return 1
         FindImageMagick || return 1
 
@@ -1253,7 +1251,7 @@ GetPages()
 
         # create run file here as it takes too long to happen in background function
         touch "$page_run_count_path/$page_index"
-        { _GetPage "$page" "$page_index" & } 2>/dev/null
+        { GetPage_ "$page" "$page_index" & } 2>/dev/null
 
         RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
     done
@@ -1279,7 +1277,7 @@ GetPages()
 
     }
 
-_GetPage()
+GetPage_()
     {
 
     # * This function runs as a forked process *
@@ -1436,7 +1434,7 @@ GetImages()
 
                 # create the fork runfile here as it takes too long to happen in background function
                 touch "$image_run_count_path/$link_index"
-                { _GetImage "$imagelink" "$link_index" & } 2>/dev/null
+                { GetImage_ "$imagelink" "$link_index" & } 2>/dev/null
 
                 break
             fi
@@ -1501,7 +1499,7 @@ GetImages()
 
     }
 
-_GetImage()
+GetImage_()
     {
 
     # * This function runs as a forked process *
@@ -2060,6 +2058,8 @@ FindLauncher()
         readonly LAUNCHER="$ORIGIN"
     fi
 
+    DebugFuncVar LAUNCHER
+
     }
 
 FindPackageManager()
@@ -2087,6 +2087,8 @@ FindPackageManager()
     esac
 
     [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+
+    DebugFuncVar PACKAGER_BIN
 
     return 0
 
@@ -2562,7 +2564,7 @@ CTRL_C_Captured()
 AbortPages()
     {
 
-    # remove any files where processing by [_GetPage] was incomplete
+    # remove any files where processing by [GetPage_] was incomplete
 
     DebugFuncEntry
 
@@ -2587,7 +2589,7 @@ AbortPages()
 AbortImages()
     {
 
-    # remove any image files where processing by [_GetImage] was incomplete
+    # remove any image files where processing by [GetImage_] was incomplete
 
     DebugFuncEntry
 
@@ -3390,17 +3392,6 @@ ConvertSecs()
     ((s=${1}%60))
 
     printf "%02dh:%02dm:%02ds\n" $h $m $s
-
-    }
-
-ColourBackgroundBlack()
-    {
-
-    if [[ $display_colour = true ]]; then
-        echo -en '\033[40m'"$(ColourReset "$1")"
-    else
-        echo -n "$1"
-    fi
 
     }
 

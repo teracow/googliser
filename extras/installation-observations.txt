@@ -13,8 +13,8 @@ x   - 'less' display output in terminal is buggy - duplicates bottom row when sc
 ✔   - mapfile & readarray are not available (bash 3.2.57)
 
 * 10.13 High Sierra (darwin17)
-    - usage example of script name in basic help is almost unreadable due to low contrast (white terminal background).
-    - usage example in extended help is unreadable due to low contrast (white terminal background).
+✔   - usage example of script name in basic help is almost unreadable due to low contrast (white terminal background).
+✔   - usage example in extended help is unreadable due to low contrast (white terminal background).
 
 * 10.14 Mojave (darwin18) using dark desktop theme
 x	- common notes only
