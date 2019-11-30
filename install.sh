@@ -24,6 +24,8 @@ FindPackageManager()
 
     [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
 
+    readonly PACKAGER_BIN
+
     return 0
 
     }
@@ -96,6 +98,7 @@ case "$OSTYPE" in
         if [[ $EUID -eq 0 ]]; then
             SUDO=''
         fi
+        readonly SUDO
 
         ! (command -v wget >/dev/null) && cmd+='wget '
         if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
