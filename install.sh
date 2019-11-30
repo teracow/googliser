@@ -4,7 +4,7 @@ readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
-echo " -> installing:"
+echo " installing googliser ..."
 
 SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
 if [[ $EUID -eq 0 ]]; then
@@ -73,25 +73,25 @@ case "$OSTYPE" in
             if [[ -n $cmd ]]; then
                 cmd="${SUDO}$PACKAGER_BIN install${cmd}"
 
-                echo " -> executing: '$cmd'"
+                echo " executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
             fi
 
             if [[ $cmd_result -eq 0 ]]; then
                 cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
-                echo " -> executing: '$cmd'"
+                echo " executing: '$cmd'"
                 if (eval "$cmd"); then
                     # shellcheck disable=SC1091
                     . /etc/bash_completion.d/googliser-completion
                 fi
             fi
         else
-            echo "Unsupported package manager. Please install the dependencies manually"
+            echo " Unsupported package manager. Please install the dependencies manually"
             exit 1
         fi
         ;;
     *)
-        echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+        echo " Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
         exit 1
         ;;
 esac
@@ -102,7 +102,7 @@ if [[ ! -e $SCRIPT_FILE ]]; then
     elif (command -v curl >/dev/null); then
         curl -skL git.io/googliser.sh
     else
-        echo "! unable to find a way to download script."
+        echo " Unable to find a way to download script."
         exit 1
     fi
 fi
@@ -110,5 +110,9 @@ fi
 [[ ! -x $SCRIPT_FILE ]] && chmod +x "$SCRIPT_FILE"
 
 cmd="${SUDO}mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
-echo " -> executing: '$cmd'"
+echo " executing: '$cmd'"
 eval "$cmd"
+
+echo " installation complete"
+echo
+echo " type 'googliser -h' for help"
