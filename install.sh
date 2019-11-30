@@ -139,7 +139,7 @@ if [[ ! -e $SCRIPT_FILE ]]; then
     if (command -v wget >/dev/null); then
         wget -q git.io/googliser.sh
     elif (command -v curl >/dev/null); then
-        curl -skL git.io/googliser.sh
+        curl -skLO git.io/googliser.sh
     else
         echo " Unable to find a way to download script"
         exit 1
