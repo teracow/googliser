@@ -17,7 +17,7 @@ FindPackageManager()
             fi
             ;;
         *)
-            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            echo "Unidentified platform [$OSTYPE]. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
             return 1
             ;;
     esac
@@ -32,14 +32,9 @@ readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
-echo " Installing googliser ..."
-
 FindPackageManager
 
-SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
-if [[ $EUID -eq 0 ]]; then
-    SUDO=''
-fi
+echo " Installing googliser ..."
 
 cat > googliser-completion << 'EOF'
 #!/usr/bin/env bash
@@ -97,12 +92,12 @@ case "$OSTYPE" in
         fi
         ;;
     linux*)
-        if [[ $PACKAGER_BIN = unknown ]]; then
-            echo " Unsupported package manager. Please install the dependencies manually"
-            exit 1
+        SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
+        if [[ $EUID -eq 0 ]]; then
+            SUDO=''
         fi
 
-        ! (command -v wget>/dev/null) && cmd+='wget '
+        ! (command -v wget >/dev/null) && cmd+='wget '
         if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
             if [[ -e /etc/fedora-release ]]; then
                 cmd+='ImageMagick '
@@ -112,7 +107,7 @@ case "$OSTYPE" in
         fi
 
         if [[ -n $cmd ]]; then
-            cmd="${SUDO}$PACKAGER_BIN install ${cmd}"
+            cmd="${SUDO}$PACKAGER_BIN install $cmd"
 
             echo " Executing: '$cmd'"
             eval "$cmd"; cmd_result=$?
@@ -147,7 +142,7 @@ if [[ ! -e $SCRIPT_FILE ]]; then
     elif (command -v curl >/dev/null); then
         curl -skL git.io/googliser.sh
     else
-        echo " Unable to find a way to download script."
+        echo " Unable to find a way to download script"
         exit 1
     fi
 fi
