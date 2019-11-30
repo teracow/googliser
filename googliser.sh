@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191130
+    local -r SCRIPT_VERSION=191201
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -3459,6 +3459,17 @@ ColourTextBrightBlue()
 
     }
 
+ColourTextBold()
+    {
+
+    if [[ $display_colour = true ]]; then
+        echo -en '\033[1m'"$(ColourReset "$1")"
+    else
+        echo -n "$1"
+    fi
+
+    }
+
 ColourReset()
     {
 
@@ -3477,7 +3488,7 @@ RemoveColourCodes()
 ShowTitle()
     {
 
-    [[ $verbose = true ]] && echo "$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_FILE")")$(ColourBackgroundBlack " $(ColourTextBrightWhite "$SCRIPT_VERSION_PID")")"
+    [[ $verbose = true ]] && echo " $(ColourTextBold "$SCRIPT_FILE") $SCRIPT_VERSION_PID"
 
     }
 
