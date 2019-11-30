@@ -44,7 +44,7 @@ If you prefer to install these manuallly:
 
 Debian:
 
-    $ sudo apt install wget imagemagick
+    $ sudo apt install imagemagick
 
 Fedora:
 
