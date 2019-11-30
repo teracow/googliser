@@ -53,7 +53,7 @@ Fedora:
 macOS:
 
     $ ruby -e "$(curl -fsSL git.io/get-brew)"
-    $ brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt
+    $ brew install coreutils ghostscript gnu-sed imagemagick gnu-getopt bash-completion
 
 ---
 ## ![#c5f015](images/lime.png) Outputs
