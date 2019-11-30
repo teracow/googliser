@@ -57,7 +57,7 @@
 #   TT  elapsed time
 #   ##  comment
 
-ORIGIN=$_
+readonly ORIGIN=$_
 
 InitOK()
     {
@@ -155,9 +155,10 @@ InitOK()
     DebugScriptVal version "$SCRIPT_VERSION"
     DebugScriptVal PID "$$"
 
+    FindLauncher
     FindGNUUtils || return 1
 
-    user_parameters=$($GETOPT_BIN -o d,E,G,h,L,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$(basename "$ORIGIN")" -- "$@")
+    user_parameters=$($GETOPT_BIN -o d,E,G,h,L,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$LAUNCHER" -- "$@")
     user_parameters_result=$?
     user_parameters_raw=$*
 
@@ -211,6 +212,7 @@ InitOK()
         DebugFuncComment 'internal parameters'
         DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar ORIGIN
+        DebugFuncVar LAUNCHER
         DebugFuncVar OSTYPE
         DebugFuncVar PACKAGER_BIN
         DebugFuncVar TEMP_PATH
@@ -488,9 +490,9 @@ ShowBasicHelp()
     ShowTitle
 
     echo
-    echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' for a number of images matching a phrase."
+    echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' for a number of images matching a phrase"
     echo
-    echo " Usage: $(ColourTextBrightWhite "./$SCRIPT_FILE") [PARAMETERS] ..."
+    echo " Usage: $(ColourTextBrightWhite "$LAUNCHER") [PARAMETERS] ..."
 
     }
 
@@ -1989,7 +1991,7 @@ Finish()
             [1-2])
                 if [[ $show_help != true ]]; then
                     echo
-                    echo " use '-h' or '--help' to display the complete parameter list."
+                    echo " Type '-h' or '--help' to display the complete parameter list"
                 fi
                 ;;
             [3-6])
@@ -2046,6 +2048,17 @@ UpdateRunLog()
     [[ -z $1 || -z $2 || -z $4 || -z $run_pathfile || ! -f $run_pathfile ]] && return 1
 
     printf "> section: %s\n= action: %s\n= stdout: '%s'\n= resultcode: %s\n= description: '%s'\n\n" "$1" "$2" "$3" "$4" "$5" >> "$run_pathfile"
+
+    }
+
+FindLauncher()
+    {
+
+    if [[ $ORIGIN = /usr/local/bin/googliser ]]; then
+        readonly LAUNCHER=$(basename "$ORIGIN")
+    else
+        readonly LAUNCHER="$ORIGIN"
+    fi
 
     }
 
