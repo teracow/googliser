@@ -511,10 +511,10 @@ ShowExtendedHelp()
     echo
     echo " Mandatory arguments for long options are mandatory for short options too."
     echo
-    ColourTextBrightOrange " * Required *"; echo
+    FormatHelpSection Required
     FormatHelpLine p phrase string "Search for images Google identifies with this phrase. Enclose whitespace in quotes. A sub-directory will be created with this name, unless '--output' is specified."
     echo
-    ColourTextBrightOrange " * Optional *"; echo
+    FormatHelpSection Optional
     FormatHelpLine a aspect-ratio preset 'Search for images with this aspect-ratio.'
     FormatHelpLine example '--aspect-ratio square'
     FormatHelpLine 'presets:'
@@ -2394,6 +2394,15 @@ Display2to1()
     else
         echo "$1/$2"
     fi
+
+    }
+
+FormatHelpSection()
+    {
+
+    # $1 = description
+
+    [[ -n $1 ]] && { ColourTextBrightOrange " * $1 *"; echo ;}
 
     }
 
