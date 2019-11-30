@@ -146,7 +146,7 @@ _GoogliserCompletion()
 complete -F _GoogliserCompletion -o filenames googliser
 EOF
 
-    case "$OSTYPE" in
+    case $OSTYPE in
         darwin*)
             mv googliser-completion /usr/local/etc/bash_completion.d/
             SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
@@ -191,11 +191,11 @@ EOF
 FindPackageManager()
     {
 
-    case "$OSTYPE" in
-        "darwin"*)
+    case $OSTYPE in
+        darwin*)
             PACKAGER_BIN=$(command -v brew)
             ;;
-        "linux"*)
+        linux*)
             if ! PACKAGER_BIN=$(command -v apt); then
                 if ! PACKAGER_BIN=$(command -v yum); then
                     if ! PACKAGER_BIN=$(command -v pacman); then
