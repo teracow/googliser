@@ -44,7 +44,6 @@ InstallImageMagick()
             brew install imagemagick
             ;;
         linux*)
-            ! (command -v wget >/dev/null) && cmd+='wget '
             if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
                 if [[ -e /etc/fedora-release ]]; then
                     cmd+='ImageMagick '
