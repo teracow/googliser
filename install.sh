@@ -97,41 +97,43 @@ case "$OSTYPE" in
         fi
         ;;
     linux*)
-        if [[ $PACKAGER_BIN != unknown ]]; then
-            ! (command -v wget>/dev/null) && cmd+='wget '
-            if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
-                if [[ -e /etc/fedora-release ]]; then
-                    cmd+='ImageMagick '
-                else
-                    cmd+='imagemagick '
-                fi
-            fi
-            if [[ -n $cmd ]]; then
-                cmd="${SUDO}$PACKAGER_BIN install ${cmd}"
-
-                echo " Executing: '$cmd'"
-                eval "$cmd"; cmd_result=$?
-            fi
-
-            if [[ $cmd_result -eq 0 ]]; then
-                cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
-                echo " Executing: '$cmd'"
-                eval "$cmd"; cmd_result=$?
-                if [[ $cmd_result -eq 0 ]]; then
-                    # shellcheck disable=SC1091
-                    . /etc/bash_completion.d/googliser-completion
-                else
-                    echo " Unable to continue"
-                    exit 1
-                fi
-            else
-                echo " Unable to continue"
-                exit 1
-            fi
-        else
+        if [[ $PACKAGER_BIN = unknown ]]; then
             echo " Unsupported package manager. Please install the dependencies manually"
             exit 1
         fi
+
+        ! (command -v wget>/dev/null) && cmd+='wget '
+        if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
+            if [[ -e /etc/fedora-release ]]; then
+                cmd+='ImageMagick '
+            else
+                cmd+='imagemagick '
+            fi
+        fi
+
+        if [[ -n $cmd ]]; then
+            cmd="${SUDO}$PACKAGER_BIN install ${cmd}"
+
+            echo " Executing: '$cmd'"
+            eval "$cmd"; cmd_result=$?
+        fi
+
+        if [[ $cmd_result -gt 0 ]]; then
+            echo " Unable to continue"
+            exit 1
+        fi
+
+        cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
+        echo " Executing: '$cmd'"
+        eval "$cmd"; cmd_result=$?
+
+        if [[ $cmd_result -gt 0 ]]; then
+            echo " Unable to continue"
+            exit 1
+        fi
+
+        # shellcheck disable=SC1091
+        . /etc/bash_completion.d/googliser-completion
         ;;
     *)
         echo " Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
@@ -154,8 +156,9 @@ fi
 
 cmd="${SUDO}mv $SCRIPT_FILE /usr/local/bin/googliser"
 echo " Executing: '$cmd'"
-eval "$cmd"
-if [[ $? -gt 0 ]]; then
+eval "$cmd"; cmd_result=$?
+
+if [[ $cmd_result -gt 0 ]]; then
     echo " Unable to continue"
     exit 1
 fi
