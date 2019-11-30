@@ -1,25 +1,47 @@
 #!/usr/bin/env bash
 
+Init()
+    {
+
+    readonly SCRIPT_FILE=googliser.sh
+    cmd=''
+    cmd_result=0
+    SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
+
+    if [[ $EUID -eq 0 ]]; then
+        SUDO=''
+    fi
+    readonly SUDO
+
+    echo " Installing googliser ..."
+
+    FindPackageManager || return 1
+
+    return 0
+
+    }
+
 InstallBrew()
     {
 
-    case "$OSTYPE" in
-        darwin*)
-            if ! (command -v brew >/dev/null); then
-                ruby -e "$(curl -fsSL git.io/get-brew)"
-            fi
-            brew install coreutils ghostscript gnu-sed gnu-getopt bash-completion
-            ;;
-    esac
+    if [[ $OSTYPE = "darwin"* ]]; then
+        if ! (command -v brew >/dev/null); then
+            ruby -e "$(curl -fsSL git.io/get-brew)"
+        fi
+        brew install coreutils ghostscript gnu-sed gnu-getopt bash-completion
+    fi
+
+    return 0
 
     }
 
 InstallImageMagick()
     {
 
-    case "$OSTYPE" in
+    case $OSTYPE in
         darwin*)
             brew install imagemagick
+            ;;
         linux*)
             ! (command -v wget >/dev/null) && cmd+='wget '
             if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
@@ -39,10 +61,12 @@ InstallImageMagick()
 
             if [[ $cmd_result -gt 0 ]]; then
                 echo " Unable to continue"
-                exit 1
+                return 1
             fi
             ;;
     esac
+
+    return 0
 
     }
 
@@ -56,7 +80,7 @@ InstallMain()
             curl -skLO git.io/googliser.sh
         else
             echo " Unable to find a way to download script"
-            exit 1
+            return 1
         fi
     fi
 
@@ -68,8 +92,10 @@ InstallMain()
 
     if [[ $cmd_result -gt 0 ]]; then
         echo " Unable to continue"
-        exit 1
+        return 1
     fi
+
+    return 0
 
     }
 
@@ -138,7 +164,7 @@ EOF
 
             if [[ $cmd_result -gt 0 ]]; then
                 echo " Unable to continue"
-                exit 1
+                return 1
             fi
 
             if [[ -e /etc/manjaro-release ]]; then
@@ -150,6 +176,8 @@ EOF
             fi
             ;;
     esac
+
+    return 0
 
     }
 
@@ -185,24 +213,11 @@ FindPackageManager()
 
     }
 
-readonly SCRIPT_FILE=googliser.sh
-cmd=''
-cmd_result=0
-
-FindPackageManager || exit 1
-
-echo " Installing googliser ..."
-
-SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
-if [[ $EUID -eq 0 ]]; then
-    SUDO=''
-fi
-readonly SUDO
-
+Init || exit 1
 InstallBrew
-InstallImageMagick
-InstallMain
-InstallCompletion
+InstallImageMagick || exit 1
+InstallMain || exit 1
+InstallCompletion || exit 1
 
 echo " Installation complete"
 echo
