@@ -4,10 +4,8 @@ Init()
     {
 
     readonly SCRIPT_FILE=googliser.sh
-    cmd=''
-    cmd_result=0
-    SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
 
+    SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
     if [[ $EUID -eq 0 ]]; then
         SUDO=''
     fi
@@ -37,6 +35,9 @@ InstallBrew()
 
 InstallImageMagick()
     {
+
+    cmd=''
+    cmd_result=0
 
     case $OSTYPE in
         darwin*)
@@ -73,6 +74,9 @@ InstallImageMagick()
 InstallMain()
     {
 
+    cmd=''
+    cmd_result=0
+
     if [[ ! -e $SCRIPT_FILE ]]; then
         if (command -v wget >/dev/null); then
             wget -q git.io/googliser.sh
@@ -101,6 +105,9 @@ InstallMain()
 
 InstallCompletion()
     {
+
+    cmd=''
+    cmd_result=0
 
     cat > googliser-completion << 'EOF'
 #!/usr/bin/env bash
