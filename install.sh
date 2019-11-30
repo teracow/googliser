@@ -3,7 +3,7 @@
 Init()
     {
 
-    readonly SCRIPT_FILE=googliser.sh
+    readonly TARGET_SCRIPT_FILE=googliser.sh
 
     SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
     if [[ $EUID -eq 0 ]]; then
@@ -61,7 +61,7 @@ InstallImageMagick()
             fi
 
             if [[ $cmd_result -gt 0 ]]; then
-                echo " Unable to continue"
+                echo " Unable to install additional packages"
                 return 1
             fi
             ;;
@@ -77,25 +77,25 @@ InstallMain()
     cmd=''
     cmd_result=0
 
-    if [[ ! -e $SCRIPT_FILE ]]; then
+    if [[ ! -e $TARGET_SCRIPT_FILE ]]; then
         if (command -v wget >/dev/null); then
             wget -q git.io/googliser.sh
         elif (command -v curl >/dev/null); then
             curl -skLO git.io/googliser.sh
         else
-            echo " Unable to find a way to download script"
+            echo " Unable to find a downloader for googliser.sh"
             return 1
         fi
     fi
 
-    [[ ! -x $SCRIPT_FILE ]] && chmod +x "$SCRIPT_FILE"
+    [[ ! -x $TARGET_SCRIPT_FILE ]] && chmod +x "$TARGET_SCRIPT_FILE"
 
-    cmd="${SUDO}mv $SCRIPT_FILE /usr/local/bin/googliser"
+    cmd="${SUDO}mv $TARGET_SCRIPT_FILE /usr/local/bin/googliser"
     echo " Executing: '$cmd'"
     eval "$cmd"; cmd_result=$?
 
     if [[ $cmd_result -gt 0 ]]; then
-        echo " Unable to continue"
+        echo " Unable to move googliser.sh into target directory"
         return 1
     fi
 
@@ -170,7 +170,7 @@ EOF
             eval "$cmd"; cmd_result=$?
 
             if [[ $cmd_result -gt 0 ]]; then
-                echo " Unable to continue"
+                echo " Unable to move completion script into target directory"
                 return 1
             fi
 
@@ -191,28 +191,22 @@ EOF
 FindPackageManager()
     {
 
-    case $OSTYPE in
-        darwin*)
-            PACKAGER_BIN=$(command -v brew)
-            ;;
-        linux*)
-            if ! PACKAGER_BIN=$(command -v apt); then
-                if ! PACKAGER_BIN=$(command -v yum); then
-                    if ! PACKAGER_BIN=$(command -v pacman); then
-                        if ! PACKAGER_BIN=$(command -v opkg); then
-                            PACKAGER_BIN=''
-                        fi
+    if ! PACKAGER_BIN=$(command -v brew); then
+        if ! PACKAGER_BIN=$(command -v apt); then
+            if ! PACKAGER_BIN=$(command -v yum); then
+                if ! PACKAGER_BIN=$(command -v pacman); then
+                    if ! PACKAGER_BIN=$(command -v opkg); then
+                        PACKAGER_BIN=''
                     fi
                 fi
             fi
-            ;;
-        *)
-            echo "Unidentified platform [$OSTYPE]. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            return 1
-            ;;
-    esac
+        fi
+    fi
 
-    [[ -z $PACKAGER_BIN ]] && return 1
+    if [[ -z $PACKAGER_BIN ]]; then
+        echo " Unable to find local package manager"
+        return 1
+    fi
 
     readonly PACKAGER_BIN
 
