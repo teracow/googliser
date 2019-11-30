@@ -80,10 +80,17 @@ case "$OSTYPE" in
             if [[ $cmd_result -eq 0 ]]; then
                 cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
                 echo " executing: '$cmd'"
-                if (eval "$cmd"); then
+                eval "$cmd"; cmd_result=$?
+                if [[ $cmd_result -eq 0 ]]; then
                     # shellcheck disable=SC1091
                     . /etc/bash_completion.d/googliser-completion
+                else
+                    echo " Unable to continue"
+                    exit 1
                 fi
+            else
+                echo " Unable to continue"
+                exit 1
             fi
         else
             echo " Unsupported package manager. Please install the dependencies manually"
@@ -112,6 +119,10 @@ fi
 cmd="${SUDO}mv "$PWD/$SCRIPT_FILE" /usr/local/bin/googliser"
 echo " executing: '$cmd'"
 eval "$cmd"
+if [[ $? -gt 0 ]]; then
+    echo " Unable to continue"
+    exit 1
+fi
 
 echo " installation complete"
 echo
