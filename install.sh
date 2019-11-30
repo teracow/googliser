@@ -10,8 +10,10 @@ FindPackageManager()
         "linux"*)
             if ! PACKAGER_BIN=$(command -v apt); then
                 if ! PACKAGER_BIN=$(command -v yum); then
-                    if ! PACKAGER_BIN=$(command -v opkg); then
-                        PACKAGER_BIN=''
+                    if ! PACKAGER_BIN=$(command -v pacman); then
+                        if ! PACKAGER_BIN=$(command -v opkg); then
+                            PACKAGER_BIN=''
+                        fi
                     fi
                 fi
             fi
