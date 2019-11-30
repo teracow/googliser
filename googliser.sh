@@ -492,7 +492,7 @@ ShowBasicHelp()
     echo
     echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' for a number of images matching a phrase"
     echo
-    echo " Usage: $(ColourTextBrightWhite "$LAUNCHER") [PARAMETERS] ..."
+    echo " Usage: $(ColourTextBold "$LAUNCHER") [PARAMETERS] ..."
 
     }
 
@@ -656,7 +656,7 @@ ShowExtendedHelp()
     echo
     echo " example:"
     echo
-    ColourTextBrightWhite " $ $LAUNCHER -p '$SAMPLE_USER_PHRASE'"; echo
+    ColourTextBold " $ $LAUNCHER -p '$SAMPLE_USER_PHRASE'"; echo
     echo
     echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE'."
 
