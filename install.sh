@@ -32,7 +32,7 @@ readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
-FindPackageManager
+FindPackageManager || exit 1
 
 echo " Installing googliser ..."
 
@@ -129,10 +129,6 @@ case "$OSTYPE" in
 
         # shellcheck disable=SC1091
         . /etc/bash_completion.d/googliser-completion
-        ;;
-    *)
-        echo " Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-        exit 1
         ;;
 esac
 
