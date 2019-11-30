@@ -222,7 +222,7 @@ FailedInstall()
     }
 
 Init || FailedInstall
-InstallBrew
+InstallBrew || FailedInstall
 InstallImageMagick || FailedInstall
 InstallMain || FailedInstall
 InstallCompletion || FailedInstall
