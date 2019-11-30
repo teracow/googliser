@@ -1,10 +1,40 @@
 #!/usr/bin/env bash
 
+FindPackageManager()
+    {
+
+    case "$OSTYPE" in
+        "darwin"*)
+            PACKAGER_BIN=$(command -v brew)
+            ;;
+        "linux"*)
+            if ! PACKAGER_BIN=$(command -v apt); then
+                if ! PACKAGER_BIN=$(command -v yum); then
+                    if ! PACKAGER_BIN=$(command -v opkg); then
+                        PACKAGER_BIN=''
+                    fi
+                fi
+            fi
+            ;;
+        *)
+            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
+            return 1
+            ;;
+    esac
+
+    [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+
+    return 0
+
+    }
+
 readonly SCRIPT_FILE=googliser.sh
 cmd=''
 cmd_result=0
 
 echo " Installing googliser ..."
+
+FindPackageManager
 
 SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
 if [[ $EUID -eq 0 ]]; then
@@ -68,10 +98,16 @@ case "$OSTYPE" in
         ;;
     linux*)
         if [[ $PACKAGER_BIN != unknown ]]; then
-            ! (command -v wget>/dev/null) && cmd+=' wget'
-            { ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null) ;} && cmd+=' imagemagick'
+            ! (command -v wget>/dev/null) && cmd+='wget '
+            if ! (command -v convert >/dev/null) || ! (command -v montage >/dev/null) || ! (command -v identify >/dev/null); then
+                if [[ -e /etc/fedora-release ]]; then
+                    cmd+='ImageMagick '
+                else
+                    cmd+='imagemagick '
+                fi
+            fi
             if [[ -n $cmd ]]; then
-                cmd="${SUDO}$PACKAGER_BIN install${cmd}"
+                cmd="${SUDO}$PACKAGER_BIN install ${cmd}"
 
                 echo " Executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
