@@ -103,7 +103,6 @@ if [[ ! -e $SCRIPT_FILE ]]; then
         curl -skL git.io/googliser.sh
     else
         echo "! unable to find a way to download script."
-        errorcode=1
         exit 1
     fi
 fi
