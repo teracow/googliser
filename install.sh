@@ -123,7 +123,11 @@ case "$OSTYPE" in
             exit 1
         fi
 
-        cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
+        if [[ -e /etc/manjaro-release ]]; then
+            cmd="${SUDO}mv googliser-completion /usr/share/bash-completion/completions/"
+        else
+            cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
+        fi
         echo " Executing: '$cmd'"
         eval "$cmd"; cmd_result=$?
 
@@ -132,8 +136,13 @@ case "$OSTYPE" in
             exit 1
         fi
 
-        # shellcheck disable=SC1091
-        . /etc/bash_completion.d/googliser-completion
+        if [[ -e /etc/manjaro-release ]]; then
+            # shellcheck disable=SC1091
+            . /usr/share/bash-completion/completions/googliser-completion
+        else
+            # shellcheck disable=SC1091
+            . /etc/bash_completion.d/googliser-completion
+        fi
         ;;
 esac
 
