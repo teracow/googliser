@@ -656,7 +656,7 @@ ShowExtendedHelp()
     echo
     echo " example:"
     echo
-    ColourTextBrightWhite " $ ./$SCRIPT_FILE -p '$SAMPLE_USER_PHRASE'"; echo
+    ColourTextBrightWhite " $ $LAUNCHER -p '$SAMPLE_USER_PHRASE'"; echo
     echo
     echo " This will download the first $IMAGES_REQUESTED_DEFAULT images available for the phrase '$SAMPLE_USER_PHRASE'."
 
