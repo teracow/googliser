@@ -212,7 +212,7 @@ FindPackageManager()
             ;;
     esac
 
-    [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+    [[ -z $PACKAGER_BIN ]] && return 1
 
     readonly PACKAGER_BIN
 
@@ -220,11 +220,19 @@ FindPackageManager()
 
     }
 
-Init || exit 1
+FailedInstall()
+    {
+
+    echo " Installation failed"
+    exit 1
+
+    }
+
+Init || FailedInstall
 InstallBrew
-InstallImageMagick || exit 1
-InstallMain || exit 1
-InstallCompletion || exit 1
+InstallImageMagick || FailedInstall
+InstallMain || FailedInstall
+InstallCompletion || FailedInstall
 
 echo " Installation complete"
 echo
