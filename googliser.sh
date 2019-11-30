@@ -469,7 +469,7 @@ ShowHelp()
 
     if [[ $show_help = true ]]; then
         if (command -v less >/dev/null); then
-            ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll, Q to quit'
+            ShowExtendedHelp | LESSSECURE=1 less -rMK -PM' use arrow-keys to scroll up-down left-right, press Q to quit'
         elif (command -v more >/dev/null); then
             ShowExtendedHelp | more -d
         else
