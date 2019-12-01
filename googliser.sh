@@ -2065,6 +2065,8 @@ FindLauncher()
 FindPackageManager()
     {
 
+    # $? = 0 if OK, 1 if not
+
     local managers=()
     local manager=''
 
@@ -2093,18 +2095,11 @@ FindGNUUtils()
 
     # $? = 0 if OK, 1 if not
 
-    case "$OSTYPE" in
-        "darwin"*)
+    case $OSTYPE in
+        darwin*)
             readonly SED_BIN=gsed
             readonly DU_BIN=gdu
-            if [[ $(basename "$PACKAGER_BIN") = brew ]]; then
-                readonly GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
-            else
-                DebugScriptFail "'brew' executable was not found"
-                echo "'brew' executable was not found!"
-                echo "suggest installing googliser with: bash <(curl -skL git.io/get-googliser)"
-                return 1
-            fi
+            readonly GETOPT_BIN=$(brew --prefix gnu-getopt)/bin/getopt   # based upon https://stackoverflow.com/a/47542834/6182835
             ;;
         *)
             readonly SED_BIN=sed
