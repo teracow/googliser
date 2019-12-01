@@ -82,7 +82,7 @@ InstallMain()
         elif (command -v curl >/dev/null); then
             curl -skLO git.io/googliser.sh
         else
-            echo " Unable to find a downloader for googliser.sh"
+            echo " Unable to find a downloader for $TARGET_SCRIPT_FILE"
             return 1
         fi
     fi
@@ -94,7 +94,7 @@ InstallMain()
     eval "$cmd"; cmd_result=$?
 
     if [[ $cmd_result -gt 0 ]]; then
-        echo " Unable to move googliser.sh into target directory"
+        echo " Unable to move $TARGET_SCRIPT_FILE into target directory"
         return 1
     fi
 
@@ -108,42 +108,7 @@ InstallCompletion()
     cmd=''
     cmd_result=0
 
-    cat > googliser-completion << 'EOF'
-#!/usr/bin/env bash
-_GoogliserCompletion()
-    {
-
-    # Pointer to current completion word.
-    # By convention, it's named "cur" but this isn't strictly necessary.
-    local cur
-
-    OPTS='-d -E -h -L -q -s -S -z -a -b -G -i -l -m -n -o -p -P -r -R -t -T -u --debug \
-    --exact-search --help --lightning --links-only --no-colour --no-color --safesearch-off \
-    --quiet --random --reindex-rename --save-links --skip-no-size --aspect-ratio \
-    --border-pixels --colour --color --exclude-links --exclude-words --format --gallery \
-    --input-links --input-phrases --lower-size --minimum-pixels --number --output --parallel \
-    --phrase --recent --retries --sites --thumbnails --timeout --title --type --upper-size --usage-rights'
-
-    COMPREPLY=()   # Array variable storing the possible completions.
-    cur=${COMP_WORDS[COMP_CWORD]}
-    prev=${COMP_WORDS[COMP_CWORD-1]}
-    case "$cur" in
-        -*)
-        COMPREPLY=( $( compgen -W "${OPTS}" -- ${cur} ) );;
-    esac
-
-    # Display file completion for options that require files as arguments
-    case "$prev" in
-        --input-links|--exclude-links|-i|--input-phrases)
-        _filedir ;;
-    esac
-
-    return 0
-
-    }
-
-complete -F _GoogliserCompletion -o filenames googliser
-EOF
+    WriteCompletionScript
 
     case $OSTYPE in
         darwin*)
@@ -185,6 +150,48 @@ EOF
     esac
 
     return 0
+
+    }
+
+WriteCompletionScript()
+    {
+
+    [[ ! -e googliser-completion ]] && cat > googliser-completion << 'EOF'
+#!/usr/bin/env bash
+_GoogliserCompletion()
+    {
+
+    # Pointer to current completion word.
+    # By convention, it's named "cur" but this isn't strictly necessary.
+    local cur
+
+    OPTS='-d -E -h -L -q -s -S -z -a -b -G -i -l -m -n -o -p -P -r -R -t -T -u --debug \
+    --exact-search --help --lightning --links-only --no-colour --no-color --safesearch-off \
+    --quiet --random --reindex-rename --save-links --skip-no-size --aspect-ratio \
+    --border-pixels --colour --color --exclude-links --exclude-words --format --gallery \
+    --input-links --input-phrases --lower-size --minimum-pixels --number --output --parallel \
+    --phrase --recent --retries --sites --thumbnails --timeout --title --type --upper-size --usage-rights'
+
+    COMPREPLY=()   # Array variable storing the possible completions.
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    case "$cur" in
+        -*)
+        COMPREPLY=( $( compgen -W "${OPTS}" -- ${cur} ) );;
+    esac
+
+    # Display file completion for options that require files as arguments
+    case "$prev" in
+        --input-links|--exclude-links|-i|--input-phrases)
+        _filedir ;;
+    esac
+
+    return 0
+
+    }
+
+complete -F _GoogliserCompletion -o filenames googliser
+EOF
 
     }
 
