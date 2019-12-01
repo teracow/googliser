@@ -53,7 +53,7 @@ InstallImageMagick()
             fi
 
             if [[ -n $cmd ]]; then
-                if [[ $PACKAGER_BIN = pacman ]]; then       # pacman has its own syntax
+                if [[ $(basename $PACKAGER_BIN) = pacman ]]; then       # pacman has its own syntax
                     cmd="${SUDO}$PACKAGER_BIN -Syu; ${SUDO}$PACKAGER_BIN -S $cmd"
                 else
                     cmd="${SUDO}$PACKAGER_BIN install $cmd"
