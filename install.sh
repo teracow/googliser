@@ -6,7 +6,7 @@ Init()
     readonly TARGET_SCRIPT_FILE=googliser.sh
 
     SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
-    if [[ $EUID -eq 0 ]]; then
+    if [[ $EUID -eq 0 || $OSTYPE = "darwin"* ]]; then
         SUDO=''
     fi
     readonly SUDO
