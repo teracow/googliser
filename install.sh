@@ -26,7 +26,7 @@ InstallBrew()
         if ! (command -v brew >/dev/null); then
             ruby -e "$(curl -fsSL git.io/get-brew)"
         fi
-        brew install coreutils ghostscript gnu-sed gnu-getopt bash-completion
+        brew install coreutils ghostscript gnu-sed gnu-getopt
     fi
 
     return 0
@@ -147,6 +147,7 @@ EOF
 
     case $OSTYPE in
         darwin*)
+            brew install bash-completion
             mv googliser-completion /usr/local/etc/bash_completion.d/
             SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
             if [[ "$SHELL" == "zsh" ]]; then
