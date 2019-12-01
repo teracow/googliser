@@ -155,6 +155,7 @@ InitOK()
     DebugScriptVal PID "$$"
 
     FindLauncher
+    FindPackageManager || return 1
     FindGNUUtils || return 1
 
     user_parameters=$($GETOPT_BIN -o d,E,G,h,L,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$LAUNCHER" -- "$@")
@@ -214,7 +215,6 @@ InitOK()
         DebugFuncVar OSTYPE
         DebugFuncVar TEMP_PATH
 
-        FindPackageManager || return 1
         FindDownloader || return 1
         FindImageMagick || return 1
 
