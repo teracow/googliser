@@ -54,7 +54,7 @@ InstallImageMagick()
 
             if [[ -n $cmd ]]; then
                 cmd="${SUDO}$PACKAGER_BIN install $cmd"
-                echo " Executing: '$cmd'"
+                [[ -n $SUDO ]] && echo " Executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
             fi
 
@@ -89,7 +89,7 @@ InstallMain()
     [[ ! -x $TARGET_SCRIPT_FILE ]] && chmod +x "$TARGET_SCRIPT_FILE"
 
     cmd="${SUDO}mv $TARGET_SCRIPT_FILE /usr/local/bin/googliser"
-    echo " Executing: '$cmd'"
+    [[ -n $SUDO ]] && echo " Executing: '$cmd'"
     eval "$cmd"; cmd_result=$?
 
     if [[ $cmd_result -gt 0 ]]; then
@@ -121,7 +121,6 @@ InstallCompletion()
 
             # move completion script into target path
             cmd="${SUDO}mv googliser-completion $comp_path"
-
             [[ -n $SUDO ]] && echo " Executing: '$cmd'"
             eval "$cmd"; cmd_result=$?
 
