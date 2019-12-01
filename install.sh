@@ -54,7 +54,6 @@ InstallImageMagick()
 
             if [[ -n $cmd ]]; then
                 cmd="${SUDO}$PACKAGER_BIN install $cmd"
-
                 echo " Executing: '$cmd'"
                 eval "$cmd"; cmd_result=$?
             fi

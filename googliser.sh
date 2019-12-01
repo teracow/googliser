@@ -160,6 +160,7 @@ InitOK()
 
     user_parameters=$($GETOPT_BIN -o d,E,G,h,L,q,s,S,z,a:,b:,i:,l:,m:,n:,o:,p:,P:,r:,R:,t:,T:,u: -l debug,exact-search,help,lightning,links-only,no-colour,no-color,safesearch-off,quiet,random,reindex-rename,save-links,skip-no-size,aspect-ratio:,border-pixels:,colour:,color:,exclude-links:,exclude-words:,format:,gallery:,input-links:,input-phrases:,lower-size:,minimum-pixels:,number:,output:,parallel:,phrase:,recent:,retries:,sites:,thumbnails:,timeout:,title:,type:,upper-size:,usage-rights: -n "$LAUNCHER" -- "$@")
     user_parameters_result=$?
+    # shellcheck disable=SC2034
     user_parameters_raw=$*
 
     # shellcheck disable=SC2119
@@ -2141,6 +2142,7 @@ FindDownloader()
     stage_description='test Internet access'
     DebugFuncExec "$stage_description" "$runcmd"
 
+    # shellcheck disable=SC2034
     runmsg=$(eval "$runcmd" 2>&1)
     result=$?
 
@@ -2526,6 +2528,7 @@ ScrapePages()
     #
     #------------------------------------------------------------------------------------------------------
 
+    # shellcheck disable=SC2002
     cat "$pages_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
     | grep '<div class="rg_meta">' \
@@ -3381,17 +3384,6 @@ ConvertSecs()
     ((s=${1}%60))
 
     printf "%02dh:%02dm:%02ds\n" $h $m $s
-
-    }
-
-ColourTextBrightWhite()
-    {
-
-    if [[ $display_colour = true ]]; then
-        echo -en '\033[1;97m'"$(ColourReset "$1")"
-    else
-        echo -n "$1"
-    fi
 
     }
 
