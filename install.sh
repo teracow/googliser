@@ -109,9 +109,9 @@ InstallCompletion()
     local comp_paths=()
     local comp_path=''
 
-    comp_paths+=/etc/bash_completion.d
-    comp_paths+=/usr/local/etc/bash_completion.d
-    comp_paths+=/usr/share/bash-completion/completions
+    comp_paths+=(/etc/bash_completion.d)
+    comp_paths+=(/usr/local/etc/bash_completion.d)
+    comp_paths+=(/usr/share/bash-completion/completions)
 
     [[ $OSTYPE = "darwin"* ]] && brew install bash-completion
 
