@@ -106,36 +106,23 @@ InstallCompletion()
 
     local cmd=''
     local cmd_result=0
-#     local comp_paths=()
-#
-#     comp_paths+=/etc/bash_completion.d/
-#     comp_paths+=/usr/local/etc/bash_completion.d/
-#     comp_paths+=/usr/share/bash-completion/completions/
+    local comp_paths=()
+    local comp_path=''
 
-    WriteCompletionScript
+    comp_paths+=/etc/bash_completion.d
+    comp_paths+=/usr/local/etc/bash_completion.d
+    comp_paths+=/usr/share/bash-completion/completions
 
-    case $OSTYPE in
-        darwin*)
-            brew install bash-completion
-            mv googliser-completion /usr/local/etc/bash_completion.d/
-            SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
-            if [[ "$SHELL" == "zsh" ]]; then
-                echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
-                echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
-                #. "$HOME/.zshrc"
-            else
-                echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
-                # shellcheck disable=SC1090
-                . "$HOME/.bash_profile"
-            fi
-            ;;
-        linux*)
-            if [[ -e /etc/manjaro-release ]]; then
-                cmd="${SUDO}mv googliser-completion /usr/share/bash-completion/completions/"
-            else
-                cmd="${SUDO}mv googliser-completion /etc/bash_completion.d/"
-            fi
-            echo " Executing: '$cmd'"
+    [[ $OSTYPE = "darwin"* ]] && brew install bash-completion
+
+    for comp_path in "${comp_paths[@]}"; do
+        if [[ -d $comp_path ]]; then
+            WriteCompletionScript
+
+            # move completion script into target path
+            cmd="${SUDO}mv googliser-completion $comp_path"
+
+            [[ -n $SUDO ]] && echo " Executing: '$cmd'"
             eval "$cmd"; cmd_result=$?
 
             if [[ $cmd_result -gt 0 ]]; then
@@ -143,15 +130,28 @@ InstallCompletion()
                 return 1
             fi
 
-            if [[ -e /etc/manjaro-release ]]; then
-                # shellcheck disable=SC1091
-                . /usr/share/bash-completion/completions/googliser-completion
-            else
-                # shellcheck disable=SC1091
-                . /etc/bash_completion.d/googliser-completion
-            fi
-            ;;
-    esac
+            # now source completion script
+            case $OSTYPE in
+                darwin*)
+                    SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
+                    if [[ "$SHELL" == "zsh" ]]; then
+                        echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
+                        echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
+                        #. "$HOME/.zshrc"
+                    else
+                        echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
+                        # shellcheck disable=SC1090
+                        . "$HOME/.bash_profile"
+                    fi
+                    ;;
+                linux*)
+                    # shellcheck disable=SC1091
+                    . $comp_path/googliser-completion
+                    ;;
+            esac
+            break
+        fi
+    done
 
     return 0
 
