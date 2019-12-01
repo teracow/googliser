@@ -36,8 +36,8 @@ InstallBrew()
 InstallImageMagick()
     {
 
-    cmd=''
-    cmd_result=0
+    local cmd=''
+    local cmd_result=0
 
     case $OSTYPE in
         darwin*)
@@ -72,8 +72,8 @@ InstallImageMagick()
 InstallMain()
     {
 
-    cmd=''
-    cmd_result=0
+    local cmd=''
+    local cmd_result=0
 
     if [[ ! -e $TARGET_SCRIPT_FILE ]]; then
         if (command -v wget >/dev/null); then
@@ -104,8 +104,13 @@ InstallMain()
 InstallCompletion()
     {
 
-    cmd=''
-    cmd_result=0
+    local cmd=''
+    local cmd_result=0
+#     local comp_paths=()
+#
+#     comp_paths+=/etc/bash_completion.d/
+#     comp_paths+=/usr/local/etc/bash_completion.d/
+#     comp_paths+=/usr/share/bash-completion/completions/
 
     WriteCompletionScript
 
