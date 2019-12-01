@@ -144,8 +144,8 @@ InstallCompletion()
                     fi
                     ;;
                 linux*)
-                    # shellcheck disable=SC1091
-                    . $comp_path/googliser-completion
+                    # shellcheck disable=SC1090
+                    . "$comp_path/googliser-completion"
                     ;;
             esac
             break
