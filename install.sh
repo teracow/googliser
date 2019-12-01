@@ -190,17 +190,19 @@ EOF
 FindPackageManager()
     {
 
-    if ! PACKAGER_BIN=$(command -v brew); then
-        if ! PACKAGER_BIN=$(command -v apt); then
-            if ! PACKAGER_BIN=$(command -v yum); then
-                if ! PACKAGER_BIN=$(command -v pacman); then
-                    if ! PACKAGER_BIN=$(command -v opkg); then
-                        PACKAGER_BIN=''
-                    fi
-                fi
-            fi
-        fi
-    fi
+    local managers=()
+    local manager=''
+
+    managers+=(apt)
+    managers+=(yum)
+    managers+=(pacman)
+    managers+=(brew)
+    managers+=(opkg)
+    managers+=(ipkg)
+
+    for manager in "${managers[@]}"; do
+        PACKAGER_BIN=$(command -v "$manager") && break
+    done
 
     if [[ -z $PACKAGER_BIN ]]; then
         echo " Unable to find local package manager"

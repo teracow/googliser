@@ -2065,28 +2065,22 @@ FindLauncher()
 FindPackageManager()
     {
 
-    case "$OSTYPE" in
-        "darwin"*)
-            PACKAGER_BIN=$(command -v brew)
-            ;;
-        "linux"*)
-            if ! PACKAGER_BIN=$(command -v apt); then
-                if ! PACKAGER_BIN=$(command -v yum); then
-                    if ! PACKAGER_BIN=$(command -v pacman); then
-                        if ! PACKAGER_BIN=$(command -v opkg); then
-                            PACKAGER_BIN=''
-                        fi
-                    fi
-                fi
-            fi
-            ;;
-        *)
-            echo "Unidentified platform. Please create a new issue for this on GitHub: https://github.com/teracow/googliser/issues"
-            return 1
-            ;;
-    esac
+    local managers=()
+    local manager=''
+
+    managers+=(apt)
+    managers+=(yum)
+    managers+=(pacman)
+    managers+=(brew)
+    managers+=(opkg)
+    managers+=(ipkg)
+
+    for manager in "${managers[@]}"; do
+        PACKAGER_BIN=$(command -v "$manager") && break
+    done
 
     [[ -z $PACKAGER_BIN ]] && PACKAGER_BIN=unknown
+    readonly PACKAGER_BIN
 
     DebugFuncVar PACKAGER_BIN
 
