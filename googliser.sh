@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191201
+    local -r SCRIPT_VERSION=191203
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -2071,10 +2071,10 @@ FindPackageManager()
     local managers=()
     local manager=''
 
+    managers+=(brew)
     managers+=(apt)
     managers+=(yum)
     managers+=(pacman)
-    managers+=(brew)
     managers+=(opkg)
     managers+=(ipkg)
 

@@ -210,10 +210,10 @@ FindPackageManager()
     local managers=()
     local manager=''
 
+    managers+=(brew)
     managers+=(apt)
     managers+=(yum)
     managers+=(pacman)
-    managers+=(brew)
     managers+=(opkg)
     managers+=(ipkg)
 
