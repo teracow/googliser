@@ -3,7 +3,14 @@
 Init()
     {
 
-    readonly TARGET_SCRIPT_FILE=googliser.sh
+    readonly SOURCE_SCRIPT_PATHFILE=/tmp/googliser.sh
+    readonly TARGET_SCRIPT_PATHFILE=/usr/local/bin/googliser
+    readonly SOURCE_COMPLETION_PATHFILE=/tmp/googliser-completion
+    TARGET_COMPLETION_PATHS=()
+    TARGET_COMPLETION_PATHS+=(/etc/bash_completion.d)
+    TARGET_COMPLETION_PATHS+=(/usr/local/etc/bash_completion.d)
+    TARGET_COMPLETION_PATHS+=(/usr/share/bash-completion/completions)
+    readonly TARGET_COMPLETION_PATHS
 
     SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
     if [[ $EUID -eq 0 || $OSTYPE = "darwin"* ]]; then
@@ -53,7 +60,7 @@ InstallImageMagick()
             fi
 
             if [[ -n $cmd ]]; then
-                if [[ $(basename $PACKAGER_BIN) = pacman ]]; then       # pacman has its own syntax
+                if [[ $(basename "$PACKAGER_BIN") = pacman ]]; then       # pacman has its own syntax
                     cmd="${SUDO}$PACKAGER_BIN -Syu; ${SUDO}$PACKAGER_BIN -S $cmd"
                 else
                     cmd="${SUDO}$PACKAGER_BIN install $cmd"
@@ -79,25 +86,25 @@ InstallMain()
     local cmd=''
     local cmd_result=0
 
-    if [[ ! -e $TARGET_SCRIPT_FILE ]]; then
+    if [[ ! -e $SOURCE_SCRIPT_PATHFILE && -w $(dirname "$SOURCE_SCRIPT_PATHFILE") ]]; then
         if (command -v wget >/dev/null); then
-            wget -q git.io/googliser.sh
+            wget -q git.io/googliser.sh -O "$SOURCE_SCRIPT_PATHFILE"
         elif (command -v curl >/dev/null); then
-            curl -skLO git.io/googliser.sh
+            curl -skLo "$SOURCE_SCRIPT_PATHFILE" git.io/googliser.sh
         else
-            echo " Unable to find a downloader for $TARGET_SCRIPT_FILE"
+            echo " Unable to find a downloader for $(basename "$SOURCE_SCRIPT_PATHFILE")"
             return 1
         fi
     fi
 
-    [[ ! -x $TARGET_SCRIPT_FILE ]] && chmod +x "$TARGET_SCRIPT_FILE"
+    [[ ! -x $SOURCE_SCRIPT_PATHFILE ]] && chmod +x "$SOURCE_SCRIPT_PATHFILE"
 
-    cmd="${SUDO}mv $TARGET_SCRIPT_FILE /usr/local/bin/googliser"
+    cmd="${SUDO}mv $SOURCE_SCRIPT_PATHFILE $TARGET_SCRIPT_PATHFILE"
     [[ -n $SUDO ]] && echo " Executing: '$cmd'"
     eval "$cmd"; cmd_result=$?
 
     if [[ $cmd_result -gt 0 ]]; then
-        echo " Unable to move $TARGET_SCRIPT_FILE into target directory"
+        echo " Unable to move $SOURCE_SCRIPT_PATHFILE into target directory"
         return 1
     fi
 
@@ -110,26 +117,21 @@ InstallCompletion()
 
     local cmd=''
     local cmd_result=0
-    local comp_paths=()
-    local comp_path=''
-
-    comp_paths+=(/etc/bash_completion.d)
-    comp_paths+=(/usr/local/etc/bash_completion.d)
-    comp_paths+=(/usr/share/bash-completion/completions)
+    local target_completion_path=''
 
     [[ $OSTYPE = "darwin"* ]] && brew install bash-completion
 
-    for comp_path in "${comp_paths[@]}"; do
-        if [[ -d $comp_path ]]; then
+    for target_completion_path in "${TARGET_COMPLETION_PATHS[@]}"; do
+        if [[ -d $target_completion_path ]]; then
             WriteCompletionScript
 
             # move completion script into target path
-            cmd="${SUDO}mv googliser-completion $comp_path"
+            cmd="${SUDO}mv $SOURCE_COMPLETION_PATHFILE $target_completion_path"
             [[ -n $SUDO ]] && echo " Executing: '$cmd'"
             eval "$cmd"; cmd_result=$?
 
             if [[ $cmd_result -gt 0 ]]; then
-                echo " Unable to move completion script into target directory"
+                echo " Unable to move $SOURCE_COMPLETION_PATHFILE into $target_completion_path"
                 return 1
             fi
 
@@ -149,7 +151,7 @@ InstallCompletion()
                     ;;
                 linux*)
                     # shellcheck disable=SC1090
-                    . "$comp_path/googliser-completion"
+                    . "$target_completion_path/googliser-completion"
                     ;;
             esac
             break
@@ -163,7 +165,7 @@ InstallCompletion()
 WriteCompletionScript()
     {
 
-    [[ ! -e googliser-completion ]] && cat > googliser-completion << 'EOF'
+    [[ ! -e $SOURCE_COMPLETION_PATHFILE && -w $(dirname "$SOURCE_COMPLETION_PATHFILE") ]] && cat > "$SOURCE_COMPLETION_PATHFILE" << 'EOF'
 #!/usr/bin/env bash
 _GoogliserCompletion()
     {
