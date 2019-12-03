@@ -1117,8 +1117,6 @@ ProcessPhrase()
         return 1
     fi
 
-    [[ $verbose = true ]] && echo " -> requested phrase: \"$1\""
-
     FinalizeSearchPhrase "$1"
     safe_search_phrase=${search_phrase// /+}  # replace whitepace with '+' to suit curl/wget
     DebugFuncVar safe_search_phrase
@@ -1136,7 +1134,8 @@ ProcessPhrase()
     DebugFuncVar target_path
 
     CreateTargetPath || errorcode=3
-    GetPages || errorcode=4
+    GetPages
+    ParseResults || errorcode=4
     GetImages || errorcode=5
     ReindexRename
     RenderGallery || errorcode=6
@@ -1235,17 +1234,17 @@ GetPages()
     local page=0
     local page_index=0
 
+    [[ $verbose = true ]] && echo -n "  ask $(ShowGoogle): "
+
     InitProgress
     ResetPageCounts
-
-    [[ $verbose = true ]] && echo -n " -> searching $(ShowGoogle): "
 
     for ((page=1; page<=pages_max; page++)); do
         # wait here until a download slot becomes available
         while [[ $run_count -eq $parallel_limit ]]; do
             sleep 0.5
 
-            RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
+            RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max
         done
 
         page_index=$(printf "%02d" $page)
@@ -1254,13 +1253,13 @@ GetPages()
         touch "$page_run_count_path/$page_index"
         { GetPage_ "$page" "$page_index" & } 2>/dev/null
 
-        RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
+        RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max
     done
 
     # wait here while all running downloads finish
     wait 2>/dev/null
 
-    RefreshPageCounts; ShowAcquisitionProgress 'pages' $pages_max $pages_max
+    RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max; echo
 
     DebugFuncVal 'pages OK' "$success_count"
     DebugFuncVal 'pages failed' "$fail_count"
@@ -1268,8 +1267,6 @@ GetPages()
 
     # build all pages into a single file
     cat "$pages_pathfile".* > "$pages_pathfile"
-
-    ParseResults
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1414,7 +1411,7 @@ GetImages()
     local imagelink=''
     local download_bytes=0
 
-    [[ $verbose = true ]] && echo -n " -> acquiring images: "
+    [[ $verbose = true ]] && echo -n "  downloaded: "
 
     InitProgress
     ResetImageCounts
@@ -1461,13 +1458,6 @@ GetImages()
     fi
 
     RefreshImageCounts; ShowAcquisitionProgress 'images' $gallery_images_required $parallel_limit
-
-    if [[ $fail_count -gt 0 && $verbose = true ]]; then
-        # derived from: http://stackoverflow.com/questions/24284460/calculating-rounded-percentage-in-shell-script-without-using-bc
-        percent="$((200*(fail_count)/(success_count+fail_count) % 2 + 100*(fail_count)/(success_count+fail_count)))%"
-
-        echo -n "($(ColourTextBrightRed "$percent")) "
-    fi
 
     if [[ $result_index -eq $results_received ]]; then
         DebugFuncFail 'links list exhausted' "$result_index/$results_received"
@@ -1729,6 +1719,9 @@ ParseResults()
     results_received=0
     local returncode=0
 
+    [[ $verbose = true ]] && echo -n "     scraped: "
+
+    InitProgress
     ScrapePages
 
     if [[ -e $image_links_pathfile ]]; then
@@ -1759,7 +1752,7 @@ ParseResults()
     fi
 
     if [[ $verbose = true ]]; then
-        echo "($(ColourTextBrightGreen "$results_received") results)"
+        UpdateProgress "$(ColourTextBrightGreen "$results_received") usable links"; echo
 
         if [[ $results_received -lt $user_images_requested ]]; then
             if [[ $safesearch_on = true ]]; then
@@ -1824,6 +1817,8 @@ RenderGallery()
     local stage=0
     local stages=4
 
+    [[ $verbose = true ]] && echo -n "     gallery: "
+
     InitProgress
 
     # set gallery title
@@ -1854,7 +1849,6 @@ RenderGallery()
     DebugFuncVar gallery_target_pathname
 
     # build thumbnails image overlay
-    [[ $verbose = true ]] && echo -n " -> building gallery: "
     stage_description='render thumbnails'; ((stage++)); :ShowStage
 
     if [[ $gallery_user_title = none ]]; then
@@ -1983,10 +1977,6 @@ Finish()
 
     if [[ $verbose = true ]]; then
         case $errorcode in
-            0)
-                echo
-                echo " -> $(ShowSuccess 'done!')"
-                ;;
             [1-2])
                 if [[ $show_help != true ]]; then
                     echo
@@ -1995,7 +1985,7 @@ Finish()
                 ;;
             [3-6])
                 echo
-                echo " -> $(ShowFail 'done! (with errors)')"
+                echo " $(ShowFail 'done with errors')"
                 ;;
             *)
                 ;;
@@ -2279,7 +2269,7 @@ ShowAcquisitionProgress()
 
     if [[ $verbose = true ]]; then
         progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$2")")
-        progress_message+=" $1 downloaded"
+        progress_message+=" $1 OK"
 
         [[ $run_count -gt 0 ]] && progress_message+=", $(ColourTextBrightOrange "$run_count/$3") are in progress"
 
@@ -2289,7 +2279,6 @@ ShowAcquisitionProgress()
             progress_message+=' failed'
         fi
 
-        progress_message+=':'
         UpdateProgress "$progress_message"
     fi
 
@@ -2543,7 +2532,7 @@ CTRL_C_Captured()
     DebugFuncEntry
 
     echo
-    echo " -> $(ColourTextBrightRed '[SIGINT]') cleanup ..."
+    echo " $(ColourTextBrightRed '[SIGINT]') aborting ..."
 
     AbortPages
     AbortImages
