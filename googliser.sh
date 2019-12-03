@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191203
+    local -r SCRIPT_VERSION=191204
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -1259,7 +1259,7 @@ GetPages()
     # wait here while all running downloads finish
     wait 2>/dev/null
 
-    RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max; echo
+    RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max; [[ $verbose = true ]] && echo
 
     DebugFuncVal 'pages OK' "$success_count"
     DebugFuncVal 'pages failed' "$fail_count"
