@@ -309,17 +309,15 @@ This will download available images for the phrase *"flags"*, while excluding th
 
 - I wrote this script so users don't need to obtain an API key from Google to download multiple images.
 
-- The downloader prefers to use [GNU Wget](https://en.wikipedia.org/wiki/Wget) but can also use [cURL](https://github.com/curl/curl) if it's available.
+- The downloader can use [GNU Wget](https://en.wikipedia.org/wiki/Wget) or [cURL](https://github.com/curl/curl) (if it's available).
 
 - To download 1,000 images, you need to be lucky enough for Google to find 1,000 results for your search term, and for those images to be available for download. I sometimes get more failed downloads than successful downloads (depending on what I'm searching for). In practice, I've never actually seen Google return 1,000 results. My best was about 986.
 
 - Only [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics), [JPG](https://en.wikipedia.org/wiki/JPEG) (& [JPEG](https://en.wikipedia.org/wiki/JPEG)), [GIF](https://en.wikipedia.org/wiki/GIF), [BMP](https://en.wikipedia.org/wiki/BMP_file_format), [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), [ICO](https://en.wikipedia.org/wiki/ICO_(file_format)), [WebP](https://en.wikipedia.org/wiki/WebP) and [RAW](https://en.wikipedia.org/wiki/Raw_image_format) files are available for download.
 
-- If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**. If **identify** is not available, then no type-checking occurs.
+- If **identify** (from ImageMagick) is installed, every downloaded file is checked to ensure that it is actually an image. Every file is renamed according to the image type determined by **identify**.
 
-- Every link that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. A good way to see lots of failures quickly is to specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
-
-- The failures percentage shown after download is the number of failed downloads as a percentage of the total number of image downloads attempted - this includes successful downloads. e.g. 25 images downloaded OK with 8 download failures yields a total of 33 downloads attempted. And 8 / 33 = **24%**.
+- Every image that cannot be downloaded, or is outside the specified byte-size range, counts as a 'failure'. You'll see lots of failures rather quickly if you specify a narrow byte-size range. e.g. `--lower-size 12000 --upper-size 13000`.
 
 - Only the first image of a multi-image file (like an animated **GIF**) will be used for its gallery image.
 
