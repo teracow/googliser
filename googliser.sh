@@ -1234,7 +1234,7 @@ GetPages()
     local page=0
     local page_index=0
 
-    [[ $verbose = true ]] && echo -n " ask $(ShowGoogle): "
+    [[ $verbose = true ]] && echo -n "   $(ShowGoogle): "
 
     InitProgress
     ResetPageCounts
@@ -1411,7 +1411,7 @@ GetImages()
     local imagelink=''
     local download_bytes=0
 
-    [[ $verbose = true ]] && echo -n " downloaded: "
+    [[ $verbose = true ]] && echo -n " download: "
 
     InitProgress
     ResetImageCounts
@@ -1720,7 +1720,7 @@ ParseResults()
     results_received=0
     local returncode=0
 
-    [[ $verbose = true ]] && echo -n "    scraped: "
+    [[ $verbose = true ]] && echo -n "   scrape: "
 
     InitProgress
     ScrapePages
@@ -1820,7 +1820,7 @@ RenderGallery()
     local stage=0
     local stages=4
 
-    [[ $verbose = true ]] && echo -n "    gallery: "
+    [[ $verbose = true ]] && echo -n "  gallery: "
 
     InitProgress
 
