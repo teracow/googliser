@@ -7,9 +7,7 @@ Init()
     readonly TARGET_SCRIPT_PATHFILE=/usr/local/bin/googliser
     readonly SOURCE_COMPLETION_PATHFILE=/tmp/googliser-completion
     TARGET_COMPLETION_PATHS=()
-    TARGET_COMPLETION_PATHS+=(/etc/bash_completion.d)
-    TARGET_COMPLETION_PATHS+=(/usr/local/etc/bash_completion.d)
-    TARGET_COMPLETION_PATHS+=(/usr/share/bash-completion/completions)
+    TARGET_COMPLETION_PATHS+=(/usr/share/bash-completion/bash_completion)
     readonly TARGET_COMPLETION_PATHS
 
     SUDO='sudo -k '         # '-k' disables cached authentication, so a password will be required every time
@@ -122,7 +120,7 @@ InstallCompletion()
     [[ $OSTYPE = "darwin"* ]] && brew install bash-completion
 
     for target_completion_path in "${TARGET_COMPLETION_PATHS[@]}"; do
-        if [[ -d $target_completion_path ]]; then
+        if [[ -f $target_completion_path ]]; then
             WriteCompletionScript
 
             # move completion script into target path
