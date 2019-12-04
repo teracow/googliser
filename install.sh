@@ -6,6 +6,10 @@ Init()
     readonly SOURCE_SCRIPT_PATHFILE=/tmp/googliser.sh
     readonly TARGET_SCRIPT_PATHFILE=/usr/local/bin/googliser
     readonly SOURCE_COMPLETION_PATHFILE=/tmp/googliser-completion
+    BASH_COMPLETION_PACKAGEPATHS=()
+    BASH_COMPLETION_PACKAGEPATHS+=(/usr/share/bash-completion/bash_completion)
+    BASH_COMPLETION_PACKAGEPATHS+=(/usr/local/etc/bash_completion)
+    readonly BASH_COMPLETION_PACKAGEPATHS
     TARGET_COMPLETION_PATHS=()
     TARGET_COMPLETION_PATHS+=(/etc/bash_completion.d)
     TARGET_COMPLETION_PATHS+=(/usr/local/etc/bash_completion.d)
@@ -123,38 +127,42 @@ InstallCompletion()
 
     for target_completion_path in "${TARGET_COMPLETION_PATHS[@]}"; do
         if [[ -d $target_completion_path ]]; then
-            WriteCompletionScript
+            for bash_completion_packagepath in "${BASH_COMPLETION_PACKAGEPATHS[@]}"; do
+                if [[ -f $bash_completion_packagepath ]]; then
+                    WriteCompletionScript
 
-            # move completion script into target path
-            cmd="${SUDO}mv $SOURCE_COMPLETION_PATHFILE $target_completion_path"
-            [[ -n $SUDO ]] && echo " Executing: '$cmd'"
-            eval "$cmd"; cmd_result=$?
+                    # move completion script into target path
+                    cmd="${SUDO}mv $SOURCE_COMPLETION_PATHFILE $target_completion_path"
+                    [[ -n $SUDO ]] && echo " Executing: '$cmd'"
+                    eval "$cmd"; cmd_result=$?
 
-            if [[ $cmd_result -gt 0 ]]; then
-                echo " Unable to move $SOURCE_COMPLETION_PATHFILE into $target_completion_path"
-                return 1
-            fi
-
-            # now source completion script
-            case $OSTYPE in
-                darwin*)
-                    SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
-                    if [[ "$SHELL" == "zsh" ]]; then
-                        echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
-                        echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
-                        #. "$HOME/.zshrc"
-                    else
-                        echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
-                        # shellcheck disable=SC1090
-                        . "$HOME/.bash_profile"
+                    if [[ $cmd_result -gt 0 ]]; then
+                        echo " Unable to move $SOURCE_COMPLETION_PATHFILE into $target_completion_path"
+                        return 1
                     fi
-                    ;;
-                linux*)
-                    # shellcheck disable=SC1090
-                    . "$target_completion_path/googliser-completion"
-                    ;;
-            esac
-            break
+
+                    # now source completion script
+                    case $OSTYPE in
+                        darwin*)
+                            SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
+                            if [[ "$SHELL" == "zsh" ]]; then
+                                echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
+                                echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
+                                #. "$HOME/.zshrc"
+                            else
+                                echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
+                                # shellcheck disable=SC1090
+                                . "$HOME/.bash_profile"
+                            fi
+                            ;;
+                        linux*)
+                            # shellcheck disable=SC1090
+                            . "$target_completion_path/googliser-completion"
+                            ;;
+                    esac
+                    break 2
+                fi
+            done
         fi
     done
 
