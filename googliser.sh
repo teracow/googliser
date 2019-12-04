@@ -1721,11 +1721,16 @@ ParseResults()
 
     local func_startseconds=$(date +%s)
     results_received=0
+    local stage=0
+    local stages=3
     local returncode=0
+    [[ -n $exclude_links_pathfile ]] && ((stages++))
 
-    [[ $verbose = true ]] && echo -n "   scrape: "
+    [[ $verbose = true ]] && echo -n "    links: "
 
     InitProgress
+
+    stage_description='scrape web pages'; ((stage++)); ShowStage
     ScrapePages
 
     if [[ -e $image_links_pathfile ]]; then
@@ -1733,6 +1738,8 @@ ParseResults()
         DebugFuncVar results_received
 
         # check against allowable file types
+        stage_description='remove disallowed image types'; ((stage++)); ShowStage
+
         while read -r imagelink; do
             AllowableFileType "$imagelink" && echo "$imagelink" >> "$image_links_pathfile.tmp"
         done < "$image_links_pathfile"
@@ -1741,6 +1748,8 @@ ParseResults()
         DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
+        stage_description='remove duplicate URLs'; ((stage++)); ShowStage
+
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
@@ -1748,6 +1757,8 @@ ParseResults()
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
+            stage_description='remove previously downloaded URLs'; ((stage++)); ShowStage
+
             [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$image_links_pathfile" > "$image_links_pathfile.tmp"
             [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
             :GetLinkCount
@@ -1756,7 +1767,7 @@ ParseResults()
     fi
 
     if [[ $verbose = true ]]; then
-        UpdateProgress "$(ColourTextBrightGreen "$results_received") usable links"; echo
+        UpdateProgress "$(ColourTextBrightGreen "$results_received")"; echo
 
         if [[ $results_received -lt $user_images_requested ]]; then
             if [[ $safesearch_on = true ]]; then
@@ -1797,13 +1808,6 @@ RenderGallery()
 
     # $? = 0 if OK, 1 if not
 
-    :ShowStage()
-        {
-
-        [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
-
-        }
-
     [[ $errorcode -ne 0 && $errorcode -ne 5 ]] && return 0
     [[ $gallery = false ]] && return 0
 
@@ -1830,6 +1834,7 @@ RenderGallery()
     # set gallery title
     if [[ $gallery_user_title = none ]]; then
         ((stages--))
+
         if [[ -n $user_phrase ]]; then
             gallery_target_pathname="$target_path/$GALLERY_FILE_PREFIX-($user_phrase).png"
         else
@@ -1855,7 +1860,7 @@ RenderGallery()
     DebugFuncVar gallery_target_pathname
 
     # build thumbnails image overlay
-    stage_description='render thumbnails'; ((stage++)); :ShowStage
+    stage_description='render thumbnails'; ((stage++)); ShowStage
 
     if [[ $gallery_user_title = none ]]; then
         reserve_for_title=''
@@ -1883,7 +1888,7 @@ RenderGallery()
 
     if [[ $result -eq 0 ]]; then
         # build background image
-        stage_description='render background'; ((stage++)); :ShowStage
+        stage_description='render background'; ((stage++)); ShowStage
 
         # get image dimensions
         read -r width height <<< "$($CONVERT_BIN -ping "$gallery_thumbnails_pathfile" -format "%w %h" info:)"
@@ -1911,7 +1916,7 @@ RenderGallery()
 
     if [[ $result -eq 0 && $gallery_user_title != none ]]; then
         # build title image overlay
-        stage_description='render title'; ((stage++)); :ShowStage
+        stage_description='render title'; ((stage++)); ShowStage
 
         # create title image
         runcmd="$CONVERT_BIN -size x$TITLE_HEIGHT_PIXELS -font $(FirstPreferredFont) -background none -stroke black -strokewidth 10 label:\"\\ \\ $gallery_title\\ \" -blur 0x5 -fill goldenrod1 -stroke none label:\"\\ \\ $gallery_title\\ \" -flatten $gallery_title_pathfile"
@@ -1931,7 +1936,7 @@ RenderGallery()
 
     if [[ $result -eq 0 ]]; then
         # compose thumbnail and title images onto background image
-        stage_description='combine images'; ((stage++)); :ShowStage
+        stage_description='combine images'; ((stage++)); ShowStage
 
         if [[ $gallery_user_title = none ]]; then
             include_title=''
@@ -3471,6 +3476,13 @@ ShowGoogle()
     {
 
     echo -n "$(ColourTextBrightBlue 'G')$(ColourTextBrightRed 'o')$(ColourTextBrightOrange 'o')$(ColourTextBrightBlue 'g')$(ColourTextBrightGreen 'l')$(ColourTextBrightRed 'e')"
+
+    }
+
+ShowStage()
+    {
+
+    [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
 
     }
 
