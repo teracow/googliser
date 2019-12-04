@@ -1721,16 +1721,12 @@ ParseResults()
 
     local func_startseconds=$(date +%s)
     results_received=0
-    local stage=0
-    local stages=3
     local returncode=0
-    [[ -n $exclude_links_pathfile ]] && ((stages++))
 
     [[ $verbose = true ]] && echo -n "    links: "
 
     InitProgress
 
-    stage_description='scrape web pages'; ((stage++)); ShowStage
     ScrapePages
 
     if [[ -e $image_links_pathfile ]]; then
@@ -1738,18 +1734,12 @@ ParseResults()
         DebugFuncVar results_received
 
         # check against allowable file types
-        stage_description='remove disallowed image types'; ((stage++)); ShowStage
-
-        while read -r imagelink; do
-            AllowableFileType "$imagelink" && echo "$imagelink" >> "$image_links_pathfile.tmp"
-        done < "$image_links_pathfile"
+        grep -iE '.png$|.jpg$|.jpeg$|.gif$|.bmp$|.svg$|.ico$|.webp$|.raw$' "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
         DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove duplicate URLs, but retain current order
-        stage_description='remove duplicate URLs'; ((stage++)); ShowStage
-
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
@@ -1757,8 +1747,6 @@ ParseResults()
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
-            stage_description='remove previously downloaded URLs'; ((stage++)); ShowStage
-
             [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$image_links_pathfile" > "$image_links_pathfile.tmp"
             [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
             :GetLinkCount
@@ -2485,32 +2473,6 @@ RenameExtAsType()
     fi
 
     return $returncode
-
-    }
-
-AllowableFileType()
-    {
-
-    # only these image types are considered acceptable
-    # $1 = string to check
-    # $? = 0 if OK, 1 if not
-
-    local lcase=$(Lowercase "$1")
-    local ext=$(echo "${lcase:(-5)}" | $SED_BIN "s/.*\(\.[^\.]*\)$/\1/")
-
-    # if string does not have a '.' then assume no extension present
-    [[ ! "$ext" = *"."* ]] && ext=''
-
-    case "${ext#.}" in
-        png|jpg|jpeg|gif|bmp|svg|ico|webp|raw)
-            # valid image type
-            return 0
-            ;;
-        *)
-            # not a valid image
-            return 1
-            ;;
-    esac
 
     }
 
