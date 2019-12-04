@@ -1719,7 +1719,6 @@ ParseResults()
 
     DebugFuncEntry
 
-    local func_startseconds=$(date +%s)
     results_received=0
     local returncode=0
 
@@ -1784,7 +1783,6 @@ ParseResults()
         returncode=1
     fi
 
-    DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
 
     return $returncode
