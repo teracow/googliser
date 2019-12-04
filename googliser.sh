@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191204
+    local -r SCRIPT_VERSION=191205
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -1231,6 +1231,7 @@ GetPages()
     local success_count=0
     local fail_count=0
     local abort_count=0
+    local max_run_count=0
     local page=0
     local page_index=0
 
@@ -1408,6 +1409,7 @@ GetImages()
     local success_count=0
     local fail_count=0
     local abort_count=0
+    local max_run_count=0
     local imagelink=''
     local download_bytes=0
 
@@ -1469,6 +1471,7 @@ GetImages()
     DebugFuncVal 'downloads OK' "$success_count"
     DebugFuncVal 'downloads failed' "$fail_count"
     DebugFuncVal 'downloads aborted' "$abort_count"
+    DebugFuncVal 'highest concurrent downloads' "$max_run_count"
 
     if [[ $success_count -gt 0 ]]; then
         download_bytes=$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)
@@ -2335,6 +2338,8 @@ ResetPageCounts()
     [[ -d $page_fail_count_path ]] && rm -f "$page_fail_count_path"/*
     [[ -d $page_abort_count_path ]] && rm -f "$page_abort_count_path"/*
 
+    max_run_count=0
+
     RefreshPageCounts
 
     }
@@ -2346,6 +2351,8 @@ RefreshPageCounts()
     success_count=$(ls -1 "$page_success_count_path" | wc -l); success_count=${success_count##* }    # remove leading space in 'wc' output on macOS
     fail_count=$(ls -1 "$page_fail_count_path" | wc -l); fail_count=${fail_count##* }                # remove leading space in 'wc' output on macOS
     abort_count=$(ls -1 "$page_abort_count_path" | wc -l); abort_count=${abort_count##* }            # remove leading space in 'wc' output on macOS
+
+    [[ $run_count -gt $max_run_count ]] && max_run_count=$run_count
 
     }
 
@@ -2359,6 +2366,8 @@ ResetImageCounts()
     [[ -d $image_fail_count_path ]] && rm -f "$image_fail_count_path"/*
     [[ -d $image_abort_count_path ]] && rm -f "$image_abort_count_path"/*
 
+    max_run_count=0
+
     RefreshImageCounts
 
     }
@@ -2370,6 +2379,8 @@ RefreshImageCounts()
     success_count=$(ls -1 "$image_success_count_path" | wc -l); success_count=${success_count##* }   # remove leading space in 'wc' output on macOS
     fail_count=$(ls -1 "$image_fail_count_path" | wc -l); fail_count=${fail_count##* }               # remove leading space in 'wc' output on macOS
     abort_count=$(ls -1 "$image_abort_count_path" | wc -l); abort_count=${abort_count##* }           # remove leading space in 'wc' output on macOS
+
+    [[ $run_count -gt $max_run_count ]] && max_run_count=$run_count
 
     }
 
