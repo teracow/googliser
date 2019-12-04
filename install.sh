@@ -6,10 +6,10 @@ Init()
     readonly SOURCE_SCRIPT_PATHFILE=/tmp/googliser.sh
     readonly TARGET_SCRIPT_PATHFILE=/usr/local/bin/googliser
     readonly SOURCE_COMPLETION_PATHFILE=/tmp/googliser-completion
-    BASH_COMPLETION_PACKAGEPATHS=()
-    BASH_COMPLETION_PACKAGEPATHS+=(/usr/share/bash-completion/bash_completion)
-    BASH_COMPLETION_PACKAGEPATHS+=(/usr/local/etc/bash_completion)
-    readonly BASH_COMPLETION_PACKAGEPATHS
+    BASH_COMPLETION_PACKAGE_PATHFILES=()
+    BASH_COMPLETION_PACKAGE_PATHFILES+=(/usr/share/bash-completion/bash_completion)
+    BASH_COMPLETION_PACKAGE_PATHFILES+=(/usr/local/etc/bash_completion)
+    readonly BASH_COMPLETION_PACKAGE_PATHFILES
     TARGET_COMPLETION_PATHS=()
     TARGET_COMPLETION_PATHS+=(/etc/bash_completion.d)
     TARGET_COMPLETION_PATHS+=(/usr/local/etc/bash_completion.d)
@@ -122,13 +122,14 @@ InstallCompletion()
     local cmd=''
     local cmd_result=0
     local target_completion_path=''
+    local bash_completion_package_pathfile=''
 
     [[ $OSTYPE = "darwin"* ]] && brew install bash-completion
 
     for target_completion_path in "${TARGET_COMPLETION_PATHS[@]}"; do
         if [[ -d $target_completion_path ]]; then
-            for bash_completion_packagepath in "${BASH_COMPLETION_PACKAGEPATHS[@]}"; do
-                if [[ -f $bash_completion_packagepath ]]; then
+            for bash_completion_package_pathfile in "${BASH_COMPLETION_PACKAGE_PATHFILES[@]}"; do
+                if [[ -f $bash_completion_package_pathfile ]]; then
                     WriteCompletionScript
 
                     # move completion script into target path
