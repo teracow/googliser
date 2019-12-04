@@ -1471,7 +1471,7 @@ GetImages()
     DebugFuncVal 'downloads OK' "$success_count"
     DebugFuncVal 'downloads failed' "$fail_count"
     DebugFuncVal 'downloads aborted' "$abort_count"
-    DebugFuncVal 'highest concurrent downloads' "$max_run_count"
+    DebugFuncVal 'highest concurrent downloads' "$max_run_count/$parallel_limit"
 
     if [[ $success_count -gt 0 ]]; then
         download_bytes=$($DU_BIN "$target_path/$IMAGE_FILE_PREFIX"* -cb | tail -n1 | cut -f1)
