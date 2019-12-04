@@ -40,7 +40,7 @@ or cURL:
 
 **googliser** is fully supported on Manjaro & Ubuntu. Debian, Fedora Workstation and macOS may require some extra binaries. If you install it as per the installation notes above, all dependencies will be checked and installed.
 
-If you prefer to install these manuallly:
+If you prefer to install these manually:
 
 Debian:
 
