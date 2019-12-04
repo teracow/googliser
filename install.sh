@@ -128,7 +128,6 @@ InstallCompletion()
     for target_completion_path in "${TARGET_COMPLETION_PATHS[@]}"; do
         if [[ -d $target_completion_path ]]; then
             for bash_completion_packagepath in "${BASH_COMPLETION_PACKAGEPATHS[@]}"; do
-                echo $bash_completion_packagepath
                 if [[ -f $bash_completion_packagepath ]]; then
                     WriteCompletionScript
 
