@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191205
+    local -r SCRIPT_VERSION=191206
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -1732,17 +1732,43 @@ ParseResults()
         :GetLinkCount
         DebugFuncVar results_received
 
-        # check against allowable file types
-        grep -iE '.png$|.jpg$|.jpeg$|.gif$|.bmp$|.svg$|.ico$|.webp$|.raw$' "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
-        [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
-        :GetLinkCount
-        DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
+        allowable_file_types=()
+        local allowable_file_type=''
+        allowable_file_types+=(jpg)
+        allowable_file_types+=(jpeg)
+        allowable_file_types+=(png)
+        allowable_file_types+=(gif)
+        allowable_file_types+=(bmp)
+        allowable_file_types+=(svg)
+        allowable_file_types+=(ico)
+        allowable_file_types+=(webp)
+        allowable_file_types+=(raw)
+        readonly allowable_file_types
 
         # remove duplicate URLs, but retain current order
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
         DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
+
+        DebugFuncComment 'stats for image types in search results'
+        # store a count of permitted image file-types
+        for allowable_file_type in "${allowable_file_types[@]}"; do
+            result=$(grep -icE ".${allowable_file_type}$" "$image_links_pathfile")
+            if [[ $result -gt 0 ]]; then
+                DebugFuncVal "allowed image type '$allowable_file_type'" "$result"
+            fi
+        done
+        local old_results_received=$results_received
+
+        # check against allowable file types
+        ends_with=$(printf '.%s$|' "${allowable_file_types[@]}"); ends_with=${ends_with%?}              # remove last pipe char
+        grep -iE "$ends_with" "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
+        [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
+        :GetLinkCount
+        DebugFuncVal 'unknown image types' "$((old_results_received-results_received))"
+        DebugFuncComment 'stats complete'
+        DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
