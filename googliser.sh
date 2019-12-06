@@ -491,7 +491,7 @@ ShowBasicHelp()
     echo
     echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' then download a number of images matching a phrase"
     echo
-    echo " Usage: $(ColourTextBold "$LAUNCHER") [PARAMETERS] ..."
+    echo " Usage: $(ColourTextBold "$LAUNCHER") -p [PHRASE] -dEGhLqsSz [PARAMETERS] FILE,PATH,STRING,INTEGER,PRESET ..."
 
     }
 
