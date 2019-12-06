@@ -1731,18 +1731,8 @@ ExamineLinks()
         :GetLinkCount
         DebugFuncVar link_count
 
-        allowed_file_types=()
+        readonly allowed_file_types=(jpg jpeg png gif bmp svg ico webp raw)
         local allowed_file_type=''
-        allowed_file_types+=(jpg)
-        allowed_file_types+=(jpeg)
-        allowed_file_types+=(png)
-        allowed_file_types+=(gif)
-        allowed_file_types+=(bmp)
-        allowed_file_types+=(svg)
-        allowed_file_types+=(ico)
-        allowed_file_types+=(webp)
-        allowed_file_types+=(raw)
-        readonly allowed_file_types
 
         # remove duplicate URLs, but retain current order
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
@@ -1754,9 +1744,7 @@ ExamineLinks()
         # store a count of permitted image file-types
         for allowed_file_type in "${allowed_file_types[@]}"; do
             result=$(grep -icE ".${allowed_file_type}$" "$image_links_pathfile")
-            if [[ $result -gt 0 ]]; then
-                DebugFuncVal "allowed file type '$allowed_file_type'" "$result"
-            fi
+            [[ $result -gt 0 ]] && DebugFuncVal "allowed file type '$allowed_file_type'" "$result"
         done
         local old_link_count=$link_count
 
@@ -1782,13 +1770,11 @@ ExamineLinks()
     if [[ $verbose = true ]]; then
         UpdateProgress "$(ColourTextBrightGreen "$link_count")"; echo
 
-        if [[ $link_count -lt $user_images_requested ]]; then
-            if [[ $safesearch_on = true ]]; then
-                echo
-                echo " Try your search again with additional options:"
-                echo "    - disable SafeSearch: '--safesearch-off'"
-                echo
-            fi
+        if [[ $link_count -lt $user_images_requested && $safesearch_on = true ]]; then
+            echo
+            echo " Try your search again with additional options:"
+            echo "    - disable SafeSearch: '--safesearch-off'"
+            echo
         fi
     fi
 
@@ -1797,15 +1783,13 @@ ExamineLinks()
         shuf "$image_links_pathfile" -o "$image_links_pathfile" && DebugFuncSuccess "$op" || DebugFuncFail "$op"
     fi
 
-    if [[ $errorcode -eq 0 ]]; then
-        if [[ $gallery_images_required -gt $link_count ]]; then
-            gallery_images_required=$link_count
-            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $link_count' "$link_count"
-        fi
+    if [[ $errorcode -eq 0 && $gallery_images_required -gt $link_count ]]; then
+        gallery_images_required=$link_count
+        DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $link_count' "$link_count"
     fi
 
     if [[ $link_count -eq 0 ]]; then
-        DebugFuncVal 'zero results returned?' 'Oops...'
+        DebugFuncVal 'zero links?' 'Oops...'
         returncode=1
     fi
 
