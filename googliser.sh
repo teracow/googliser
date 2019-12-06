@@ -2189,14 +2189,20 @@ FindImageMagick()
             errorcode=1
             return 1
         fi
+        DebugFuncVar MONTAGE_BIN
+        DebugFuncVar CONVERT_BIN
     fi
 
-    DebugFuncVar MONTAGE_BIN
-    DebugFuncVar CONVERT_BIN
+    if [[ $links_only = false ]]; then
+        if ! IDENTIFY_BIN=$(command -v identify); then
+            SuggestInstall identify imagemagick
+            errorcode=1
+            return 1
+        fi
+        DebugFuncVar IDENTIFY_BIN
+    fi
 
-    ! IDENTIFY_BIN=$(command -v identify) && DebugScriptWarn "no recognised 'identify' binary was found"
-
-    DebugFuncVar IDENTIFY_BIN
+    return 0
 
     }
 
