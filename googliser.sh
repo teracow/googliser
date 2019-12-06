@@ -1731,7 +1731,7 @@ ExamineLinks()
         :GetLinkCount
         DebugFuncVar link_count
 
-        readonly allowed_file_types=(jpg jpeg png gif bmp svg ico webp raw)
+        local -r allowed_file_types=(jpg jpeg png gif bmp svg ico webp raw)
         local allowed_file_type=''
 
         # remove duplicate URLs, but retain current order
@@ -1740,8 +1740,8 @@ ExamineLinks()
         :GetLinkCount
         DebugFuncVarAdjust 'after removing duplicate URLs' "$link_count"
 
-        DebugFuncComment 'stats for file types in search results'
         # store a count of permitted image file-types
+        DebugFuncComment 'stats for file types in search results'
         for allowed_file_type in "${allowed_file_types[@]}"; do
             result=$(grep -icE ".${allowed_file_type}$" "$image_links_pathfile")
             [[ $result -gt 0 ]] && DebugFuncVal "allowed file type '$allowed_file_type'" "$result"
