@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191206
+    local -r SCRIPT_VERSION=191207
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -1135,7 +1135,8 @@ ProcessPhrase()
 
     CreateTargetPath || errorcode=3
     GetPages
-    ParseResults || errorcode=4
+    ScrapePages
+    ExamineLinks || errorcode=4
     GetImages || errorcode=5
     ReindexRename
     RenderGallery || errorcode=6
@@ -1461,8 +1462,8 @@ GetImages()
 
     RefreshImageCounts; ShowAcquisitionProgress 'images' $gallery_images_required $parallel_limit
 
-    if [[ $result_index -eq $results_received ]]; then
-        DebugFuncFail 'links list exhausted' "$result_index/$results_received"
+    if [[ $result_index -eq $link_count ]]; then
+        DebugFuncFail 'links list exhausted' "$result_index/$link_count"
         ColourTextBrightRed 'links list exhausted!'; echo
     else
         [[ $verbose = true ]] && echo
@@ -1704,7 +1705,7 @@ GetImage_()
 
     }
 
-ParseResults()
+ExamineLinks()
     {
 
     # $? = 0 if OK, 1 if not
@@ -1713,76 +1714,75 @@ ParseResults()
         {
 
         # get link count
-        results_received=$(wc -l < "$image_links_pathfile"); results_received=${results_received##* }
+        link_count=$(wc -l < "$image_links_pathfile"); link_count=${link_count##* }
 
         }
 
     DebugFuncEntry
 
-    results_received=0
+    link_count=0
     local returncode=0
 
     [[ $verbose = true ]] && echo -n "    links: "
 
     InitProgress
 
-    ScrapePages
-
     if [[ -e $image_links_pathfile ]]; then
         :GetLinkCount
-        DebugFuncVar results_received
+        DebugFuncVar link_count
 
-        allowable_file_types=()
-        local allowable_file_type=''
-        allowable_file_types+=(jpg)
-        allowable_file_types+=(jpeg)
-        allowable_file_types+=(png)
-        allowable_file_types+=(gif)
-        allowable_file_types+=(bmp)
-        allowable_file_types+=(svg)
-        allowable_file_types+=(ico)
-        allowable_file_types+=(webp)
-        allowable_file_types+=(raw)
-        readonly allowable_file_types
+        allowed_file_types=()
+        local allowed_file_type=''
+        allowed_file_types+=(jpg)
+        allowed_file_types+=(jpeg)
+        allowed_file_types+=(png)
+        allowed_file_types+=(gif)
+        allowed_file_types+=(bmp)
+        allowed_file_types+=(svg)
+        allowed_file_types+=(ico)
+        allowed_file_types+=(webp)
+        allowed_file_types+=(raw)
+        readonly allowed_file_types
 
         # remove duplicate URLs, but retain current order
         cat -n "$image_links_pathfile" | sort -uk2 | sort -nk1 | cut -f2 > "$image_links_pathfile.tmp"
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
-        DebugFuncVarAdjust 'after removing duplicate URLs' "$results_received"
+        DebugFuncVarAdjust 'after removing duplicate URLs' "$link_count"
 
-        DebugFuncComment 'stats for image types in search results'
+        DebugFuncComment 'stats for file types in search results'
         # store a count of permitted image file-types
-        for allowable_file_type in "${allowable_file_types[@]}"; do
-            result=$(grep -icE ".${allowable_file_type}$" "$image_links_pathfile")
+        for allowed_file_type in "${allowed_file_types[@]}"; do
+            result=$(grep -icE ".${allowed_file_type}$" "$image_links_pathfile")
             if [[ $result -gt 0 ]]; then
-                DebugFuncVal "allowed image type '$allowable_file_type'" "$result"
+                DebugFuncVal "allowed file type '$allowed_file_type'" "$result"
             fi
         done
-        local old_results_received=$results_received
+        local old_link_count=$link_count
 
         # check against allowable file types
-        ends_with=$(printf '.%s$|' "${allowable_file_types[@]}"); ends_with=${ends_with%?}              # remove last pipe char
+        ends_with=$(printf '.%s$|' "${allowed_file_types[@]}"); ends_with=${ends_with%?}              # remove last pipe char
         grep -iE "$ends_with" "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
-        DebugFuncVal 'unknown image types' "$((old_results_received-results_received))"
+        DebugFuncVal 'unknown file types' "$((old_link_count-link_count))"
+
         DebugFuncComment 'stats complete'
-        DebugFuncVarAdjust 'after removing disallowed image types' "$results_received"
+        DebugFuncVarAdjust 'after removing unknown file types' "$link_count"
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
             [[ -e $exclude_links_pathfile ]] && grep -axvFf "$exclude_links_pathfile" "$image_links_pathfile" > "$image_links_pathfile.tmp"
             [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
             :GetLinkCount
-            DebugFuncVarAdjust 'after removing previous URLs' "$results_received"
+            DebugFuncVarAdjust 'after removing previously downloaded URLs' "$link_count"
         fi
     fi
 
     if [[ $verbose = true ]]; then
-        UpdateProgress "$(ColourTextBrightGreen "$results_received")"; echo
+        UpdateProgress "$(ColourTextBrightGreen "$link_count")"; echo
 
-        if [[ $results_received -lt $user_images_requested ]]; then
+        if [[ $link_count -lt $user_images_requested ]]; then
             if [[ $safesearch_on = true ]]; then
                 echo
                 echo " Try your search again with additional options:"
@@ -1798,13 +1798,13 @@ ParseResults()
     fi
 
     if [[ $errorcode -eq 0 ]]; then
-        if [[ $gallery_images_required -gt $results_received ]]; then
-            gallery_images_required=$results_received
-            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $results_received' "$results_received"
+        if [[ $gallery_images_required -gt $link_count ]]; then
+            gallery_images_required=$link_count
+            DebugFuncVarAdjust '$gallery_images_required TOO HIGH so set as $link_count' "$link_count"
         fi
     fi
 
-    if [[ $results_received -eq 0 ]]; then
+    if [[ $link_count -eq 0 ]]; then
         DebugFuncVal 'zero results returned?' 'Oops...'
         returncode=1
     fi
