@@ -1744,7 +1744,7 @@ ExamineLinks()
         DebugFuncComment 'stats for file types in search results'
         for allowed_file_type in "${allowed_file_types[@]}"; do
             result=$(grep -icE ".${allowed_file_type}$" "$image_links_pathfile")
-            [[ $result -gt 0 ]] && DebugFuncVal "allowed file type '$allowed_file_type'" "$result"
+            [[ $result -gt 0 ]] && DebugFuncVal "found file type '$allowed_file_type'" "$result"
         done
         local old_link_count=$link_count
 
@@ -1753,10 +1753,10 @@ ExamineLinks()
         grep -iE "$ends_with" "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
-        DebugFuncVal 'unknown file types' "$((old_link_count-link_count))"
+        DebugFuncVal 'found unrecognised file types' "$((old_link_count-link_count))"
 
         DebugFuncComment 'stats complete'
-        DebugFuncVarAdjust 'after removing unknown file types' "$link_count"
+        DebugFuncVarAdjust 'after removing unrecognised file types' "$link_count"
 
         # remove previously downloaded URLs
         if [[ -n $exclude_links_pathfile ]]; then
