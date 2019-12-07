@@ -2494,7 +2494,7 @@ ScrapeGoogleForLinks()
 
     #-------------------------- "These are the regexes you're looking for" --------------------------------
     # Turns a single file of Google HTML, CSS and Javascript into a neat textfile, one URL per row,
-    # and each pointing to an original image address found by Google.
+    # and each pointing to an original image address found by the Google image search engine.
     #------------------------------------------------------------------------------------------------------
     #
     # sed   1. add 2 x newline chars before each occurence of '<div',
@@ -2523,15 +2523,20 @@ ScrapeGoogleForLinks()
 ScrapeBingForLinks()
     {
 
+    #-------------------------- "These are the regexes you're looking for" --------------------------------
+    # Turns a single file of Bing HTML, CSS and Javascript into a neat textfile, one URL per row,
+    # and each pointing to an original image address found by the Bing image search engine.
+    #------------------------------------------------------------------------------------------------------
+
     # shellcheck disable=SC2002
     cat "$pages_pathfile" \
-    | sed 's|murl&quot;:&quot;http|\n&|g' \
-    | sed 's|turl|\n&|g' \
+    | $SED_BIN 's|murl&quot;:&quot;http|\n&|g' \
+    | $SED_BIN 's|turl|\n&|g' \
     | grep murl \
-    | sed 's|^murl&quot;:&quot;||' \
-    | sed '/&amp/d' \
-    | sed '/^var /d' \
-    | sed 's|&quot.*||' \
+    | $SED_BIN 's|^murl&quot;:&quot;||' \
+    | $SED_BIN '/&amp/d' \
+    | $SED_BIN '/^var /d' \
+    | $SED_BIN 's|&quot.*||' \
     > "$image_links_pathfile"
 
     }
