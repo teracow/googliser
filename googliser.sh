@@ -68,7 +68,7 @@ InitOK()
     # script constants
     local -r SCRIPT_VERSION=191208
     readonly SCRIPT_FILE=googliser.sh
-    readonly IMAGE_FILE_PREFIX=google-image
+    readonly IMAGE_FILE_PREFIX=image
     readonly DEBUG_FILE=debug.log
     readonly USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
     readonly SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
@@ -86,6 +86,7 @@ InitOK()
 
     # limits
     readonly GOOGLE_RESULTS_MAX=1000
+    readonly BING_RESULTS_MAX=1000
     readonly PARALLEL_MAX=512
     readonly RETRIES_MAX=100
     readonly TIMEOUT_SECONDS_MAX=600
@@ -212,6 +213,7 @@ InitOK()
         DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
         DebugFuncVar GOOGLE_RESULTS_MAX
+        DebugFuncVar BING_RESULTS_MAX
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
         DebugFuncVar TEMP_PATH
@@ -1060,7 +1062,7 @@ ValidateParams()
         [[ -n $image_colour_type ]] && image_colour_search=ic:$image_colour_type
     fi
 
-    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search ||-n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
+    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search || -n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
         advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
     fi
 
@@ -1095,12 +1097,12 @@ ProcessPhrase()
     {
 
     # this function:
-    #   searches Google for a phrase,
+    #   searches for a phrase,
     #   creates a URL list,
     #   downloads each image from URL list,
     #   builds a gallery from these downloaded images if requested.
 
-    # $1 = phrase to search Google Images for. Enclose whitespace in quotes.
+    # $1 = phrase to search for. Enclose whitespace in quotes.
     # $? = 0 if OK, 1 if not
 
     DebugFuncEntry
@@ -1134,7 +1136,7 @@ ProcessPhrase()
     DebugFuncVar target_path
 
     CreateTargetPath || errorcode=3
-    GetPages
+    GetGooglePages
     ScrapeGoogleForLinks
     ExamineLinks || errorcode=4
     GetImages || errorcode=5
@@ -1155,8 +1157,6 @@ ProcessLinkList()
     # This function:
     #   downloads each image from URL list,
     #   builds a gallery from these downloaded images if requested.
-
-# function is in-development. Code-duplication between ProcessLinkList() and ProcessPhrase() will be removed when I can.
 
     DebugFuncEntry
 
@@ -1219,7 +1219,7 @@ CreateTargetPath()
 
     }
 
-GetPages()
+GetGooglePages()
     {
 
     [[ $errorcode -ne 0 ]] && return 0
@@ -1253,7 +1253,7 @@ GetPages()
 
         # create run file here as it takes too long to happen in background function
         touch "$page_run_count_path/$page_index"
-        { GetPage_ "$page" "$page_index" & } 2>/dev/null
+        { GetGooglePage_ "$page" "$page_index" & } 2>/dev/null
 
         RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max
     done
@@ -1277,14 +1277,14 @@ GetPages()
 
     }
 
-GetPage_()
+GetGooglePage_()
     {
 
     # * This function runs as a forked process *
     # $1 = page to load           e.g. 0, 1, 2, 3, etc...
     # $2 = debug index identifier       e.g. (02)
 
-    :DownloadPage()
+    :DownloadGooglePage()
         {
 
         # echo = downloader stdout & stderr
@@ -1356,7 +1356,7 @@ GetPage_()
 
     section='mid-download'
     action='download page'
-    response=$(:DownloadPage)
+    response=$(:DownloadGooglePage)
     get_page_result=$?
     UpdateRunLog "$section" "$action" "$response" "$get_page_result" "$(DownloaderReturnCodes "$get_page_result")"
 
@@ -2560,7 +2560,7 @@ CTRL_C_Captured()
 AbortPages()
     {
 
-    # remove any files where processing by [GetPage_] was incomplete
+    # remove any files where processing by [GetGooglePage_] was incomplete
 
     DebugFuncEntry
 
@@ -3472,6 +3472,13 @@ ShowGoogle()
     {
 
     echo -n "$(ColourTextBrightBlue 'G')$(ColourTextBrightRed 'o')$(ColourTextBrightOrange 'o')$(ColourTextBrightBlue 'g')$(ColourTextBrightGreen 'l')$(ColourTextBrightRed 'e')"
+
+    }
+
+ShowBing()
+    {
+
+    echo -n "$(ColourTextBrightGreen 'Bing')"
 
     }
 
