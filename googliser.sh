@@ -2520,6 +2520,22 @@ ScrapeGoogleForLinks()
 
     }
 
+ScrapeBingForLinks()
+    {
+
+    # shellcheck disable=SC2002
+    cat "$pages_pathfile" \
+    | sed 's|murl&quot;:&quot;http|\n&|g' \
+    | sed 's|turl|\n&|g' \
+    | grep murl \
+    | sed 's|^murl&quot;:&quot;||' \
+    | sed '/&amp/d' \
+    | sed '/^var /d' \
+    | sed 's|&quot.*||' \
+    > "$image_links_pathfile"
+
+    }
+
 CTRL_C_Captured()
     {
 
