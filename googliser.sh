@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191207
+    local -r SCRIPT_VERSION=191208
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=google-image
     readonly DEBUG_FILE=debug.log
@@ -1135,7 +1135,7 @@ ProcessPhrase()
 
     CreateTargetPath || errorcode=3
     GetPages
-    ScrapePages
+    ScrapeGoogleForLinks
     ExamineLinks || errorcode=4
     GetImages || errorcode=5
     ReindexRename
@@ -2489,7 +2489,7 @@ RenameExtAsType()
 
     }
 
-ScrapePages()
+ScrapeGoogleForLinks()
     {
 
     #-------------------------- "These are the regexes you're looking for" --------------------------------
