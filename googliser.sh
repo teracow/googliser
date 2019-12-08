@@ -886,8 +886,7 @@ ValidateGoogleParameters()
 
     # all elements of Google's URL syntax should be validated and calculated here, except for 'start page' and 'result index'. These will be added later.
 
-    compiled_query_primary=''           # query string before 'start page' and 'result index'
-    compiled_query_secondary=''         # the remainder of the query string to be added later
+    compiled_query_parameters=''           # query string without 'start page' and 'result index'
 
     local -r SERVER='https://www.google.com'
     local -r SAFE_SEARCH_QUERY="&q=$safe_search_phrase"
@@ -1095,8 +1094,7 @@ ValidateGoogleParameters()
         advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
     fi
 
-    compiled_query_primary="$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${SAFE_SEARCH_QUERY}${SEARCH_LANGUAGE}${SEARCH_STYLE}"
-    compiled_query_secondary="${advanced_search}${safesearch_flag}"
+    compiled_query_parameters="$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${SAFE_SEARCH_QUERY}${SEARCH_LANGUAGE}${SEARCH_STYLE}${advanced_search}${safesearch_flag}"
 
     return 0
 
@@ -1323,7 +1321,7 @@ GetGooglePage_()
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
-        local compiled_query="${compiled_query_primary}&ijn=$((page-1))&start=$(((page-1)*100))${compiled_query_secondary}"
+        local compiled_query="${compiled_query_parameters}&ijn=$((page-1))&start=$(((page-1)*100))"
         local runcmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
