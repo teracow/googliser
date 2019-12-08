@@ -168,7 +168,7 @@ InitOK()
     WhatAreMyArgs
     ShowHelp || return 1
     ShowTitle
-    ValidateParams || return 1
+    ValidateScriptParameters || return 1
 
     if [[ $errorcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
@@ -493,7 +493,7 @@ ShowBasicHelp()
     echo
     echo " Search '$(ShowGoogle) $(ColourTextBrightBlue images)' then download a number of images matching a phrase"
     echo
-    echo " Usage: $(ColourTextBold "$LAUNCHER") -p [PHRASE] -dEGhLqsSz [PARAMETERS] FILE,PATH,STRING,INTEGER,PRESET ..."
+    echo " Usage: $(ColourTextBold "$LAUNCHER") -p [TEXT] -dEGhLqsSz [PARAMETERS] FILE,PATH,TEXT,INTEGER,PRESET ..."
 
     }
 
@@ -663,23 +663,10 @@ ShowExtendedHelp()
 
     }
 
-ValidateParams()
+ValidateScriptParameters()
     {
 
     # $? = 0 if OK, 1 if not
-
-    local aspect_ratio_type=''
-    local aspect_ratio_search=''
-    local image_colour_type=''
-    local image_colour_search=''
-    local image_type_search=''
-    local image_format_search=''
-    local min_pixels_type=''
-    local min_pixels_search=''
-    local recent_type=''
-    local recent_search=''
-    local usage_rights_type=''
-    local usage_rights_search=''
 
     if [[ $links_only = true ]]; then
         gallery=false
@@ -889,6 +876,55 @@ ValidateParams()
             ;;
     esac
 
+
+    return 0
+
+    }
+
+ValidateGoogleParameters()
+    {
+
+    # all elements of Google's URL syntax should be validated and calculated here, except for 'start page' and 'result index'. These will be added later.
+
+    compiled_query_primary=''           # query string before 'start page' and 'result index'
+    compiled_query_secondary=''         # the remainder of the query string to be added later
+
+    local -r SERVER='https://www.google.com'
+    local -r SAFE_SEARCH_QUERY="&q=$safe_search_phrase"
+    local -r SEARCH_TYPE='&tbm=isch'        # search for images
+    local -r SEARCH_LANGUAGE='&hl=en'       # language
+    local -r SEARCH_STYLE='&site=imghp'     # result layout style
+    local -r SEARCH_SIMILAR='&filter=0'     # don't omit similar results
+
+    local aspect_ratio_type=''
+    local aspect_ratio_search=''
+    local image_colour_type=''
+    local image_colour_search=''
+    local image_type_search=''
+    local image_format_search=''
+    local min_pixels_type=''
+    local min_pixels_search=''
+    local recent_type=''
+    local recent_search=''
+    local usage_rights_type=''
+    local usage_rights_search=''
+
+    local search_match_type='&nfpr='        # exact or loose (suggested) search
+
+    if [[ $exact_search = true ]]; then
+        search_match_type+=1
+    else
+        search_match_type+=0
+    fi
+
+    local safesearch_flag='&safe='          # Google's SafeSearch content filter
+
+    if [[ $safesearch_on = true ]]; then
+        safesearch_flag+=active
+    else
+        safesearch_flag+=inactive
+    fi
+
     if [[ -n $min_pixels ]]; then
         case "$min_pixels" in
             qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
@@ -905,7 +941,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
-                echo
                 ShowFail ' !! (-m, --minimum-pixels) preset invalid'
                 errorcode=2
                 return 1
@@ -930,7 +965,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
-                echo
                 ShowFail ' !! (-a, --aspect-ratio) preset invalid'
                 errorcode=2
                 return 1
@@ -946,7 +980,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $image_type is invalid'
-                echo
                 ShowFail ' !! (--type) preset invalid'
                 errorcode=2
                 return 1
@@ -961,7 +994,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $image_format is invalid'
-                echo
                 ShowFail ' !! (--format) preset invalid'
                 errorcode=2
                 return 1
@@ -985,7 +1017,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
-                echo
                 ShowFail ' !! (--usage-rights) preset invalid'
                 errorcode=2
                 return 1
@@ -1016,7 +1047,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $recent is invalid'
-                echo
                 ShowFail ' !! (--recent) preset invalid'
                 errorcode=2
                 return 1
@@ -1053,7 +1083,6 @@ ValidateParams()
                 ;;
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
-                echo
                 ShowFail ' !! (--colour, --color) preset invalid'
                 errorcode=2
                 return 1
@@ -1065,6 +1094,9 @@ ValidateParams()
     if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search || -n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
         advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
     fi
+
+    compiled_query_primary="$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${SAFE_SEARCH_QUERY}${SEARCH_LANGUAGE}${SEARCH_STYLE}"
+    compiled_query_secondary="${advanced_search}${safesearch_flag}"
 
     return 0
 
@@ -1136,6 +1168,7 @@ ProcessPhrase()
     DebugFuncVar target_path
 
     CreateTargetPath || errorcode=3
+    ValidateGoogleParameters
     GetGooglePages
     ScrapeGoogleForLinks
     ExamineLinks || errorcode=4
@@ -1290,41 +1323,13 @@ GetGooglePage_()
         # echo = downloader stdout & stderr
         # $? = downloader return code
 
-        local search_page="&ijn=$((page-1))"
-        local search_start="&start=$(((page-1)*100))"
-        local SERVER='https://www.google.com'
-        local safe_search_query="&q=$safe_search_phrase"
+        local compiled_query="${compiled_query_primary}&ijn=$((page-1))&start=$(((page-1)*100))${compiled_query_secondary}"
         local runcmd=''
 
-        # ------------- assumptions regarding Google's URL parameters ---------------------------------------------------
-        local SEARCH_TYPE='&tbm=isch'       # search for images
-        local SEARCH_LANGUAGE='&hl=en'      # language
-        local SEARCH_STYLE='&site=imghp'    # result layout style
-        local SEARCH_SIMILAR='&filter=0'    # don't omit similar results
-
-        local search_match_type='&nfpr='    # exact or loose (suggested) search
-
-        if [[ $exact_search = true ]]; then
-            search_match_type+=1
-        else
-            search_match_type+=0
-        fi
-
-        local safesearch_flag='&safe='      # Google's SafeSearch content filter
-
-        if [[ $safesearch_on = true ]]; then
-            safesearch_flag+=active
-        else
-            safesearch_flag+=inactive
-        fi
-
-        # compiled search string
-        local search_string="\"$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${safe_search_query}${SEARCH_LANGUAGE}${SEARCH_STYLE}${search_page}${search_start}${advanced_search}${safesearch_flag}\""
-
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 $search_string $USERAGENT --output-document \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 \"${compiled_query}\" $USERAGENT --output-document \"$targetpage_pathfile\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            runcmd="$DOWNLOADER_BIN --max-time 30 $search_string $USERAGENT --output \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --max-time 30 $compiled_query $USERAGENT --output \"$targetpage_pathfile\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
@@ -1718,6 +1723,8 @@ ExamineLinks()
 
         }
 
+    [[ $errorcode -ne 0 ]] && return 0
+
     DebugFuncEntry
 
     link_count=0
@@ -1753,7 +1760,7 @@ ExamineLinks()
         grep -iE "$ends_with" "$image_links_pathfile" > "$image_links_pathfile.tmp" 2>/dev/null
         [[ -e $image_links_pathfile.tmp ]] && mv "$image_links_pathfile.tmp" "$image_links_pathfile"
         :GetLinkCount
-        DebugFuncVal 'found unrecognised file types' "$((old_link_count-link_count))"
+        DebugFuncVal 'unrecognised file types' "$((old_link_count-link_count))"
 
         DebugFuncComment 'stats complete'
         DebugFuncVarAdjust 'after removing unrecognised file types' "$link_count"
@@ -2511,6 +2518,8 @@ ScrapeGoogleForLinks()
     #
     #------------------------------------------------------------------------------------------------------
 
+    [[ $errorcode -ne 0 ]] && return 0
+
     # shellcheck disable=SC2002
     cat "$pages_pathfile" \
     | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
@@ -2527,6 +2536,8 @@ ScrapeBingForLinks()
     # Turns a single file of Bing HTML, CSS and Javascript into a neat textfile, one URL per row,
     # and each pointing to an original image address found by the Bing image search engine.
     #------------------------------------------------------------------------------------------------------
+
+    [[ $errorcode -ne 0 ]] && return 0
 
     # shellcheck disable=SC2002
     cat "$pages_pathfile" \
