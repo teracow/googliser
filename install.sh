@@ -201,7 +201,24 @@ _GoogliserCompletion()
     # Display file completion for options that require files as arguments
     case "$prev" in
         --input-links|--exclude-links|-i|--input-phrases)
-        _filedir ;;
+          _filedir ;;
+        -a|--aspect-ratio)
+          COMPREPLY=( $( compgen -W "tall square wide panoramic" -- ${cur} ) );;
+        --colour|--color)
+          COMPREPLY=( $( compgen -W "any full black-white bw transparent clear red \
+                                    orange yellow green teal cyan blue purple magenta \
+                                    pink white grey gray black brown" -- ${cur} ) );;
+        --format)
+          COMPREPLY=( $( compgen -W "jpg png gif bmp svg webp ico craw" -- ${cur} ) );;
+        -m|--minimum-pixels)
+          COMPREPLY=( $( compgen -W "qsvga vga svga xga 2mp 4mp 6mp 8mp 10mp 12mp 15mp\
+                                    20mp 40mp 70mp large medium icon" -- ${cur} ) );;
+        -R|--recent)
+          COMPREPLY=( $( compgen -W "any hour day week month year" -- ${cur} ) );;
+        --type)
+          COMPREPLY=( $( compgen -W "face photo clipart lineart animated" -- ${cur} ) );;
+        --usage-rights)
+          COMPREPLY=( $( compgen -W "reuse reuse-with-mod noncomm-reuse noncomm-reuse-with-mod" -- ${cur} ) );;
     esac
 
     return 0
