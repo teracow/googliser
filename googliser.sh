@@ -168,6 +168,7 @@ InitOK()
     WhatAreMyArgs
     ShowHelp || return 1
     ShowTitle
+    [[ $verbose = true ]] && echo
     ValidateScriptParameters || { errorcode=2; return 1 ;}
 
     if [[ $errorcode -eq 0 ]]; then
@@ -688,7 +689,6 @@ ValidateScriptParameters()
     fi
 
     if [[ $gallery = false && $gallery_delete_images = true && $links_only = false ]]; then
-        echo
         echo " Let's review. Your chosen options will:"
         echo " 1. not create a gallery,"
         echo " 2. delete the downloaded images,"
@@ -698,7 +698,6 @@ ValidateScriptParameters()
     fi
 
     if [[ -n $input_links_pathfile && $links_only = true && $save_links = true ]]; then
-        echo
         echo " Let's review. Your chosen options will:"
         echo " 1. use an input file with a list of URL links,"
         echo " 2. don't download any images,"
@@ -710,7 +709,6 @@ ValidateScriptParameters()
     case ${user_images_requested#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $user_images_requested is invalid'
-            echo
             ShowFail ' !! number specified after (-n, --number) must be a valid integer'
             return 1
             ;;
@@ -736,7 +734,6 @@ ValidateScriptParameters()
     if [[ -n $input_links_pathfile ]]; then
         if [[ ! -e $input_links_pathfile ]]; then
             DebugScriptFail '$input_links_pathfile was not found'
-            echo
             ShowFail ' !! input links file  (--input-links) was not found'
             return 1
         fi
@@ -745,7 +742,6 @@ ValidateScriptParameters()
     if [[ -n $input_phrases_pathfile ]]; then
         if [[ ! -e $input_phrases_pathfile ]]; then
             DebugScriptFail '$input_phrases_pathfile was not found'
-            echo
             ShowFail ' !! input phrases file  (-i, --input-phrases) was not found'
             return 1
         fi
@@ -758,7 +754,6 @@ ValidateScriptParameters()
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $parallel_limit is invalid'
-            echo
             ShowFail ' !! number specified after (-P, --parallel) must be a valid integer'
             return 1
             ;;
@@ -778,7 +773,6 @@ ValidateScriptParameters()
     case ${timeout_seconds#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $timeout_seconds is invalid'
-            echo
             ShowFail ' !! number specified after (-t, --timeout) must be a valid integer'
             return 1
             ;;
@@ -798,7 +792,6 @@ ValidateScriptParameters()
     case ${retries#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $retries is invalid'
-            echo
             ShowFail ' !! number specified after (-r, --retries) must be a valid integer'
             return 1
             ;;
@@ -818,7 +811,6 @@ ValidateScriptParameters()
     case ${upper_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $upper_size_bytes is invalid'
-            echo
             ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer'
             return 1
             ;;
@@ -833,7 +825,6 @@ ValidateScriptParameters()
     case ${lower_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $lower_size_bytes is invalid'
-            echo
             ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer'
             return 1
             ;;
@@ -853,7 +844,6 @@ ValidateScriptParameters()
     case ${gallery_border_pixels#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
-            echo
             ShowFail ' !! number specified after (-b, --border-pixels) must be a valid integer'
             return 1
             ;;
@@ -1120,7 +1110,6 @@ ProcessPhrase()
 
     local func_startseconds=$(date +%s)
 
-    [[ $verbose = true ]] && echo
     DebugFuncComment 'user phrase parameters'
 
     if [[ -z $1 ]]; then
@@ -1218,7 +1207,6 @@ CreateTargetPath()
         result=$?
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
-            echo
             ShowFail ' !! unable to create target path'
             returncode=1
         else
@@ -1978,7 +1966,7 @@ Finish()
                 ;;
             [3-6])
                 echo
-                echo " $(ShowFail 'done with errors')"
+                ShowFail 'done with errors'
                 ;;
             *)
                 ;;
@@ -2135,7 +2123,7 @@ FindDownloader()
         DebugFuncFail "$stage_description" "($result)"
         DebugFuncVar runmsg
         echo
-        echo " -> $(ShowFail 'Unable to access the Internet')"
+        ShowFail 'Unable to access the Internet'
         errorcode=8
         return 1
     fi
@@ -3485,22 +3473,9 @@ ShowFail()
     # $1 = message to show in colour if colour is set
 
     if [[ $display_colour = true ]]; then
-        echo -n "$(ColourTextBrightRed "$1")"
+        echo "$(ColourTextBrightRed "$1")"
     else
-        echo -n "$1"
-    fi
-
-    }
-
-ShowSuccess()
-    {
-
-    # $1 = message to show in colour if colour is set
-
-    if [[ $display_colour = true ]]; then
-        echo -n "$(ColourTextBrightGreen "$1")"
-    else
-        echo -n "$1"
+        echo "$1"
     fi
 
     }
