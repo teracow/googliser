@@ -1327,9 +1327,9 @@ GetGooglePage_()
         local runcmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 \"${compiled_query}\" $USERAGENT --output-document \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 \"${compiled_query}\" $USERAGENT --output-document \"${targetpage_pathfile}\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            runcmd="$DOWNLOADER_BIN --max-time 30 $compiled_query $USERAGENT --output \"$targetpage_pathfile\""
+            runcmd="$DOWNLOADER_BIN --max-time 30 \"${compiled_query}\" $USERAGENT --output \"${targetpage_pathfile}\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
