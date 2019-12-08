@@ -274,7 +274,7 @@ BuildWorkPaths()
     done
 
     if [[ $OK = false ]]; then
-        echo "! Unable to create a temporary build directory!"
+        ShowFail 'Unable to create a temporary build directory'
         errorcode=7
         return 1
     fi
@@ -697,15 +697,6 @@ ValidateScriptParameters()
         gallery=false
     fi
 
-    if [[ $gallery = false && $gallery_delete_images = true && $links_only = false ]]; then
-        echo " Let's review. Your chosen options will:"
-        echo " 1. not create a gallery,"
-        echo " 2. delete the downloaded images,"
-        echo " 3. not save the URL links list to file."
-        echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
-        return 1
-    fi
-
     if [[ -n $input_links_pathfile && $links_only = true && $save_links = true ]]; then
         echo " Let's review. Your chosen options will:"
         echo " 1. use an input file with a list of URL links,"
@@ -718,7 +709,7 @@ ValidateScriptParameters()
     case ${user_images_requested#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $user_images_requested is invalid'
-            ShowFail ' !! number specified after (-n, --number) must be a valid integer'
+            ShowFail 'Number specified after (-n, --number) must be a valid integer'
             return 1
             ;;
         *)
@@ -743,7 +734,7 @@ ValidateScriptParameters()
     if [[ -n $input_links_pathfile ]]; then
         if [[ ! -e $input_links_pathfile ]]; then
             DebugScriptFail '$input_links_pathfile was not found'
-            ShowFail ' !! input links file  (--input-links) was not found'
+            ShowFail 'Input links file (--input-links) was not found'
             return 1
         fi
     fi
@@ -751,7 +742,7 @@ ValidateScriptParameters()
     if [[ -n $input_phrases_pathfile ]]; then
         if [[ ! -e $input_phrases_pathfile ]]; then
             DebugScriptFail '$input_phrases_pathfile was not found'
-            ShowFail ' !! input phrases file  (-i, --input-phrases) was not found'
+            ShowFail 'Input phrases file  (-i, --input-phrases) was not found'
             return 1
         fi
     fi
@@ -763,7 +754,7 @@ ValidateScriptParameters()
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $parallel_limit is invalid'
-            ShowFail ' !! number specified after (-P, --parallel) must be a valid integer'
+            ShowFail 'Number specified after (-P, --parallel) must be a valid integer'
             return 1
             ;;
         *)
@@ -782,7 +773,7 @@ ValidateScriptParameters()
     case ${timeout_seconds#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $timeout_seconds is invalid'
-            ShowFail ' !! number specified after (-t, --timeout) must be a valid integer'
+            ShowFail 'Number specified after (-t, --timeout) must be a valid integer'
             return 1
             ;;
         *)
@@ -801,7 +792,7 @@ ValidateScriptParameters()
     case ${retries#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $retries is invalid'
-            ShowFail ' !! number specified after (-r, --retries) must be a valid integer'
+            ShowFail 'Number specified after (-r, --retries) must be a valid integer'
             return 1
             ;;
         *)
@@ -820,7 +811,7 @@ ValidateScriptParameters()
     case ${upper_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $upper_size_bytes is invalid'
-            ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer'
+            ShowFail 'Number specified after (-u, --upper-size) must be a valid integer'
             return 1
             ;;
         *)
@@ -834,7 +825,7 @@ ValidateScriptParameters()
     case ${lower_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $lower_size_bytes is invalid'
-            ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer'
+            ShowFail 'Number specified after (-l, --lower-size) must be a valid integer'
             return 1
             ;;
         *)
@@ -853,7 +844,7 @@ ValidateScriptParameters()
     case ${gallery_border_pixels#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
-            ShowFail ' !! number specified after (-b, --border-pixels) must be a valid integer'
+            ShowFail 'Number specified after (-b, --border-pixels) must be a valid integer'
             return 1
             ;;
         *)
@@ -927,7 +918,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
-                ShowFail ' !! (-m, --minimum-pixels) preset invalid'
+                ShowFail 'Value specified after (-m, --minimum-pixels) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -950,7 +941,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
-                ShowFail ' !! (-a, --aspect-ratio) preset invalid'
+                ShowFail 'Value specified after (-a, --aspect-ratio) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -964,7 +955,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_type is invalid'
-                ShowFail ' !! (--type) preset invalid'
+                ShowFail 'Value specified after (--type) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -977,7 +968,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_format is invalid'
-                ShowFail ' !! (--format) preset invalid'
+                ShowFail 'Value specified after (--format) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -999,7 +990,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
-                ShowFail ' !! (--usage-rights) preset invalid'
+                ShowFail 'Value specified after (--usage-rights) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -1028,7 +1019,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $recent is invalid'
-                ShowFail ' !! (--recent) preset invalid'
+                ShowFail 'Value specified after (--recent) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -1063,7 +1054,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
-                ShowFail ' !! (--colour, --color) preset invalid'
+                ShowFail 'Value specified after (--colour, --color) must be a valid preset'
                 return 1
                 ;;
         esac
@@ -1123,7 +1114,7 @@ ProcessPhrase()
 
     if [[ -z $1 ]]; then
         DebugFuncFail phrase unspecified
-        ShowFail ' !! search phrase (-p, --phrase) was unspecified'
+        ShowFail 'search phrase (-p, --phrase) unspecified'
         errorcode=2
         return 1
     fi
@@ -1216,7 +1207,7 @@ CreateTargetPath()
         result=$?
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
-            ShowFail ' !! unable to create target path'
+            ShowFail 'Unable to create target path'
             returncode=1
         else
             DebugFuncSuccess 'create target path'
@@ -1948,7 +1939,7 @@ RenderGallery()
     else
         UpdateProgress "$(ColourTextBrightRed 'failed!')"
         echo
-        ShowFail ' !! unable to render a thumbnail gallery image'
+        ShowFail 'Unable to render a thumbnail gallery image'
     fi
 
     [[ $result -eq 0 && $gallery_delete_images = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
@@ -1975,7 +1966,7 @@ Finish()
                 ;;
             [3-6])
                 echo
-                ShowFail 'done with errors'
+                ShowFail 'Done - with errors'
                 ;;
             *)
                 ;;
@@ -3482,9 +3473,9 @@ ShowFail()
     # $1 = message to show in colour if colour is set
 
     if [[ $display_colour = true ]]; then
-        ColourTextBrightRed "$1"
+        ColourTextBrightRed " $1"; echo
     else
-        echo "$1"
+        echo " $1"
     fi
 
     }
