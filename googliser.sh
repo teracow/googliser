@@ -2125,8 +2125,8 @@ FindDownloader()
     local runmsg=''
     local result=0
 
-    if ! DOWNLOADER_BIN=$(command -v wget); then
-        if ! DOWNLOADER_BIN=$(command -v curl); then
+    if ! DOWNLOADER_BIN=$(command -v curl); then
+        if ! DOWNLOADER_BIN=$(command -v wget); then
             SuggestInstall wget
             errorcode=1
             return 1
