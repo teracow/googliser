@@ -168,7 +168,7 @@ InitOK()
     WhatAreMyArgs
     ShowHelp || return 1
     ShowTitle
-    ValidateScriptParameters || return 1
+    ValidateScriptParameters || { errorcode=2; return 1 ;}
 
     if [[ $errorcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
@@ -694,7 +694,6 @@ ValidateScriptParameters()
         echo " 2. delete the downloaded images,"
         echo " 3. not save the URL links list to file."
         echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
-        errorcode=2
         return 1
     fi
 
@@ -705,7 +704,6 @@ ValidateScriptParameters()
         echo " 2. don't download any images,"
         echo " 3. save the URL links list to file."
         echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
-        errorcode=2
         return 1
     fi
 
@@ -714,7 +712,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $user_images_requested is invalid'
             echo
             ShowFail ' !! number specified after (-n, --number) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -741,7 +738,6 @@ ValidateScriptParameters()
             DebugScriptFail '$input_links_pathfile was not found'
             echo
             ShowFail ' !! input links file  (--input-links) was not found'
-            errorcode=2
             return 1
         fi
     fi
@@ -751,7 +747,6 @@ ValidateScriptParameters()
             DebugScriptFail '$input_phrases_pathfile was not found'
             echo
             ShowFail ' !! input phrases file  (-i, --input-phrases) was not found'
-            errorcode=2
             return 1
         fi
     fi
@@ -765,7 +760,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $parallel_limit is invalid'
             echo
             ShowFail ' !! number specified after (-P, --parallel) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -786,7 +780,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $timeout_seconds is invalid'
             echo
             ShowFail ' !! number specified after (-t, --timeout) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -807,7 +800,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $retries is invalid'
             echo
             ShowFail ' !! number specified after (-r, --retries) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -828,7 +820,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $upper_size_bytes is invalid'
             echo
             ShowFail ' !! number specified after (-u, --upper-size) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -844,7 +835,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $lower_size_bytes is invalid'
             echo
             ShowFail ' !! number specified after (-l, --lower-size) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -865,7 +855,6 @@ ValidateScriptParameters()
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
             echo
             ShowFail ' !! number specified after (-b, --border-pixels) must be a valid integer'
-            errorcode=2
             return 1
             ;;
         *)
@@ -875,7 +864,6 @@ ValidateScriptParameters()
             fi
             ;;
     esac
-
 
     return 0
 
@@ -941,7 +929,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
                 ShowFail ' !! (-m, --minimum-pixels) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -965,7 +952,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
                 ShowFail ' !! (-a, --aspect-ratio) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -980,7 +966,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $image_type is invalid'
                 ShowFail ' !! (--type) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -994,7 +979,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $image_format is invalid'
                 ShowFail ' !! (--format) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -1017,7 +1001,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
                 ShowFail ' !! (--usage-rights) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -1047,7 +1030,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $recent is invalid'
                 ShowFail ' !! (--recent) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -1083,7 +1065,6 @@ ValidateGoogleParameters()
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
                 ShowFail ' !! (--colour, --color) preset invalid'
-                errorcode=2
                 return 1
                 ;;
         esac
@@ -1165,8 +1146,8 @@ ProcessPhrase()
 
     DebugFuncVar target_path
 
+    ValidateGoogleParameters || errorcode=2
     CreateTargetPath || errorcode=3
-    ValidateGoogleParameters
     GetGooglePages
     ScrapeGoogleForLinks
     ExamineLinks || errorcode=4
