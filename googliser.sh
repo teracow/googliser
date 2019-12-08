@@ -148,7 +148,7 @@ InitOK()
     recent=''
     usage_rights=''
 
-    BuildWorkPaths
+    BuildWorkPaths || return 1
 
     DebugScriptEntry
     DebugScriptNow
@@ -232,43 +232,52 @@ InitOK()
 BuildWorkPaths()
     {
 
-    Flee() { echo "! Unable to create a temporary build directory! Exiting."; exit 7 ;}
+    local OK=false
 
-    TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || Flee
+    while true; do      # yes, it's a single-run loop - easier to abort when things go wrong
+        TEMP_PATH=$(mktemp -d "/tmp/${SCRIPT_FILE%.*}.$$.XXX") || break
 
-    page_run_count_path=$TEMP_PATH/pages.running.count
-    mkdir -p "$page_run_count_path" || Flee
+        page_run_count_path=$TEMP_PATH/pages.running.count
+        mkdir -p "$page_run_count_path" || break
 
-    page_success_count_path=$TEMP_PATH/pages.success.count
-    mkdir -p "$page_success_count_path" || Flee
+        page_success_count_path=$TEMP_PATH/pages.success.count
+        mkdir -p "$page_success_count_path" || break
 
-    page_fail_count_path=$TEMP_PATH/pages.fail.count
-    mkdir -p "$page_fail_count_path" || Flee
+        page_fail_count_path=$TEMP_PATH/pages.fail.count
+        mkdir -p "$page_fail_count_path" || break
 
-    page_abort_count_path=$TEMP_PATH/pages.abort.count
-    mkdir -p "$page_abort_count_path" || Flee
+        page_abort_count_path=$TEMP_PATH/pages.abort.count
+        mkdir -p "$page_abort_count_path" || break
 
-    image_run_count_path=$TEMP_PATH/images.running.count
-    mkdir -p "$image_run_count_path" || Flee
+        image_run_count_path=$TEMP_PATH/images.running.count
+        mkdir -p "$image_run_count_path" || break
 
-    image_success_count_path=$TEMP_PATH/images.success.count
-    mkdir -p "$image_success_count_path" || Flee
+        image_success_count_path=$TEMP_PATH/images.success.count
+        mkdir -p "$image_success_count_path" || break
 
-    image_fail_count_path=$TEMP_PATH/images.fail.count
-    mkdir -p "$image_fail_count_path" || Flee
+        image_fail_count_path=$TEMP_PATH/images.fail.count
+        mkdir -p "$image_fail_count_path" || break
 
-    image_abort_count_path=$TEMP_PATH/images.abort.count
-    mkdir -p "$image_abort_count_path" || Flee
+        image_abort_count_path=$TEMP_PATH/images.abort.count
+        mkdir -p "$image_abort_count_path" || break
 
-    image_sizetest_pathfile=$TEMP_PATH/test-image-size
-    pages_pathfile=$TEMP_PATH/page.html
-    gallery_title_pathfile=$TEMP_PATH/gallery.title.png
-    gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
-    gallery_background_pathfile=$TEMP_PATH/gallery.background.png
-    image_links_pathfile=$TEMP_PATH/$image_links_file
-    debug_pathfile=$TEMP_PATH/$DEBUG_FILE
+        image_sizetest_pathfile=$TEMP_PATH/test-image-size
+        pages_pathfile=$TEMP_PATH/page.html
+        gallery_title_pathfile=$TEMP_PATH/gallery.title.png
+        gallery_thumbnails_pathfile=$TEMP_PATH/gallery.thumbnails.png
+        gallery_background_pathfile=$TEMP_PATH/gallery.background.png
+        image_links_pathfile=$TEMP_PATH/$image_links_file
+        debug_pathfile=$TEMP_PATH/$DEBUG_FILE
 
-    unset -f Flee
+        OK=true
+        break
+    done
+
+    if [[ $OK = false ]]; then
+        echo "! Unable to create a temporary build directory!"
+        errorcode=7
+        return 1
+    fi
 
     }
 
@@ -3473,7 +3482,7 @@ ShowFail()
     # $1 = message to show in colour if colour is set
 
     if [[ $display_colour = true ]]; then
-        echo "$(ColourTextBrightRed "$1")"
+        ColourTextBrightRed "$1"
     else
         echo "$1"
     fi
