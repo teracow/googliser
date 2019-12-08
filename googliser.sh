@@ -169,7 +169,7 @@ InitOK()
     ShowHelp || return 1
     ShowTitle
     [[ $verbose = true ]] && echo
-    ValidateScriptParameters || { errorcode=2; return 1 ;}
+    ValidateScriptParameters || return 1
 
     if [[ $errorcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
@@ -232,6 +232,8 @@ InitOK()
 BuildWorkPaths()
     {
 
+    # $? = 0 if OK, 1 if not
+
     local OK=false
 
     while true; do      # yes, it's a single-run loop - easier to abort when things go wrong
@@ -278,6 +280,8 @@ BuildWorkPaths()
         errorcode=7
         return 1
     fi
+
+    return 0
 
     }
 
@@ -678,6 +682,8 @@ ValidateScriptParameters()
 
     # $? = 0 if OK, 1 if not
 
+    local OK=false
+
     if [[ $links_only = true ]]; then
         gallery=false
         save_links=true
@@ -697,163 +703,173 @@ ValidateScriptParameters()
         gallery=false
     fi
 
-    if [[ -n $input_links_pathfile && $links_only = true && $save_links = true ]]; then
-        echo " Let's review. Your chosen options will:"
-        echo " 1. use an input file with a list of URL links,"
-        echo " 2. don't download any images,"
-        echo " 3. save the URL links list to file."
-        echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
+    while true; do
+        if [[ -n $input_links_pathfile && $links_only = true && $save_links = true ]]; then
+            echo " Let's review. Your chosen options will:"
+            echo " 1. use an input file with a list of URL links,"
+            echo " 2. don't download any images,"
+            echo " 3. save the URL links list to file."
+            echo " So... I've nothing to do. Might be time to (R)ead-(T)he-(M)anual. ;)"
+            break
+        fi
+
+        case ${user_images_requested#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $user_images_requested is invalid'
+                ShowFailInvalidInteger '-n, --number'
+                break
+                ;;
+            *)
+                if [[ $user_images_requested -lt 1 ]]; then
+                    user_images_requested=1
+                    DebugFuncVarAdjust '$user_images_requested TOO LOW so set to a sensible minimum' "$user_images_requested"
+                fi
+
+                if [[ $user_images_requested -gt $GOOGLE_RESULTS_MAX ]]; then
+                    user_images_requested=$GOOGLE_RESULTS_MAX
+                    DebugFuncVarAdjust '$user_images_requested TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_images_requested"
+                fi
+                ;;
+        esac
+
+        if [[ $random_image = true ]]; then
+            gallery_images_required=1
+        else
+            gallery_images_required=$user_images_requested
+        fi
+
+        if [[ -n $input_links_pathfile ]]; then
+            if [[ ! -e $input_links_pathfile ]]; then
+                DebugScriptFail '$input_links_pathfile was not found'
+                ShowFailMissingFile '--input-links'
+                break
+            fi
+        fi
+
+        if [[ -n $input_phrases_pathfile ]]; then
+            if [[ ! -e $input_phrases_pathfile ]]; then
+                DebugScriptFail '$input_phrases_pathfile was not found'
+                ShowFailMissingFile '-i, --input-phrases'
+                break
+            fi
+        fi
+
+        if [[ -n $exclude_links_pathfile ]]; then
+            [[ ! -e $exclude_links_pathfile ]] && touch "$exclude_links_pathfile"
+        fi
+
+        case ${parallel_limit#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $parallel_limit is invalid'
+                ShowFailInvalidInteger '-P, --parallel'
+                break
+                ;;
+            *)
+                if [[ $parallel_limit -lt 1 ]]; then
+                    parallel_limit=$PARALLEL_MAX
+                    DebugFuncVarAdjust '$parallel_limit SET TO MAX' "$parallel_limit"
+                fi
+
+                if [[ $parallel_limit -gt $PARALLEL_MAX ]]; then
+                    parallel_limit=$PARALLEL_MAX
+                    DebugFuncVarAdjust '$parallel_limit TOO HIGH so set as' "$parallel_limit"
+                fi
+                ;;
+        esac
+
+        case ${timeout_seconds#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $timeout_seconds is invalid'
+                ShowFailInvalidInteger '-t, --timeout'
+                break
+                ;;
+            *)
+                if [[ $timeout_seconds -lt 1 ]]; then
+                    timeout_seconds=1
+                    DebugFuncVarAdjust '$timeout_seconds TOO LOW so set as' "$timeout_seconds"
+                fi
+
+                if [[ $timeout_seconds -gt $TIMEOUT_SECONDS_MAX ]]; then
+                    timeout_seconds=$TIMEOUT_SECONDS_MAX
+                    DebugFuncVarAdjust '$timeout_seconds TOO HIGH so set as' "$timeout_seconds"
+                fi
+                ;;
+        esac
+
+        case ${retries#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $retries is invalid'
+                ShowFailInvalidInteger '-r, --retries'
+                break
+                ;;
+            *)
+                if [[ $retries -lt 0 ]]; then
+                    retries=0
+                    DebugFuncVarAdjust '$retries TOO LOW so set as' "$retries"
+                fi
+
+                if [[ $retries -gt $RETRIES_MAX ]]; then
+                    retries=$RETRIES_MAX
+                    DebugFuncVarAdjust '$retries TOO HIGH so set as' "$retries"
+                fi
+                ;;
+        esac
+
+        case ${upper_size_bytes#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $upper_size_bytes is invalid'
+                ShowFailInvalidInteger '-u, --upper-size'
+                break
+                ;;
+            *)
+                if [[ $upper_size_bytes -lt 0 ]]; then
+                    upper_size_bytes=0
+                    DebugFuncVarAdjust '$upper_size_bytes TOO LOW so set as' "$upper_size_bytes (unlimited)"
+                fi
+                ;;
+        esac
+
+        case ${lower_size_bytes#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $lower_size_bytes is invalid'
+                ShowFailInvalidInteger '-l, --lower-size'
+                break
+                ;;
+            *)
+                if [[ $lower_size_bytes -lt 0 ]]; then
+                    lower_size_bytes=0
+                    DebugFuncVarAdjust '$lower_size_bytes TOO LOW so set as' "$lower_size_bytes"
+                fi
+
+                if [[ $upper_size_bytes -gt 0 && $lower_size_bytes -gt $upper_size_bytes ]]; then
+                    lower_size_bytes=$((upper_size_bytes-1))
+                    DebugFuncVarAdjust "\$lower_size_bytes larger than \$upper_size_bytes ($upper_size_bytes) so set as" "$lower_size_bytes"
+                fi
+                ;;
+        esac
+
+        case ${gallery_border_pixels#[-+]} in
+            *[!0-9]*)
+                DebugScriptFail 'specified $gallery_border_pixels is invalid'
+                ShowFailInvalidInteger '-b, --border-pixels'
+                break
+                ;;
+            *)
+                if [[ $gallery_border_pixels -lt 0 ]]; then
+                    gallery_border_pixels=0
+                    DebugFuncVarAdjust '$gallery_border_pixels TOO LOW so set as' "$gallery_border_pixels"
+                fi
+                ;;
+        esac
+
+        OK=true
+        break
+    done
+
+    if [[ $OK = false ]]; then
+        errorcode=2
         return 1
     fi
-
-    case ${user_images_requested#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $user_images_requested is invalid'
-            ShowFailInvalidInteger '-n, --number'
-            return 1
-            ;;
-        *)
-            if [[ $user_images_requested -lt 1 ]]; then
-                user_images_requested=1
-                DebugFuncVarAdjust '$user_images_requested TOO LOW so set to a sensible minimum' "$user_images_requested"
-            fi
-
-            if [[ $user_images_requested -gt $GOOGLE_RESULTS_MAX ]]; then
-                user_images_requested=$GOOGLE_RESULTS_MAX
-                DebugFuncVarAdjust '$user_images_requested TOO HIGH so set as $GOOGLE_RESULTS_MAX' "$user_images_requested"
-            fi
-            ;;
-    esac
-
-    if [[ $random_image = true ]]; then
-        gallery_images_required=1
-    else
-        gallery_images_required=$user_images_requested
-    fi
-
-    if [[ -n $input_links_pathfile ]]; then
-        if [[ ! -e $input_links_pathfile ]]; then
-            DebugScriptFail '$input_links_pathfile was not found'
-            ShowFailMissingFile '--input-links'
-            return 1
-        fi
-    fi
-
-    if [[ -n $input_phrases_pathfile ]]; then
-        if [[ ! -e $input_phrases_pathfile ]]; then
-            DebugScriptFail '$input_phrases_pathfile was not found'
-            ShowFailMissingFile '-i, --input-phrases'
-            return 1
-        fi
-    fi
-
-    if [[ -n $exclude_links_pathfile ]]; then
-        [[ ! -e $exclude_links_pathfile ]] && touch "$exclude_links_pathfile"
-    fi
-
-    case ${parallel_limit#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $parallel_limit is invalid'
-            ShowFailInvalidInteger '-P, --parallel'
-            return 1
-            ;;
-        *)
-            if [[ $parallel_limit -lt 1 ]]; then
-                parallel_limit=$PARALLEL_MAX
-                DebugFuncVarAdjust '$parallel_limit SET TO MAX' "$parallel_limit"
-            fi
-
-            if [[ $parallel_limit -gt $PARALLEL_MAX ]]; then
-                parallel_limit=$PARALLEL_MAX
-                DebugFuncVarAdjust '$parallel_limit TOO HIGH so set as' "$parallel_limit"
-            fi
-            ;;
-    esac
-
-    case ${timeout_seconds#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $timeout_seconds is invalid'
-            ShowFailInvalidInteger '-t, --timeout'
-            return 1
-            ;;
-        *)
-            if [[ $timeout_seconds -lt 1 ]]; then
-                timeout_seconds=1
-                DebugFuncVarAdjust '$timeout_seconds TOO LOW so set as' "$timeout_seconds"
-            fi
-
-            if [[ $timeout_seconds -gt $TIMEOUT_SECONDS_MAX ]]; then
-                timeout_seconds=$TIMEOUT_SECONDS_MAX
-                DebugFuncVarAdjust '$timeout_seconds TOO HIGH so set as' "$timeout_seconds"
-            fi
-            ;;
-    esac
-
-    case ${retries#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $retries is invalid'
-            ShowFailInvalidInteger '-r, --retries'
-            return 1
-            ;;
-        *)
-            if [[ $retries -lt 0 ]]; then
-                retries=0
-                DebugFuncVarAdjust '$retries TOO LOW so set as' "$retries"
-            fi
-
-            if [[ $retries -gt $RETRIES_MAX ]]; then
-                retries=$RETRIES_MAX
-                DebugFuncVarAdjust '$retries TOO HIGH so set as' "$retries"
-            fi
-            ;;
-    esac
-
-    case ${upper_size_bytes#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $upper_size_bytes is invalid'
-            ShowFailInvalidInteger '-u, --upper-size'
-            return 1
-            ;;
-        *)
-            if [[ $upper_size_bytes -lt 0 ]]; then
-                upper_size_bytes=0
-                DebugFuncVarAdjust '$upper_size_bytes TOO LOW so set as' "$upper_size_bytes (unlimited)"
-            fi
-            ;;
-    esac
-
-    case ${lower_size_bytes#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $lower_size_bytes is invalid'
-            ShowFailInvalidInteger '-l, --lower-size'
-            return 1
-            ;;
-        *)
-            if [[ $lower_size_bytes -lt 0 ]]; then
-                lower_size_bytes=0
-                DebugFuncVarAdjust '$lower_size_bytes TOO LOW so set as' "$lower_size_bytes"
-            fi
-
-            if [[ $upper_size_bytes -gt 0 && $lower_size_bytes -gt $upper_size_bytes ]]; then
-                lower_size_bytes=$((upper_size_bytes-1))
-                DebugFuncVarAdjust "\$lower_size_bytes larger than \$upper_size_bytes ($upper_size_bytes) so set as" "$lower_size_bytes"
-            fi
-            ;;
-    esac
-
-    case ${gallery_border_pixels#[-+]} in
-        *[!0-9]*)
-            DebugScriptFail 'specified $gallery_border_pixels is invalid'
-            ShowFailInvalidInteger '-b, --border-pixels'
-            return 1
-            ;;
-        *)
-            if [[ $gallery_border_pixels -lt 0 ]]; then
-                gallery_border_pixels=0
-                DebugFuncVarAdjust '$gallery_border_pixels TOO LOW so set as' "$gallery_border_pixels"
-            fi
-            ;;
-    esac
 
     return 0
 
@@ -863,6 +879,7 @@ ValidateGoogleParameters()
     {
 
     # all elements of Google's URL syntax should be validated and calculated here, except for 'start page' and 'result index'. These will be added later.
+    # $? = 0 if OK, 1 if not
 
     compiled_query_parameters=''           # query string without 'start page' and 'result index'
 
@@ -887,6 +904,7 @@ ValidateGoogleParameters()
     local usage_rights_search=''
 
     local search_match_type='&nfpr='        # exact or loose (suggested) search
+    local OK=false
 
     if [[ $exact_search = true ]]; then
         search_match_type+=1
@@ -902,170 +920,180 @@ ValidateGoogleParameters()
         safesearch_flag+=inactive
     fi
 
-    if [[ -n $min_pixels ]]; then
-        case "$min_pixels" in
-            qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
-                min_pixels_type=lt,islt:$min_pixels
-                ;;
-            large)
-                min_pixels_type=l
-                ;;
-            medium)
-                min_pixels_type=m
-                ;;
-            icon)
-                min_pixels_type=i
-                ;;
-            *)
-                DebugScriptFail 'specified $min_pixels is invalid'
-                ShowFailInvalidPreset '-m, --minimum-pixels'
-                return 1
-                ;;
-        esac
-        [[ -n $min_pixels_type ]] && min_pixels_search=isz:$min_pixels_type
-    fi
+    while true; do
+        if [[ -n $min_pixels ]]; then
+            case "$min_pixels" in
+                qsvga|vga|svga|xga|2mp|4mp|6mp|8mp|10mp|12mp|15mp|20mp|40mp|70mp)
+                    min_pixels_type=lt,islt:$min_pixels
+                    ;;
+                large)
+                    min_pixels_type=l
+                    ;;
+                medium)
+                    min_pixels_type=m
+                    ;;
+                icon)
+                    min_pixels_type=i
+                    ;;
+                *)
+                    DebugScriptFail 'specified $min_pixels is invalid'
+                    ShowFailInvalidPreset '-m, --minimum-pixels'
+                    break
+                    ;;
+            esac
+            [[ -n $min_pixels_type ]] && min_pixels_search=isz:$min_pixels_type
+        fi
 
-    if [[ -n $aspect_ratio ]]; then
-        case "$aspect_ratio" in
-            tall)
-                aspect_ratio_type=t
-                ;;
-            square)
-                aspect_ratio_type=s
-                ;;
-            wide)
-                aspect_ratio_type=w
-                ;;
-            panoramic)
-                aspect_ratio_type=xw
-                ;;
-            *)
-                DebugScriptFail 'specified $aspect_ratio is invalid'
-                ShowFailInvalidPreset '-a, --aspect-ratio'
-                return 1
-                ;;
-        esac
-        [[ -n $aspect_ratio_type ]] && aspect_ratio_search=iar:$aspect_ratio_type
-    fi
+        if [[ -n $aspect_ratio ]]; then
+            case "$aspect_ratio" in
+                tall)
+                    aspect_ratio_type=t
+                    ;;
+                square)
+                    aspect_ratio_type=s
+                    ;;
+                wide)
+                    aspect_ratio_type=w
+                    ;;
+                panoramic)
+                    aspect_ratio_type=xw
+                    ;;
+                *)
+                    DebugScriptFail 'specified $aspect_ratio is invalid'
+                    ShowFailInvalidPreset '-a, --aspect-ratio'
+                    break
+                    ;;
+            esac
+            [[ -n $aspect_ratio_type ]] && aspect_ratio_search=iar:$aspect_ratio_type
+        fi
 
-    if [[ -n $image_type ]]; then
-        case "$image_type" in
-            face|photo|clipart|lineart|animated)
-                image_type_search=itp:$image_type
-                ;;
-            *)
-                DebugScriptFail 'specified $image_type is invalid'
-                ShowFailInvalidPreset '--type'
-                return 1
-                ;;
-        esac
-    fi
+        if [[ -n $image_type ]]; then
+            case "$image_type" in
+                face|photo|clipart|lineart|animated)
+                    image_type_search=itp:$image_type
+                    ;;
+                *)
+                    DebugScriptFail 'specified $image_type is invalid'
+                    ShowFailInvalidPreset '--type'
+                    break
+                    ;;
+            esac
+        fi
 
-    if [[ -n $image_format ]]; then
-        case "$image_format" in
-            png|jpg|gif|bmp|svg|ico|webp|craw)
-                image_format_search=ift:$image_format
-                ;;
-            *)
-                DebugScriptFail 'specified $image_format is invalid'
-                ShowFailInvalidPreset '--format'
-                return 1
-                ;;
-        esac
-    fi
+        if [[ -n $image_format ]]; then
+            case "$image_format" in
+                png|jpg|gif|bmp|svg|ico|webp|craw)
+                    image_format_search=ift:$image_format
+                    ;;
+                *)
+                    DebugScriptFail 'specified $image_format is invalid'
+                    ShowFailInvalidPreset '--format'
+                    break
+                    ;;
+            esac
+        fi
 
-    if [[ -n $usage_rights ]]; then
-        case "$usage_rights" in
-            reuse-with-mod)
-                usage_rights_type=fmc
-                ;;
-            reuse)
-                usage_rights_type=fc
-                ;;
-            noncomm-reuse-with-mod)
-                usage_rights_type=fm
-                ;;
-            noncomm-reuse)
-                usage_rights_type=f
-                ;;
-            *)
-                DebugScriptFail 'specified $usage_rights is invalid'
-                ShowFailInvalidPreset '--usage-rights'
-                return 1
-                ;;
-        esac
-        [[ -n $usage_rights_type ]] && usage_rights_search=sur:$usage_rights_type
-    fi
+        if [[ -n $usage_rights ]]; then
+            case "$usage_rights" in
+                reuse-with-mod)
+                    usage_rights_type=fmc
+                    ;;
+                reuse)
+                    usage_rights_type=fc
+                    ;;
+                noncomm-reuse-with-mod)
+                    usage_rights_type=fm
+                    ;;
+                noncomm-reuse)
+                    usage_rights_type=f
+                    ;;
+                *)
+                    DebugScriptFail 'specified $usage_rights is invalid'
+                    ShowFailInvalidPreset '--usage-rights'
+                    break
+                    ;;
+            esac
+            [[ -n $usage_rights_type ]] && usage_rights_search=sur:$usage_rights_type
+        fi
 
-    if [[ -n $recent ]]; then
-        case "$recent" in
-            any)
-                recent_type=''
-                ;;
-            hour)
-                recent_type=h
-                ;;
-            day)
-                recent_type=d
-                ;;
-            week)
-                recent_type=w
-                ;;
-            month)
-                recent_type=m
-                ;;
-            year)
-                recent_type=y
-                ;;
-            *)
-                DebugScriptFail 'specified $recent is invalid'
-                ShowFailInvalidPreset '--recent'
-                return 1
-                ;;
-        esac
-        [[ -n $recent_type ]] && recent_search=qdr:$recent_type
-    fi
+        if [[ -n $recent ]]; then
+            case "$recent" in
+                any)
+                    recent_type=''
+                    ;;
+                hour)
+                    recent_type=h
+                    ;;
+                day)
+                    recent_type=d
+                    ;;
+                week)
+                    recent_type=w
+                    ;;
+                month)
+                    recent_type=m
+                    ;;
+                year)
+                    recent_type=y
+                    ;;
+                *)
+                    DebugScriptFail 'specified $recent is invalid'
+                    ShowFailInvalidPreset '--recent'
+                    break
+                    ;;
+            esac
+            [[ -n $recent_type ]] && recent_search=qdr:$recent_type
+        fi
 
-    if [[ -n $image_colour ]]; then
-        case "$image_colour" in
-            any)
-                image_colour_type=''
-                ;;
-            full)
-                image_colour_type=color
-                ;;
-            black-white|bw)
-                image_colour_type=gray
-                ;;
-            transparent|clear)
-                image_colour_type=trans
-                ;;
-            red|orange|yellow|green|teal|blue|purple|pink|white|gray|black|brown)
-                image_colour_type=specific,isc:$image_colour
-                ;;
-            cyan)
-                image_colour_type=specific,isc:teal
-                ;;
-            magenta)
-                image_colour_type=specific,isc:purple
-                ;;
-            grey)
-                image_colour_type=specific,isc:gray
-                ;;
-            *)
-                DebugScriptFail 'specified $image_colour is invalid'
-                ShowFailInvalidPreset '--colour, --color'
-                return 1
-                ;;
-        esac
-        [[ -n $image_colour_type ]] && image_colour_search=ic:$image_colour_type
-    fi
+        if [[ -n $image_colour ]]; then
+            case "$image_colour" in
+                any)
+                    image_colour_type=''
+                    ;;
+                full)
+                    image_colour_type=color
+                    ;;
+                black-white|bw)
+                    image_colour_type=gray
+                    ;;
+                transparent|clear)
+                    image_colour_type=trans
+                    ;;
+                red|orange|yellow|green|teal|blue|purple|pink|white|gray|black|brown)
+                    image_colour_type=specific,isc:$image_colour
+                    ;;
+                cyan)
+                    image_colour_type=specific,isc:teal
+                    ;;
+                magenta)
+                    image_colour_type=specific,isc:purple
+                    ;;
+                grey)
+                    image_colour_type=specific,isc:gray
+                    ;;
+                *)
+                    DebugScriptFail 'specified $image_colour is invalid'
+                    ShowFailInvalidPreset '--colour, --color'
+                    break
+                    ;;
+            esac
+            [[ -n $image_colour_type ]] && image_colour_search=ic:$image_colour_type
+        fi
 
-    if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search || -n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
-        advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
-    fi
+        if [[ -n $min_pixels_search || -n $aspect_ratio_search || -n $image_type_search || -n $image_format_search || -n $usage_rights_search || -n $recent_search || -n $image_colour_search ]]; then
+            advanced_search="&tbs=$min_pixels_search,$aspect_ratio_search,$image_type_search,$image_format_search,$usage_rights_search,$recent_search,$image_colour_search"
+        fi
 
-    compiled_query_parameters="$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${SAFE_SEARCH_QUERY}${SEARCH_LANGUAGE}${SEARCH_STYLE}${advanced_search}${safesearch_flag}"
+        compiled_query_parameters="$SERVER/search?${SEARCH_TYPE}${search_match_type}${SEARCH_SIMILAR}${SAFE_SEARCH_QUERY}${SEARCH_LANGUAGE}${SEARCH_STYLE}${advanced_search}${safesearch_flag}"
+
+        OK=true
+        break
+    done
+
+    if [[ $OK = false ]]; then
+        errorcode=2
+        return 1
+    fi
 
     return 0
 
@@ -1135,7 +1163,7 @@ ProcessPhrase()
 
     DebugFuncVar target_path
 
-    ValidateGoogleParameters || errorcode=2
+    ValidateGoogleParameters
     CreateTargetPath || errorcode=3
     GetGooglePages
     ScrapeGoogleForLinks
