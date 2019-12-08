@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191208
+    local -r SCRIPT_VERSION=191209
     readonly SCRIPT_FILE=googliser.sh
     readonly IMAGE_FILE_PREFIX=image
     readonly DEBUG_FILE=debug.log
@@ -709,7 +709,7 @@ ValidateScriptParameters()
     case ${user_images_requested#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $user_images_requested is invalid'
-            ShowFail 'Number specified after (-n, --number) must be a valid integer'
+            ShowFailInvalidInteger '-n, --number'
             return 1
             ;;
         *)
@@ -734,7 +734,7 @@ ValidateScriptParameters()
     if [[ -n $input_links_pathfile ]]; then
         if [[ ! -e $input_links_pathfile ]]; then
             DebugScriptFail '$input_links_pathfile was not found'
-            ShowFail 'Input links file (--input-links) was not found'
+            ShowFailMissingFile '--input-links'
             return 1
         fi
     fi
@@ -742,7 +742,7 @@ ValidateScriptParameters()
     if [[ -n $input_phrases_pathfile ]]; then
         if [[ ! -e $input_phrases_pathfile ]]; then
             DebugScriptFail '$input_phrases_pathfile was not found'
-            ShowFail 'Input phrases file  (-i, --input-phrases) was not found'
+            ShowFailMissingFile '-i, --input-phrases'
             return 1
         fi
     fi
@@ -754,7 +754,7 @@ ValidateScriptParameters()
     case ${parallel_limit#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $parallel_limit is invalid'
-            ShowFail 'Number specified after (-P, --parallel) must be a valid integer'
+            ShowFailInvalidInteger '-P, --parallel'
             return 1
             ;;
         *)
@@ -773,7 +773,7 @@ ValidateScriptParameters()
     case ${timeout_seconds#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $timeout_seconds is invalid'
-            ShowFail 'Number specified after (-t, --timeout) must be a valid integer'
+            ShowFailInvalidInteger '-t, --timeout'
             return 1
             ;;
         *)
@@ -792,7 +792,7 @@ ValidateScriptParameters()
     case ${retries#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $retries is invalid'
-            ShowFail 'Number specified after (-r, --retries) must be a valid integer'
+            ShowFailInvalidInteger '-r, --retries'
             return 1
             ;;
         *)
@@ -811,7 +811,7 @@ ValidateScriptParameters()
     case ${upper_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $upper_size_bytes is invalid'
-            ShowFail 'Number specified after (-u, --upper-size) must be a valid integer'
+            ShowFailInvalidInteger '-u, --upper-size'
             return 1
             ;;
         *)
@@ -825,7 +825,7 @@ ValidateScriptParameters()
     case ${lower_size_bytes#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $lower_size_bytes is invalid'
-            ShowFail 'Number specified after (-l, --lower-size) must be a valid integer'
+            ShowFailInvalidInteger '-l, --lower-size'
             return 1
             ;;
         *)
@@ -844,7 +844,7 @@ ValidateScriptParameters()
     case ${gallery_border_pixels#[-+]} in
         *[!0-9]*)
             DebugScriptFail 'specified $gallery_border_pixels is invalid'
-            ShowFail 'Number specified after (-b, --border-pixels) must be a valid integer'
+            ShowFailInvalidInteger '-b, --border-pixels'
             return 1
             ;;
         *)
@@ -918,7 +918,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $min_pixels is invalid'
-                ShowFail 'Value specified after (-m, --minimum-pixels) must be a valid preset'
+                ShowFailInvalidPreset '-m, --minimum-pixels'
                 return 1
                 ;;
         esac
@@ -941,7 +941,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $aspect_ratio is invalid'
-                ShowFail 'Value specified after (-a, --aspect-ratio) must be a valid preset'
+                ShowFailInvalidPreset '-a, --aspect-ratio'
                 return 1
                 ;;
         esac
@@ -955,7 +955,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_type is invalid'
-                ShowFail 'Value specified after (--type) must be a valid preset'
+                ShowFailInvalidPreset '--type'
                 return 1
                 ;;
         esac
@@ -968,7 +968,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_format is invalid'
-                ShowFail 'Value specified after (--format) must be a valid preset'
+                ShowFailInvalidPreset '--format'
                 return 1
                 ;;
         esac
@@ -990,7 +990,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $usage_rights is invalid'
-                ShowFail 'Value specified after (--usage-rights) must be a valid preset'
+                ShowFailInvalidPreset '--usage-rights'
                 return 1
                 ;;
         esac
@@ -1019,7 +1019,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $recent is invalid'
-                ShowFail 'Value specified after (--recent) must be a valid preset'
+                ShowFailInvalidPreset '--recent'
                 return 1
                 ;;
         esac
@@ -1054,7 +1054,7 @@ ValidateGoogleParameters()
                 ;;
             *)
                 DebugScriptFail 'specified $image_colour is invalid'
-                ShowFail 'Value specified after (--colour, --color) must be a valid preset'
+                ShowFailInvalidPreset '--colour, --color'
                 return 1
                 ;;
         esac
@@ -3464,6 +3464,27 @@ ShowStage()
     {
 
     [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
+
+    }
+
+ShowFailInvalidPreset()
+    {
+
+    ShowFail "Value specified after ($1) must be a valid preset"
+
+    }
+
+ShowFailInvalidInteger()
+    {
+
+    ShowFail "Value specified after ($1) must be a valid integer"
+
+    }
+
+ShowFailMissingFile()
+    {
+
+    ShowFail "File specified after ($1) was not found"
 
     }
 
