@@ -60,11 +60,11 @@ macOS:
 
 These sample images have been scaled down for easier distribution.
 
-    $ googliser --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --gallery
+    $ googliser --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 -G
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ googliser -p "kittens" -T 'Kittens!' -n16 -SGcompact
+    $ googliser -p "kittens" -T 'Kittens!' -n16 --gallery compact
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
