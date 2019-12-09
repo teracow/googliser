@@ -67,12 +67,13 @@ InitOK()
 
     # script constants
     local -r SCRIPT_VERSION=191209
-    readonly SCRIPT_FILE=googliser.sh
-    readonly IMAGE_FILE_PREFIX=image
+
     readonly DEBUG_FILE=debug.log
-    readonly USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
-    readonly SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    readonly IMAGE_FILE_PREFIX=image
+    readonly SCRIPT_FILE=googliser.sh
     readonly SCRIPT_STARTSECONDS=$(date +%s)
+    readonly SCRIPT_VERSION_PID="v:$SCRIPT_VERSION PID:$$"
+    readonly USERAGENT='--user-agent "Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"'
 
     # parameter default constants
     readonly GALLERY_BORDER_PIXELS_DEFAULT=30
@@ -85,17 +86,17 @@ InitOK()
     readonly UPPER_SIZE_BYTES_DEFAULT=200000
 
     # limits
-    readonly GOOGLE_RESULTS_MAX=1000
     readonly BING_RESULTS_MAX=1000
+    readonly GOOGLE_RESULTS_MAX=1000
     readonly PARALLEL_MAX=512
     readonly RETRIES_MAX=100
     readonly TIMEOUT_SECONDS_MAX=600
 
     # script-variables
     current_path=$PWD
+    errorcode=0
     gallery_images_required=$IMAGES_REQUESTED_DEFAULT   # number of images to build gallery with. This is ideally same as $user_images_requested except when performing random (single) image download.
     image_links_file=image.links.list
-    errorcode=0
 
     # script-variable flags
     target_path_created=false
@@ -112,7 +113,6 @@ InitOK()
 
     # user-variable options
     debug=false
-    display_colour=true
     exact_search=false
     gallery=false
     gallery_background_trans=false
@@ -120,13 +120,14 @@ InitOK()
     gallery_delete_images=false
     lightning_mode=false
     links_only=false
+    output_colour=true
+    output_verbose=true
     random_image=false
     reindex_rename=false
     safesearch_on=true
     save_links=false
     show_help=false
     skip_no_size=false
-    verbose=true
 
     # user-variable strings
     exclude_links_pathfile=''
@@ -168,14 +169,13 @@ InitOK()
     WhatAreMyArgs
     ShowHelp || return 1
     ShowTitle
-    [[ $verbose = true ]] && echo
+    [[ $output_verbose = true ]] && echo
     ValidateScriptParameters || return 1
 
     if [[ $errorcode -eq 0 ]]; then
         DebugFuncComment 'runtime parameters after validation and adjustment'
         DebugFuncVar aspect_ratio
         DebugFuncVar debug
-        DebugFuncVar display_colour
         DebugFuncVar exact_search
         DebugFuncVar exclude_links_pathfile
         DebugFuncVar exclude_words
@@ -196,7 +196,9 @@ InitOK()
         DebugFuncVar links_only
         DebugFuncVar lower_size_bytes
         DebugFuncVar min_pixels
+        DebugFuncVar output_colour
         DebugFuncVar output_path
+        DebugFuncVar output_verbose
         DebugFuncVar parallel_limit
         DebugFuncVar random_image
         DebugFuncVar recent
@@ -211,10 +213,9 @@ InitOK()
         DebugFuncVar user_phrase
         DebugFuncVar usage_rights
         DebugFuncVar user_images_requested
-        DebugFuncVar verbose
         DebugFuncComment 'internal parameters'
-        DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar BING_RESULTS_MAX
+        DebugFuncVar GOOGLE_RESULTS_MAX
         DebugFuncVar ORIGIN
         DebugFuncVar OSTYPE
         DebugFuncVar TEMP_PATH
@@ -376,7 +377,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             --no-colour|--no-color)
-                display_colour=false
+                output_colour=false
                 shift
                 ;;
             --number|-n)
@@ -396,7 +397,7 @@ WhatAreMyArgs()
                 shift 2
                 ;;
             --quiet|-q)
-                verbose=false
+                output_verbose=false
                 shift
                 ;;
             --random)
@@ -1164,7 +1165,7 @@ ProcessPhrase()
     DebugFuncVar target_path
 
     ValidateGoogleParameters
-    CreateTargetPath || errorcode=3
+    CreateTargetPath
     GetGooglePages
     ScrapeGoogleForLinks
     ExamineLinks || errorcode=4
@@ -1192,7 +1193,7 @@ ProcessLinkList()
     local func_startseconds=$(date +%s)
     image_links_pathfile=$input_links_pathfile
 
-    [[ $verbose = true ]] && echo
+    [[ $output_verbose = true ]] && echo
 
     if [[ -n $output_path ]]; then
         target_path=$output_path
@@ -1208,7 +1209,7 @@ ProcessLinkList()
 
     DebugFuncVar target_path
 
-    CreateTargetPath || errorcode=3
+    CreateTargetPath
     GetImages || errorcode=5
     ReindexRename
     RenderGallery || errorcode=6
@@ -1224,9 +1225,6 @@ CreateTargetPath()
     {
 
     # ensure target path exists
-    # $? = 0 if OK, 1 if not
-
-    local returncode=0
 
     if [[ -e $target_path ]]; then
         DebugFuncSuccess 'target path already exists'
@@ -1236,14 +1234,15 @@ CreateTargetPath()
         if [[ $result -gt 0 ]]; then
             DebugFuncFail 'create target path' "failed! mkdir returned: ($result)"
             ShowFail 'Unable to create target path'
-            returncode=1
+            errorcode=3
+            return 1
         else
             DebugFuncSuccess 'create target path'
             target_path_created=true
         fi
     fi
 
-    return $returncode
+    return 0
 
     }
 
@@ -1264,7 +1263,7 @@ GetGooglePages()
     local page=0
     local page_index=0
 
-    [[ $verbose = true ]] && echo -n "   $(ShowGoogle): "
+    [[ $output_verbose = true ]] && echo -n "   $(ShowGoogle): "
 
     InitProgress
     ResetPageCounts
@@ -1289,7 +1288,7 @@ GetGooglePages()
     # wait here while all running downloads finish
     wait 2>/dev/null
 
-    RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max; [[ $verbose = true ]] && echo
+    RefreshPageCounts; ShowAcquisitionProgress 'web pages' $pages_max $pages_max; [[ $output_verbose = true ]] && echo
 
     DebugFuncVal 'pages OK' "$success_count"
     DebugFuncVal 'pages failed' "$fail_count"
@@ -1414,7 +1413,7 @@ GetImages()
     local imagelink=''
     local download_bytes=0
 
-    [[ $verbose = true ]] && echo -n " download: "
+    [[ $output_verbose = true ]] && echo -n " download: "
 
     InitProgress
     ResetImageCounts
@@ -1466,7 +1465,7 @@ GetImages()
         DebugFuncFail 'links list exhausted' "$result_index/$link_count"
         ColourTextBrightRed 'links list exhausted!'; echo
     else
-        [[ $verbose = true ]] && echo
+        [[ $output_verbose = true ]] && echo
     fi
 
     DebugFuncVal 'downloads OK' "$success_count"
@@ -1725,7 +1724,7 @@ ExamineLinks()
     link_count=0
     local returncode=0
 
-    [[ $verbose = true ]] && echo -n "    links: "
+    [[ $output_verbose = true ]] && echo -n "    links: "
 
     InitProgress
 
@@ -1769,7 +1768,7 @@ ExamineLinks()
         fi
     fi
 
-    if [[ $verbose = true ]]; then
+    if [[ $output_verbose = true ]]; then
         UpdateProgress "$(ColourTextBrightGreen "$link_count")"; echo
 
         if [[ $link_count -lt $user_images_requested && $safesearch_on = true ]]; then
@@ -1825,7 +1824,7 @@ RenderGallery()
     local stage=0
     local stages=4
 
-    [[ $verbose = true ]] && echo -n "  gallery: "
+    [[ $output_verbose = true ]] && echo -n "  gallery: "
 
     InitProgress
 
@@ -1963,7 +1962,7 @@ RenderGallery()
     [[ -e $gallery_title_pathfile ]] && rm -f "$gallery_title_pathfile"
 
     if [[ $result -eq 0 && -e $gallery_target_pathname ]]; then
-        [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightGreen 'done!')"
+        [[ $output_verbose = true ]] && UpdateProgress "$(ColourTextBrightGreen 'done!')"
     else
         UpdateProgress "$(ColourTextBrightRed 'failed!')"
         echo
@@ -1972,7 +1971,7 @@ RenderGallery()
 
     [[ $result -eq 0 && $gallery_delete_images = true ]] && rm -f "$target_path/$IMAGE_FILE_PREFIX"*
 
-    [[ $verbose = true ]] && echo
+    [[ $output_verbose = true ]] && echo
 
     DebugFuncElapsedTime "$func_startseconds"
     DebugFuncExit
@@ -1984,7 +1983,7 @@ RenderGallery()
 Finish()
     {
 
-    if [[ $verbose = true ]]; then
+    if [[ $output_verbose = true ]]; then
         case $errorcode in
             [1-2])
                 if [[ $show_help != true ]]; then
@@ -2281,7 +2280,7 @@ ShowAcquisitionProgress()
 
     local progress_message=''
 
-    if [[ $verbose = true ]]; then
+    if [[ $output_verbose = true ]]; then
         progress_message=$(ColourTextBrightGreen "$(Display2to1 "$success_count" "$2")")
         progress_message+=" $1 OK"
 
@@ -3400,7 +3399,7 @@ ConvertSecs()
 ColourTextBrightGreen()
     {
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         echo -en '\033[1;32m'"$(ColourReset "$1")"
     else
         echo -n "$1"
@@ -3411,7 +3410,7 @@ ColourTextBrightGreen()
 ColourTextBrightOrange()
     {
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         echo -en '\033[1;38;5;214m'"$(ColourReset "$1")"
     else
         echo -n "$1"
@@ -3422,7 +3421,7 @@ ColourTextBrightOrange()
 ColourTextBrightRed()
     {
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         echo -en '\033[1;31m'"$(ColourReset "$1")"
     else
         echo -n "$1"
@@ -3433,7 +3432,7 @@ ColourTextBrightRed()
 ColourTextBrightBlue()
     {
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         echo -en '\033[1;34m'"$(ColourReset "$1")"
     else
         echo -n "$1"
@@ -3444,7 +3443,7 @@ ColourTextBrightBlue()
 ColourTextBold()
     {
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         echo -en '\033[1m'"$(ColourReset "$1")"
     else
         echo -n "$1"
@@ -3470,7 +3469,7 @@ RemoveColourCodes()
 ShowTitle()
     {
 
-    [[ $verbose = true ]] && echo " $(ColourTextBold "$SCRIPT_FILE") $SCRIPT_VERSION_PID"
+    [[ $output_verbose = true ]] && echo " $(ColourTextBold "$SCRIPT_FILE") $SCRIPT_VERSION_PID"
 
     }
 
@@ -3491,7 +3490,7 @@ ShowBing()
 ShowStage()
     {
 
-    [[ $verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
+    [[ $output_verbose = true ]] && UpdateProgress "$(ColourTextBrightOrange "stage $stage/$stages") ($stage_description)"
 
     }
 
@@ -3521,7 +3520,7 @@ ShowFail()
 
     # $1 = message to show in colour if colour is set
 
-    if [[ $display_colour = true ]]; then
+    if [[ $output_colour = true ]]; then
         ColourTextBrightRed " $1"; echo
     else
         echo " $1"
