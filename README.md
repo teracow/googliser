@@ -60,22 +60,22 @@ macOS:
 
 These sample images have been scaled down for easier distribution.
 
-    $ ./googliser.sh --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --gallery
+    $ googliser --phrase "puppies" --title 'Puppies!' --number 25 --upper-size 100000 --gallery
 
 ![puppies](images/googliser-gallery-puppies-s.png)
 
-    $ ./googliser.sh -p "kittens" -T 'Kittens!' -n16 -SGcompact
+    $ googliser -p "kittens" -T 'Kittens!' -n16 -SGcompact
 
 ![puppies](images/googliser-gallery-kittens-s.png)
 
-    $ ./googliser.sh -n 380 -p "cows" -u 250000 -l 10000 -SG
+    $ googliser -n 380 -p "cows" -u 250000 -l 10000 -SG
 
 ![cows](images/googliser-gallery-cows-s.png)
 
 ---
 ## ![#c5f015](images/lime.png) Usage
 
-    $ ./googliser.sh [PARAMETERS] ...
+    $ googliser -p [TEXT] -dEGhLqsSz [PARAMETERS] FILE,PATH,TEXT,INTEGER,PRESET ...
 
 Allowable parameters are indicated with a hyphen then a single character or the long form with 2 hypens and full-text. Single character options can be concatenated. e.g. `-dDEhLNqsSz`. Parameters can be specified as follows:
 
@@ -269,25 +269,27 @@ Usage rights. Preset values are:
 `-z` or `--lightning`    
 Lightning mode! For those who really can't wait! Lightning mode downloads images even faster by using an optimized set of parameters: timeouts are reduced to 1 second, don't retry any download, skip any image when the server won't tell us how big it is, download up to 512 images at the same time, and don't create a gallery afterward.
 
-**Usage Examples:**
+**Basic Usage Examples:**
 
-    $ ./googliser.sh -p "cows"
+Want to see a hundred images of yellow cars?
 
-This will download the first 36 available images for the search-phrase *"cows"*
+    $ googliser -p cars -n 100 --colour yellow
 
-    $ ./googliser.sh --number 250 --phrase "kittens" --parallel 128
+How about 250 images of kittens?
 
-This will download the first 250 available images for the search-phrase *"kittens"* and download up to 128 images at once.
+    $ googliser --number 250 --phrase kittens
 
-    $ ./googliser.sh --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --debug
+**Advanced Usage Examples:**
+
+    $ googliser --number 56 --phrase "fish" --upper-size 50000 --lower-size 2000 --debug
 
 This will download the first 56 available images for the search-phrase *"fish"* but only if the image files are between 2KB and 50KB in size and write a debug file.
 
-    $ ./googliser.sh -n80 -p "storm clouds" -sG --debug
+    $ googliser -n80 -p "storm clouds" -sG --debug
 
 This will download the first 80 available images for the phrase *"storm clouds"*, ensure both debug and URL links files are placed in the target directory and create a thumbnail gallery.
 
-    $ ./googliser.sh -p "flags" --exclude-words "pole,waving" --sites "wikipedia.com"
+    $ googliser -p "flags" --exclude-words "pole,waving" --sites "wikipedia.com"
 
 This will download available images for the phrase *"flags"*, while excluding the images that have words pole and waving associated with them and would return the images from wikipedia.com.
 
