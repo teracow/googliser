@@ -150,14 +150,13 @@ InstallCompletion()
                                 echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
                                 LINE="source /usr/local/etc/bash_completion.d/googliser-completion"
                                 CONFIG_FILE="$HOME/.zshrc"
-                                #. "$HOME/.zshrc"
+                                grep -qF -- "$LINE" "$CONFIG_FILE" || echo "$LINE" >> "$CONFIG_FILE"
                             else
                                 LINE="[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion"
                                 CONFIG_FILE="$HOME/.bash_profile"
-                                # shellcheck disable=SC1090
-                                . "$HOME/.bash_profile"
+                                grep -qF -- "$LINE" "$CONFIG_FILE" || echo "$LINE" >> "$CONFIG_FILE"
+                                . $CONFIG_FILE
                             fi
-                            grep -qF -- "$LINE" "$CONFIG_FILE" || echo "$LINE" >> "$CONFIG_FILE"
                             ;;
                         linux*)
                             # shellcheck disable=SC1090
