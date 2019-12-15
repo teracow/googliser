@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191209
+    local -r SCRIPT_VERSION=191215
 
     readonly DEBUG_FILE=debug.log
     readonly IMAGE_FILE_PREFIX=image
@@ -1321,9 +1321,9 @@ GetGooglePage_()
         local runcmd=''
 
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
-            runcmd="$DOWNLOADER_BIN --timeout 5 --tries 3 \"${compiled_query}\" $USERAGENT --output-document \"${targetpage_pathfile}\""
+            runcmd="$DOWNLOADER_BIN --timeout $timeout_seconds --tries $((retries+1)) \"${compiled_query}\" $USERAGENT --output-document \"${targetpage_pathfile}\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            runcmd="$DOWNLOADER_BIN --max-time 30 \"${compiled_query}\" $USERAGENT --output \"${targetpage_pathfile}\""
+            runcmd="$DOWNLOADER_BIN --max-time $timeout_seconds --retry $retries \"${compiled_query}\" $USERAGENT --output \"${targetpage_pathfile}\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
@@ -1515,7 +1515,7 @@ GetImage_()
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             runcmd="$DOWNLOADER_BIN --spider --server-response --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            runcmd="$DOWNLOADER_BIN --silent --head --insecure --max-time 30 $USERAGENT \"$URL\""
+            runcmd="$DOWNLOADER_BIN --silent --head --insecure --max-time $timeout_seconds --retry $retries $USERAGENT \"$URL\""
         else
             DebugFuncFail "$_forkname_" 'unknown downloader'
             return 1
@@ -1542,7 +1542,7 @@ GetImage_()
         if [[ $(basename "$DOWNLOADER_BIN") = wget ]]; then
             runcmd="$DOWNLOADER_BIN --max-redirect 0 --no-check-certificate --timeout $timeout_seconds --tries $((retries+1)) $USERAGENT --output-document \"$output_pathfile\" \"$URL\""
         elif [[ $(basename "$DOWNLOADER_BIN") = curl ]]; then
-            runcmd="$DOWNLOADER_BIN --silent --max-time 30 $USERAGENT --output \"$output_pathfile\" \"$URL\""
+            runcmd="$DOWNLOADER_BIN --silent --insecure --max-time $timeout_seconds --retry $retries $USERAGENT --output \"$output_pathfile\" \"$URL\""
         else
             DebugFuncFail 'unknown downloader' 'out-of-ideas'
             return 1
