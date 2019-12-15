@@ -148,13 +148,16 @@ InstallCompletion()
                             SHELL=$(ps -p $$ -o ppid= | xargs ps -o comm= -p)
                             if [[ "$SHELL" == "zsh" ]]; then
                                 echo "autoload -Uz compinit && compinit && autoload bashcompinit && bashcompinit" >> "$HOME/.zshrc"
-                                echo "source /usr/local/etc/bash_completion.d/googliser-completion" >> "$HOME/.zshrc"
+                                LINE="source /usr/local/etc/bash_completion.d/googliser-completion"
+                                CONFIG_FILE="$HOME/.zshrc"
                                 #. "$HOME/.zshrc"
                             else
-                                echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> "$HOME/.bash_profile"
+                                LINE="[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion"
+                                CONFIG_FILE="$HOME/.bash_profile"
                                 # shellcheck disable=SC1090
                                 . "$HOME/.bash_profile"
                             fi
+                            grep -qF -- "$LINE" "$CONFIG_FILE" || echo "$LINE" >> "$CONFIG_FILE"
                             ;;
                         linux*)
                             # shellcheck disable=SC1090
