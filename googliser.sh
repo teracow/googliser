@@ -2,7 +2,7 @@
 ####################################################################################
 # googliser.sh
 #
-# (C)opyright 2016-2019 Teracow Software
+# (C)opyright 2016-2020 Teracow Software
 #
 # If you find this script useful, please send me an email to let me know. :)
 #   teracow@gmail.com
@@ -66,7 +66,7 @@ InitOK()
     # $? = 0 if OK, 1 if not
 
     # script constants
-    local -r SCRIPT_VERSION=191215
+    local -r SCRIPT_VERSION=200212
 
     readonly DEBUG_FILE=debug.log
     readonly IMAGE_FILE_PREFIX=image
@@ -2498,17 +2498,12 @@ ScrapeGoogleForLinks()
     # and each pointing to an original image address found by the Google image search engine.
     #------------------------------------------------------------------------------------------------------
     #
-    # sed   1. add 2 x newline chars before each occurence of '<div',
-    #       2. remove ' notranslate' (if this is one of the odd times Google have added it),
+    # sed   1. delete all lines without 'b-GRID_STATE0',
+    #       2. remove everything from the start of each line until ',["http'
     #
-    # grep  3. only list lines with '<div class="rg_meta">',
+    # grep  3. only list lines with 'http',
     #
-    # sed   4. remove lines with 'YouTube' (case insensitive),
-    #       5. remove lines with 'Vimeo' (case insensitive),
-    #       6. add newline char before first occurence of 'http',
-    #       7. remove from '<div' to newline,
-    #       8. remove from '","ow"' to end of line,
-    #       9. remove from '?' to end of line.
+    # sed   4. remove from '"' until end of line.
     #
     #------------------------------------------------------------------------------------------------------
 
@@ -2516,9 +2511,10 @@ ScrapeGoogleForLinks()
 
     # shellcheck disable=SC2002
     cat "$pages_pathfile" \
-    | $SED_BIN 's|<div|\n\n&|g;s| notranslate||g' \
-    | grep '<div class="rg_meta">' \
-    | $SED_BIN '/youtube/Id;/vimeo/Id;s|http|\n&|;s|<div.*\n||;s|","ow".*||;s|\?.*||' \
+    | $SED_BIN '/b-GRID_STATE0/,$!d' \
+    | $SED_BIN 's|^\,\[\"http|\nhttp|' \
+    | grep '^http' \
+    | $SED_BIN 's|\".*$||' \
     > "$image_links_pathfile"
 
     }
