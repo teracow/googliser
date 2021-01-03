@@ -1,5 +1,13 @@
 ![icon](images/icon.png) googliser.sh
 ---
+
+
+
+4th January 2021: This repo is inactive until a way can be found to request new pages in Google's "endless-page" of search results. This is beyond my limited web abilities, so I'm hoping someone out there knows how to do this. If so, please contact me and work on Googliser can resume!
+---
+
+
+
 This is a **[BASH](https://en.wikipedia.org/wiki/Bash_\(Unix_shell\))** script to perform fast image downloads sourced from **[Google Images](https://www.google.com/imghp?hl=en)** based on a specified search-phrase. It's a web-page scraper that can source a list of original image URLs and sent them to [Wget](https://en.wikipedia.org/wiki/Wget) (or [cURL](https://github.com/curl/curl)) to download in parallel. Optionally, it can then combine them using ImageMagick's [montage](http://www.imagemagick.org/Usage/montage/#montage) into a single gallery image.
 
 This is an expansion upon a solution provided by [ShellFish](https://stackoverflow.com/questions/27909521/download-images-from-google-with-command-line) and has been updated to handle Google's various page-code changes from April 2016 to the present.
